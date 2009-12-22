@@ -387,7 +387,7 @@ public class dc1394 {
 
     public static class dc1394camera_list_t extends Structure {
         public dc1394camera_list_t() { }
-        public dc1394camera_list_t(Pointer m) { useMemory(m); read(); }
+        public dc1394camera_list_t(Pointer m) { super(m); read(); }
 
         public int           num;
         public dc1394camera_id_t.ByReference ids;
@@ -730,7 +730,7 @@ public class dc1394 {
 
     public static class dc1394video_frame_t extends Structure {
         public dc1394video_frame_t() { }
-        public dc1394video_frame_t(Pointer m) { useMemory(m); read(); }
+        public dc1394video_frame_t(Pointer m) { super(m); read(); }
 
         public Pointer           image;
         public int[]             size = new int[2];

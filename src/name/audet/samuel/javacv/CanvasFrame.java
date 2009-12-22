@@ -228,6 +228,7 @@ public class CanvasFrame extends JFrame {
         // the visible area 3. We call Canvas.setSize() with different dimensions, to make
         // it check the visible area and reallocate the BufferStrategy almost correctly
         // 4. We resize the Canvas to the desired size... pff..
+        setExtendedState(NORMAL); // force unmaximization.. 
         canvas.setSize(width, height);
         pack();
         canvas.setSize(width+1, height+1);

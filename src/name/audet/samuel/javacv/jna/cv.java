@@ -100,7 +100,7 @@ public class cv {
 
         public static class CvSURFPoint extends Structure {
             public CvSURFPoint() { }
-            public CvSURFPoint(Pointer m) { useMemory(m); read(); }
+            public CvSURFPoint(Pointer m) { super(m); read(); }
 
             public CvSURFPoint(CvPoint2D32f pt, int laplacian, int size) {
                 this(pt, laplacian, size, 0, 0);
@@ -241,7 +241,7 @@ public class cv {
         public static final int CV_STEREO_BM_NORMALIZED_RESPONSE = 0;
         public static class CvStereoBMState extends Structure {
             public CvStereoBMState() { cvcreated = false; }
-            public CvStereoBMState(Pointer m) { useMemory(m); read(); cvcreated = true; }
+            public CvStereoBMState(Pointer m) { super(m); read(); cvcreated = true; }
 
             public static CvStereoBMState create(int preset, int numberOfDisparities) {
                 CvStereoBMState m = cvCreateStereoBMState(preset, numberOfDisparities);
@@ -318,7 +318,7 @@ public class cv {
         public static final int CV_STEREO_GC_OCCLUDED = Short.MAX_VALUE;
         public static class CvStereoGCState extends Structure {
             public CvStereoGCState() { cvcreated = false; }
-            public CvStereoGCState(Pointer m) { useMemory(m); read(); cvcreated = true; }
+            public CvStereoGCState(Pointer m) { super(m); read(); cvcreated = true; }
 
             public static CvStereoGCState create(int numberOfDisparities, int maxIters) {
                 CvStereoGCState m = cvCreateStereoGCState(numberOfDisparities, maxIters);
@@ -633,7 +633,7 @@ public class cv {
 
     public static class IplConvKernel extends Structure {
         public IplConvKernel() { cvcreated = false; }
-        public IplConvKernel(Pointer m) { useMemory(m); read(); cvcreated = true; }
+        public IplConvKernel(Pointer m) { super(m); read(); cvcreated = true; }
 
         public static IplConvKernel create(int cols, int rows,
                 int anchor_x, int anchor_y, int shape, int[] values/*=null*/) {
@@ -1010,7 +1010,7 @@ public class cv {
 
     public static class CvHistogram extends Structure {
         public CvHistogram() { cvcreated = false; }
-        public CvHistogram(Pointer m) { useMemory(m); read(); cvcreated = true; }
+        public CvHistogram(Pointer m) { super(m); read(); cvcreated = true; }
 
         public static CvHistogram create(int dims, int[] sizes, int type,
                 FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
@@ -1247,7 +1247,7 @@ public class cv {
     public static native int cvCheckContourConvexity(CvArr contour);
     public static class CvConvexityDefect extends Structure {
         public CvConvexityDefect() { }
-        public CvConvexityDefect(Pointer m) { useMemory(m); read(); }
+        public CvConvexityDefect(Pointer m) { super(m); read(); }
 
         public CvPoint.ByReference start;
         public CvPoint.ByReference end;
@@ -1307,7 +1307,7 @@ public class cv {
 
     public static class CvSubdiv2DPoint extends Structure {
         public CvSubdiv2DPoint() { }
-        public CvSubdiv2DPoint(Pointer m) { useMemory(m); read(); }
+        public CvSubdiv2DPoint(Pointer m) { super(m); read(); }
 
         public int            flags;
         public CvSubdiv2DEdge first;
@@ -1450,7 +1450,7 @@ public class cv {
 
     public static class CvKalman extends Structure {
         public CvKalman() { cvcreated = false; }
-        public CvKalman(Pointer m) { useMemory(m); read(); cvcreated = true; }
+        public CvKalman(Pointer m) { super(m); read(); cvcreated = true; }
 
         public static CvKalman create(int dynam_params, int measure_params,
                 int control_params/*=0*/) {
@@ -1542,7 +1542,7 @@ public class cv {
 
     public static class CvConDensation extends Structure {
         public CvConDensation() { cvcreated = false; }
-        public CvConDensation(Pointer m) { useMemory(m); read(); cvcreated = true; }
+        public CvConDensation(Pointer m) { super(m); read(); cvcreated = true; }
 
         public static CvConDensation create(int dynam_params, int measure_params,
                 int sample_count) {
@@ -1652,7 +1652,7 @@ public class cv {
 
     public static class CvHaarClassifierCascade extends Structure {
         public CvHaarClassifierCascade() { cvcreated = false; }
-        public CvHaarClassifierCascade(Pointer m) { useMemory(m); read(); cvcreated = true; }
+        public CvHaarClassifierCascade(Pointer m) { super(m); read(); cvcreated = true; }
 
         public static CvHaarClassifierCascade load(String directory,
                 CvSize.ByValue orig_window_size) {
