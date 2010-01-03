@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -72,7 +72,7 @@ import static name.audet.samuel.javacv.jna.cxcore.*;
  * @author Samuel Audet
  */
 public class cv {
-    // OpenCV does not always installs itself in the PATH :(
+    // OpenCV does not always install itself in the PATH :(
     public static final String[] paths = { "C:/OpenCV2.0/bin/",
             "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
             "/usr/local/lib/", "/usr/local/lib64/" };
@@ -100,7 +100,7 @@ public class cv {
 
         public static class CvSURFPoint extends Structure {
             public CvSURFPoint() { }
-            public CvSURFPoint(Pointer m) { super(m); read(); }
+            public CvSURFPoint(Pointer m) { super(m); if (getClass() == CvSURFPoint.class) read(); }
 
             public CvSURFPoint(CvPoint2D32f pt, int laplacian, int size) {
                 this(pt, laplacian, size, 0, 0);
@@ -241,7 +241,8 @@ public class cv {
         public static final int CV_STEREO_BM_NORMALIZED_RESPONSE = 0;
         public static class CvStereoBMState extends Structure {
             public CvStereoBMState() { cvcreated = false; }
-            public CvStereoBMState(Pointer m) { super(m); read(); cvcreated = true; }
+            public CvStereoBMState(Pointer m) { super(m); if (getClass() == CvStereoBMState.class) read();
+                cvcreated = true; }
 
             public static CvStereoBMState create(int preset, int numberOfDisparities) {
                 CvStereoBMState m = cvCreateStereoBMState(preset, numberOfDisparities);
@@ -318,7 +319,8 @@ public class cv {
         public static final int CV_STEREO_GC_OCCLUDED = Short.MAX_VALUE;
         public static class CvStereoGCState extends Structure {
             public CvStereoGCState() { cvcreated = false; }
-            public CvStereoGCState(Pointer m) { super(m); read(); cvcreated = true; }
+            public CvStereoGCState(Pointer m) { super(m); if (getClass() == CvStereoGCState.class) read();
+                cvcreated = true; }
 
             public static CvStereoGCState create(int numberOfDisparities, int maxIters) {
                 CvStereoGCState m = cvCreateStereoGCState(numberOfDisparities, maxIters);
@@ -633,7 +635,8 @@ public class cv {
 
     public static class IplConvKernel extends Structure {
         public IplConvKernel() { cvcreated = false; }
-        public IplConvKernel(Pointer m) { super(m); read(); cvcreated = true; }
+        public IplConvKernel(Pointer m) { super(m); if (getClass() == IplConvKernel.class) read();
+            cvcreated = true; }
 
         public static IplConvKernel create(int cols, int rows,
                 int anchor_x, int anchor_y, int shape, int[] values/*=null*/) {
@@ -918,9 +921,12 @@ public class cv {
     }
 
     public static class CvContour extends CvSeq {
+        public CvContour() { }
+        public CvContour(Pointer m) { super(m); if (getClass() == CvContour.class) read(); }
+
         public CvRect rect;
         public int color;
-        public int reserved[] = new int[3];
+        public int reserved1, reserved2, reserved3;
 
         public static class ByValue extends CvContour implements Structure.ByValue { }
     }
@@ -1010,7 +1016,8 @@ public class cv {
 
     public static class CvHistogram extends Structure {
         public CvHistogram() { cvcreated = false; }
-        public CvHistogram(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvHistogram(Pointer m) { super(m); if (getClass() == CvHistogram.class) read();
+            cvcreated = true; }
 
         public static CvHistogram create(int dims, int[] sizes, int type,
                 FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
@@ -1247,7 +1254,7 @@ public class cv {
     public static native int cvCheckContourConvexity(CvArr contour);
     public static class CvConvexityDefect extends Structure {
         public CvConvexityDefect() { }
-        public CvConvexityDefect(Pointer m) { super(m); read(); }
+        public CvConvexityDefect(Pointer m) { super(m); if (getClass() == CvConvexityDefect.class) read(); }
 
         public CvPoint.ByReference start;
         public CvPoint.ByReference end;
@@ -1263,7 +1270,7 @@ public class cv {
 
     //typedef size_t CvSubdiv2DEdge;
     public static class CvSubdiv2DEdge extends NativeLong {
-        public CvSubdiv2DEdge() { super(); }
+        public CvSubdiv2DEdge() { }
         public CvSubdiv2DEdge(long value) {
             super(value);
         }
@@ -1307,7 +1314,7 @@ public class cv {
 
     public static class CvSubdiv2DPoint extends Structure {
         public CvSubdiv2DPoint() { }
-        public CvSubdiv2DPoint(Pointer m) { super(m); read(); }
+        public CvSubdiv2DPoint(Pointer m) { super(m); if (getClass() == CvSubdiv2DPoint.class) read(); }
 
         public int            flags;
         public CvSubdiv2DEdge first;
@@ -1450,7 +1457,8 @@ public class cv {
 
     public static class CvKalman extends Structure {
         public CvKalman() { cvcreated = false; }
-        public CvKalman(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvKalman(Pointer m) { super(m); if (getClass() == CvKalman.class) read();
+            cvcreated = true; }
 
         public static CvKalman create(int dynam_params, int measure_params,
                 int control_params/*=0*/) {
@@ -1542,7 +1550,8 @@ public class cv {
 
     public static class CvConDensation extends Structure {
         public CvConDensation() { cvcreated = false; }
-        public CvConDensation(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvConDensation(Pointer m) { super(m); if (getClass() == CvConDensation.class) read();
+            cvcreated = true; }
 
         public static CvConDensation create(int dynam_params, int measure_params,
                 int sample_count) {
@@ -1652,7 +1661,8 @@ public class cv {
 
     public static class CvHaarClassifierCascade extends Structure {
         public CvHaarClassifierCascade() { cvcreated = false; }
-        public CvHaarClassifierCascade(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvHaarClassifierCascade(Pointer m) { super(m); if (getClass() == CvHaarClassifierCascade.class) read();
+            cvcreated = true; }
 
         public static CvHaarClassifierCascade load(String directory,
                 CvSize.ByValue orig_window_size) {
@@ -1817,8 +1827,6 @@ public class cv {
             }
         }
         private boolean cvcreated = false;
-
-        public static class ByReference extends CvPOSITObject implements Structure.ByReference { }
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
             public PointerByReference() { }

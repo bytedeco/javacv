@@ -28,18 +28,19 @@ Further, although not always required, some functionality of JavaCV will also us
 To modify the source code, note that the project files were created with:
  * NetBeans 6.8  http://www.netbeans.org/downloads/
 
-Please keep me informed of any updates or fixes you make to the code so that I may integrate them into my own version. Thank you!
+Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
 And feel free to ask questions on the mailing list if you encounter any problems with the software! I am sure it is far from perfect...
 
 
 ==Quick Start for OpenCV==
-First, put `javacv.jar` and `jna.jar` somewhere in your classpath. Then, the wrappers of OpenCV can automatically access all the goodies from the `cxcore`, `cv`, and `highgui` modules. OpenCV simply needs to be placed in its default installation directory and it should work. JavaCV will look it up there. It will also search the system PATH, such as the current directory under Windows. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original C API syntax as possible. For example, one can load an image file and smooth it with a program like this:
+First, put `javacv.jar` and `jna.jar` somewhere in your classpath. Then, the wrappers of OpenCV can automatically access all of the C API from the `cxcore`, `cv`, `highgui`, and `cvaux` modules. OpenCV simply needs to be placed in its default installation directory and it should work. JavaCV will look it up there. It will also search the system PATH, such as the current directory under Windows. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original syntax as possible. For example, one can load an image file and smooth it with a program like this:
 
 {{{
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.*;
 import static name.audet.samuel.javacv.jna.highgui.*;
+import static name.audet.samuel.javacv.jna.cvaux.*;
 
 public class Test {
     public static void main(String[] args) {
@@ -50,15 +51,16 @@ public class Test {
 }
 }}}
 
-Additionally, I placed version specific functionality in separate classes. To access newer functions of version 2.0 for example, we need to import the `v20` subclasses instead, e.g.:
+Additionally, I placed version specific functionality in separate classes. To access newer functions of OpenCV 2.0 for example, one would import the `v20` subclasses instead, e.g.:
 {{{
 import static name.audet.samuel.javacv.jna.cxcore.v20.*;
 import static name.audet.samuel.javacv.jna.cv.v20.*;
 import static name.audet.samuel.javacv.jna.highgui.v20.*;
+import static name.audet.samuel.javacv.jna.cvaux.v20.*;
 }}}
 and similarly for `v10` and `v11`.
 
-IMPORTANT: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 when the calling conventions of the compiler used to build the Java implementation differs from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA will probably be updated in the near future with a workaround, but for the moment, please be advised.
+IMPORTANT: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 when the calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA will probably be updated in the near future with a workaround, but for the moment, please be advised.
 
 
 ==Licensing Issues==
@@ -70,6 +72,12 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===January 3, 2010===
+ * Added wrapper for the `cvaux` module of OpenCV
+ * Added abstract `FrameRecorder` class and a `OpenCVFrameRecorder` class
+ * Fixed read() problem that might occur within Pointer constructors
+ * Running `java -jar javacv.jar` now displays version information
+
 ===December 22, 2009===
  * Fixed `CanvasFrame` from getting stuck in a maximized window
  * Removed all `setAutoWrite(false)` from `cxcore` now that the bug appears fixed in JNA
@@ -136,9 +144,9 @@ Initial release
 
 
 ----
-Copyright (C) 2009 Samuel Audet <saudet@ok.ctrl.titech.ac.jp><br>
-Web site: http://www.ok.ctrl.titech.ac.jp/~saudet/
+Copyright (C) 2009,2010 Samuel Audet <samuel.audet@gmail.com>
+Project site: http://code.google.com/p/javacv/
 
-Licensed under the GNU General Public License version 2 (GPLv2).<br>
+Licensed under the GNU General Public License version 2 (GPLv2).
 Please refer to LICENSE.txt or http://www.gnu.org/licenses/ for details.
 

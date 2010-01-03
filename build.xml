@@ -10,6 +10,24 @@
 <project name="javacv" default="default" basedir=".">
     <description>Builds, tests, and runs the project javacv.</description>
     <import file="nbproject/build-impl.xml"/>
+    <tstamp>
+        <format property="TIMESTAMP" pattern="yyyyMMddhhmm" timezone=""/>
+    </tstamp>
+    <manifest file="manifest.mf">
+        <section name="name/audet/samuel/javacv/">
+            <attribute name="Implementation-Title" value="JavaCV"/>
+            <attribute name="Implementation-Vendor" value="Samuel Audet"/>
+            <attribute name="Implementation-Version" value="${TIMESTAMP}"/>
+            <attribute name="Specification-Title" value="JavaCV"/>
+            <attribute name="Specification-Vendor" value="Samuel Audet"/>
+            <attribute name="Specification-Version" value="${TIMESTAMP}"/>
+        </section>
+    </manifest>
+    <target name="-post-jar">
+        <delete file="${dist.dir}/README.TXT" />
+        <copy file="LICENSE.txt" todir="${dist.dir}"/>
+        <copy file="README.txt" todir="${dist.dir}"/>
+    </target>
     <!--
 
     There exist several targets which are by default empty and which can be 

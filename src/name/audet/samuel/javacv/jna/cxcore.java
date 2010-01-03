@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -99,7 +99,7 @@ import java.util.HashMap;
  * @author Samuel Audet
  */
 public class cxcore {
-    // OpenCV does not always installs itself in the PATH :(
+    // OpenCV does not always install itself in the PATH :(
     public static final String[] paths = { "C:/OpenCV2.0/bin/", 
             "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
             "/usr/local/lib/", "/usr/local/lib64/" };
@@ -174,7 +174,7 @@ public class cxcore {
 
     public static class CvPoint extends Structure {
         public CvPoint() { }
-        public CvPoint(Pointer m) { super(m); read(); }
+        public CvPoint(Pointer m) { super(m); if (getClass() == CvPoint.class) read(); }
         public CvPoint(int x, int y) {
             this.x = x;
             this.y = y;
@@ -288,7 +288,7 @@ public class cxcore {
 
     public static class CvPoint2D32f extends Structure {
         public CvPoint2D32f() { }
-        public CvPoint2D32f(Pointer m) { super(m); read(); }
+        public CvPoint2D32f(Pointer m) { super(m); if (getClass() == CvPoint2D32f.class) read(); }
         public CvPoint2D32f(double x, double y) {
             this.x = (float)x;
             this.y = (float)y;
@@ -357,7 +357,7 @@ public class cxcore {
 
     public static class CvPoint3D32f extends Structure {
         public CvPoint3D32f() { }
-        public CvPoint3D32f(Pointer m) { super(m); read(); }
+        public CvPoint3D32f(Pointer m) { super(m); if (getClass() == CvPoint3D32f.class) read(); }
         public CvPoint3D32f(double x, double y, double z) {
             this.x = (float)x;
             this.y = (float)y;
@@ -434,7 +434,7 @@ public class cxcore {
 
     public static class CvPoint2D64f extends Structure {
         public CvPoint2D64f() { }
-        public CvPoint2D64f(Pointer m) { super(m); read(); }
+        public CvPoint2D64f(Pointer m) { super(m); if (getClass() == CvPoint2D64f.class) read(); }
         public CvPoint2D64f(double x, double y) {
             this.x = x;
             this.y = y;
@@ -503,7 +503,7 @@ public class cxcore {
 
     public static class CvPoint3D64f extends Structure {
         public CvPoint3D64f() { }
-        public CvPoint3D64f(Pointer m) { super(m); read(); }
+        public CvPoint3D64f(Pointer m) { super(m); if (getClass() == CvPoint3D64f.class) read(); }
         public CvPoint3D64f(double x, double y, double z) {
             this.x = x;
             this.y = y;
@@ -580,7 +580,7 @@ public class cxcore {
 
     public static class CvSize extends Structure {
         public CvSize() { }
-        public CvSize(Pointer m) { super(m); read(); }
+        public CvSize(Pointer m) { super(m); if (getClass() == CvSize.class) read(); }
         public CvSize(int width, int height) {
             this.width = width;
             this.height = height;
@@ -612,7 +612,7 @@ public class cxcore {
 
     public static class CvSize2D32f extends Structure {
         public CvSize2D32f() { }
-        public CvSize2D32f(Pointer m) { super(m); read(); }
+        public CvSize2D32f(Pointer m) { super(m); if (getClass() == CvSize2D32f.class) read(); }
         public CvSize2D32f(double width, double height) {
             this.width = (float)width;
             this.height = (float)height;
@@ -644,7 +644,7 @@ public class cxcore {
 
     public static class CvRect extends Structure {
         public CvRect() { }
-        public CvRect(Pointer m) { super(m); read(); }
+        public CvRect(Pointer m) { super(m); if (getClass() == CvRect.class) read(); }
         public CvRect(int x, int y, int width, int height) {
             this.x = x;
             this.y = y;
@@ -695,7 +695,7 @@ public class cxcore {
 
     public static class CvBox2D extends Structure {
         public CvBox2D() { }
-        public CvBox2D(Pointer m) { super(m); read(); }
+        public CvBox2D(Pointer m) { super(m); if (getClass() == CvBox2D.class) read(); }
         public CvBox2D(CvPoint2D32f.ByValue center, CvSize2D32f.ByValue size, float angle) {
             this.center = center;
             this.size = size;
@@ -723,7 +723,7 @@ public class cxcore {
 
     public static class CvScalar extends Structure {
         public CvScalar() { }
-        public CvScalar(Pointer m) { super(m); read(); }
+        public CvScalar(Pointer m) { super(m); if (getClass() == CvScalar.class) read(); }
         public CvScalar(double val0, double val1, double val2, double val3) {
             val[0] = val0; val[1] = val1; val[2] = val2; val[3] = val3;
         }
@@ -799,7 +799,7 @@ public class cxcore {
 
     public static class CvIntScalar extends Structure {
         public CvIntScalar() { }
-        public CvIntScalar(Pointer m) { super(m); read(); }
+        public CvIntScalar(Pointer m) { super(m); if (getClass() == CvIntScalar.class) read(); }
         public CvIntScalar(long val0, long val1, long val2, long val3) {
             val[0] = val0; val[1] = val1; val[2] = val2; val[3] = val3;
         };
@@ -955,11 +955,11 @@ public class cxcore {
 
     public static class CvMat extends CvArr {
         public CvMat() { fullSize = getSize(); cvcreated = false; }
-        public CvMat(Pointer m) { super(m); read(); fullSize = getSize(); cvcreated = true; }
+        public CvMat(Pointer m) { super(m); if (getClass() == CvMat.class) read();
+            fullSize = getSize(); cvcreated = true; }
         public CvMat(int rows, int cols, int type, Pointer data, int step) {
             cvInitMatHeader(this, rows, cols, type, data, step);
-            fullSize = getSize();
-            cvcreated = false;
+            fullSize = getSize(); cvcreated = false;
         }
         public CvMat(int rows, int cols, int type, Pointer data) {
             this(rows, cols, type, data, cols*CV_ELEM_SIZE(type));
@@ -1405,7 +1405,8 @@ public class cxcore {
 
     public static class CvMatND extends CvArr {
         public CvMatND() { cvcreated = false; }
-        public CvMatND(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvMatND(Pointer m) { super(m); if (getClass() == CvMatND.class) read();
+            cvcreated = true; }
 
         public static CvMatND create(int dims, int[] sizes, int type) {
             CvMatND m = cvCreateMatND(dims, sizes, type);
@@ -1486,7 +1487,8 @@ public class cxcore {
 
     public static class CvSparseMat extends CvArr {
         public CvSparseMat() { cvcreated = false; }
-        public CvSparseMat(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvSparseMat(Pointer m) { super(m); if (getClass() == CvSparseMat.class) read();
+            cvcreated = true; }
 
         public static CvSparseMat create(int dims, int[] sizes, int type) {
             CvSparseMat m = cvCreateSparseMat(dims, sizes, type);
@@ -1561,14 +1563,14 @@ public class cxcore {
 
     public static class CvSparseNode extends Structure {
         public CvSparseNode() { }
-        public CvSparseNode(Pointer m) { super(m); read(); }
+        public CvSparseNode(Pointer m) { super(m); if (getClass() == CvSparseNode.class) read(); }
 
         public int hashval;
         public CvSparseNode.ByReference next;
 
         public static class ByReference extends CvSparseNode implements Structure.ByReference {
             public ByReference() { }
-            public ByReference(Pointer m) { super(m); read(); }
+            public ByReference(Pointer m) { super(m); if (getClass() == ByReference.class) read(); }
         }
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
@@ -1651,7 +1653,8 @@ public class cxcore {
 
     public static class IplImage extends CvArr {
         public IplImage() { cvcreated = false; cvcreatedHeader = false; }
-        public IplImage(Pointer m) { super(m); read(); cvcreated = true; }
+        public IplImage(Pointer m) { super(m); if (getClass() == IplImage.class) read();
+            cvcreated = true; }
         public static IplImage create(CvSize.ByValue size, int depth, int channels) {
             IplImage i = cvCreateImage(size, depth, channels);
             if (i != null) {
@@ -2141,6 +2144,15 @@ public class cxcore {
                 p.write();
                 setValue(p.getPointer());
             }
+
+            public PointerByReference(IplImage[] a) {
+                super(new Memory(Pointer.SIZE * a.length));
+                Pointer[] pa = getPointer().getPointerArray(0, a.length);
+                for (int i = 0; i < a.length; i ++) {
+                    a[i].write();
+                    pa[i].setPointer(0, a[i].getPointer());
+                }
+            }
         }
         public PointerByReference pointerByReference() {
             return new PointerByReference(this);
@@ -2179,9 +2191,11 @@ public class cxcore {
 
     public static class CvArr extends Structure {
         public CvArr() { }
-        public CvArr(Pointer m) { super(m); read(); }
+        public CvArr(Pointer m) { super(m); if (getClass() == CvArr.class) read(); }
         public static class ByReference extends CvArr implements Structure.ByReference { }
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
+            public PointerByReference() { }
+            public PointerByReference(Pointer m) { super(m); }
             public static PointerByReference[] createArray(int size) {
                 PointerByReference[] a = new PointerByReference[size];
                 Pointer p = new Memory(Pointer.SIZE * size);
@@ -2616,7 +2630,8 @@ public class cxcore {
 
     public static class CvMemStorage extends Structure {
         public CvMemStorage() { cvcreated = false; }
-        public CvMemStorage(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvMemStorage(Pointer m) { super(m); if (getClass() == CvMemStorage.class) read();
+            cvcreated = true; }
 
         public static CvMemStorage create(int block_size) {
             CvMemStorage m = cvCreateMemStorage(block_size);
@@ -2818,7 +2833,7 @@ public class cxcore {
 
     public static class CvSeq extends CvArr {
         public CvSeq() { }
-        public CvSeq(Pointer m) { super(m); read(); }
+        public CvSeq(Pointer m) { super(m); if (getClass() == CvSeq.class) read(); }
 
         public static CvSeq create(int seq_flags, int header_size, int elem_size,
                 CvMemStorage storage) {
@@ -2868,7 +2883,7 @@ public class cxcore {
 
     public static class CvSeqBlock extends Structure {
         public CvSeqBlock() { }
-        public CvSeqBlock(Pointer m) { super(m); read(); }
+        public CvSeqBlock(Pointer m) { super(m); if (getClass() == CvSeqBlock.class) read(); }
 
         public CvSeqBlock.ByReference prev;
         public CvSeqBlock.ByReference next;
@@ -3000,7 +3015,7 @@ public class cxcore {
 
     public static class CvSetElem extends Structure {
         public CvSetElem() { }
-        public CvSetElem(Pointer m) { super(m); read(); }
+        public CvSetElem(Pointer m) { super(m); if (getClass() == CvSetElem.class) read(); }
 
         public int flags;
         public CvSetElem.ByReference next_free;
@@ -3008,7 +3023,7 @@ public class cxcore {
 
         public static class ByReference extends CvSetElem implements Structure.ByReference {
             public ByReference() { }
-            public ByReference(Pointer m) { super(m); read(); }
+            public ByReference(Pointer m) { super(m); if (getClass() == ByReference.class) read(); }
         }
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
@@ -3035,7 +3050,7 @@ public class cxcore {
 
     public static class CvSet extends CvSeq {
         public CvSet() { }
-        public CvSet(Pointer m) { super(m); read(); }
+        public CvSet(Pointer m) { super(m); if (getClass() == CvSet.class) read(); }
 
         public static CvSet create(int set_flags, int header_size, int elem_size,
                 CvMemStorage storage) {
@@ -3085,7 +3100,7 @@ public class cxcore {
 
     public static class CvGraphEdge extends Structure {
         public CvGraphEdge() { }
-        public CvGraphEdge(Pointer m) { super(m); read(); }
+        public CvGraphEdge(Pointer m) { super(m); if (getClass() == CvGraphEdge.class) read(); }
 
         public int   flags;
         public float weight;
@@ -3095,7 +3110,7 @@ public class cxcore {
 
         public static class ByReference extends CvGraphEdge implements Structure.ByReference {
             public ByReference() { }
-            public ByReference(Pointer m) { super(m); read(); }
+            public ByReference(Pointer m) { super(m); if (getClass() == ByReference.class) read(); }
         }
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
@@ -3122,7 +3137,7 @@ public class cxcore {
 
     public static class CvGraphVtx extends Structure {
         public CvGraphVtx() { }
-        public CvGraphVtx(Pointer m) { super(m); read(); }
+        public CvGraphVtx(Pointer m) { super(m); if (getClass() == CvGraphVtx.class) read(); }
 
         public int flags;
         public CvGraphEdge.ByReference first;
@@ -3130,7 +3145,7 @@ public class cxcore {
 
         public static class ByReference extends CvGraphVtx implements Structure.ByReference {
             public ByReference() { }
-            public ByReference(Pointer m) { super(m); read(); }
+            public ByReference(Pointer m) { super(m); if (getClass() == ByReference.class) read(); }
         }
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
@@ -3157,7 +3172,7 @@ public class cxcore {
 
     public static class CvGraph extends CvSet {
         public CvGraph() { }
-        public CvGraph(Pointer m) { super(m); read(); }
+        public CvGraph(Pointer m) { super(m); if (getClass() == CvGraph.class) read(); }
 
         public static CvGraph create(int graph_flags, int header_size, int vtx_size,
                 int edge_size, CvMemStorage storage) {
@@ -3228,7 +3243,8 @@ public class cxcore {
 
     public static class CvGraphScanner extends Structure  {
         public CvGraphScanner() { cvcreated = false; }
-        public CvGraphScanner(Pointer m) { super(m); read(); cvcreated = true; }
+        public CvGraphScanner(Pointer m) { super(m); if (getClass() == CvGraphScanner.class) read();
+            cvcreated = true; }
 
         public static CvGraphScanner create(CvGraph graph,
                 CvGraphVtx vtx/*=null*/, int mask/*=CV_GRAPH_ALL_ITEMS*/) {
@@ -3464,7 +3480,7 @@ public class cxcore {
 
     public static class CvFileStorage extends PointerType {
         public CvFileStorage() { cvcreated = false; }
-        public CvFileStorage(Pointer m) { super(m); cvcreated = true; }
+        public CvFileStorage(Pointer p) { super(p); cvcreated = true; }
 
         public static CvFileStorage open(String filename, CvMemStorage memstorage, int flags) {
             CvFileStorage f = cvOpenFileStorage(filename, memstorage, flags);
@@ -3596,7 +3612,7 @@ public class cxcore {
 
     public static class CvFileNode extends Structure {
         public CvFileNode() { }
-        public CvFileNode(Pointer m) { super(m); read(); }
+        public CvFileNode(Pointer m) { super(m); if (getClass() == CvFileNode.class) read(); }
 
         public int tag;
         public CvTypeInfo.ByReference info; 

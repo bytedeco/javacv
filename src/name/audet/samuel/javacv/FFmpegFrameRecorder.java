@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -61,7 +61,7 @@ import static net.sf.ffmpeg_java.SWScaleLibrary.*;
  *
  * @author Samuel Audet
  */
-public class FFmpegFrameRecorder {
+public class FFmpegFrameRecorder extends FrameRecorder {
 
     public FFmpegFrameRecorder(String filename, int imageWidth, int imageHeight) {
         /* initialize libavcodec, and register all codecs and formats */
@@ -70,6 +70,11 @@ public class FFmpegFrameRecorder {
         this.filename    = filename;
         this.imageWidth  = imageWidth;
         this.imageHeight = imageHeight;
+
+        this.pixelFormat = PIX_FMT_RGB32;
+        this.codecID     = CODEC_ID_HUFFYUV;
+        this.bitrate     = 400000;
+        this.frameRate   = 30;
     }
     public void release() throws Exception {
         stop();
@@ -78,55 +83,6 @@ public class FFmpegFrameRecorder {
         try {
             release();
         } catch (Exception ex) { }
-    }
-
-    private String filename;
-    private int    imageWidth, imageHeight;
-    private int    pixelFormat = PIX_FMT_RGB32,
-                   codecID     = CODEC_ID_HUFFYUV,
-                   bitrate     = 400000;
-    private double frameRate   = 30;
-
-    public int getImageWidth() {
-        return imageWidth;
-    }
-    public void setImageWidth(int imageWidth) {
-        this.imageWidth = imageWidth;
-    }
-
-    public int getImageHeight() {
-        return imageHeight;
-    }
-    public void setImageHeight(int imageHeight) {
-        this.imageHeight = imageHeight;
-    }
-
-    public int getPixelFormat() {
-        return pixelFormat;
-    }
-    public void setPixelFormat(int pixelFormat) {
-        this.pixelFormat = pixelFormat;
-    }
-
-    public int getCodecID() {
-        return codecID;
-    }
-    public void setCodecID(int codecID) {
-        this.codecID = codecID;
-    }
-
-    public int getBitrate() {
-        return bitrate;
-    }
-    public void setBitrate(int bitrate) {
-        this.bitrate = bitrate;
-    }
-
-    public double getFrameRate() {
-        return frameRate;
-    }
-    public void setFrameRate(double frameRate) {
-        this.frameRate = frameRate;
     }
 
     private AVFrame picture;

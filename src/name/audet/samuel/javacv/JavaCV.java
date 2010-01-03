@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -68,15 +68,6 @@ public class JavaCV {
         x.pool();
 
         return map_matrix;
-    }
-
-    // applies a projective warp using supersampling...
-    // superSrc and superDst are work images and must have the same size, type, etc.
-    public static void superWarp(CvArr src, CvArr dst, CvMat map_matrix, int flags,
-            CvScalar.ByValue fillval, CvArr superSrc, CvArr superDst) {
-        cvResize(src, superSrc, CV_INTER_NN);
-        cvWarpPerspective(superSrc, superDst, map_matrix, CV_INTER_NN | flags, fillval);
-        cvResize(superDst, dst, CV_INTER_AREA);
     }
 
     public static double HnToRt(CvMat H, CvMat n, CvMat R, CvMat t) {
@@ -427,6 +418,21 @@ public class JavaCV {
             Ainv.pool();
         }
         return cond;
+    }
+
+    public static void main(String[] args) {
+        String timestamp = JavaCV.class.getPackage().getImplementationVersion();
+        if (timestamp == null) {
+            timestamp = "unknown";
+        }
+        System.out.println(
+            "JavaCV build timestamp " + timestamp + "\n" +
+            "Copyright (C) 2009,2010 Samuel Audet <samuel.audet@gmail.com>\n" +
+            "Project site: http://code.google.com/p/javacv/\n\n" +
+
+            "Licensed under the GNU General Public License version 2 (GPLv2).\n" +
+            "Please refer to LICENSE.txt or http://www.gnu.org/licenses/ for details.");
+        System.exit(0);
     }
 
 }
