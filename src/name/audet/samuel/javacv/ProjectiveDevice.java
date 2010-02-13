@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -199,10 +200,10 @@ public class ProjectiveDevice {
     }
     public void setSettings(Settings settings) {
         this.settings = settings;
-        if (settings.isFixK3() && (distortionCoeffs == null || distortionCoeffs.cols != 4)) {
-            distortionCoeffs = CvMat.create(1, 4);
-        } else if (distortionCoeffs == null || distortionCoeffs.cols != 5) {
-            distortionCoeffs = CvMat.create(1, 5);
+        int kn = settings.isFixK3() ? 4 : 5;
+        if (distortionCoeffs == null || distortionCoeffs.cols != kn) {
+            distortionCoeffs = CvMat.create(1, kn);
+            cvSetZero(distortionCoeffs);
         }
     }
 

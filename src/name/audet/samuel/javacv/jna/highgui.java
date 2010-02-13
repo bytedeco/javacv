@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -66,34 +67,57 @@ import static name.audet.samuel.javacv.jna.cxcore.*;
  * @author Samuel Audet
  */
 public class highgui {
-    // OpenCV does not always installs itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/",
+    // OpenCV does not always install itself in the PATH :(
+    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
             "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
             "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "highgui", "highgui200", "highgui200_64",
+    public static final String[] libnames = { "highgui", "highgui_64", "highgui200", "highgui200_64",
             "highgui110", "highgui110_64", "highgui100", "highgui100_64" };
     public static final String libname = Loader.load(paths, libnames);
 
 
-    public static class v10 extends highgui {
-        public static final int
-            CV_CAP_PROP_CONVERT_RGB   = 15;
-    }
-    public static class v11 extends v10 {
+    public static class v10 extends v10or11 { }
+    public static class v11 extends v10or11 {
         public static final int
             CV_FOURCC_PROMPT  = -1,
             CV_FOURCC_DEFAULT = -1;
     }
+    public static class v10or11 extends highgui {
+        public static final String libname = Loader.load(paths, libnames);
+
+        public static native int cvSaveImage(String filename, CvArr image);
+
+        public static native IplImage cvRetrieveFrame(CvCapture capture);
+
+        public static final int
+            CV_CAP_PROP_CONVERT_RGB   = 15;
+    }
     public static class v20 extends highgui {
         public static final String libname = Loader.load(paths, libnames);
+
+        public static final int
+                CV_IMWRITE_JPEG_QUALITY = 1,
+                CV_IMWRITE_PNG_COMPRESSION = 16,
+                CV_IMWRITE_PXM_BINARY = 32;
+        public static native int cvSaveImage(String filename, CvArr image, IntByReference params/*=null*/);
+        public static int cvSaveImage(String filename, CvArr image) {
+            return cvSaveImage(filename, image, null);
+        }
 
         public static native IplImage cvDecodeImage(CvMat buf, int iscolor/*=CV_LOAD_IMAGE_COLOR*/);
         public static native CvMat cvDecodeImageM(CvMat buf, int iscolor/*=CV_LOAD_IMAGE_COLOR*/);
         public static native CvMat cvEncodeImage(Pointer ext, CvArr image, IntByReference params/*=null*/);
 
+        public static native IplImage cvRetrieveFrame(CvCapture capture, int streamIdx/*=0*/);
+        public static IplImage cvRetrieveFrame(CvCapture capture) {
+            return cvRetrieveFrame(capture, 0);
+        }
+
         public static final int
             CV_CAP_PROP_EXPOSURE      = 15,
             CV_CAP_PROP_CONVERT_RGB   = 16,
+            CV_CAP_PROP_WHITE_BALANCE = 17,
+            CV_CAP_PROP_RECTIFICATION = 18,
 
             CV_FOURCC_PROMPT  = -1,
             CV_FOURCC_DEFAULT = CV_FOURCC('I', 'Y', 'U', 'V');
@@ -113,14 +137,7 @@ public class highgui {
         return cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
     }
     public static native CvMat cvLoadImageM(String filename, int iscolor/*=CV_LOAD_IMAGE_COLOR*/);
-    public static final int
-            CV_IMWRITE_JPEG_QUALITY = 1,
-            CV_IMWRITE_PNG_COMPRESSION = 16,
-            CV_IMWRITE_PXM_BINARY = 32;
-    public static native int cvSaveImage(String filename, CvArr image, IntByReference params/*=null*/);
-    public static int cvSaveImage(String filename, CvArr image) {
-        return cvSaveImage(filename, image, null);
-    }
+
     public static final int
             CV_CVTIMG_FLIP     = 1,
             CV_CVTIMG_SWAP_RB  = 2;
@@ -182,10 +199,6 @@ public class highgui {
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native void cvReleaseCapture(CvCapture.PointerByReference capture);
     public static native int cvGrabFrame(CvCapture capture);
-    public static native IplImage cvRetrieveFrame(CvCapture capture, int streamIdx/*=0*/);
-    public static IplImage cvRetrieveFrame(CvCapture capture) {
-        return cvRetrieveFrame(capture, 0);
-    }
     public static native IplImage cvQueryFrame(CvCapture capture);
 
     public static final int
@@ -203,9 +216,7 @@ public class highgui {
             CV_CAP_PROP_CONTRAST      = 11,
             CV_CAP_PROP_SATURATION    = 12,
             CV_CAP_PROP_HUE           = 13,
-            CV_CAP_PROP_GAIN          = 14,
-            CV_CAP_PROP_WHITE_BALANCE = 17,
-            CV_CAP_PROP_RECTIFICATION = 18;
+            CV_CAP_PROP_GAIN          = 14;
     public static native double cvGetCaptureProperty(CvCapture capture, int property_id);
     public static native int    cvSetCaptureProperty(CvCapture capture, int property_id, double value);
 

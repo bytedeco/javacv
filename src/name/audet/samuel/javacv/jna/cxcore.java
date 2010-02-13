@@ -6,7 +6,8 @@
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -84,6 +85,7 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -100,10 +102,10 @@ import java.util.HashMap;
  */
 public class cxcore {
     // OpenCV does not always install itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/", 
+    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
             "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
             "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "cxcore", "cxcore200", "cxcore200_64",
+    public static final String[] libnames = { "cxcore", "cxcore_64", "cxcore200", "cxcore200_64",
             "cxcore110", "cxcore110_64", "cxcore100", "cxcore100_64" };
     public static final String libname = Loader.load(paths, libnames);
 
@@ -244,7 +246,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         public static class ByReference extends CvPoint implements Structure.ByReference { }
@@ -345,7 +347,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + x + ", " + y + ")"; }
@@ -422,7 +424,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + x + ", " + y + ", " + z + ")"; }
@@ -491,7 +493,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + (float)x + ", " + (float)y + ")"; }
@@ -568,7 +570,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + x + ", " + y + ", " + z + ")"; }
@@ -600,7 +602,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + width + ", " + height + ")"; }
@@ -632,7 +634,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + width + ", " + height + ")"; }
@@ -670,7 +672,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + x + ", " + y + "; " +
@@ -715,11 +717,11 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return center + " " + size + " " + angle; }
-    };
+    }
 
     public static class CvScalar extends Structure {
         public CvScalar() { }
@@ -769,7 +771,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + (float)val[0] + ", " +
@@ -802,7 +804,7 @@ public class cxcore {
         public CvIntScalar(Pointer m) { super(m); if (getClass() == CvIntScalar.class) read(); }
         public CvIntScalar(long val0, long val1, long val2, long val3) {
             val[0] = val0; val[1] = val1; val[2] = val2; val[3] = val3;
-        };
+        }
 
         public long val[] = new long[4];
 
@@ -816,7 +818,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         @Override public String toString() { return "(" + val[0] + ", " +
@@ -862,7 +864,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
     }
 
@@ -1067,7 +1069,7 @@ public class cxcore {
             return cols*getElemSize()*getChannels();
         }
 
-        public CvSize.ByValue getCvSize() { return new CvSize(cols, rows).byValue(); }
+        public CvSize.ByValue getCvSize() { return new CvSize.ByValue(cols, rows); }
 
         private int fullSize = 0;
         private int getFullSize() { return fullSize > 0 ? fullSize : (fullSize = getSize()); }
@@ -1259,9 +1261,20 @@ public class cxcore {
             put(0, vv);
         }
         public synchronized void put(CvMat mat) {
-            getByteBuffer().clear();
-            mat.getByteBuffer().clear();
-            getByteBuffer().put(mat.getByteBuffer());
+            if (rows == mat.rows && cols == mat.cols &&
+                    step == mat.step && type == mat.type) {
+                getByteBuffer().clear();
+                mat.getByteBuffer().clear();
+                getByteBuffer().put(mat.getByteBuffer());
+            } else {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        for (int k = 0; k < getChannels(); k++) {
+                            put(i, j, k, mat.get(i,j,k));
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -1664,7 +1677,7 @@ public class cxcore {
             return i;
         }
         public static IplImage create(int width, int height, int depth, int channels) {
-            return create(new CvSize(width, height).byValue(), depth, channels);
+            return create(new CvSize.ByValue(width, height), depth, channels);
         }
         public static IplImage create(CvSize.ByValue size, int depth, int channels, int origin) {
             IplImage i = create(size, depth, channels);
@@ -1690,7 +1703,7 @@ public class cxcore {
             return i;
         }
         public static IplImage createHeader(int width, int height, int depth, int channels) {
-            return createHeader(new CvSize(width, height).byValue(), depth, channels);
+            return createHeader(new CvSize.ByValue(width, height), depth, channels);
         }
         public static IplImage createHeader(CvSize.ByValue size, int depth, int channels, int origin) {
             IplImage i = createHeader(size, depth, channels);
@@ -1704,6 +1717,36 @@ public class cxcore {
             if (i != null) {
                 i.origin = origin;
             }
+            return i;
+        }
+
+        public static IplImage createCompatible(IplImage template) {
+            return createIfNotCompatible(null, template);
+        }
+        public static IplImage createIfNotCompatible(IplImage image, IplImage template) {
+            if (image == null || image.width != template.width || image.height != template.height ||
+                    image.depth != template.depth || image.nChannels != template.nChannels) {
+                image = create(template.width, template.height,
+                        template.depth, template.nChannels, template.origin);
+            }
+            image.origin = template.origin;
+            return image;
+        }
+
+        public static IplImage createFrom(BufferedImage image) {
+            SampleModel sm = image.getSampleModel();
+            int depth = 0;
+            switch (sm.getDataType()) {
+                case DataBuffer.TYPE_BYTE:   depth = IPL_DEPTH_8U;  break;
+                case DataBuffer.TYPE_SHORT:  depth = IPL_DEPTH_16U; break;
+                case DataBuffer.TYPE_USHORT: depth = IPL_DEPTH_16S; break;
+                case DataBuffer.TYPE_INT:    depth = IPL_DEPTH_32S; break;
+                case DataBuffer.TYPE_FLOAT:  depth = IPL_DEPTH_32F; break;
+                case DataBuffer.TYPE_DOUBLE: depth = IPL_DEPTH_64F; break;
+                default: assert (false);
+            }
+            IplImage i = create(sm.getWidth(), sm.getHeight(), depth, sm.getNumBands());
+            i.copyFrom(image);
             return i;
         }
 
@@ -1758,7 +1801,7 @@ public class cxcore {
 
 
         public double getMaxIntensity() {
-            int maxIntensity = -1;
+            double maxIntensity = 0.0;
             switch (depth) {
                 case IPL_DEPTH_8U:  maxIntensity = 0xFF;              break;
                 case IPL_DEPTH_16U: maxIntensity = 0xFFFF;            break;
@@ -1767,19 +1810,24 @@ public class cxcore {
                 case IPL_DEPTH_32S: maxIntensity = Integer.MAX_VALUE; break;
                 case IPL_DEPTH_1U:
                 case IPL_DEPTH_32F:
-                case IPL_DEPTH_64F: maxIntensity = 1; break;
+                case IPL_DEPTH_64F: maxIntensity = 1.0; break;
                 default: assert(false);
             }
             return maxIntensity;
         }
 
-        public CvSize.ByValue getCvSize() { return new CvSize(width, height).byValue(); }
+        public CvSize.ByValue getCvSize() { return new CvSize.ByValue(width, height); }
 
-        public ByteBuffer   getByteBuffer()   { return imageData.getByteBuffer(0, imageSize); }
-        public ShortBuffer  getShortBuffer()  { return getByteBuffer().asShortBuffer(); }
-        public IntBuffer    getIntBuffer()    { return getByteBuffer().asIntBuffer(); }
-        public FloatBuffer  getFloatBuffer()  { return getByteBuffer().asFloatBuffer(); }
-        public DoubleBuffer getDoubleBuffer() { return getByteBuffer().asDoubleBuffer(); }
+        public ByteBuffer   getByteBuffer(int index)   { return imageData.getByteBuffer(index, imageSize-index); }
+        public ShortBuffer  getShortBuffer(int index)  { return getByteBuffer(index*2).asShortBuffer(); }
+        public IntBuffer    getIntBuffer(int index)    { return getByteBuffer(index*4).asIntBuffer(); }
+        public FloatBuffer  getFloatBuffer(int index)  { return getByteBuffer(index*4).asFloatBuffer(); }
+        public DoubleBuffer getDoubleBuffer(int index) { return getByteBuffer(index*8).asDoubleBuffer(); }
+        public ByteBuffer   getByteBuffer()   { return getByteBuffer(0); }
+        public ShortBuffer  getShortBuffer()  { return getShortBuffer(0); }
+        public IntBuffer    getIntBuffer()    { return getIntBuffer(0); }
+        public FloatBuffer  getFloatBuffer()  { return getFloatBuffer(0); }
+        public DoubleBuffer getDoubleBuffer() { return getDoubleBuffer(0); }
 
         // timestamp is an extension of IplImage used by FrameGrabber
         private long timestamp;
@@ -2008,6 +2056,9 @@ public class cxcore {
             } else {
                 assert(false);
             }
+            if (bufferedImage == null) {
+                bufferedImage = image;
+            }
         }
         private BufferedImage bufferedImage = null;
         public BufferedImage getBufferedImage() {
@@ -2159,7 +2210,7 @@ public class cxcore {
         }
     }
 
-    public static class IplTileInfo extends PointerType { };
+    public static class IplTileInfo extends PointerType { }
 
     public static class IplROI extends Structure {
         public int coi;
@@ -2406,7 +2457,7 @@ public class cxcore {
             double gamma, CvArr dst);
     public static native void cvSub(CvArr src1, CvArr src2, CvArr dst, CvArr mask/*=null*/);
     public static void cvSubS(CvArr src, CvScalar.ByValue value, CvArr dst, CvArr mask/*=null*/) {
-        cvAddS(src, new CvScalar(-value.val[0], -value.val[1], -value.val[2], -value.val[3]).byValue(),
+        cvAddS(src, new CvScalar.ByValue(-value.val[0], -value.val[1], -value.val[2], -value.val[3]),
                dst, mask);
     }
     public static native void cvSubRS(CvArr src, CvScalar.ByValue value, CvArr dst, CvArr mask/*=null*/);
@@ -2936,7 +2987,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
     }
     public static CvSlice.ByValue cvSlice(int start, int end) {
@@ -3352,8 +3403,8 @@ public class cxcore {
     }
     public static void cvEllipseBox(CvArr img, CvBox2D.ByValue box, CvScalar.ByValue color,
             int thickness/*=1*/, int line_type/*=8*/, int shift/*=0*/) {
-        CvSize axes = new CvSize((int)Math.round(box.size.height*0.5), (int)Math.round(box.size.width*0.5));
-        cvEllipse(img, new CvPoint(box.center).byValue(), axes.byValue(), box.angle,
+        CvSize.ByValue axes = new CvSize.ByValue((int)Math.round(box.size.height*0.5), (int)Math.round(box.size.width*0.5));
+        cvEllipse(img, new CvPoint(box.center).byValue(), axes, box.angle,
                    0, 360, color, thickness, line_type, shift);
     }
     public static native void cvFillPoly(CvArr img, CvPoint.PointerByReference pts, int[] npts, int contours,
@@ -3409,8 +3460,8 @@ public class cxcore {
             double shear, int thickness, int line_type) {
             cvInitFont(this, font_face, hscale, vscale, shear, thickness, line_type);
         }
-        public CvFont(double scale, int thickness) {
-            cvInitFont(this, CV_FONT_HERSHEY_PLAIN, scale, scale, 0, thickness, CV_AA);
+        public CvFont(int font_face, double scale, int thickness) {
+            cvInitFont(this, font_face, scale, scale, 0, thickness, CV_AA);
         }
 
         public int             font_face;
@@ -3549,7 +3600,7 @@ public class cxcore {
             }
         }
         public ByValue byValue() {
-            return new ByValue(this);
+            return this instanceof ByValue ? (ByValue)this : new ByValue(this);
         }
 
         public static class ByReference extends CvAttrList implements Structure.ByReference {
@@ -3608,7 +3659,7 @@ public class cxcore {
         public static class ByReference extends CvStringHashNode implements Structure.ByReference { }
     }
 
-    public static class CvFileNodeHash extends PointerType { };
+    public static class CvFileNodeHash extends PointerType { }
 
     public static class CvFileNode extends Structure {
         public CvFileNode() { }

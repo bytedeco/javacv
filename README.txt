@@ -20,10 +20,12 @@ To use JavaCV, you will need to download and install the following software:
 
 Further, although not always required, some functionality of JavaCV will also use:
  * libdc1394 2.1.2 (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
- * PGR FlyCapture 1 or 2 (Windows)  http://www.ptgrey.com/products/pgrflycapture/
+ * PGR FlyCapture 1 or 2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * ARToolKitPlus 2.1.1c  http://code.google.com/p/javacv/downloads/list
  * FFmpeg-Java  http://code.google.com/p/javacv/downloads/list
- * FFmpeg 0.5   http://ffmpeg.org/download.html
+ * which needs FFmpeg 0.5:
+  * Source code  http://ffmpeg.org/download.html
+  * Precompiled Windows DLLs  http://ffmpeg.arrozcru.org/autobuilds/
 
 To modify the source code, note that the project files were created with:
  * NetBeans 6.8  http://www.netbeans.org/downloads/
@@ -60,11 +62,7 @@ import static name.audet.samuel.javacv.jna.cvaux.v20.*;
 }}}
 and similarly for `v10` and `v11`.
 
-IMPORTANT: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 when the calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA will probably be updated in the near future with a workaround, but for the moment, please be advised.
-
-
-==Licensing Issues==
-If the GPL causes licensing problems with your own code, please contact me. I can reissue JavaCV (minus `ARToolKitPlus.java` and `PGRFlyCapture.java`) under a different license if required.
+IMPORTANT NOTE: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 when the SSE calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA will probably be updated in the near future with a workaround, but for the moment, please be advised.
 
 
 ==Acknowledgments==
@@ -72,6 +70,15 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===February 13, 2010===
+ * Relicensed JavaCV under the GPLv2 with Classpath exception (see LICENSE.txt). Please note that if your application links with code that needs ARToolKitPlus, for example, it will become subject to the full GPL, without Classpath exception
+ * Added `devicePath` setting to `CameraDevice` that works with `FFmpegFrameGrabber`, `OpenCVFrameGrabber`, and other `FrameGrabber` with a String constructor
+ * Added "C:/OpenCV2.0/bin/release/" to the directory list to search for OpenCV DLLs
+ * Moved `cvFindHomography()`, `cvFindExtrinsicCameraParams2()`, `cvReprojectImageTo3D()`, `cvSaveImage()`, and `cvRetrieveFrame()` to version specific classes since their number of arguments differ with the version of OpenCV
+ * Enhanced `CvMat.put(CvMat mat)` to work better even when the matrices are not actually compatible
+ * Added new `IplImage` factory methods `createCompatible(IplImage image)`, `createIfNotCompatible(IplImage image, IplImage template)`, and `createFrom(BufferedImage image)`
+ * Fixed `distortionCoeffs` corruption that might occur in `ProjectiveDevice`
+
 ===January 3, 2010===
  * Added wrapper for the `cvaux` module of OpenCV
  * Added abstract `FrameRecorder` class and a `OpenCVFrameRecorder` class
@@ -147,6 +154,6 @@ Initial release
 Copyright (C) 2009,2010 Samuel Audet <samuel.audet@gmail.com>
 Project site: http://code.google.com/p/javacv/
 
-Licensed under the GNU General Public License version 2 (GPLv2).
+Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.
 Please refer to LICENSE.txt or http://www.gnu.org/licenses/ for details.
 

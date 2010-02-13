@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,6 +21,8 @@
 package name.audet.samuel.javacv;
 
 import com.sun.jna.Pointer;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import name.audet.samuel.javacv.FrameGrabber.ColorMode;
@@ -55,6 +58,7 @@ public class CameraDevice extends ProjectiveDevice {
             if (settings instanceof Settings) {
                 Settings s = (Settings)settings;
                 this.deviceNumber = s.deviceNumber;
+                this.devicePath = s.devicePath;
                 this.frameGrabber = s.frameGrabber;
                 this.imageWidth = s.imageWidth;
                 this.imageHeight = s.imageHeight;
@@ -68,14 +72,42 @@ public class CameraDevice extends ProjectiveDevice {
         }
 
         int deviceNumber = 0;
-        Class<? extends FrameGrabber> frameGrabber;
+        String devicePath = "";
+        Class<? extends FrameGrabber> frameGrabber = null;
 
         public int getDeviceNumber() {
             return deviceNumber;
         }
-        public void setDeviceNumber(int deviceNumber) {
+        public void setDeviceNumber(int deviceNumber) throws PropertyVetoException {
+            try {
+                if (frameGrabber != null) {
+                    frameGrabber.getConstructor(int.class);
+                }
+            } catch (NoSuchMethodException e) {
+                throw new PropertyVetoExceptionThatNetBeansLikes(frameGrabber.getSimpleName() + " does not accept a deviceNumber.",
+                        new PropertyChangeEvent(this, "deviceNumber", this.deviceNumber, this.deviceNumber = 0));
+            }
+
             String oldDescription = getDescription();
-            pcs.firePropertyChange("deviceNumber", deviceNumber, this.deviceNumber = deviceNumber);
+            pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = deviceNumber);
+            pcs.firePropertyChange("description", oldDescription, getDescription());
+        }
+
+        public String getDevicePath() {
+            return devicePath;
+        }
+        public void setDevicePath(String devicePath) throws PropertyVetoException {
+            try {
+                if (frameGrabber != null) {
+                    frameGrabber.getConstructor(String.class);
+                }
+            } catch (NoSuchMethodException e) {
+                throw new PropertyVetoExceptionThatNetBeansLikes(frameGrabber.getSimpleName() + " does not accept a devicePath.",
+                        new PropertyChangeEvent(this, "devicePath", this.devicePath, this.devicePath = ""));
+            }
+
+            String oldDescription = getDescription();
+            pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = devicePath);
             pcs.firePropertyChange("description", oldDescription, getDescription());
         }
 
@@ -84,8 +116,19 @@ public class CameraDevice extends ProjectiveDevice {
         }
         public void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber) {
             String oldDescription = getDescription();
-            pcs.firePropertyChange("frameGrabber", frameGrabber, this.frameGrabber = frameGrabber);
+            pcs.firePropertyChange("frameGrabber", this.frameGrabber, this.frameGrabber = frameGrabber);
             pcs.firePropertyChange("description", oldDescription, getDescription());
+
+            try {
+                frameGrabber.getConstructor(String.class);
+            } catch (NoSuchMethodException e) {
+                pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = "");
+            }
+            try {
+                frameGrabber.getConstructor(int.class);
+            } catch (NoSuchMethodException e) {
+                pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = 0);
+            }
         }
 
         public String getDescription() {
@@ -183,7 +226,12 @@ public class CameraDevice extends ProjectiveDevice {
     public FrameGrabber createFrameGrabber() throws Exception {
         try {
             settings.frameGrabber.getMethod("tryLoad").invoke(null);
-            FrameGrabber f = settings.frameGrabber.getConstructor(int.class).newInstance(settings.deviceNumber);
+            FrameGrabber f;
+            if (settings.devicePath != null && settings.devicePath.length() > 0) {
+                f = settings.frameGrabber.getConstructor(String.class).newInstance(settings.devicePath);
+            } else {
+                f = settings.frameGrabber.getConstructor(int.class).newInstance(settings.deviceNumber);
+            }
             f.setImageWidth(settings.getImageWidth());
             f.setImageHeight(settings.getImageHeight());
             f.setFrameRate(settings.getFrameRate());

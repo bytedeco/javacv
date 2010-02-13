@@ -6,7 +6,8 @@
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -73,10 +74,10 @@ import static name.audet.samuel.javacv.jna.cv.*;
  */
 public class cvaux {
     // OpenCV does not always install itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/",
+    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
             "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
             "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "cvaux", "cvaux200", "cvaux200_64",
+    public static final String[] libnames = { "cvaux", "cvaux_64", "cvaux200", "cvaux200_64",
             "cvaux110", "cvaux110_64", "cvaux100", "cvaux100_64" };
     public static final String libname = Loader.load(paths, libnames);
 

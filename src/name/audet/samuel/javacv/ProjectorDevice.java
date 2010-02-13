@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -74,11 +75,11 @@ public class ProjectorDevice extends ProjectiveDevice {
             DisplayMode d = CanvasFrame.getDisplayMode(screenNumber);
             String oldDescription = getDescription();
             pcs.firePropertyChange("screenNumber", this.screenNumber, this.screenNumber = screenNumber);
-            pcs.firePropertyChange("description", getDescription(), oldDescription);
-            pcs.firePropertyChange("imageWidth", imageWidth, imageWidth = d == null ? 0 : d.getWidth());
-            pcs.firePropertyChange("imageHeight", imageHeight, imageHeight = d == null ? 0 : d.getHeight());
-            pcs.firePropertyChange("bitDepth", bitDepth, bitDepth = d == null ? 0 : d.getBitDepth());
-            pcs.firePropertyChange("refreshRate", refreshRate, refreshRate = d == null ? 0 : d.getRefreshRate());
+            pcs.firePropertyChange("description", oldDescription, getDescription());
+            pcs.firePropertyChange("imageWidth", this.imageWidth, imageWidth = d == null ? 0 : d.getWidth());
+            pcs.firePropertyChange("imageHeight", this.imageHeight, imageHeight = d == null ? 0 : d.getHeight());
+            pcs.firePropertyChange("bitDepth", this.bitDepth, bitDepth = d == null ? 0 : d.getBitDepth());
+            pcs.firePropertyChange("refreshRate", this.refreshRate, refreshRate = d == null ? 0 : d.getRefreshRate());
         }
 
         public long getLatency() {

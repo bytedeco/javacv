@@ -6,7 +6,8 @@
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -60,7 +61,7 @@ public class JavaCV {
             b.put(i+4, dst[i*2+1]);
         }
         cvSolve(A, b, x, CV_LU);
-        map_matrix.put(x);
+        map_matrix.put(x.get());
         map_matrix.put(8, 1);
 
         A.pool();
@@ -430,7 +431,7 @@ public class JavaCV {
             "Copyright (C) 2009,2010 Samuel Audet <samuel.audet@gmail.com>\n" +
             "Project site: http://code.google.com/p/javacv/\n\n" +
 
-            "Licensed under the GNU General Public License version 2 (GPLv2).\n" +
+            "Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.\n" +
             "Please refer to LICENSE.txt or http://www.gnu.org/licenses/ for details.");
         System.exit(0);
     }

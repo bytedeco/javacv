@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,6 +23,7 @@ package name.audet.samuel.javacv;
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.*;
 import static name.audet.samuel.javacv.jna.highgui.*;
+import name.audet.samuel.javacv.jna.*;
 
 /**
  *
@@ -39,7 +41,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                String s = name.audet.samuel.javacv.jna.highgui.libname;
+                String s = highgui.libname;
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -48,6 +50,14 @@ public class OpenCVFrameGrabber extends FrameGrabber {
                 }
             }
         }
+    }
+
+    private static boolean is10or11 = true;
+    static {
+        try {
+            tryLoad();
+            is10or11 = highgui.v20.libname == null;
+        } catch (Throwable t) { }
     }
 
     public OpenCVFrameGrabber(int deviceNumber) {
@@ -65,13 +75,13 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         } catch (Exception ex) { }
     }
 
-    private int deviceNumber = -1;
+    private int deviceNumber = 0;
     private String filename = null;
     private CvCapture capture = null;
     private IplImage return_image = null;
 
     public void start() throws Exception {
-        if (filename != null) {
+        if (filename != null && filename.length() > 0) {
             capture = cvCreateFileCapture(filename);
             if (capture == null) {
                 throw new Exception("cvCreateFileCapture() Error: Could not create camera capture.");
@@ -83,10 +93,14 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             }
         }
         if (imageWidth > 0) {
-            cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, imageWidth);
+            if (cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, imageWidth) == 0) {
+                cvSetCaptureProperty(capture, CV_CAP_PROP_MODE, imageWidth); // ??
+            }
         }
         if (imageHeight > 0) {
-            cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, imageHeight);
+            if (cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, imageHeight) == 0) {
+                cvSetCaptureProperty(capture, CV_CAP_PROP_MODE, imageHeight); // ??
+            }
         }
         if (frameRate > 0) {
             cvSetCaptureProperty(capture, CV_CAP_PROP_FPS, frameRate);
@@ -94,9 +108,11 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (bpp > 0) {
             cvSetCaptureProperty(capture, CV_CAP_PROP_FORMAT, bpp); // ??
         }
-        if (cvSetCaptureProperty(capture, name.audet.samuel.javacv.jna.highgui.v20.CV_CAP_PROP_CONVERT_RGB,
-                colorMode == ColorMode.BGR ? 1 : 0) == 0) {
-            cvSetCaptureProperty(capture, name.audet.samuel.javacv.jna.highgui.v10.CV_CAP_PROP_CONVERT_RGB,
+        if (is10or11) {
+            cvSetCaptureProperty(capture, highgui.v10or11.CV_CAP_PROP_CONVERT_RGB,
+                    colorMode == ColorMode.BGR ? 1 : 0);
+        } else {
+            cvSetCaptureProperty(capture, highgui.v20.CV_CAP_PROP_CONVERT_RGB,
                     colorMode == ColorMode.BGR ? 1 : 0);
         }
         if (!triggerMode) {
@@ -119,7 +135,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     public IplImage grab() throws Exception {
-        IplImage image = cvRetrieveFrame(capture);
+        IplImage image = is10or11 ? v10or11.cvRetrieveFrame(capture) : highgui.v20.cvRetrieveFrame(capture);
         if (image == null) {
             throw new Exception("cvRetrieveFrame() Error: Could not retrieve frame.");
         }

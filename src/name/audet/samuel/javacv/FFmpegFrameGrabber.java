@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2009 Samuel Audet
+ * Copyright (C) 2009,2010 Samuel Audet
  *
  * This file is part of JavaCV.
  *
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,6 +34,7 @@ import static net.sf.ffmpeg_java.AVCodecLibrary.*;
 import static net.sf.ffmpeg_java.AVFormatLibrary.*;
 import static net.sf.ffmpeg_java.AVUtilLibrary.*;
 import static net.sf.ffmpeg_java.SWScaleLibrary.*;
+import net.sf.ffmpeg_java.*;
 
 /**
  *
@@ -46,10 +48,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                Object avcodec  = net.sf.ffmpeg_java.AVCodecLibrary .INSTANCE;
-                Object avformat = net.sf.ffmpeg_java.AVFormatLibrary.INSTANCE;
-                Object avutil   = net.sf.ffmpeg_java.AVUtilLibrary  .INSTANCE;
-                Object swscale  = net.sf.ffmpeg_java.SWScaleLibrary .INSTANCE;
+                Object avcodec  = AVCodecLibrary .INSTANCE;
+                Object avformat = AVFormatLibrary.INSTANCE;
+                Object avutil   = AVUtilLibrary  .INSTANCE;
+                Object swscale  = SWScaleLibrary .INSTANCE;
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;

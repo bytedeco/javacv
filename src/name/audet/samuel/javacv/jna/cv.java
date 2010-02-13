@@ -6,7 +6,8 @@
  * JavaCV is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
  *
  * JavaCV is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -73,19 +74,33 @@ import static name.audet.samuel.javacv.jna.cxcore.*;
  */
 public class cv {
     // OpenCV does not always install itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/",
+    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
             "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
             "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "cv", "cv200", "cv200_64",
+    public static final String[] libnames = { "cv", "cv_64", "cv200", "cv200_64",
             "cv110", "cv110_64", "cv100", "cv100_64" };
     public static final String libname = Loader.load(paths, libnames);
 
 
-    public static class v10 extends cv      { }
+    public static class v10 extends cv {
+        public static final String libname = Loader.load(paths, libnames);
+
+        public static native int cvFindHomography(CvMat src_points, CvMat dst_points, CvMat homography);
+
+        public static native void cvFindExtrinsicCameraParams2(CvMat object_points, CvMat image_points,
+                CvMat camera_matrix, CvMat distortion_coeffs,
+                CvMat rotation_vector, CvMat translation_vector);
+    }
     public static class v11 extends v11or20 {
         public static final String libname = Loader.load(paths, libnames);
 
         public static native CvFeatureTree cvCreateFeatureTree(CvMat desc);
+
+        public static native void cvFindExtrinsicCameraParams2(CvMat object_points, CvMat image_points,
+                CvMat camera_matrix, CvMat distortion_coeffs,
+                CvMat rotation_vector, CvMat translation_vector);
+
+        public static native void cvReprojectImageTo3D(CvArr disparityImage, CvArr _3dImage, CvMat Q);
     }
     public static class v11or20 extends cv {
         public static final String libname = Loader.load(paths, libnames);
@@ -136,7 +151,7 @@ public class cv {
                 }
             }
             public ByValue byValue() {
-                return new ByValue(this);
+                return this instanceof ByValue ? (ByValue)this : new ByValue(this);
             }
         }
         public static native CvSURFParams.ByValue cvSURFParams(double hessianThreshold, int extended/*=0*/);
@@ -169,6 +184,14 @@ public class cv {
         }
         public static native int cvEstimateRigidTransform(CvArr A, CvArr B, CvMat M, int full_affine);
 
+        public static final int
+                CV_LMEDS = 4,
+                CV_RANSAC = 8;
+        public static native int cvFindHomography(CvMat src_points, CvMat dst_points, CvMat homography,
+                int method/*=0*/, double ransacReprojThreshold/*=0*/, CvMat mask/*=null*/);
+        public static int cvFindHomography(CvMat src_points, CvMat dst_points, CvMat homography) {
+            return cvFindHomography(src_points, dst_points, homography, 0, 0, null);
+        }
 
         public static native void cvRQDecomp3x3(CvMat matrixM, CvMat matrixR, CvMat matrixQ,
                 CvMat matrixQx/*=null*/, CvMat matrixQy/*=null*/, CvMat matrixQz/*=null*/,
@@ -233,6 +256,12 @@ public class cv {
                 int flags/*=CV_CALIB_ZERO_DISPARITY*/);
         public static native int cvStereoRectifyUncalibrated(CvMat points1, CvMat points2,
                 CvMat F, CvSize.ByValue img_size, CvMat H1, CvMat H2, double threshold/*=5*/);
+
+        public static final int
+                CV_FM_LMEDS_ONLY = CV_LMEDS,
+                CV_FM_RANSAC_ONLY = CV_RANSAC,
+                CV_FM_LMEDS = CV_LMEDS,
+                CV_FM_RANSAC = CV_RANSAC;
 
 
         public static native int cvRANSACUpdateNumIters(double p, double err_prob, int model_points, int max_iters);
@@ -385,8 +414,6 @@ public class cv {
         public static native void cvFindStereoCorrespondenceGC(CvArr left, CvArr right,
                 CvArr disparityLeft, CvArr disparityRight,
                 CvStereoGCState state, int useDisparityGuess/*=0*/);
-        public static native void cvReprojectImageTo3D(CvArr disparityImage, CvArr _3dImage,
-                CvMat Q, int handleMissingValues/*=0*/);
 
         public static native void cvConvertPointsHomogeneous(CvMat src, CvMat dst);
     }
@@ -461,7 +488,7 @@ public class cv {
                 }
             }
             public ByValue byValue() {
-                return new ByValue(this);
+                return this instanceof ByValue ? (ByValue)this : new ByValue(this);
             }
         }
         public static native CvMSERParams.ByValue cvMSERParams(int delta/*=5*/, int min_area/*=60*/,
@@ -489,7 +516,7 @@ public class cv {
                 }
             }
             public ByValue byValue() {
-                return new ByValue(this);
+                return this instanceof ByValue ? (ByValue)this : new ByValue(this);
             }
         }
         public static CvStarKeypoint.ByValue cvStarKeypoint(CvPoint pt, int size, float response) {
@@ -517,7 +544,7 @@ public class cv {
                 }
             }
             public ByValue byValue() {
-                return new ByValue(this);
+                return this instanceof ByValue ? (ByValue)this : new ByValue(this);
             }
         }
         public static CvStarDetectorParams.ByValue cvStarDetectorParams(int maxSize/*=45*/,
@@ -541,11 +568,26 @@ public class cv {
         public static native void cvLinearPolar(CvArr src, CvArr dst, CvPoint2D32f.ByValue center,
                 double maxRadius, int flags/*=CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS*/);
 
+        public static native void cvFindExtrinsicCameraParams2(CvMat object_points, CvMat image_points,
+                CvMat camera_matrix, CvMat distortion_coeffs,
+                CvMat rotation_vector, CvMat translation_vector, int use_extrinsic_guess/*=0*/);
+        public static void cvFindExtrinsicCameraParams2(CvMat object_points, CvMat image_points,
+                CvMat camera_matrix, CvMat distortion_coeffs,
+                CvMat rotation_vector, CvMat translation_vector) {
+            cvFindExtrinsicCameraParams2(object_points, image_points, camera_matrix,
+                    distortion_coeffs, rotation_vector, translation_vector, 0);
+        }
 
         public static native void cvTriangulatePoints(CvMat projMatr1, CvMat projMatr2,
                 CvMat projPoints1, CvMat projPoints2, CvMat points4D);
         public static native void cvCorrectMatches(CvMat F, CvMat points1, CvMat points2,
                 CvMat new_points1, CvMat new_points2);
+
+        public static native void cvReprojectImageTo3D(CvArr disparityImage, CvArr _3dImage,
+                CvMat Q, int handleMissingValues/*=0*/);
+        public static void cvReprojectImageTo3D(CvArr disparityImage, CvArr _3dImage, CvMat Q) {
+            cvReprojectImageTo3D(disparityImage, _3dImage, Q, 0);
+        }
     }
 
 
@@ -1751,14 +1793,6 @@ public class cv {
                 intrinsic_matrix, distortion_coeffs, image_points,
                 null, null, null, null, null, 0);
     }
-    public static final int
-            CV_LMEDS = 4,
-            CV_RANSAC = 8;
-    public static native int cvFindHomography(CvMat src_points, CvMat dst_points, CvMat homography,
-            int method/*=0*/, double ransacReprojThreshold/*=0*/, CvMat mask/*=null*/);
-    public static int cvFindHomography(CvMat src_points, CvMat dst_points, CvMat homography) {
-        return cvFindHomography(src_points, dst_points, homography, 0, 0, null);
-    }
 
 
     public static final int
@@ -1774,9 +1808,6 @@ public class cv {
             CvMat point_counts, CvSize.ByValue image_size,
             CvMat intrinsic_matrix, CvMat distortion_coeffs,
             CvMat rotation_vectors/*=null*/, CvMat translation_vectors/*=null*/, int flags/*=0*/);
-    public static native void cvFindExtrinsicCameraParams2(CvMat object_points, CvMat image_points,
-            CvMat camera_matrix, CvMat distortion_coeffs,
-            CvMat rotation_vector, CvMat translation_vector, int use_extrinsic_guess/*=0*/);
     public static native int cvRodrigues2(CvMat src, CvMat dst, CvMat jacobian/*=null*/);
     public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
     public static native void cvInitUndistortMap(CvMat intrinsic_matrix, CvMat distortion_coeffs,
@@ -1869,14 +1900,9 @@ public class cv {
 
     public static final int
             CV_FM_7POINT = 1,
-            CV_FM_8POINT = 2,
-            CV_FM_LMEDS_ONLY = CV_LMEDS,
-            CV_FM_RANSAC_ONLY = CV_RANSAC,
-            CV_FM_LMEDS = CV_LMEDS,
-            CV_FM_RANSAC = CV_RANSAC;
+            CV_FM_8POINT = 2;
     public static native int cvFindFundamentalMat(CvMat points1, CvMat points2, CvMat fundamental_matrix,
-            int method/*=CV_FM_RANSAC*/, double param1/*=3*/,
-            double param2/*=0.99*/, CvMat status/*=null*/);
+            int method/*=CV_FM_RANSAC*/, double param1/*=3*/, double param2/*=0.99*/, CvMat status/*=null*/);
     public static native void cvComputeCorrespondEpilines(CvMat points, int which_image,
             CvMat fundamental_matrix, CvMat correspondent_lines);
 }
