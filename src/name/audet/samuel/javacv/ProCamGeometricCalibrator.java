@@ -473,8 +473,8 @@ public class ProCamGeometricCalibrator {
         // calibrate projector
         projectorCalibrator.setAllObjectMarkers(allUndistortedProjectorMarkers);
         double avgProjReprojErr = projectorCalibrator.calibrate(useCenters);
-        projectorCalibrator.getProjectiveDevice().nominalDistance =
-                projectorCalibrator.getProjectiveDevice().getNominalDistance(boardPlane);
+//        projectorCalibrator.getProjectiveDevice().nominalDistance =
+//                projectorCalibrator.getProjectiveDevice().getNominalDistance(boardPlane);
 
         // calibrate as a stereo pair (find rotation and translation)
         // let's use the projector markers only...

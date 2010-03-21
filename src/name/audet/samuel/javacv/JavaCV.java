@@ -421,6 +421,53 @@ public class JavaCV {
         return cond;
     }
 
+    public static final double SQRT2 = 1.41421356237309504880;
+    public static void fractalTriangleWave(double[] line, int i, int j, double a) {
+        int m = (j-i)/2+i;
+        if (i == j || i == m) {
+            return;
+        }
+        line[m] = (line[i]+line[j])/2 + a;
+        fractalTriangleWave(line, i, m,  a/SQRT2);
+        fractalTriangleWave(line, m, j, -a/SQRT2);
+    }
+
+    public static void fractalTriangleWave(IplImage image, CvMat H) {
+        assert (image.depth == IPL_DEPTH_32F);
+        double[] line = new double[image.width];
+        fractalTriangleWave(line, 0,             line.length/2,  1);
+        fractalTriangleWave(line, line.length/2, line.length-1, -1);
+
+        double[] minMax = { Double.MAX_VALUE, Double.MIN_VALUE };
+        FloatBuffer fb = image.getFloatBuffer();
+        double[] h = H == null ? null : H.get();
+        for (int y = 0; y < image.height; y++) {
+            for (int x = 0; x < image.width; x++) {
+                for (int z = 0; z < image.nChannels; z++) {
+                    double sum = 0.0;
+                    if (h == null) {
+                        sum += line[x];
+                    } else {
+                        double x2 = (h[0]*x + h[1]*y + h[2])/(h[6]*x + h[7]*y + h[8]);
+                        while (x2 < 0) {
+                            x2 += line.length;
+                        }
+                        int xi2   = (int)x2;
+                        double xn = x2 - xi2;
+                        sum += line[ xi2   %line.length]*(1-xn) +
+                               line[(xi2+1)%line.length]*xn;
+                    }
+                    minMax[0] = Math.min(minMax[0], sum);
+                    minMax[1] = Math.max(minMax[1], sum);
+                    fb.put(y*image.widthStep/4 + x*image.nChannels + z, (float)sum);
+                }
+            }
+        }
+
+        cvConvertScale(image, image, 1/(minMax[1]-minMax[0]),
+                -minMax[0]/(minMax[1]-minMax[0]));
+    }
+
     public static void main(String[] args) {
         String timestamp = JavaCV.class.getPackage().getImplementationVersion();
         if (timestamp == null) {

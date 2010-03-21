@@ -20,9 +20,11 @@
 
 package name.audet.samuel.javacv;
 
+import java.beans.PropertyEditorSupport;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
 import name.audet.samuel.javacv.jna.cxcore.IplImage;
 
 /**
@@ -46,6 +48,44 @@ public abstract class FrameGrabber {
             } catch (Exception ex) { }
         }
     }
+    public static Class<? extends FrameGrabber> getDefault() {
+        Class<? extends FrameGrabber> c = null;
+        // select first frame grabber that can load..
+        for (int i = 0; i < FrameGrabber.list.size(); i++) {
+            try {
+                c = FrameGrabber.list.get(i);
+                c.getMethod("tryLoad").invoke(null);
+                break;
+            } catch (Exception ex) { }
+        }
+        return c;
+    }
+
+    public static class PropertyEditor extends PropertyEditorSupport {
+        @Override public String getAsText() {
+            Class c = (Class)getValue();
+            return c == null ? "null" : c.getSimpleName();
+        }
+        @Override public void setAsText(String s) {
+            if (s == null) {
+                setValue(null);
+            }
+            for (int i = 0; i < list.size(); i++) {
+                Class c = list.get(i);
+                if (s.equals(c.getSimpleName())) {
+                    setValue(c);
+                }
+            }
+        }
+        @Override public String[] getTags() {
+            String[] s = new String[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                s[i] = list.get(i).getSimpleName();
+            }
+            return s;
+        }
+    }
+
 
     public static enum ColorMode {
         BGR, GRAYSCALE, RAW
@@ -54,6 +94,7 @@ public abstract class FrameGrabber {
     protected int imageWidth = 0, imageHeight = 0;
     protected double frameRate = 0;
     protected boolean triggerMode = false;
+    protected int triggerFlushSize = 0;
     protected int bpp = 0;
     protected ColorMode colorMode = ColorMode.BGR;
     protected int timeout = 10000;
@@ -85,6 +126,13 @@ public abstract class FrameGrabber {
     }
     public void setTriggerMode(boolean triggerMode) {
         this.triggerMode = triggerMode;
+    }
+
+    public int getTriggerFlushSize() {
+        return triggerFlushSize;
+    }
+    public void setTriggerFlushSize(int triggerFlushSize) {
+        this.triggerFlushSize = triggerFlushSize;
     }
 
     public int getBitsPerPixel() {

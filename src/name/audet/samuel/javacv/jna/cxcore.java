@@ -71,6 +71,7 @@ import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.PointerByReference;
+import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -84,8 +85,10 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -186,6 +189,27 @@ public class cxcore {
             this.y = (int)o.y;
         }
 
+
+        public static void fillArray(CvPoint[] array, int[] pts, int offset, int length) {
+            for (int i = 0; i < length/2; i++) {
+                array[i].set(pts[offset + i*2], pts[offset + i*2+1]);
+            }
+        }
+        public static void fillArray(CvPoint[] array, int ... pts) {
+            fillArray(array, pts, 0, pts.length);
+        }
+        public static void fillArray(CvPoint[] array, int shift, double[] pts, int offset, int length) {
+            int[] a = new int[length];
+            for (int i = 0; i < length; i++) {
+                a[i] = (int)Math.round(pts[offset + i] * (1<<shift));
+            }
+            fillArray(array, a, 0, length);
+        }
+        public static void fillArray(CvPoint[] array, int shift, double ... pts) {
+            fillArray(array, shift, pts, 0, pts.length);
+        }
+
+
         public static CvPoint[] createArray(int size) {
             CvPoint p = new CvPoint();
             p.useMemory(new Memory(p.size() * size), 0);
@@ -193,26 +217,19 @@ public class cxcore {
         }
         public static CvPoint[] createArray(int[] pts, int offset, int length) {
             CvPoint[] a = CvPoint.createArray(length/2);
-            for (int i = 0; i < length/2; i++) {
-                a[i].set(pts[offset + i*2], pts[offset + i*2+1]);
-            }
+            fillArray(a, pts, offset, length);
             return a;
         }
-        public static CvPoint[] createArray(int[] pts) {
+        public static CvPoint[] createArray(int ... pts) {
             return createArray(pts, 0, pts.length);
         }
-        public static CvPoint[] createArray(double[] pts, int offset, int length, int shift) {
-            int[] a = new int[length];
-            for (int i = 0; i < length; i++) {
-                a[i] = (int)Math.round(pts[offset + i] * (1<<shift));
-            }
-            return createArray(a);
+        public static CvPoint[] createArray(int shift, double[] pts, int offset, int length) {
+            CvPoint[] a = CvPoint.createArray(length/2);
+            fillArray(a, shift, pts, offset, length);
+            return a;
         }
-        public static CvPoint[] createArray(double[] pts, int shift) {
-            return createArray(pts, 0, pts.length, shift);
-        }
-        public static CvPoint[] createArray(double ... pts) {
-            return createArray(pts, 0);
+        public static CvPoint[] createArray(int shift, double ... pts) {
+            return createArray(shift, pts, 0, pts.length);
         }
 
         public int x;
@@ -777,7 +794,10 @@ public class cxcore {
         @Override public String toString() { return "(" + (float)val[0] + ", " +
             (float)val[1] + ", " + (float)val[2] + ", " + (float)val[3] + ")"; }
     
-        public static final CvScalar.ByValue
+        public static final ByValue
+                ZERO    = new ByValue(0.0, 0.0, 0.0, 0.0),
+                ONE     = new ByValue(1.0, 1.0, 1.0, 1.0),
+
                 WHITE   = CV_RGB(255, 255, 255),
                 GRAY    = CV_RGB(128, 128, 128),
                 BLACK   = CV_RGB(  0,   0,   0),
@@ -1738,15 +1758,15 @@ public class cxcore {
             int depth = 0;
             switch (sm.getDataType()) {
                 case DataBuffer.TYPE_BYTE:   depth = IPL_DEPTH_8U;  break;
-                case DataBuffer.TYPE_SHORT:  depth = IPL_DEPTH_16U; break;
-                case DataBuffer.TYPE_USHORT: depth = IPL_DEPTH_16S; break;
+                case DataBuffer.TYPE_USHORT: depth = IPL_DEPTH_16U; break;
+                case DataBuffer.TYPE_SHORT:  depth = IPL_DEPTH_16S; break;
                 case DataBuffer.TYPE_INT:    depth = IPL_DEPTH_32S; break;
                 case DataBuffer.TYPE_FLOAT:  depth = IPL_DEPTH_32F; break;
                 case DataBuffer.TYPE_DOUBLE: depth = IPL_DEPTH_64F; break;
                 default: assert (false);
             }
             IplImage i = create(sm.getWidth(), sm.getHeight(), depth, sm.getNumBands());
-            i.copyFrom(image);
+            i.copyFrom(image, 1.0, null);
             return i;
         }
 
@@ -1848,74 +1868,169 @@ public class cxcore {
                 gamma22inv[i] = (byte)Math.round(Math.pow(i/255.0, 1/2.2)*255.0);
             }
         }
-        public void copyWithGammaFlip(ByteBuffer srcBuf, ByteBuffer dstBuf, double gamma, boolean flip) {
+        public static void flipCopyWithGamma(ByteBuffer srcBuf, int srcStep,
+                ByteBuffer dstBuf, int dstStep, boolean signed, double gamma, boolean flip) {
             assert (srcBuf != dstBuf);
-            int w = width*nChannels;
-            int h = height;
-            int line = 0;
-            for (int y = 0; y < h; y++, line += widthStep) {
+            int w = Math.min(srcStep, dstStep);
+            int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
                 if (flip) {
-                    srcBuf.position(imageSize - line - widthStep);
+                    srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
                 } else {
-                    srcBuf.position(line);
+                    srcBuf.position(srcLine);
                 }
-                dstBuf.position(line);
-                for (int x = 0; x < w; x++) {
-                    int in = (int)srcBuf.get() & 0xFF;
-                    byte out = (byte)in;
-                    if (gamma == 2.2) {
-                        out = gamma22[in];
-                    } else if (gamma == 1/2.2) {
-                        out = gamma22inv[in];
-                    } else if (gamma != 1.0) {
-                        out = (byte)Math.round(Math.pow(in/255.0, gamma)*255.0);
+                dstBuf.position(dstLine);
+                w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
+                if (signed) {
+                    for (int x = 0; x < w; x++) {
+                        int in = srcBuf.get();
+                        byte out;
+                        if (gamma != 1.0) {
+                            out = (byte)Math.round(Math.pow((double)in/Byte.MAX_VALUE, gamma)*Byte.MAX_VALUE);
+                        } else {
+                            out = (byte)in;
+                        }
+                        dstBuf.put(out);
                     }
-                    dstBuf.put(out);
+                } else {
+                    for (int x = 0; x < w; x++) {
+                        byte out;
+                        int in = srcBuf.get() & 0xFF;
+                        if (gamma == 2.2) {
+                            out = gamma22[in];
+                        } else if (gamma == 1/2.2) {
+                            out = gamma22inv[in];
+                        } else if (gamma != 1.0) {
+                            out = (byte)Math.round(Math.pow((double)in/0xFF, gamma)*0xFF);
+                        } else {
+                            out = (byte)in;
+                        }
+                        dstBuf.put(out);
+                    }
                 }
+                srcLine += srcStep;
+                dstLine += dstStep;
             }
         }
-        public void copyWithGammaFlip(ShortBuffer srcBuf, ShortBuffer dstBuf, double gamma, boolean flip) {
+        public static void flipCopyWithGamma(ShortBuffer srcBuf, int srcStep,
+                ShortBuffer dstBuf, int dstStep, boolean signed, double gamma, boolean flip) {
             assert (srcBuf != dstBuf);
-            int w = width*nChannels;
-            int h = height;
-            int line = 0;
-            for (int y = 0; y < h; y++, line += widthStep/2) {
+            int w = Math.min(srcStep, dstStep);
+            int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
                 if (flip) {
-                    srcBuf.position(imageSize - line - widthStep/2);
+                    srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
                 } else {
-                    srcBuf.position(line);
+                    srcBuf.position(srcLine);
                 }
-                dstBuf.position(line);
+                dstBuf.position(dstLine);
+                w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
+                if (signed) {
+                    for (int x = 0; x < w; x++) {
+                        int in = srcBuf.get();
+                        short out;
+                        if (gamma != 1.0) {
+                            out = (short)Math.round(Math.pow((double)in/Short.MAX_VALUE, gamma)*Short.MAX_VALUE);
+                        } else {
+                            out = (short)in;
+                        }
+                        dstBuf.put(out);
+                    }
+                } else {
+                    for (int x = 0; x < w; x++) {
+                        int in = srcBuf.get() & 0xFFFF;
+                        short out;
+                        if (gamma != 1.0) {
+                            out = (short)Math.round(Math.pow((double)in/0xFFFF, gamma)*0xFFFF);
+                        } else {
+                            out = (short)in;
+                        }
+                        dstBuf.put(out);
+                    }
+                }
+                srcLine += srcStep;
+                dstLine += dstStep;
+            }
+        }
+        public static void flipCopyWithGamma(IntBuffer srcBuf, int srcStep,
+                IntBuffer dstBuf, int dstStep, double gamma, boolean flip) {
+            assert (srcBuf != dstBuf);
+            int w = Math.min(srcStep, dstStep);
+            int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
+                if (flip) {
+                    srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
+                } else {
+                    srcBuf.position(srcLine);
+                }
+                dstBuf.position(dstLine);
+                w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
                 for (int x = 0; x < w; x++) {
-                    int in = (int)srcBuf.get() & 0xFFFF;
-                    short out = (short)in;
+                    int in = srcBuf.get();
+                    int out;
                     if (gamma != 1.0) {
-                        out = (short)Math.round(Math.pow((double)in/0xFFFF, gamma)*0xFFFF);
+                        out = (int)Math.round(Math.pow((double)in/Integer.MAX_VALUE, gamma)*Integer.MAX_VALUE);
+                    } else {
+                        out = in;
                     }
                     dstBuf.put(out);
                 }
+                srcLine += srcStep;
+                dstLine += dstStep;
             }
         }
-        public void copyWithGammaFlip(FloatBuffer srcBuf, FloatBuffer dstBuf, double gamma, boolean flip) {
+        public static void flipCopyWithGamma(FloatBuffer srcBuf, int srcStep,
+                FloatBuffer dstBuf, int dstStep, double gamma, boolean flip) {
             assert (srcBuf != dstBuf);
-            int w = width*nChannels;
-            int h = height;
-            int line = 0;
-            for (int y = 0; y < h; y++, line += widthStep/4) {
+            int w = Math.min(srcStep, dstStep);
+            int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
                 if (flip) {
-                    srcBuf.position(imageSize - line - widthStep/4);
+                    srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
                 } else {
-                    srcBuf.position(line);
+                    srcBuf.position(srcLine);
                 }
-                dstBuf.position(line);
+                dstBuf.position(dstLine);
+                w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
                 for (int x = 0; x < w; x++) {
                     float in = srcBuf.get();
-                    float out = in;
+                    float out;
                     if (gamma != 1.0) {
                         out = (float)Math.pow(in, gamma);
+                    } else {
+                        out = in;
                     }
                     dstBuf.put(out);
                 }
+                srcLine += srcStep;
+                dstLine += dstStep;
+            }
+        }
+        public static void flipCopyWithGamma(DoubleBuffer srcBuf, int srcStep,
+                DoubleBuffer dstBuf, int dstStep, double gamma, boolean flip) {
+            assert (srcBuf != dstBuf);
+            int w = Math.min(srcStep, dstStep);
+            int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
+                if (flip) {
+                    srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
+                } else {
+                    srcBuf.position(srcLine);
+                }
+                dstBuf.position(dstLine);
+                w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
+                for (int x = 0; x < w; x++) {
+                    double in = srcBuf.get();
+                    double out;
+                    if (gamma != 1.0) {
+                        out = Math.pow(in, gamma);
+                    } else {
+                        out = in;
+                    }
+                    dstBuf.put(out);
+                }
+                srcLine += srcStep;
+                dstLine += dstStep;
             }
         }
         public void applyGamma(double gamma) {
@@ -1924,145 +2039,145 @@ public class cxcore {
             }
             switch (depth) {
                 case IPL_DEPTH_8U:
-                    copyWithGammaFlip(getByteBuffer(),  getByteBuffer(), gamma, false);
+                    flipCopyWithGamma(getByteBuffer(), widthStep, getByteBuffer(), widthStep, false, gamma, false);
+                    break;
+                case IPL_DEPTH_8S:
+                    flipCopyWithGamma(getByteBuffer(), widthStep, getByteBuffer(), widthStep, true, gamma, false);
                     break;
                 case IPL_DEPTH_16U:
-                    copyWithGammaFlip(getShortBuffer(), getShortBuffer(), gamma, false);
+                    flipCopyWithGamma(getShortBuffer(), widthStep/2, getShortBuffer(), widthStep/2, false, gamma, false);
+                    break;
+                case IPL_DEPTH_16S:
+                    flipCopyWithGamma(getShortBuffer(), widthStep/2, getShortBuffer(), widthStep/2, true, gamma, false);
+                    break;
+                case IPL_DEPTH_32S:
+                    flipCopyWithGamma(getFloatBuffer(), widthStep/4, getFloatBuffer(), widthStep/4, gamma, false);
                     break;
                 case IPL_DEPTH_32F:
-                    copyWithGammaFlip(getFloatBuffer(), getFloatBuffer(), gamma, false);
+                    flipCopyWithGamma(getFloatBuffer(), widthStep/4, getFloatBuffer(), widthStep/4, gamma, false);
+                    break;
+                case IPL_DEPTH_64F:
+                    flipCopyWithGamma(getDoubleBuffer(), widthStep/8, getDoubleBuffer(), widthStep/8, gamma, false);
                     break;
                 default:
-                    throw new UnsupportedOperationException("Apply gamma not supported for this type of image.");
+                    assert (false);
             }
         }
 
-        public void copyWithFlip(IntBuffer in, IntBuffer out) {
-            assert (in != out);
-            int w = width*nChannels;
-            int h = height;
-            int line = 0;
-            for (int y = 0; y < h; y++, line += widthStep/4) {
-                in.position(line);
-                out.position(imageSize/4 - line - widthStep/4);
-                for (int x = 0; x < w; x++) {
-                    out.put(in.get());
-                }
-            }
-        }
-        public void copyWithFlip(DoubleBuffer in, DoubleBuffer out) {
-            assert (in != out);
-            int w = width*nChannels;
-            int h = height;
-            int line = 0;
-            for (int y = 0; y < h; y++, line += widthStep/8) {
-                in.position(line);
-                out.position(imageSize/8 - line - widthStep/8);
-                for (int x = 0; x < w; x++) {
-                    out.put(in.get());
-                }
-            }
-        }
 
         public void copyTo(BufferedImage image) {
             copyTo(image, 1.0);
         }
         public void copyTo(BufferedImage image, double gamma) {
-            ByteBuffer in  = getByteBuffer();
-            DataBuffer out = image.getRaster().getDataBuffer();
-            boolean flip = origin == IPL_ORIGIN_BL;
+            Rectangle r = null;
+            if (roi != null) {
+                r = new Rectangle(roi.xOffset, roi.yOffset, roi.width, roi.height);
+            }
+            copyTo(image, gamma, r);
+        }
+        public void copyTo(BufferedImage image, double gamma, Rectangle roi) {
+            boolean flip = origin == IPL_ORIGIN_BL; // need to add support for ROI..
+
+            ByteBuffer in  = getByteBuffer(roi == null ? 0 : roi.y*widthStep + roi.x*nChannels);
+            SampleModel sm = image.getSampleModel();
+            Raster r       = image.getRaster();
+            DataBuffer out = r.getDataBuffer();
+            int x = -r.getSampleModelTranslateX();
+            int y = -r.getSampleModelTranslateY();
+            int step = sm.getWidth()*sm.getNumBands();
+            int channels = sm.getNumBands();
+            if (sm instanceof ComponentSampleModel) {
+                step = ((ComponentSampleModel)sm).getScanlineStride();
+                channels = ((ComponentSampleModel)sm).getPixelStride();
+            } else if (sm instanceof SinglePixelPackedSampleModel) {
+                step = ((SinglePixelPackedSampleModel)sm).getScanlineStride();
+                channels = 1;
+            } else if (sm instanceof MultiPixelPackedSampleModel) {
+                step = ((MultiPixelPackedSampleModel)sm).getScanlineStride();
+                channels = ((MultiPixelPackedSampleModel)sm).getPixelBitStride()/8; // ??
+            }
+            int start = y*step + x*channels;
 
             if (out instanceof DataBufferByte) {
                 byte[] a = ((DataBufferByte)out).getData();
-                if (gamma != 1.0 || flip) {
-                    copyWithGammaFlip(in, ByteBuffer.wrap(a), gamma, flip);
-                } else {
-                    in.get(a);
-                }
-            } else if(out instanceof DataBufferDouble) {
+                flipCopyWithGamma(in, widthStep, ByteBuffer.wrap(a, start, a.length - start), step, false, gamma, flip);
+            } else if (out instanceof DataBufferDouble) {
                 double[] a = ((DataBufferDouble)out).getData();
-                if (flip) {
-                    copyWithFlip(in.asDoubleBuffer(), DoubleBuffer.wrap(a));
-                } else {
-                    in.asDoubleBuffer().get(a);
-                }
-            } else if(out instanceof DataBufferFloat) {
+                flipCopyWithGamma(in.asDoubleBuffer(), widthStep/8, DoubleBuffer.wrap(a, start, a.length - start), step, gamma, flip);
+            } else if (out instanceof DataBufferFloat) {
                 float[] a = ((DataBufferFloat)out).getData();
-                if (gamma != 1.0 || flip) {
-                    copyWithGammaFlip(in.asFloatBuffer(), FloatBuffer.wrap(a), gamma, flip);
-                } else {
-                    in.asFloatBuffer().get(a);
-                }
-            } else if(out instanceof DataBufferInt) {
+                flipCopyWithGamma(in.asFloatBuffer(), widthStep/4, FloatBuffer.wrap(a, start, a.length - start), step, gamma, flip);
+            } else if (out instanceof DataBufferInt) {
                 int[] a = ((DataBufferInt)out).getData();
-                if (flip) {
-                    copyWithFlip(in.asIntBuffer(), IntBuffer.wrap(a));
-                } else {
-                    in.asIntBuffer().get(a);
-                }
-            } else if(out instanceof DataBufferShort) {
+                flipCopyWithGamma(in.asIntBuffer(), widthStep/4, IntBuffer.wrap(a, start, a.length - start), step, gamma, flip);
+            } else if (out instanceof DataBufferShort) {
                 short[] a = ((DataBufferShort)out).getData();
-                if (flip) {
-                    copyWithGammaFlip(in.asShortBuffer(), ShortBuffer.wrap(a), 1.0, flip);
-                } else {
-                    in.asShortBuffer().get(a);
-                }
-            } else if(out instanceof DataBufferUShort) {
+                flipCopyWithGamma(in.asShortBuffer(), widthStep/2, ShortBuffer.wrap(a, start, a.length - start), step, true, gamma, flip);
+            } else if (out instanceof DataBufferUShort) {
                 short[] a = ((DataBufferUShort)out).getData();
-                if (gamma != 1.0 || flip) {
-                    copyWithGammaFlip(in.asShortBuffer(), ShortBuffer.wrap(a), gamma, flip);
-                } else {
-                    in.asShortBuffer().get(a);
-                }
+                flipCopyWithGamma(in.asShortBuffer(), widthStep/2, ShortBuffer.wrap(a, start, a.length - start), step, false, gamma, flip);
             } else {
                 assert(false);
             }
         }
+
         public void copyFrom(BufferedImage image) {
             copyFrom(image, 1.0);
         }
         public void copyFrom(BufferedImage image, double gamma) {
-            ByteBuffer out = getByteBuffer();
-            DataBuffer in  = image.getRaster().getDataBuffer();
+            Rectangle r = null;
+            if (roi != null) {
+                r = new Rectangle(roi.xOffset, roi.yOffset, roi.width, roi.height);
+            }
+            copyFrom(image, gamma, r);
+        }
+        public void copyFrom(BufferedImage image, double gamma, Rectangle roi) {
             origin = IPL_ORIGIN_TL;
+
+            ByteBuffer out = getByteBuffer(roi == null ? 0 : roi.y*widthStep + roi.x);
+            SampleModel sm = image.getSampleModel();
+            Raster r       = image.getRaster();
+            DataBuffer in  = r.getDataBuffer();
+            int x = r.getSampleModelTranslateX();
+            int y = r.getSampleModelTranslateY();
+            int step = sm.getWidth()*sm.getNumBands();
+            if (sm instanceof ComponentSampleModel) {
+                step = ((ComponentSampleModel)sm).getScanlineStride();
+            } else if (sm instanceof SinglePixelPackedSampleModel) {
+                step = ((SinglePixelPackedSampleModel)sm).getScanlineStride();
+            } else if (sm instanceof MultiPixelPackedSampleModel) {
+                step = ((MultiPixelPackedSampleModel)sm).getScanlineStride();
+            }
+            int start = y*step + x;
 
             if (in instanceof DataBufferByte) {
                 byte[] a = ((DataBufferByte)in).getData();
-                if (gamma != 1.0) {
-                    copyWithGammaFlip(ByteBuffer.wrap(a), out, gamma, false);
-                } else {
-                    out.put(a);
-                }
-            } else if(in instanceof DataBufferDouble) {
-                out.asDoubleBuffer().put(((DataBufferDouble)in).getData());
-            } else if(in instanceof DataBufferFloat) {
+                flipCopyWithGamma(ByteBuffer.wrap(a, start, a.length - start), step, out, widthStep, false, gamma, false);
+            } else if (in instanceof DataBufferDouble) {
+                double[] a = ((DataBufferDouble)in).getData();
+                flipCopyWithGamma(DoubleBuffer.wrap(a, start, a.length - start), step, out.asDoubleBuffer(), widthStep/8, gamma, false);
+            } else if (in instanceof DataBufferFloat) {
                 float[] a = ((DataBufferFloat)in).getData();
-                if (gamma != 1.0) {
-                    copyWithGammaFlip(FloatBuffer.wrap(a), out.asFloatBuffer(), gamma, false);
-                } else {
-                    out.asFloatBuffer().put(a);
-                }
-            } else if(in instanceof DataBufferInt) {
-                out.asIntBuffer().put(((DataBufferInt)in).getData());
-            } else if(in instanceof DataBufferShort) {
-                out.asShortBuffer().put(((DataBufferShort)in).getData());
-            } else if(in instanceof DataBufferUShort) {
+                flipCopyWithGamma(FloatBuffer.wrap(a, start, a.length - start), step, out.asFloatBuffer(), widthStep/4, gamma, false);
+            } else if (in instanceof DataBufferInt) {
+                int[] a = ((DataBufferInt)in).getData();
+                flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), step, out.asIntBuffer(), widthStep/4, gamma, false);
+            } else if (in instanceof DataBufferShort) {
+                short[] a = ((DataBufferShort)in).getData();
+                flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), step, out.asShortBuffer(), widthStep/2, true, gamma, false);
+            } else if (in instanceof DataBufferUShort) {
                 short[] a = ((DataBufferUShort)in).getData();
-                if (gamma != 1.0) {
-                    copyWithGammaFlip(ShortBuffer.wrap(a), out.asShortBuffer(), gamma, false);
-                } else {
-                    out.asShortBuffer().put(a);
-                }
+                flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), step, out.asShortBuffer(), widthStep/2, false, gamma, false);
             } else {
                 assert(false);
             }
-            if (bufferedImage == null) {
+            if (bufferedImage == null && roi == null) {
                 bufferedImage = image;
             }
         }
         private BufferedImage bufferedImage = null;
         public BufferedImage getBufferedImage() {
-            return getBufferedImage(0);
+            return getBufferedImage(0.0);
         }
         public BufferedImage getBufferedImage(double gamma) {
             return getBufferedImage(null, gamma);
@@ -2150,6 +2265,12 @@ public class cxcore {
                     wr = Raster.createWritableRaster(new ComponentSampleModel(
                             DataBuffer.TYPE_SHORT, width, height, nChannels, widthStep/2,
                             offsets), null);
+                } else if (depth == IPL_DEPTH_32S) {
+                    cm = new ComponentColorModel(cs, alpha,
+                            false, Transparency.OPAQUE, DataBuffer.TYPE_INT);
+                    wr = Raster.createWritableRaster(new ComponentSampleModel(
+                            DataBuffer.TYPE_INT, width, height, nChannels, widthStep/4,
+                            offsets), null);
                 } else if (depth == IPL_DEPTH_32F) {
                     cm = new ComponentColorModel(cs, alpha,
                             false, Transparency.OPAQUE, DataBuffer.TYPE_FLOAT);
@@ -2171,7 +2292,11 @@ public class cxcore {
             }
 
             if (bufferedImage != null) {
-                copyTo(bufferedImage, gamma);
+                if (roi != null) {
+                    copyTo(bufferedImage.getSubimage(roi.xOffset, roi.yOffset, roi.width, roi.height), gamma);
+                } else {
+                    copyTo(bufferedImage, gamma);
+                }
             }
 
             return bufferedImage;
@@ -2197,11 +2322,15 @@ public class cxcore {
             }
 
             public PointerByReference(IplImage[] a) {
-                super(new Memory(Pointer.SIZE * a.length));
-                Pointer[] pa = getPointer().getPointerArray(0, a.length);
-                for (int i = 0; i < a.length; i ++) {
-                    a[i].write();
-                    pa[i].setPointer(0, a[i].getPointer());
+                super(Pointer.SIZE * a.length);
+                Pointer p = getPointer();
+                for (int i = 0; i < a.length; i++) {
+                    if (a[i] != null) {
+                        a[i].write();
+                        p.setPointer(Pointer.SIZE * i, a[i].getPointer());
+                    } else {
+                        p.setPointer(Pointer.SIZE * i, null);
+                    }
                 }
             }
         }
@@ -2244,9 +2373,16 @@ public class cxcore {
         public CvArr() { }
         public CvArr(Pointer m) { super(m); if (getClass() == CvArr.class) read(); }
         public static class ByReference extends CvArr implements Structure.ByReference { }
-        public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
-            public PointerByReference() { }
-            public PointerByReference(Pointer m) { super(m); }
+        public static class PointerByReference extends com.sun.jna.ptr.ByReference {
+            public PointerByReference() { this(null); }
+            public PointerByReference(int dataSize) { super(dataSize); }
+            public PointerByReference(Pointer value) { super(Pointer.SIZE); setValue(value); }
+            public void setValue(Pointer value) {
+                getPointer().setPointer(0, value);
+            }
+            public Pointer getValue() {
+                return getPointer().getPointer(0);
+            }
             public static PointerByReference[] createArray(int size) {
                 PointerByReference[] a = new PointerByReference[size];
                 Pointer p = new Memory(Pointer.SIZE * size);

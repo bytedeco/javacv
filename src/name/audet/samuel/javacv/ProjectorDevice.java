@@ -21,7 +21,9 @@
 package name.audet.samuel.javacv;
 
 import com.sun.jna.Pointer;
+import java.awt.Dimension;
 import java.awt.DisplayMode;
+import java.beans.PropertyChangeListener;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 
@@ -33,40 +35,62 @@ public class ProjectorDevice extends ProjectiveDevice {
     public ProjectorDevice(String name) {
         super(name);
     }
-    public ProjectorDevice(String name, String filename) {
+    public ProjectorDevice(String name, String filename) throws Exception {
         super(name, filename);
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
     }
-    public ProjectorDevice(String name, CvFileStorage fs) {
+    public ProjectorDevice(String name, CvFileStorage fs) throws Exception {
         super(name, fs);
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
     }
-    public ProjectorDevice(Settings settings) {
-        super(settings);
+    public ProjectorDevice(Settings settings) throws Exception {
+        super((ProjectiveDevice.Settings)settings);
     }
 
-    public static class Settings extends ProjectiveDevice.Settings {
-        public Settings() { this.gamma = 2.2; }
-        public Settings(ProjectiveDevice.Settings settings) {
+    public interface Settings {
+        String getName();
+        void setName(String name);
+        double getResponseGamma();
+        void setResponseGamma(double gamma);
+
+        int getScreenNumber();
+        void setScreenNumber(int screenNumber);
+        long getLatency();
+        void setLatency(long latency);
+        String getDescription();
+
+        int getImageWidth();
+        void setImageWidth(int imageWidth);
+        int getImageHeight();
+        void setImageHeight(int imageHeight);
+        int getBitDepth();
+        void setBitDepth(int bitDepth);
+        int getRefreshRate();
+        void setRefreshRate(int refreshRate);
+
+        void addPropertyChangeListener(PropertyChangeListener listener);
+        void removePropertyChangeListener(PropertyChangeListener listener);
+    }
+
+    public static class SettingsImplementation extends ProjectiveDevice.Settings implements Settings {
+        public SettingsImplementation() { name = "Projector  0"; this.responseGamma = 2.2; setScreenNumber(screenNumber); }
+        public SettingsImplementation(ProjectiveDevice.Settings settings) {
             super(settings);
-            if (settings instanceof Settings) {
-                Settings s = (Settings)settings;
-                this.screenNumber = s.screenNumber;
-                this.latency = s.latency;
-                this.brightnessBackground = s.brightnessBackground;
-                this.brightnessForeground = s.brightnessForeground;
-                this.imageWidth = s.imageWidth;
-                this.imageHeight = s.imageHeight;
-                this.bitDepth = s.bitDepth;
-                this.refreshRate = s.refreshRate;
+            if (settings instanceof SettingsImplementation) {
+                SettingsImplementation s = (SettingsImplementation)settings;
+                this.screenNumber         = s.screenNumber;
+                this.latency              = s.latency;
+                this.imageWidth           = s.imageWidth;
+                this.imageHeight          = s.imageHeight;
+                this.bitDepth             = s.bitDepth;
+                this.refreshRate          = s.refreshRate;
             }
         }
 
         int screenNumber = CanvasFrame.getScreenDevices().length > 1 ? 1 : 0;
         long latency = CanvasFrame.DEFAULT_LATENCY;
-        double brightnessBackground = 0.0, brightnessForeground = 1.0;
 
         public int getScreenNumber() {
             return screenNumber;
@@ -89,27 +113,11 @@ public class ProjectorDevice extends ProjectiveDevice {
             this.latency = latency;
         }
 
-        public double getBrightnessBackground() {
-            return brightnessBackground;
-        }
-        public void setBrightnessBackground(double brightnessBackground) {
-            pcs.firePropertyChange("brightnessBackground", this.brightnessBackground,
-                    this.brightnessBackground = brightnessBackground);
-        }
-
-        public double getBrightnessForeground() {
-            return brightnessForeground;
-        }
-        public void setBrightnessForeground(double brightnessForeground) {
-            pcs.firePropertyChange("brightnessForeground", this.brightnessForeground,
-                    this.brightnessForeground = brightnessForeground);
-        }
-
         public String getDescription() {
             String[] descriptions = null;
             descriptions = CanvasFrame.getScreenDescriptions();
 
-            if (descriptions != null && screenNumber < descriptions.length) {
+            if (descriptions != null && screenNumber >= 0 && screenNumber < descriptions.length) {
                 return descriptions[screenNumber];
             } else {
                 return "";
@@ -148,23 +156,133 @@ public class ProjectorDevice extends ProjectiveDevice {
 
     }
 
+    // pouah.. hurray for Scala!
+    public static class CalibrationSettings extends ProjectiveDevice.CalibrationSettings implements Settings {
+        public CalibrationSettings() { name = si.name; responseGamma = si.responseGamma; }
+        public CalibrationSettings(ProjectiveDevice.CalibrationSettings settings) {
+            super(settings);
+            if (settings instanceof CalibrationSettings) {
+                CalibrationSettings s = (CalibrationSettings)settings;
+                si = new SettingsImplementation(s.si);
+                this.brightnessBackground = s.brightnessBackground;
+                this.brightnessForeground = s.brightnessForeground;
+            }
+        }
+        SettingsImplementation si = new SettingsImplementation();
+
+        public int getScreenNumber() { return si.getScreenNumber(); }
+        public void setScreenNumber(int screenNumber) { si.setScreenNumber(screenNumber); }
+        public long getLatency() { return si.getLatency(); }
+        public void setLatency(long latency) { si.setLatency(latency); }
+        public String getDescription() { return si.getDescription(); }
+
+        public int getImageWidth() { return si.getImageWidth(); }
+        public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
+        public int getImageHeight() { return si.getImageHeight(); }
+        public void setImageHeight(int imageHeight) { si.getImageHeight(); }
+        public int getBitDepth() { return si.getBitDepth(); }
+        public void setBitDepth(int bitDepth) { si.setBitDepth(bitDepth); }
+        public int getRefreshRate() { return si.getRefreshRate(); }
+        public void setRefreshRate(int refreshRate) { si.setRefreshRate(refreshRate); }
+
+        double brightnessBackground = 0.0, brightnessForeground = 1.0;
+
+        public double getBrightnessBackground() {
+            return brightnessBackground;
+        }
+        public void setBrightnessBackground(double brightnessBackground) {
+            pcs.firePropertyChange("brightnessBackground", this.brightnessBackground,
+                    this.brightnessBackground = brightnessBackground);
+        }
+
+        public double getBrightnessForeground() {
+            return brightnessForeground;
+        }
+        public void setBrightnessForeground(double brightnessForeground) {
+            pcs.firePropertyChange("brightnessForeground", this.brightnessForeground,
+                    this.brightnessForeground = brightnessForeground);
+        }
+
+        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
+            super.addPropertyChangeListener(listener);
+               si.addPropertyChangeListener(listener);
+        }
+        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
+            super.removePropertyChangeListener(listener);
+               si.removePropertyChangeListener(listener);
+        }
+    }
+
+    public static class CalibratedSettings extends ProjectiveDevice.CalibratedSettings implements Settings {
+        public CalibratedSettings() { name = si.name; responseGamma = si.responseGamma; }
+        public CalibratedSettings(ProjectiveDevice.CalibratedSettings settings) {
+            super(settings);
+            if (settings instanceof CalibratedSettings) {
+                si = new SettingsImplementation(((CalibratedSettings)settings).si);
+            }
+        }
+        SettingsImplementation si = new SettingsImplementation();
+
+        public int getScreenNumber() { return si.getScreenNumber(); }
+        public void setScreenNumber(int screenNumber) { si.setScreenNumber(screenNumber); }
+        public long getLatency() { return si.getLatency(); }
+        public void setLatency(long latency) { si.setLatency(latency); }
+        public String getDescription() { return si.getDescription(); }
+
+        public int getImageWidth() { return si.getImageWidth(); }
+        public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
+        public int getImageHeight() { return si.getImageHeight(); }
+        public void setImageHeight(int imageHeight) { si.getImageHeight(); }
+        public int getBitDepth() { return si.getBitDepth(); }
+        public void setBitDepth(int bitDepth) { si.setBitDepth(bitDepth); }
+        public int getRefreshRate() { return si.getRefreshRate(); }
+        public void setRefreshRate(int refreshRate) { si.setRefreshRate(refreshRate); }
+
+        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
+            super.addPropertyChangeListener(listener);
+               si.addPropertyChangeListener(listener);
+        }
+        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
+            super.removePropertyChangeListener(listener);
+               si.removePropertyChangeListener(listener);
+        }
+    }
+
     private Settings settings;
-    @Override public Settings getSettings() {
-        return settings;
+    @Override public ProjectiveDevice.Settings getSettings() {
+        return (ProjectiveDevice.Settings)settings;
+    }
+    public void setSettings(Settings settings) {
+        setSettings((ProjectiveDevice.Settings)settings);
     }
     @Override public void setSettings(ProjectiveDevice.Settings settings) {
         super.setSettings(settings);
-        this.settings = new Settings(settings);
+        if (settings instanceof ProjectiveDevice.CalibrationSettings) {
+            this.settings = new CalibrationSettings((ProjectiveDevice.CalibrationSettings)settings);
+        } else if (settings instanceof ProjectiveDevice.CalibratedSettings) {
+            this.settings = new CalibratedSettings((ProjectiveDevice.CalibratedSettings)settings);
+        } else {
+            this.settings = new SettingsImplementation((ProjectiveDevice.Settings)settings);
+        }
         if (settings.name == null || settings.name.length() == 0) {
-            settings.name = "Projector " + String.format("%2d", this.settings.screenNumber);
+            settings.name = "Projector " + String.format("%2d", this.settings.getScreenNumber());
         }
     }
 
     public CanvasFrame createCanvasFrame() throws Exception {
-        DisplayMode d = new DisplayMode(settings.imageWidth, settings.imageHeight,
-                settings.bitDepth, settings.refreshRate);
-        CanvasFrame c = new CanvasFrame(true, settings.name, settings.screenNumber, d);
-        c.setLatency(settings.latency);
+        if (settings.getScreenNumber() < 0) {
+            return null;
+        }
+        DisplayMode d = new DisplayMode(settings.getImageWidth(), settings.getImageHeight(),
+                settings.getBitDepth(), settings.getRefreshRate());
+        CanvasFrame c = new CanvasFrame(true, settings.getName(), settings.getScreenNumber(), d);
+        c.setLatency(settings.getLatency());
+
+        Dimension size = c.getCanvasSize();
+        if (size.width != imageWidth || size.height != imageHeight) {
+            rescale(size.width, size.height);
+        }
+
         return c;
     }
 
@@ -199,13 +317,13 @@ public class ProjectorDevice extends ProjectiveDevice {
         return attenuation;
     }
 
-    public static ProjectorDevice[] read(String filename) {
+    public static ProjectorDevice[] read(String filename) throws Exception {
         CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_READ);
         ProjectorDevice[] devices = read(fs);
         fs.release();
         return devices;
     }
-    public static ProjectorDevice[] read(CvFileStorage fs) {
+    public static ProjectorDevice[] read(CvFileStorage fs) throws Exception {
         CvFileNode node = cvGetFileNodeByName(fs, null, "Projectors");
         node.data.setType(CvSeq.ByReference.class);
         node.data.read();

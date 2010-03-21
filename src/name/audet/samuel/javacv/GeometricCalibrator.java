@@ -25,6 +25,7 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
+import name.audet.samuel.javacv.ProjectiveDevice.CalibrationSettings;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.v11or20.*;
@@ -36,9 +37,9 @@ import static name.audet.samuel.javacv.jna.cv.v11or20.*;
 public class GeometricCalibrator {
     public GeometricCalibrator(Settings settings, MarkerDetector.Settings detectorSettings,
             MarkedPlane markedPlane, ProjectiveDevice projectiveDevice) {
-        this.settings = settings;
-        this.markerDetector = new MarkerDetector(detectorSettings);
-        this.markedPlane = markedPlane;
+        this.settings         = settings;
+        this.markerDetector   = new MarkerDetector(detectorSettings);
+        this.markedPlane      = markedPlane;
         this.projectiveDevice = projectiveDevice;
 
         cvSetIdentity(prevWarp);
@@ -54,7 +55,7 @@ public class GeometricCalibrator {
     public static class Settings extends BaseSettings {
         double detectedBoardMin = 0.5;
         double patternSteadyMax = 0.005;
-        double patternMovedMin = 0.05;
+        double patternMovedMin  = 0.05;
 
         public double getDetectedBoardMin() {
             return detectedBoardMin;
@@ -87,12 +88,12 @@ public class GeometricCalibrator {
     private LinkedList<Marker[]> allImageMarkers  = new LinkedList<Marker[]>();
     private IplImage tempImage = null;
     private Marker[] lastDetectedMarkers = null;
-    private CvMat warp = CvMat.create(3, 3);
-    private CvMat prevWarp = CvMat.create(3, 3);
-    private CvMat lastWarp = CvMat.create(3, 3);
+    private CvMat warp       = CvMat.create(3, 3);
+    private CvMat prevWarp   = CvMat.create(3, 3);
+    private CvMat lastWarp   = CvMat.create(3, 3);
     private CvMat warpSrcPts = CvMat.create(1, 4, CV_64F, 2);
     private CvMat warpDstPts = CvMat.create(1, 4, CV_64F, 2);
-    private CvMat tempPts = CvMat.create(1, 4, CV_64F, 2);
+    private CvMat tempPts    = CvMat.create(1, 4, CV_64F, 2);
 
     public MarkerDetector getMarkerDetector() {
         return markerDetector;
@@ -298,13 +299,19 @@ public class GeometricCalibrator {
 
     public double calibrate(boolean useCenters) {
         ProjectiveDevice d = projectiveDevice;
+        CalibrationSettings dsettings = (CalibrationSettings)d.getSettings();
+
         if (d.cameraMatrix == null) {
             d.cameraMatrix = CvMat.create(3, 3);
             cvSetZero(d.cameraMatrix);
-            if ((d.getSettings().flags & CV_CALIB_FIX_ASPECT_RATIO) != 0) {
-                d.cameraMatrix.put(0, d.getSettings().initAspectRatio);
+            if ((dsettings.flags & CV_CALIB_FIX_ASPECT_RATIO) != 0) {
+                d.cameraMatrix.put(0, dsettings.initAspectRatio);
                 d.cameraMatrix.put(4, 1.);
             }
+        }
+        int kn = dsettings.isFixK3() ? 4 : 5;
+        if (d.distortionCoeffs == null || d.distortionCoeffs.cols != kn) {
+            d.distortionCoeffs = CvMat.create(1, kn);
             cvSetZero(d.distortionCoeffs);
         }
 
@@ -317,7 +324,7 @@ public class GeometricCalibrator {
         cvCalibrateCamera2(points[0], points[1], points[2],
                 new CvSize(d.imageWidth, d.imageHeight).byValue(),
                 d.cameraMatrix, d.distortionCoeffs,
-                rotVects, transVects, d.getSettings().flags);
+                rotVects, transVects, dsettings.flags);
 
         if (cvCheckArr(d.cameraMatrix,     CV_CHECK_QUIET, 0, 0) != 0 &&
             cvCheckArr(d.distortionCoeffs, CV_CHECK_QUIET, 0, 0) != 0 &&
@@ -327,7 +334,7 @@ public class GeometricCalibrator {
             d.avgReprojErr = computeReprojectionError(points[0], points[1], points[2],
                     d.cameraMatrix, d.distortionCoeffs, rotVects, transVects, d.reprojErrs);
 
-            d.nominalDistance = d.getNominalDistance(markedPlane);
+//            d.nominalDistance = d.getNominalDistance(markedPlane);
         } else {
             d.avgReprojErr = -1;
             d.cameraMatrix = null;
@@ -368,6 +375,8 @@ public class GeometricCalibrator {
     public double calibrateStereo(boolean useCenters, GeometricCalibrator peer) {
         ProjectiveDevice d = projectiveDevice;
         ProjectiveDevice dp = peer.projectiveDevice;
+        CalibrationSettings dsettings = (CalibrationSettings)d.getSettings();
+        CalibrationSettings dpsettings = (CalibrationSettings)dp.getSettings();
 
         CvMat[] points1 = getPoints(useCenters);
         CvMat[] points2 = peer.getPoints(useCenters);
@@ -448,7 +457,7 @@ public class GeometricCalibrator {
                 d.cameraMatrix, d.distortionCoeffs, dp.cameraMatrix, dp.distortionCoeffs,
                 new CvSize(d.imageWidth, d.imageHeight).byValue(), dp.R, dp.T, dp.E, dp.F,
                 new CvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,100,1e-6).byValue(),
-                dp.getSettings().flags);
+                dpsettings.flags);
 
         // compute and return epipolar error...
         d.avgEpipolarErr = 0.0;

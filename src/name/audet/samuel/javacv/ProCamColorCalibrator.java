@@ -107,7 +107,7 @@ public class ProCamColorCalibrator {
     }
 
     public Color[] getProjectorColors() {
-        double gamma = projector.getSettings().gamma;
+        double gamma = projector.getSettings().responseGamma;
         int s = settings.samplesPerChannel;
         if (projectorColors == null) {
             projectorColors = new Color[s*s*s];
@@ -207,7 +207,7 @@ public class ProCamColorCalibrator {
         // detect the markers in the camera image, to
         // 1. find the expected attenuation due to geometry
         // 2. use only regions we know are "white" on the board
-        camera.undistort(cameraImage, undistImage);
+        camera.undistort(cameraImage, undistImage, false);
         Marker[] detectedBoardMarkers = markerDetector.detect(undistImage, false);
         if (detectedBoardMarkers.length >= boardPlane.getMarkers().length*settings.detectedBoardMin) {
             // use detected markers in the camera image, to
@@ -258,11 +258,11 @@ public class ProCamColorCalibrator {
                 boardPts[j*2    ] -= (boardPts[j*2    ] - cx)*settings.trimmingFraction;
                 boardPts[j*2 + 1] -= (boardPts[j*2 + 1] - cy)*settings.trimmingFraction;
             }
-            cvFillConvexPoly(mask, CvPoint.createArray(boardPts, 0, 8, 16),
+            cvFillConvexPoly(mask, CvPoint.createArray(16, boardPts, 0, 8),
                     4, CvScalar.WHITE, 8, 16);
 
             for (int j = 0; j < (boardPts.length-8)/8; j++) {
-                cvFillConvexPoly(mask, CvPoint.createArray(boardPts, 8 + j*8, 8, 16),
+                cvFillConvexPoly(mask, CvPoint.createArray(16, boardPts, 8 + j*8, 8),
                         4, CvScalar.BLACK, 8, 16);
             }
 
@@ -277,7 +277,7 @@ public class ProCamColorCalibrator {
                 projPts[j*2    ] -= (projPts[j*2    ] - cx)*settings.trimmingFraction;
                 projPts[j*2 + 1] -= (projPts[j*2 + 1] - cy)*settings.trimmingFraction;
             }
-            cvFillConvexPoly(mask2, CvPoint.createArray(projPts, 0, 8, 16),
+            cvFillConvexPoly(mask2, CvPoint.createArray(16, projPts, 0, 8),
                     4, CvScalar.WHITE, 8, 16);
 
             cvAnd(mask, mask2, mask, null);

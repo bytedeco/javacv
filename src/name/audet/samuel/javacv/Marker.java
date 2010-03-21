@@ -103,17 +103,20 @@ if (false) {
         draw(image, CvScalar.BLACK, 1, null);
     }
     public void draw(IplImage image, CvScalar color, double scale, CvMat prewarp) {
+        draw(image, color, scale, scale, prewarp);
+    }
+    public void draw(IplImage image, CvScalar color, double scaleX, double scaleY, CvMat prewarp) {
         CvMat H = CvMat.take(3, 3);
         JavaCV.getPerspectiveTransform(src, corners, H);
         if (prewarp != null) {
             cvGEMM(prewarp, H, 1, null, 0, H, 0);
         }
-        IplImage marker = getImage();
+        IplImage    marker = getImage();
         CvScalar.ByValue c = color.byValue();
-        ByteBuffer mbuf = marker.getByteBuffer();
-        CvMat srcPts    = CvMat.take(4, 1, CV_64F, 2);
-        CvMat dstPts    = CvMat.take(4, 1, CV_64F, 2);
-        CvPoint[] tempPts = CvPoint.createArray(4);
+        ByteBuffer    mbuf = marker.getByteBuffer();
+        CvMat       srcPts = CvMat.take(4, 1, CV_64F, 2);
+        CvMat       dstPts = CvMat.take(4, 1, CV_64F, 2);
+        CvPoint[]  tempPts = CvPoint.createArray(4);
 
         for (int y = 0; y < marker.height; y++) {
             for (int x = 0; x < marker.width; x++) {
@@ -140,21 +143,21 @@ if (false) {
                         double dy = centery - b;
                         dx = dx < 0 ? -1 : 0;
                         dy = dy < 0 ? -1 : 0;
-                        tempPts[i].x = (int)Math.round((a*scale + dx) * (1<<16));
-                        tempPts[i].y = (int)Math.round((b*scale + dy) * (1<<16));
+                        tempPts[i].x = (int)Math.round((a*scaleX + dx) * (1<<16));
+                        tempPts[i].y = (int)Math.round((b*scaleY + dy) * (1<<16));
                     }
                     cvFillConvexPoly(image, tempPts, 4, c, 8/*CV_AA*/, 16);
                 }
             }
         }
-        srcPts.pool();
         dstPts.pool();
-        H.pool();
+        srcPts.pool();
+        H     .pool();
     }
 
     public static class ArraySettings extends BaseSettings {
         int rows = 8, columns = 12;
-        double size = 200, spacing = 300;
+        double sizeX = 200, sizeY = 200, spacingX = 300, spacingY = 300;
         boolean checkered = true;
 
         public int getRows() {
@@ -171,18 +174,30 @@ if (false) {
             pcs.firePropertyChange("columns", this.columns, this.columns = columns);
         }
 
-        public double getSize() {
-            return size;
+        public double getSizeX() {
+            return sizeX;
         }
-        public void setSize(double size) {
-            pcs.firePropertyChange("size", this.size, this.size = size);
+        public void setSizeX(double sizeX) {
+            pcs.firePropertyChange("sizeX", this.sizeX, this.sizeX = sizeX);
+        }
+        public double getSizeY() {
+            return sizeY;
+        }
+        public void setSizeY(double sizeY) {
+            pcs.firePropertyChange("sizeY", this.sizeY, this.sizeY = sizeY);
         }
 
-        public double getSpacing() {
-            return spacing;
+        public double getSpacingX() {
+            return spacingX;
         }
-        public void setSpacing(double spacing) {
-            pcs.firePropertyChange("spacing", this.spacing, this.spacing = spacing);
+        public void setSpacingX(double spacingX) {
+            pcs.firePropertyChange("spacingX", this.spacingX, this.spacingX = spacingX);
+        }
+        public double getSpacingY() {
+            return spacingY;
+        }
+        public void setSpacingY(double spacingY) {
+            pcs.firePropertyChange("spacingY", this.spacingY, this.spacingY = spacingY);
         }
 
         public boolean isCheckered() {
@@ -200,11 +215,12 @@ if (false) {
         int id = 0;
         for (int y = 0; y < settings.rows; y++) {
             for (int x = 0; x < settings.columns; x++) {
-                double s = settings.size/2;
-                double cx = x*settings.spacing + s + marginx;
-                double cy = y*settings.spacing + s + marginy;
+                double sx =   settings.sizeX/2;
+                double sy =   settings.sizeY/2;
+                double cx = x*settings.spacingX + sx + marginx;
+                double cy = y*settings.spacingY + sy + marginy;
                 markers[id] = new Marker(id, new double[] {
-                    cx-s, cy-s,  cx+s, cy-s,  cx+s, cy+s,  cx-s, cy+s }, 1);
+                    cx-sx, cy-sy,  cx+sx, cy-sy,  cx+sx, cy+sy,  cx-sx, cy+sy }, 1);
                 id++;
             }
         }
@@ -225,16 +241,13 @@ if (false) {
             return new Marker[][] { markers2, markers1 };
         }
     }
-    public static Marker[][] createArray(int rows, int columns, double size,
-            double spacing, boolean checkered, double marginx, double marginy) {
-
+    public static Marker[][] createArray(int rows, int columns, double sizeX, double sizeY,
+            double spacingX, double spacingY, boolean checkered, double marginx, double marginy) {
         ArraySettings s = new ArraySettings();
-        s.rows = rows;
-        s.columns = columns;
-        s.size = size;
-        s.spacing = spacing;
+        s.rows      = rows;      s.columns  = columns;
+        s.sizeX     = sizeX;     s.sizeY    = sizeY;
+        s.spacingX  = spacingX;  s.spacingY = spacingY;
         s.checkered = checkered;
-
         return createArray(s, marginx, marginy);
     }
 

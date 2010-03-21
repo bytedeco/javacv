@@ -50,6 +50,7 @@ package name.audet.samuel.javacv;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
+import java.io.File;
 import java.nio.ByteOrder;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
@@ -64,6 +65,9 @@ import static net.sf.ffmpeg_java.SWScaleLibrary.*;
  */
 public class FFmpegFrameRecorder extends FrameRecorder {
 
+    public FFmpegFrameRecorder(File file, int imageWidth, int imageHeight) {
+        this(file.getAbsolutePath(), imageWidth, imageHeight);
+    }
     public FFmpegFrameRecorder(String filename, int imageWidth, int imageHeight) {
         /* initialize libavcodec, and register all codecs and formats */
         av_register_all();

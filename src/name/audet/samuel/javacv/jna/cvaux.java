@@ -143,11 +143,16 @@ public class cvaux {
         public IntByReference state;
         public IntByReference mix;
 
-        public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
-            public PointerByReference() { }
-            public PointerByReference(CvImgObsInfo p) {
-                setStructure(p);
+        public static class PointerByReference extends com.sun.jna.ptr.ByReference {
+            public PointerByReference() { this((CvImgObsInfo)null); }
+            public PointerByReference(CvImgObsInfo p) { super(Pointer.SIZE); setStructure(p); }
+            public void setValue(Pointer value) {
+                getPointer().setPointer(0, value);
             }
+            public Pointer getValue() {
+                return getPointer().getPointer(0);
+            }
+
             public CvImgObsInfo getStructure() {
                 return new CvImgObsInfo(getValue());
             }
@@ -161,11 +166,15 @@ public class cvaux {
             }
 
             public PointerByReference(CvImgObsInfo[] a) {
-                super(new Memory(Pointer.SIZE * a.length));
-                Pointer[] pa = getPointer().getPointerArray(0, a.length);
-                for (int i = 0; i < a.length; i ++) {
-                    a[i].write();
-                    pa[i].setPointer(0, a[i].getPointer());
+                super(Pointer.SIZE * a.length);
+                Pointer p = getPointer();
+                for (int i = 0; i < a.length; i++) {
+                    if (a[i] != null) {
+                        a[i].write();
+                        p.setPointer(Pointer.SIZE * i, a[i].getPointer());
+                    } else {
+                        p.setPointer(Pointer.SIZE * i, null);
+                    }
                 }
             }
         }

@@ -55,7 +55,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
             dc1394camera_t camera = dc1394_camera_new_unit(d, ids[i].guid, ids[i].unit);
             if (camera == null) {
                 throw new Exception("dc1394_camera_new_unit() Error: Failed to initialize camera with GUID 0x" +
-                        Long.toHexString(ids[i].guid)+ " / " + camera.unit);
+                        Long.toHexString(ids[i].guid)+ " / " + camera.unit + ".");
             }
             descriptions[i] = camera.vendor + " " + camera.model + " 0x" +
                     Long.toHexString(camera.guid) + " / " + camera.unit;
@@ -102,7 +102,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
         camera = dc1394_camera_new_unit(d, ids[deviceNumber].guid, ids[deviceNumber].unit);
         if (camera == null) {
             throw new Exception("dc1394_camera_new_unit() Error: Failed to initialize camera with GUID 0x" +
-                    Long.toHexString(ids[deviceNumber].guid)+ " / " + camera.unit);
+                    Long.toHexString(ids[deviceNumber].guid)+ " / " + camera.unit + ".");
         }
         l.setAutoSynch(false);
         dc1394_camera_free_list(l);
@@ -135,12 +135,14 @@ public class DC1394FrameGrabber extends FrameGrabber {
     private dc1394camera_t camera = null;
     private Poll.pollfd fds = new Poll.pollfd();
     private NativeLong one = new NativeLong(1);
-    private boolean resetDone = false;
+    private boolean oneShotMode = false;
+    private boolean resetDone   = false;
     private dc1394video_frame_t.PointerByReference raw_image = new dc1394video_frame_t.PointerByReference();
     private dc1394video_frame_t conv_image = new dc1394video_frame_t();
     private dc1394video_frame_t frame = new dc1394video_frame_t();
     private dc1394video_frame_t enqueue_image = null;
     private IplImage temp_image, return_image = null;
+    private IntByReference tempInt = new IntByReference();
 
     public void start() throws Exception {
         start(true, true);
@@ -179,9 +181,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
         
         if (c == -1) {
             // otherwise, still need to set current video mode to kick start the ISO channel...
-            IntByReference video_mode = new IntByReference();
-            dc1394_video_get_mode(camera, video_mode);
-            c = video_mode.getValue();
+            dc1394_video_get_mode(camera, tempInt);
+            c = tempInt.getValue();
         }
 
         int f = -1;
@@ -207,12 +208,28 @@ public class DC1394FrameGrabber extends FrameGrabber {
 
         if (f == -1) {
             // otherwise, still need to set current framerate to kick start the ISO channel...
-            IntByReference framerate = new IntByReference();
-            dc1394_video_get_framerate(camera, framerate);
-            f = framerate.getValue();
+            dc1394_video_get_framerate(camera, tempInt);
+            f = tempInt.getValue();
         }
 
         try {
+            oneShotMode = false;
+            if (triggerMode) {
+                int err=dc1394_external_trigger_set_power(camera, DC1394_ON);
+                if (err != DC1394_SUCCESS) {
+                    // no trigger support, use one-shot mode instead
+                    oneShotMode = true;
+                } else {
+                    dc1394_external_trigger_set_mode(camera, DC1394_TRIGGER_MODE_0);
+                    err=dc1394_external_trigger_set_source(camera, DC1394_TRIGGER_SOURCE_SOFTWARE);
+                    if (err != DC1394_SUCCESS) {
+                        // no support for software trigger, use one-shot mode instead
+                        oneShotMode = true;
+                        dc1394_external_trigger_set_power(camera, DC1394_OFF);
+                    }
+                }
+            }
+
             int err=dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_LEGACY);
             if (try1394b) {
                 err=dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_1394B);
@@ -257,7 +274,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 fds.fd = dc1394_capture_get_fileno(camera);
             }
 
-            if (!triggerMode) {
+            if (!oneShotMode) {
                 err=dc1394_video_set_transmission(camera, DC1394_ON);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_video_set_transmission() Error " + err + ": Could not start camera iso transmission.");
@@ -295,17 +312,24 @@ public class DC1394FrameGrabber extends FrameGrabber {
     }
 
     public void stop() throws Exception {
+        enqueue_image = null;
+        temp_image    = null;
+        return_image  = null;
+
         int err=dc1394_video_set_transmission(camera, DC1394_OFF);
         if (err != DC1394_SUCCESS) {
             throw new Exception("dc1394_video_set_transmission() Error " + err + ": Could not stop the camera?");
         }
         err=dc1394_capture_stop(camera);
-        if (err != DC1394_SUCCESS) {
+        if (err != DC1394_SUCCESS && err != DC1394_CAPTURE_IS_NOT_SET) {
             throw new Exception("dc1394_capture_stop() Error " + err + ": Could not stop the camera?");
         }
-        enqueue_image = null;
-        temp_image    = null;
-        return_image  = null;
+        if (triggerMode && !oneShotMode) {
+            err=dc1394_external_trigger_set_power(camera, DC1394_OFF);
+            if (err != DC1394_SUCCESS) {
+                throw new Exception("dc1394_external_trigger_set_power() Error " + err + ": Could not switch off external trigger.");
+            }
+        }
     }
 
     private void enqueue() throws Exception {
@@ -324,9 +348,24 @@ public class DC1394FrameGrabber extends FrameGrabber {
 
     public void trigger() throws Exception {
         enqueue();
-        int err=dc1394_video_set_one_shot(camera, DC1394_ON);
-        if (err != DC1394_SUCCESS) {
-            throw new Exception("dc1394_video_set_one_shot() Error " + err + ": Could not set camera into one-shot mode.");
+        if (oneShotMode) {
+            int err=dc1394_video_set_one_shot(camera, DC1394_ON);
+            if (err != DC1394_SUCCESS) {
+                throw new Exception("dc1394_video_set_one_shot() Error " + err + ": Could not set camera into one-shot mode.");
+            }
+        } else {
+            long time = System.currentTimeMillis();
+            do {
+                dc1394_software_trigger_get_power(camera, tempInt);
+                if (System.currentTimeMillis() - time > timeout) {
+                    break;
+                    //throw new Exception("trigger() Error: Timeout occured.");
+                }
+            } while (tempInt.getValue() == DC1394_ON);
+            int err=dc1394_software_trigger_set_power(camera, DC1394_ON);
+            if (err != DC1394_SUCCESS) {
+                throw new Exception("dc1394_software_trigger_set_power() Error " + err + ": Could not trigger camera.");
+            }
         }
     }
 

@@ -46,7 +46,7 @@ public class ColorCalibrator {
         CvMat b = CvMat.create(referenceColors.length*3, 1);
         CvMat x = CvMat.create(12, 1);
 
-        double gamma = device.getSettings().gamma;
+        double gamma = device.getSettings().responseGamma;
 
         for (int i = 0; i < referenceColors.length; i++) {
             float[] dc = deviceColors   [i].getRGBColorComponents(null);

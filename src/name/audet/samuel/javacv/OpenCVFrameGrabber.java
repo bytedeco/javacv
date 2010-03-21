@@ -20,6 +20,8 @@
 
 package name.audet.samuel.javacv;
 
+import java.io.File;
+
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.*;
 import static name.audet.samuel.javacv.jna.highgui.*;
@@ -62,6 +64,9 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
     public OpenCVFrameGrabber(int deviceNumber) {
         this.deviceNumber = deviceNumber;
+    }
+    public OpenCVFrameGrabber(File file) {
+        this(file.getAbsolutePath());
     }
     public OpenCVFrameGrabber(String filename) {
         this.filename = filename;
@@ -128,6 +133,9 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     public void trigger() throws Exception {
+        for (int i = 0; i < triggerFlushSize; i++) {
+            cvQueryFrame(capture);
+        }
         int err = cvGrabFrame(capture);
         if (err == 0) {
             throw new Exception("cvGrabFrame() Error: Could not grab frame.");

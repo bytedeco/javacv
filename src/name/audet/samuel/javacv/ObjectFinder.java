@@ -30,6 +30,7 @@ package name.audet.samuel.javacv;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.v11or20.*;
@@ -39,15 +40,100 @@ import static name.audet.samuel.javacv.jna.cv.v11or20.*;
  * @author Samuel Audet
  */
 public class ObjectFinder {
-    public ObjectFinder(IplImage object, CvSURFParams params, double distThreshold, int minMatches) {
-        this.object = object;
-        this.params = params.byValue();
-        this.distThreshold = distThreshold;
-        this.minMatches = minMatches;
+    public ObjectFinder(IplImage objectImage, CvSURFParams parameters,
+            double distanceThreshold, int matchesMin) throws Exception {
+        settings = new Settings();
+        settings.objectImage = objectImage;
+        settings.parameters = parameters.byValue();
+        settings.distanceThreshold = distanceThreshold;
+        settings.matchesMin = matchesMin;
+        setSettings(settings);
+    }
+    public ObjectFinder(IplImage objectImage) throws Exception {
+        settings = new Settings();
+        settings.objectImage = objectImage;
+        setSettings(settings);
+    }
+    public ObjectFinder(Settings settings) throws Exception {
+        setSettings(settings);
+
+    }
+
+    public static class Settings extends BaseSettings {
+        IplImage objectImage = null;
+        CvSURFParams.ByValue parameters = cvSURFParams(500, 1);
+        double distanceThreshold = 0.6;
+        int matchesMin = 4;
+        double ransacReprojThreshold = 1.0;
+
+        public IplImage getObjectImage() {
+            return objectImage;
+        }
+        public void setObjectImage(IplImage objectImage) {
+            this.objectImage = objectImage;
+        }
+
+        public boolean isExtended() {
+            return parameters.extended != 0;
+        }
+        public void setExtended(boolean extended) {
+            parameters.extended = extended ? 1 : 0;
+        }
+
+        public double getHessianThreshold() {
+            return parameters.hessianThreshold;
+        }
+        public void setHessianThreshold(double hessianThreshold) {
+            parameters.hessianThreshold = hessianThreshold;
+        }
+
+        public int getnOctaves() {
+            return parameters.nOctaves;
+        }
+        public void setnOctaves(int nOctaves) {
+            parameters.nOctaves = nOctaves;
+        }
+
+        public int getnOctaveLayers() {
+            return parameters.nOctaveLayers;
+        }
+        public void setnOctaveLayers(int nOctaveLayers) {
+            parameters.nOctaveLayers = nOctaveLayers;
+        }
+
+        public double getDistanceThreshold() {
+            return distanceThreshold;
+        }
+        public void setDistanceThreshold(double distanceThreshold) {
+            this.distanceThreshold = distanceThreshold;
+        }
+
+        public int getMatchesMin() {
+            return matchesMin;
+        }
+        public void setMatchesMin(int matchesMin) {
+            this.matchesMin = matchesMin;
+        }
+
+        public double getRansacReprojThreshold() {
+            return ransacReprojThreshold;
+        }
+        public void setRansacReprojThreshold(double ransacReprojThreshold) {
+            this.ransacReprojThreshold = ransacReprojThreshold;
+        }
+    }
+
+    private Settings settings;
+    public Settings getSettings() {
+        return settings;
+    }
+    public void setSettings(Settings settings) throws Exception {
+        this.settings = settings;
 
         CvSeq.PointerByReference keypointsRef = new CvSeq.PointerByReference(),
                                  descriptorsRef = new CvSeq.PointerByReference();
-        cvExtractSURF(object, null, keypointsRef, descriptorsRef, storage, this.params, 0);
+        storage.clearMem();
+        cvExtractSURF(settings.objectImage, null, keypointsRef, descriptorsRef, storage, settings.parameters, 0);
         CvSeq keypoints = keypointsRef.getStructure();
         CvSeq descriptors = descriptorsRef.getStructure();
 
@@ -59,28 +145,20 @@ public class ObjectFinder {
             objectKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
             objectDescriptors[i] = cvGetSeqElem(descriptors, i).getByteBuffer(0, descriptors.elem_size).asFloatBuffer();
         }
-        System.out.println("Object Descriptors: " +  descriptors.total);
-    }
-    public ObjectFinder(IplImage object, CvSURFParams params) {
-        this(object, params, 0.6, 6);
-    }
-    public ObjectFinder(IplImage object) {
-        this(object, cvSURFParams(500, 1));
+        logger.info(descriptors.total + " object descriptors");
     }
 
-    private IplImage object = null;
-    private CvSURFParams.ByValue params = null;
-    private double distThreshold;
-    private int minMatches;
-    private CvMemStorage storage = CvMemStorage.create();
+    private static final Logger logger = Logger.getLogger(ObjectFinder.class.getName());
+
+    private CvMemStorage storage     = CvMemStorage.create();
     private CvMemStorage tempStorage = CvMemStorage.create();
-    private CvSURFPoint[] objectKeypoints = null;
+    private CvSURFPoint[] objectKeypoints   = null;
     private FloatBuffer[] objectDescriptors = null;
 
     public CvPoint2D64f[] find(IplImage image) {
-        CvSeq.PointerByReference imageKeypointsRef = new CvSeq.PointerByReference(),
+        CvSeq.PointerByReference imageKeypointsRef   = new CvSeq.PointerByReference(),
                                  imageDescriptorsRef = new CvSeq.PointerByReference();
-        cvExtractSURF(image, null, imageKeypointsRef, imageDescriptorsRef, tempStorage, params, 0);
+        cvExtractSURF(image, null, imageKeypointsRef, imageDescriptorsRef, tempStorage, settings.parameters, 0);
         CvSeq keypoints = imageKeypointsRef.getStructure();
         CvSeq descriptors = imageDescriptorsRef.getStructure();
 
@@ -92,10 +170,10 @@ public class ObjectFinder {
             imageKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
             imageDescriptors[i] = cvGetSeqElem(descriptors, i).getByteBuffer(0, descriptors.elem_size).asFloatBuffer();
         }
-        System.out.println("Image Descriptors: " + descriptors.total);
+        logger.info(descriptors.total + " image descriptors");
 
-        CvPoint2D64f[] srcCorners = CvPoint2D64f.createArray(0, 0,  object.width, 0,
-                object.width, object.height,  0, object.height);
+        CvPoint2D64f[] srcCorners = CvPoint2D64f.createArray(0, 0,  settings.objectImage.width, 0,
+                settings.objectImage.width, settings.objectImage.height,  0, settings.objectImage.height);
         CvPoint2D64f[] dstCorners = locatePlanarObject(objectKeypoints, objectDescriptors,
                 imageKeypoints, imageDescriptors, srcCorners);
         tempStorage.clearMem();
@@ -136,7 +214,7 @@ public class ObjectFinder {
                 dist2 = d;
             }
         }
-        if (dist1 < distThreshold*dist2)
+        if (dist1 < settings.distanceThreshold*dist2)
             return neighbor;
         return -1;
     }
@@ -162,8 +240,8 @@ public class ObjectFinder {
             CvPoint2D64f[] srcCorners) {
         ArrayList<Integer> ptpairs = findPairs(objectKeypoints, objectDescriptors, imageKeypoints, imageDescriptors);
         int n = ptpairs.size()/2;
-        System.out.println("Found " + n + " pairs");
-        if (n < minMatches) {
+        logger.info(n + " matching pairs found");
+        if (n < settings.matchesMin) {
             return null;
         }
 
@@ -181,10 +259,10 @@ public class ObjectFinder {
         }
 
         CvMat H = CvMat.take(3, 3, CV_64F, 1);
-        if (cvFindHomography(pt1, pt2, H, CV_RANSAC, 1, null) == 0) {
+        if (cvFindHomography(pt1, pt2, H, CV_RANSAC, settings.ransacReprojThreshold, null) == 0) {
             return null;
         }
-        if (cvCountNonZero(mask) < minMatches) {
+        if (cvCountNonZero(mask) < settings.matchesMin) {
             return null;
         }
 

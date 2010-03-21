@@ -28,6 +28,7 @@ package name.audet.samuel.javacv;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
+import java.io.File;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static net.sf.ffmpeg_java.AVCodecLibrary.*;
@@ -62,6 +63,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
+    public FFmpegFrameGrabber(File file) {
+        this(file.getAbsolutePath());
+    }
     public FFmpegFrameGrabber(String filename) {
 	// Register all formats and codecs
 	avcodec_init();
@@ -98,14 +102,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 	// Open video file
         PointerByReference p = new PointerByReference();
 	if (av_open_input_file(p, filename, null, 0, null) != 0) {
-            throw new Exception("Couldn't open file");
+            throw new Exception("Could not open file.");
         }
         pFormatCtx = new AVFormatContext(p.getValue());
         pFormatCtx.setAutoSynch(false);
 
 	// Retrieve stream information
 	if (av_find_stream_info(pFormatCtx) < 0) {
-           throw new Exception("Couldn't find stream information");
+           throw new Exception("Could not find stream information.");
         }
 
 	// Dump information about file onto standard error
@@ -125,18 +129,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
         }
 	if (videoStream == -1) {
-            throw new Exception("Didn't find a video stream");
+            throw new Exception("Did not find a video stream.");
         }
 
 	// Find the decoder for the video stream
 	pCodec = avcodec_find_decoder(pCodecCtx.codec_id);
 	if (pCodec == null) {
-            throw new Exception("Unsupported codec or codec not found: " + pCodecCtx.codec_id);
+            throw new Exception("Unsupported codec or codec not found: " + pCodecCtx.codec_id + ".");
 	}
         pCodec.setAutoSynch(false);
 	// Open codec
 	if (avcodec_open(pCodecCtx, pCodec) < 0) {
-            throw new Exception("Could not open codec");
+            throw new Exception("Could not open codec.");
         }
 
 	// Allocate video frame
@@ -145,7 +149,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 	// Allocate an AVFrame structure
 	pFrameRGB = avcodec_alloc_frame();
 	if (pFrameRGB == null) {
-            throw new Exception("Could not allocate frame");
+            throw new Exception("Could not allocate frame.");
         }
 
         switch (colorMode) {
@@ -163,7 +167,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 img_convert_ctx = sws_getContext(pCodecCtx.width, pCodecCtx.height, pCodecCtx.pix_fmt,
                         pCodecCtx.width, pCodecCtx.height, PIX_FMT_BGR24, SWS_BICUBIC, null, null, null);
                 if (img_convert_ctx == null) {
-                    throw new Exception("Cannot initialize the conversion context");
+                    throw new Exception("Cannot initialize the conversion context.");
                 }
 
                 return_image = IplImage.createHeader(pCodecCtx.width, pCodecCtx.height, IPL_DEPTH_8U, 3);
@@ -176,7 +180,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 img_convert_ctx = sws_getContext(pCodecCtx.width, pCodecCtx.height, pCodecCtx.pix_fmt,
                         pCodecCtx.width, pCodecCtx.height, PIX_FMT_GRAY8, SWS_BICUBIC, null, null, null);
                 if (img_convert_ctx == null) {
-                    throw new Exception("Cannot initialize the conversion context");
+                    throw new Exception("Cannot initialize the conversion context.");
                 }
                 return_image = IplImage.createHeader(pCodecCtx.width, pCodecCtx.height, IPL_DEPTH_8U, 1);
                 break;
@@ -228,7 +232,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    public void trigger() throws Exception { }
+    public void trigger() throws Exception {
+        for (int i = 0; i < triggerFlushSize; i++) {
+            if (av_read_frame(pFormatCtx, packet) < 0) {
+                return;
+            }
+            av_free_packet(packet);
+        }
+    }
 
     public IplImage grab() throws Exception {
         boolean done = false;

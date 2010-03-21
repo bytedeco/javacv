@@ -236,13 +236,10 @@ public class CanvasFrame extends JFrame {
         canvas.setSize(width, height);
     }
 
-    public void showImage(Image image, double scale) {
+    public void showImage(Image image, final int w, final int h) {
         if (image == null)
             return;
-        final int w = (int)Math.round(image.getWidth(null)*scale);
-        final int h = (int)Math.round(image.getHeight(null)*scale);
-
-        if (canvas.getWidth() != w || canvas.getHeight() != h) {
+        if (isResizable() && (canvas.getWidth() != w || canvas.getHeight() != h)) {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
@@ -255,14 +252,25 @@ public class CanvasFrame extends JFrame {
         g.drawImage(image, 0, 0, w, h, null);
         releaseGraphics(g);
     }
+    public void showImage(Image image, double scale) {
+        if (image == null)
+            return;
+        int w = (int)Math.round(image.getWidth (null)*scale);
+        int h = (int)Math.round(image.getHeight(null)*scale);
+        showImage(image, w, h);
+    }
     public void showImage(Image image) {
         showImage(image, 1.0);
     }
-    public void showImage(IplImage image) {
-        showImage(image.getBufferedImage());
+
+    public void showImage(IplImage image, int w, int h) {
+        showImage(image.getBufferedImage(), w, h);
     }
     public void showImage(IplImage image, double scale) {
         showImage(image.getBufferedImage(), scale);
+    }
+    public void showImage(IplImage image) {
+        showImage(image.getBufferedImage());
     }
 
     public void showColor(Color color) {

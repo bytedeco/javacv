@@ -22,10 +22,11 @@ package name.audet.samuel.javacv;
 
 import com.sun.jna.Pointer;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import name.audet.samuel.javacv.FrameGrabber.ColorMode;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 
@@ -37,75 +38,159 @@ public class CameraDevice extends ProjectiveDevice {
     public CameraDevice(String name) {
         super(name);
     }
-    public CameraDevice(String name, String filename) {
+    public CameraDevice(String name, String filename) throws Exception {
         super(name, filename);
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
     }
-    public CameraDevice(String name, CvFileStorage fs) {
+    public CameraDevice(String name, CvFileStorage fs) throws Exception {
         super(name, fs);
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
     }
-    public CameraDevice(Settings settings) {
-        super(settings);
+    public CameraDevice(Settings settings) throws Exception {
+        super((ProjectiveDevice.Settings)settings);
     }
 
-    public static class Settings extends ProjectiveDevice.Settings {
-        public Settings() { }
-        public Settings(ProjectiveDevice.Settings settings) {
+    public interface Settings {
+        String getName();
+        void setName(String name);
+        double getResponseGamma();
+        void setResponseGamma(double gamma);
+
+        Integer getDeviceNumber();
+        void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException;
+        File getDeviceFile();
+        void setDeviceFile(File deviceFile) throws PropertyVetoException;
+        String getDeviceFilename();
+        void setDeviceFilename(String deviceFilename) throws PropertyVetoException;
+        String getDevicePath();
+        void setDevicePath(String devicePath) throws PropertyVetoException;
+        Class<? extends FrameGrabber> getFrameGrabber();
+        void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber);
+        String getDescription();
+
+        int getImageWidth();
+        void setImageWidth(int imageWidth);
+        int getImageHeight();
+        void setImageHeight(int imageHeight);
+        double getFrameRate();
+        void setFrameRate(double frameRate);
+        boolean isTriggerMode();
+        void setTriggerMode(boolean triggerMode);
+        int getTriggerFlushSize();
+        void setTriggerFlushSize(int triggerFlushSize);
+        int getBitsPerPixel();
+        void setBitsPerPixel(int bitsPerPixel);
+        FrameGrabber.ColorMode getColorMode();
+        void setColorMode(FrameGrabber.ColorMode colorMode);
+        int getTimeout();
+        void setTimeout(int timeout);
+        int getNumBuffers();
+        void setNumBuffers(int numBuffers);
+
+        void addPropertyChangeListener(PropertyChangeListener listener);
+        void removePropertyChangeListener(PropertyChangeListener listener);
+    }
+
+    public static class SettingsImplementation extends ProjectiveDevice.Settings implements Settings {
+        public SettingsImplementation() { name = "Camera  0"; }
+        public SettingsImplementation(ProjectiveDevice.Settings settings) {
             super(settings);
-            if (settings instanceof Settings) {
-                Settings s = (Settings)settings;
+            if (settings instanceof SettingsImplementation) {
+                SettingsImplementation s = (SettingsImplementation)settings;
                 this.deviceNumber = s.deviceNumber;
-                this.devicePath = s.devicePath;
+                this.deviceFile   = s.deviceFile;
+                this.devicePath   = s.devicePath;
                 this.frameGrabber = s.frameGrabber;
-                this.imageWidth = s.imageWidth;
-                this.imageHeight = s.imageHeight;
-                this.frameRate = s.frameRate;
-                this.triggerMode = s.triggerMode;
-                this.bpp = s.bpp;
-                this.colorMode = s.colorMode;
-                this.timeout = s.timeout;
-                this.numBuffers = s.numBuffers;
+                this.imageWidth   = s.imageWidth;
+                this.imageHeight  = s.imageHeight;
+                this.frameRate    = s.frameRate;
+                this.triggerMode  = s.triggerMode;
+                this.triggerFlushSize = s.triggerFlushSize;
+                this.bpp          = s.bpp;
+                this.colorMode    = s.colorMode;
+                this.timeout      = s.timeout;
+                this.numBuffers   = s.numBuffers;
             }
         }
 
-        int deviceNumber = 0;
-        String devicePath = "";
+        Integer deviceNumber = null;
+        File deviceFile = null;
+        String devicePath = null;
         Class<? extends FrameGrabber> frameGrabber = null;
 
-        public int getDeviceNumber() {
+        public Integer getDeviceNumber() {
             return deviceNumber;
         }
-        public void setDeviceNumber(int deviceNumber) throws PropertyVetoException {
-            try {
-                if (frameGrabber != null) {
-                    frameGrabber.getConstructor(int.class);
+        public void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException {
+            if (deviceNumber != null) {
+                try {
+                    if (frameGrabber != null) {
+                        try {
+                            frameGrabber.getConstructor(int.class);
+                        } catch (NoSuchMethodException e) {
+                            frameGrabber.getConstructor(Integer.class);
+                        }
+                    }
+                    setDevicePath(null);
+                    setDeviceFile(null);
+                } catch (NoSuchMethodException e) {
+                    throw new PropertyVetoExceptionThatNetBeansLikes(frameGrabber.getSimpleName() + " does not accept a deviceNumber.",
+                            new PropertyChangeEvent(this, "deviceNumber", this.deviceNumber, this.deviceNumber = null));
                 }
-            } catch (NoSuchMethodException e) {
-                throw new PropertyVetoExceptionThatNetBeansLikes(frameGrabber.getSimpleName() + " does not accept a deviceNumber.",
-                        new PropertyChangeEvent(this, "deviceNumber", this.deviceNumber, this.deviceNumber = 0));
             }
-
             String oldDescription = getDescription();
             pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = deviceNumber);
             pcs.firePropertyChange("description", oldDescription, getDescription());
+        }
+
+        public File getDeviceFile() {
+            return deviceFile;
+        }
+        public void setDeviceFile(File deviceFile) throws PropertyVetoException {
+            if (deviceFile != null) {
+                try {
+                    if (frameGrabber != null) {
+                        frameGrabber.getConstructor(File.class);
+                    }
+                    setDeviceNumber(null);
+                    setDevicePath(null);
+                } catch (NoSuchMethodException e) {
+                    deviceFile = null;
+                    throw new PropertyVetoExceptionThatNetBeansLikes(frameGrabber.getSimpleName() + " does not accept a deviceFile.",
+                            new PropertyChangeEvent(this, "deviceFile", this.deviceFile, this.deviceFile = null));
+                }
+            }
+            String oldDescription = getDescription();
+            pcs.firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = deviceFile);
+            pcs.firePropertyChange("description", oldDescription, getDescription());
+        }
+        public String getDeviceFilename() {
+            return getDeviceFile() == null ? "" : getDeviceFile().getPath();
+        }
+        public void setDeviceFilename(String deviceFilename) throws PropertyVetoException {
+            setDeviceFile(deviceFilename == null || deviceFilename.length() == 0 ?
+                null : new File(deviceFilename));
         }
 
         public String getDevicePath() {
             return devicePath;
         }
         public void setDevicePath(String devicePath) throws PropertyVetoException {
-            try {
-                if (frameGrabber != null) {
-                    frameGrabber.getConstructor(String.class);
+            if (devicePath != null) {
+                try {
+                    if (frameGrabber != null) {
+                        frameGrabber.getConstructor(String.class);
+                    }
+                    setDeviceNumber(null);
+                    setDeviceFile(null);
+                } catch (NoSuchMethodException e) {
+                    devicePath = "";
+                    throw new PropertyVetoExceptionThatNetBeansLikes(frameGrabber.getSimpleName() + " does not accept a devicePath.",
+                            new PropertyChangeEvent(this, "devicePath", this.devicePath, this.devicePath = null));
                 }
-            } catch (NoSuchMethodException e) {
-                throw new PropertyVetoExceptionThatNetBeansLikes(frameGrabber.getSimpleName() + " does not accept a devicePath.",
-                        new PropertyChangeEvent(this, "devicePath", this.devicePath, this.devicePath = ""));
             }
-
             String oldDescription = getDescription();
             pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = devicePath);
             pcs.firePropertyChange("description", oldDescription, getDescription());
@@ -119,15 +204,31 @@ public class CameraDevice extends ProjectiveDevice {
             pcs.firePropertyChange("frameGrabber", this.frameGrabber, this.frameGrabber = frameGrabber);
             pcs.firePropertyChange("description", oldDescription, getDescription());
 
-            try {
-                frameGrabber.getConstructor(String.class);
-            } catch (NoSuchMethodException e) {
-                pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = "");
+            if (frameGrabber == null) {
+                pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = null);
+                pcs.firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = null);
+                pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = null);
+                return;
             }
+
             try {
                 frameGrabber.getConstructor(int.class);
             } catch (NoSuchMethodException e) {
-                pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = 0);
+                try {
+                    frameGrabber.getConstructor(Integer.class);
+                } catch (NoSuchMethodException e2) {
+                    pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = null);
+                }
+            }
+            try {
+                frameGrabber.getConstructor(File.class);
+            } catch (NoSuchMethodException e) {
+                pcs.firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = null);
+            }
+            try {
+                frameGrabber.getConstructor(String.class);
+            } catch (NoSuchMethodException e) {
+                pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = null);
             }
         }
 
@@ -138,7 +239,7 @@ public class CameraDevice extends ProjectiveDevice {
                 descriptions = (String[])m.invoke(null);
             } catch (Exception ex) { }
 
-            if (descriptions != null && deviceNumber < descriptions.length) {
+            if (descriptions != null && deviceNumber != null && deviceNumber < descriptions.length) {
                 return descriptions[deviceNumber];
             } else {
                 return "";
@@ -148,8 +249,9 @@ public class CameraDevice extends ProjectiveDevice {
         int imageWidth = 0, imageHeight = 0;
         double frameRate = 0;
         boolean triggerMode = false;
+        int triggerFlushSize = 0;
         int bpp = 0;
-        ColorMode colorMode = ColorMode.RAW;
+        FrameGrabber.ColorMode colorMode = FrameGrabber.ColorMode.RAW;
         int timeout = 10000;
         int numBuffers = 4;
 
@@ -181,6 +283,13 @@ public class CameraDevice extends ProjectiveDevice {
             this.triggerMode = triggerMode;
         }
 
+        public int getTriggerFlushSize() {
+            return triggerFlushSize;
+        }
+        public void setTriggerFlushSize(int triggerFlushSize) {
+            this.triggerFlushSize = triggerFlushSize;
+        }
+
         public int getBitsPerPixel() {
             return bpp;
         }
@@ -188,10 +297,10 @@ public class CameraDevice extends ProjectiveDevice {
             this.bpp = bitsPerPixel;
         }
 
-        public ColorMode getColorMode() {
+        public FrameGrabber.ColorMode getColorMode() {
             return colorMode;
         }
-        public void setColorMode(ColorMode colorMode) {
+        public void setColorMode(FrameGrabber.ColorMode colorMode) {
             this.colorMode = colorMode;
         }
 
@@ -211,34 +320,154 @@ public class CameraDevice extends ProjectiveDevice {
 
     }
 
+    // pouah.. hurray for Scala!
+    public static class CalibrationSettings extends ProjectiveDevice.CalibrationSettings implements Settings {
+        public CalibrationSettings() { name = si.name; }
+        public CalibrationSettings(ProjectiveDevice.CalibrationSettings settings) {
+            super(settings);
+            if (settings instanceof CalibrationSettings) {
+                si = new SettingsImplementation(((CalibrationSettings)settings).si);
+            }
+        }
+        SettingsImplementation si = new SettingsImplementation();
+
+        public Integer getDeviceNumber() { return si.getDeviceNumber(); }
+        public void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException { si.setDeviceNumber(deviceNumber); }
+        public File getDeviceFile() { return si.getDeviceFile(); }
+        public void setDeviceFile(File deviceFile) throws PropertyVetoException { si.setDeviceFile(deviceFile); }
+        public String getDeviceFilename() { return si.getDeviceFilename(); }
+        public void setDeviceFilename(String deviceFilename) throws PropertyVetoException { si.setDeviceFilename(deviceFilename); }
+        public String getDevicePath() { return si.getDevicePath(); }
+        public void setDevicePath(String devicePath) throws PropertyVetoException { si.setDevicePath(devicePath); }
+        public Class<? extends FrameGrabber> getFrameGrabber() { return si.getFrameGrabber(); }
+        public void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber) { si.setFrameGrabber(frameGrabber); }
+        public String getDescription() { return si.getDescription(); }
+
+        public int getImageWidth() { return si.getImageWidth(); }
+        public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
+        public int getImageHeight() { return si.getImageHeight(); }
+        public void setImageHeight(int imageHeight) { si.setImageHeight(imageHeight); }
+        public double getFrameRate() { return si.getFrameRate(); }
+        public void setFrameRate(double frameRate) { si.setFrameRate(frameRate); }
+        public boolean isTriggerMode() { return si.isTriggerMode(); }
+        public void setTriggerMode(boolean triggerMode) { si.setTriggerMode(triggerMode); }
+        public int getTriggerFlushSize() { return si.getTriggerFlushSize(); }
+        public void setTriggerFlushSize(int triggerFlushSize) { si.setTriggerFlushSize(triggerFlushSize); }
+        public int getBitsPerPixel() { return si.getBitsPerPixel(); }
+        public void setBitsPerPixel(int bitsPerPixel) { si.setBitsPerPixel(bitsPerPixel); }
+        public FrameGrabber.ColorMode getColorMode() { return si.getColorMode(); }
+        public void setColorMode(FrameGrabber.ColorMode colorMode) { si.setColorMode(colorMode); }
+        public int getTimeout() { return si.getTimeout(); }
+        public void setTimeout(int timeout) { si.setTimeout(timeout); }
+        public int getNumBuffers() { return si.getNumBuffers(); }
+        public void setNumBuffers(int numBuffers) { si.setNumBuffers(numBuffers); }
+
+        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
+            super.addPropertyChangeListener(listener);
+               si.addPropertyChangeListener(listener);
+        }
+        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
+            super.removePropertyChangeListener(listener);
+               si.removePropertyChangeListener(listener);
+        }
+    }
+
+    public static class CalibratedSettings extends ProjectiveDevice.CalibratedSettings implements Settings {
+        public CalibratedSettings() { name = si.name; }
+        public CalibratedSettings(ProjectiveDevice.CalibratedSettings settings) {
+            super(settings);
+            if (settings instanceof CalibratedSettings) {
+                si = new SettingsImplementation(((CalibratedSettings)settings).si);
+            }
+        }
+        SettingsImplementation si = new SettingsImplementation();
+
+        public Integer getDeviceNumber() { return si.getDeviceNumber(); }
+        public void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException { si.setDeviceNumber(deviceNumber); }
+        public File getDeviceFile() { return si.getDeviceFile(); }
+        public void setDeviceFile(File deviceFile) throws PropertyVetoException { si.setDeviceFile(deviceFile); }
+        public String getDeviceFilename() { return si.getDeviceFilename(); }
+        public void setDeviceFilename(String deviceFilename) throws PropertyVetoException { si.setDeviceFilename(deviceFilename); }
+        public String getDevicePath() { return si.getDevicePath(); }
+        public void setDevicePath(String devicePath) throws PropertyVetoException { si.setDevicePath(devicePath); }
+        public Class<? extends FrameGrabber> getFrameGrabber() { return si.getFrameGrabber(); }
+        public void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber) { si.setFrameGrabber(frameGrabber); }
+        public String getDescription() { return si.getDescription(); }
+
+        public int getImageWidth() { return si.getImageWidth(); }
+        public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
+        public int getImageHeight() { return si.getImageHeight(); }
+        public void setImageHeight(int imageHeight) { si.setImageHeight(imageHeight); }
+        public double getFrameRate() { return si.getFrameRate(); }
+        public void setFrameRate(double frameRate) { si.setFrameRate(frameRate); }
+        public boolean isTriggerMode() { return si.isTriggerMode(); }
+        public void setTriggerMode(boolean triggerMode) { si.setTriggerMode(triggerMode); }
+        public int getTriggerFlushSize() { return si.getTriggerFlushSize(); }
+        public void setTriggerFlushSize(int triggerFlushSize) { si.setTriggerFlushSize(triggerFlushSize); }
+        public int getBitsPerPixel() { return si.getBitsPerPixel(); }
+        public void setBitsPerPixel(int bitsPerPixel) { si.setBitsPerPixel(bitsPerPixel); }
+        public FrameGrabber.ColorMode getColorMode() { return si.getColorMode(); }
+        public void setColorMode(FrameGrabber.ColorMode colorMode) { si.setColorMode(colorMode); }
+        public int getTimeout() { return si.getTimeout(); }
+        public void setTimeout(int timeout) { si.setTimeout(timeout); }
+        public int getNumBuffers() { return si.getNumBuffers(); }
+        public void setNumBuffers(int numBuffers) { si.setNumBuffers(numBuffers); }
+
+        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
+            super.addPropertyChangeListener(listener);
+               si.addPropertyChangeListener(listener);
+        }
+        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
+            super.removePropertyChangeListener(listener);
+               si.removePropertyChangeListener(listener);
+        }
+    }
+
     private Settings settings;
-    @Override public Settings getSettings() {
-        return settings;
+    @Override public ProjectiveDevice.Settings getSettings() {
+        return (ProjectiveDevice.Settings)settings;
+    }
+    public void setSettings(Settings settings) {
+        setSettings((ProjectiveDevice.Settings)settings);
     }
     @Override public void setSettings(ProjectiveDevice.Settings settings) {
         super.setSettings(settings);
-        this.settings = new Settings(settings);
+        if (settings instanceof ProjectiveDevice.CalibrationSettings) {
+            this.settings = new CalibrationSettings((ProjectiveDevice.CalibrationSettings)settings);
+        } else if (settings instanceof ProjectiveDevice.CalibratedSettings) {
+            this.settings = new CalibratedSettings((ProjectiveDevice.CalibratedSettings)settings);
+        } else {
+            this.settings = new SettingsImplementation((ProjectiveDevice.Settings)settings);
+        }
         if (settings.name == null || settings.name.length() == 0) {
-            settings.name = "Camera " + String.format("%2d", this.settings.deviceNumber);
+            settings.name = "Camera " + String.format("%2d", this.settings.getDeviceNumber());
         }
     }
 
     public FrameGrabber createFrameGrabber() throws Exception {
         try {
-            settings.frameGrabber.getMethod("tryLoad").invoke(null);
+            settings.getFrameGrabber().getMethod("tryLoad").invoke(null);
             FrameGrabber f;
-            if (settings.devicePath != null && settings.devicePath.length() > 0) {
-                f = settings.frameGrabber.getConstructor(String.class).newInstance(settings.devicePath);
+            if (settings.getDeviceFile() != null) {
+                f = settings.getFrameGrabber().getConstructor(File.class).newInstance(settings.getDeviceFile());
+            } else if (settings.getDevicePath() != null && settings.getDevicePath().length() > 0) {
+                f = settings.getFrameGrabber().getConstructor(String.class).newInstance(settings.getDevicePath());
             } else {
-                f = settings.frameGrabber.getConstructor(int.class).newInstance(settings.deviceNumber);
+                int number = settings.getDeviceNumber() == null ? 0 : settings.getDeviceNumber();
+                try {
+                    f = settings.getFrameGrabber().getConstructor(int.class).newInstance(number);
+                } catch (NoSuchMethodException e) {
+                    f = settings.getFrameGrabber().getConstructor(Integer.class).newInstance(number);
+                }
             }
             f.setImageWidth(settings.getImageWidth());
             f.setImageHeight(settings.getImageHeight());
             f.setFrameRate(settings.getFrameRate());
             f.setTriggerMode(settings.isTriggerMode());
+            f.setTriggerFlushSize(settings.getTriggerFlushSize());
             f.setBitsPerPixel(settings.getBitsPerPixel());
             f.setColorMode(settings.getColorMode());
-            f.setTimeout(f.getTimeout());
+            f.setTimeout(settings.getTimeout());
             f.setNumBuffers(settings.getNumBuffers());
             return f;
         } catch (InvocationTargetException ex) {
@@ -251,13 +480,13 @@ public class CameraDevice extends ProjectiveDevice {
         }
     }
 
-    public static CameraDevice[] read(String filename) {
+    public static CameraDevice[] read(String filename) throws Exception {
         CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_READ);
         CameraDevice[] devices = read(fs);
         fs.release();
         return devices;
     }
-    public static CameraDevice[] read(CvFileStorage fs) {
+    public static CameraDevice[] read(CvFileStorage fs) throws Exception {
         CvFileNode node = cvGetFileNodeByName(fs, null, "Cameras");
         node.data.setType(CvSeq.ByReference.class);
         node.data.read();

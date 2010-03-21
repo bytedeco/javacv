@@ -62,7 +62,7 @@ import static name.audet.samuel.javacv.jna.cvaux.v20.*;
 }}}
 and similarly for `v10` and `v11`.
 
-IMPORTANT NOTE: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 when the SSE calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA will probably be updated in the near future with a workaround, but for the moment, please be advised.
+*IMPORTANT NOTE*: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 when the SSE calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA will probably be updated in the near future with a workaround, but for the moment, please be advised.
 
 
 ==Acknowledgments==
@@ -70,6 +70,26 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===March 21, 2010===
+ * Added new classes and methods used by ProCamTracker: `cvkernels`, `JavaCV.fractalTriangleWave()`, `ImageAligner`, `LMImageAligner`, `ImageTransformer`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`
+ * `CameraDevice.Settings` has a new `deviceFile` property (used by a `FrameGrabber`), which brings up a file dialog for some `PropertyEditor`s
+ * Moved in `CameraSettings`, `ProjectorSettings`, and `FrameGrabber.PropertyEditor` from the `procamcalib` package
+ * Added to `CameraDevice.Settings` and `FrameGrabber` a `triggerFlushSize` property to indicate the number of buffers to flush on `trigger()` to compensate for cheap cameras that keep old images in memory indefinitely
+ * Changed the type of `CameraDevice.Settings.deviceNumber` to `Integer` so we may set it to `null`
+ * Fixed and enhanced `CanvasFrame.showImage()` methods a bit
+ * In `triggerMode` `DC1394FrameGrabber` nows tries to use a real software trigger and only falls back to one-shot mode on error
+ * Fixed array constructors of `IplImage.PointerByReference()` and `CvImgObsInfo.PointerByReference()`
+ * Added `CvPoint.fillArray()` methods to reuse preallocated arrays and changed `createArray()` a bit as well
+ * Fixed and enhanced all `IplImage.copy*()` methods, including new support for ROIs and subimages, which affects `create*()` and `getBufferedImage()` methods as well
+ * Updated `Marker` to support different size and spacing in X and Y
+ * Added `Settings` to `ObjectFinder`
+ * Fixed distortion problem in `ProjectiveDevice` and `ProCamColorCalibrator` with OpenCV 1.1pre1
+ * Split `ProjectiveDevice.Settings` into `ProjectiveDevice.CalibrationSettings` (for applications like ProCamCalib) and `ProjectiveDevice.CalibratedSettings` (for applications like ProCamTracker)
+ * Renamed `gamma` to `responseGamma` in `ProjectiveDevice`, and moved previous `nominalDistance` parameter to `Settings`
+ * Added `ProjectiveDevice.rescale()` to rescale calibration parameters when switching a device to a new image size
+ * `ProjectiveDevice.undistort()` and `distort()` can now `useFixedPointMaps` of OpenCV
+ * `ProjectiveDevice` and its subclasses now `throw new Exception()` if the `parameterFile` cannot be read
+
 ===February 13, 2010===
  * Relicensed JavaCV under the GPLv2 with Classpath exception (see LICENSE.txt). Please note that if your application links with code that needs ARToolKitPlus, for example, it will become subject to the full GPL, without Classpath exception
  * Added `devicePath` setting to `CameraDevice` that works with `FFmpegFrameGrabber`, `OpenCVFrameGrabber`, and other `FrameGrabber` with a String constructor
