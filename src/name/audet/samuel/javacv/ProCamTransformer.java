@@ -285,7 +285,7 @@ public class ProCamTransformer implements ImageTransformer {
         }
     }
 
-    public ImageTransformer.Parameters createParameters() {
+    public Parameters createParameters() {
         return new Parameters();
     }
 
@@ -407,7 +407,7 @@ public class ProCamTransformer implements ImageTransformer {
             return projectorTransformer.getN();
         }
 
-        @Override public Object clone() {
+        @Override public Parameters clone() {
             Parameters p = new Parameters();
             p.surfaceParameters   = surfaceTransformer  .new Parameters(p);
             p.projectorParameters = projectorTransformer.new Parameters(p);
@@ -445,7 +445,7 @@ public class ProCamTransformer implements ImageTransformer {
                     n, referencePoints, null, 3, 0);
         }
 
-        @Override public ImageTransformer.Parameters createParameters() {
+        @Override public Parameters createParameters() {
             return new Parameters();
         }
 
@@ -470,8 +470,8 @@ public class ProCamTransformer implements ImageTransformer {
             @Override public void set(ImageTransformer.Parameters p) {
                 proCamParameters.set(p);
             }
-            @Override public Object clone() {
-                ProCamTransformer.Parameters p = (ProCamTransformer.Parameters)proCamParameters.clone();
+            @Override public Parameters clone() {
+                ProCamTransformer.Parameters p = proCamParameters.clone();
                 return p.surfaceParameters;
             }
         }
@@ -493,7 +493,7 @@ public class ProCamTransformer implements ImageTransformer {
             super.transformGainBias(dstImage, dstImage, roi, pyramidLevel, parameters, inverse);
         }
 
-        @Override public ImageTransformer.Parameters createParameters() {
+        @Override public Parameters createParameters() {
             return new Parameters();
         }
 
@@ -559,8 +559,8 @@ public class ProCamTransformer implements ImageTransformer {
                 setUpdateNeeded(false);
             }
 
-            @Override public Object clone() {
-                ProCamTransformer.Parameters p = (ProCamTransformer.Parameters)proCamParameters.clone();
+            @Override public Parameters clone() {
+                ProCamTransformer.Parameters p = proCamParameters.clone();
                 return p.projectorParameters;
             }
         }

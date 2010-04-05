@@ -275,7 +275,7 @@ public class ProjectorDevice extends ProjectiveDevice {
         }
         DisplayMode d = new DisplayMode(settings.getImageWidth(), settings.getImageHeight(),
                 settings.getBitDepth(), settings.getRefreshRate());
-        CanvasFrame c = new CanvasFrame(true, settings.getName(), settings.getScreenNumber(), d);
+        CanvasFrame c = new CanvasFrame(settings.getName(), settings.getScreenNumber(), d);
         c.setLatency(settings.getLatency());
 
         Dimension size = c.getCanvasSize();

@@ -25,7 +25,7 @@ import java.io.File;
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.*;
 import static name.audet.samuel.javacv.jna.highgui.*;
-import name.audet.samuel.javacv.jna.*;
+import name.audet.samuel.javacv.jna.highgui;
 
 /**
  *
@@ -52,14 +52,6 @@ public class OpenCVFrameGrabber extends FrameGrabber {
                 }
             }
         }
-    }
-
-    private static boolean is10or11 = true;
-    static {
-        try {
-            tryLoad();
-            is10or11 = highgui.v20.libname == null;
-        } catch (Throwable t) { }
     }
 
     public OpenCVFrameGrabber(int deviceNumber) {
@@ -113,7 +105,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (bpp > 0) {
             cvSetCaptureProperty(capture, CV_CAP_PROP_FORMAT, bpp); // ??
         }
-        if (is10or11) {
+        if (highgui.is10or11) {
             cvSetCaptureProperty(capture, highgui.v10or11.CV_CAP_PROP_CONVERT_RGB,
                     colorMode == ColorMode.BGR ? 1 : 0);
         } else {
@@ -143,7 +135,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     public IplImage grab() throws Exception {
-        IplImage image = is10or11 ? v10or11.cvRetrieveFrame(capture) : highgui.v20.cvRetrieveFrame(capture);
+        IplImage image = cvRetrieveFrame(capture);
         if (image == null) {
             throw new Exception("cvRetrieveFrame() Error: Could not retrieve frame.");
         }
@@ -151,7 +143,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             trigger();
         }
 
-        if (colorMode == ColorMode.GRAYSCALE && image.nChannels > 1) {
+        if (colorMode == ColorMode.GRAY && image.nChannels > 1) {
             if (return_image == null) {
                 return_image = IplImage.create(image.width, image.height, image.depth, 1);
             }

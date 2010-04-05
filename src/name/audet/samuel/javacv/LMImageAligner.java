@@ -70,7 +70,7 @@ public class LMImageAligner implements ImageAligner {
         }
         this.srcRoiPts = CvMat.create(4, 1, CV_64F, 2);
         this.dstRoiPts = CvMat.create(4, 1, CV_64F, 2);
-        this.dstRoiPtsArray = CvPoint.createArray(16);
+        this.dstRoiPtsArray = CvPoint.createArray(4);
         this.roi       = new CvRect.ByValue();
 
         int numThreads = Parallel.numCores;
@@ -92,11 +92,11 @@ public class LMImageAligner implements ImageAligner {
                     target[pyramidLevel], null, warped[pyramidLevel], residual[pyramidLevel], 1);
         }
 
-        this.parameters      = (Parameters)initialParameters.clone();
+        this.parameters      = initialParameters.clone();
         this.parametersArray = new Parameters[] { parameters };
         this.tempParameters  = new Parameters[n];
         for (int i = 0; i < tempParameters.length; i++) {
-            this.tempParameters[i] = (Parameters)initialParameters.clone();
+            this.tempParameters[i] = initialParameters.clone();
         }
 
         setConstrained(settings.constrained);
@@ -147,7 +147,7 @@ public class LMImageAligner implements ImageAligner {
             this.displacementMax = displacementMax;
         }
 
-        @Override public Object clone() {
+        @Override public Settings clone() {
             return new Settings(this);
         }
     }
@@ -497,7 +497,7 @@ long accTime = 0;
             maxY = Math.max(maxY, y);
         }
         cvSetZero(roiMask[pyramidLevel]);
-        CvPoint.fillArray(dstRoiPtsArray, 16, dstRoiPts.get());
+        CvPoint.fillArray(dstRoiPtsArray, (byte)16, dstRoiPts.get());
         cvFillConvexPoly(roiMask[pyramidLevel], dstRoiPtsArray, 4, CvScalar.WHITE, 8, 16);
         // add +3 all around because cvWarpPerspective() needs it apparently
         minX = Math.max(0, minX-3-(maxX-minX)*extraPadding);

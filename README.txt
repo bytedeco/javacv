@@ -1,11 +1,11 @@
 =JavaCV=
 
 ==Introduction==
-JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, ARToolKitPlus, libdc1394 2.x, PGR FlyCapture, and FFmpeg. Moreover, utility classes make it easy to use their functionality on the Java platform. JavaCV also comes with hardware accelerated fullscreen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), adaptive binarization (`JavaCV.adaptiveBinarization()`), and code to detect and match feature points (`ObjectFinder`).
+JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, ARToolKitPlus, libdc1394 2.x, PGR FlyCapture, and FFmpeg. Moreover, utility classes make it easy to use their functionality on the Java platform. JavaCV also comes with hardware accelerated fullscreen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `LMImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
 
-Please refer to the source code of ProCamCalib as well as methods in the `JavaCV` and `ObjectFinder` classes to learn how to use the API.
+To learn how to use the API, please refer to the Quick Start section below as well as the source code of ProCamCalib and ProCamTracker as documentation currently lacks.
 
-Future versions will include all code I will have developed as part of my PhD research.
+I will continue as I go to add all code that I am developing as part of my PhD research.
 
 
 ==Required Software==
@@ -53,6 +53,7 @@ public class Test {
 }
 }}}
 
+
 Additionally, I placed version specific functionality in separate classes. To access newer functions of OpenCV 2.0 for example, one would import the `v20` subclasses instead, e.g.:
 {{{
 import static name.audet.samuel.javacv.jna.cxcore.v20.*;
@@ -62,7 +63,115 @@ import static name.audet.samuel.javacv.jna.cvaux.v20.*;
 }}}
 and similarly for `v10` and `v11`.
 
-*IMPORTANT NOTE*: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 when the SSE calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA will probably be updated in the near future with a workaround, but for the moment, please be advised.
+
+*IMPORTANT NOTE*: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 CPUs when the SSE calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. JNA might be updated in the future with a workaround, but for the moment, please be advised. *Concretely, this means you should try to recompile OpenCV without SSE instructions before asking me why JavaCV crashes.*
+
+
+JavaCV also comes with helper classes and methods on top of OpenCV to facilitate its integration to the Java platform. Here is a small program demonstrating the most frequently useful parts:
+
+{{{
+import name.audet.samuel.javacv.*;
+import static name.audet.samuel.javacv.jna.cxcore.*;
+import static name.audet.samuel.javacv.jna.cv.*;
+
+public class Test2 {
+    public static void main(String[] args) throws Exception {
+        String cascadeName = args.length > 0 ? args[0] : "haarcascade_frontalface_alt.xml";
+
+        // Make sure to call JavaCvErrorCallback.redirectError() to prevent your 
+        // application from simply crashing with no warning on some error of OpenCV.
+        // JavaCvErrorCallback may be subclassed for finer control of exceptions.
+        new JavaCvErrorCallback().redirectError();
+
+        // CanvasFrame is a JFrame containing a Canvas component, which is hardware accelerated.  
+        // It can also switch into fullscreen mode when called with a screenNumber.
+        CanvasFrame frame = new CanvasFrame("Some Title");
+
+        // OpenCVFrameGrabber uses highgui, but other more versatile FrameGrabbers include
+        // DC1394FrameGrabber, FlyCaptureFrameGrabber, and FFmpegFrameGrabber.
+        FrameGrabber grabber = new OpenCVFrameGrabber(0);
+        grabber.start();
+
+        // FAQ about IplImage:
+        // - For custom raw processing of data, getByteBuffer() returns an NIO direct
+        //   buffer wrapped around the memory pointed by imageData.
+        // - To get a BufferedImage from an IplImage, you may call getBufferedImage().
+        // - The createFrom() factory method can construct an IplImage from a BufferedImage.
+        // - There are also a few copy*() methods for BufferedImage<->IplImage data transfers.
+        IplImage grabbedImage = grabber.grab(),
+                 grayImage    = IplImage.create(grabbedImage.width, grabbedImage.height, IPL_DEPTH_8U, 1),
+                 rotatedImage = grabbedImage.clone();
+
+        // We can "cast" Pointer objects by instantiating a new object of the desired class.
+        CvHaarClassifierCascade cascade = new CvHaarClassifierCascade(cvLoad(cascadeName));
+
+        // Objects allocated with a create*() or clone() factory method are automatically 
+        // garbage collected, but may also explicitly be freed with the release() method.
+        CvMemStorage storage = CvMemStorage.create();
+
+        // Contiguous regions of native memory may be allocated using createArray() factory methods.
+        CvPoint[] hatPoints = CvPoint.createArray(3);
+        CvSeq.PointerByReference contourPointer = new CvSeq.PointerByReference(); 
+        int sizeofCvContour = com.sun.jna.Native.getNativeSize(CvContour.ByValue.class);
+
+        // Let's create some random 3D rotation...
+        CvMat randomR = CvMat.create(3, 3), randomAxis = CvMat.create(3, 1);
+        // We can easily and efficiently access the elements of CvMat objects
+        // with the set of get() and put() methods.
+        randomAxis.put((Math.random()-0.5)/4, (Math.random()-0.5)/4, (Math.random()-0.5)/4);
+        cvRodrigues2(randomAxis, randomR, null);
+        double f = (grabbedImage.width + grabbedImage.height)/2;
+                                          randomR.put(2, randomR.get(2)*f); 
+                                          randomR.put(5, randomR.get(5)*f);
+        randomR.put(6, randomR.get(6)/f); randomR.put(7, randomR.get(7)/f);
+        System.out.println(randomR);
+
+        // Again, FFmpegFrameRecorder also exists as a more versatile alternative.
+        FrameRecorder recorder = new OpenCVFrameRecorder("output.avi", grabbedImage.width, grabbedImage.height);
+        recorder.start();
+
+        while (frame.isVisible() && (grabbedImage = grabber.grab()) != null) {
+
+            // Let's try to detect some faces! but we need a grayscale image...
+            cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
+            CvSeq faces = cvHaarDetectObjects(grayImage, cascade, storage, 1.1, 3, 0/*CV_HAAR_DO_CANNY_PRUNING*/);
+            for (int i = 0; i < faces.total; i++) {
+                CvRect r = new CvRect(cvGetSeqElem(faces, i));
+                cvRectangle(grabbedImage, cvPoint(r.x, r.y), cvPoint(r.x+r.width, r.y+r.height), CvScalar.RED, 1, CV_AA, 0);
+                CvPoint.fillArray(hatPoints, r.x-r.width/10, r.y-5,  r.x+r.width*11/10, r.y-5,  r.x+r.width/2, r.y-r.height/2);
+                cvFillConvexPoly(grabbedImage, hatPoints, hatPoints.length, CvScalar.GREEN, CV_AA, 0);
+            }
+
+            // Let's find some contours! but first some thresholding...
+            cvThreshold(grayImage, grayImage, 64, 255, CV_THRESH_BINARY);
+
+            // To get the value of an output parameter, we need to use the getValue() or getStructure() 
+            // method of its *PointerByReference object, which obviously has to be created prior to the 
+            // call if we want to get the data after the call.
+            cvFindContours(grayImage, storage, contourPointer, sizeofCvContour, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE); 
+            CvSeq contour = contourPointer.getStructure();
+            while (contour != null) {
+                if (contour.elem_size > 0) {
+                    CvSeq points = cvApproxPoly(contour.getPointer(), sizeofCvContour,
+                            storage, CV_POLY_APPROX_DP, cvContourPerimeter(contour.getPointer())*0.02, 0);
+                    cvDrawContours(grabbedImage, points, CvScalar.BLUE, CvScalar.BLUE, -1, 1, CV_AA);
+                }
+                contour = contour.h_next;
+            }
+
+            cvWarpPerspective(grabbedImage, rotatedImage, randomR);
+
+            frame.showImage(rotatedImage);
+            recorder.record(rotatedImage);
+
+            storage.clearMem();
+        }
+        recorder.stop();
+        grabber.stop();
+        frame.dispose();
+    }
+}
+}}}
 
 
 ==Acknowledgments==
@@ -70,6 +179,13 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===April 5, 2010===
+ * Fixed up `clone()` methods to avoid the need to cast
+ * Removed the `fullScreen` argument from `CanvasFrame` constructors, which will now switch to full-screen mode only when a `screenNumber` is explicitly passed
+ * Renamed FrameGrabber.ColorMode.GRAYSCALE to GRAY
+ * Replaced deprecated functions from FFmpegFrameGrabber and FFmpegFrameRecorder
+ * FFmpegFrameGrabber can now resize images
+
 ===March 21, 2010===
  * Added new classes and methods used by ProCamTracker: `cvkernels`, `JavaCV.fractalTriangleWave()`, `ImageAligner`, `LMImageAligner`, `ImageTransformer`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`
  * `CameraDevice.Settings` has a new `deviceFile` property (used by a `FrameGrabber`), which brings up a file dialog for some `PropertyEditor`s

@@ -649,6 +649,9 @@ public class cv {
     public static native void cvWarpAffine(CvArr src, CvArr dst, CvMat map_matrix,
             int flags/*=CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS*/,
             CvScalar.ByValue fillval/*=cvScalarAll(0)*/);
+    public static void cvWarpAffine(CvArr src, CvArr dst, CvMat map_matrix) {
+        cvWarpAffine(src, dst, map_matrix, CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
+    }
     public static native CvMat cvGetAffineTransform(CvPoint2D32f src, CvPoint2D32f dst,
             CvMat map_matrix);
     public static CvMat cvGetAffineTransform(CvPoint2D32f[] src, CvPoint2D32f[] dst,
@@ -661,6 +664,9 @@ public class cv {
     public static native void cvWarpPerspective(CvArr src, CvArr dst, CvMat map_matrix,
             int flags/*=CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS*/,
             CvScalar.ByValue fillval/*=cvScalarAll(0)*/);
+    public static void cvWarpPerspective(CvArr src, CvArr dst, CvMat map_matrix) {
+        cvWarpPerspective(src, dst, map_matrix, CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
+    }
     public static native CvMat cvGetPerspectiveTransform(CvPoint2D32f src, CvPoint2D32f dst,
             CvMat map_matrix);
     public static CvMat cvGetPerspectiveTransform(CvPoint2D32f[] src, CvPoint2D32f[] dst,
@@ -978,9 +984,17 @@ public class cv {
     public static native int cvFindContours(CvArr image, CvMemStorage storage, CvSeq.PointerByReference first_contour,
             int header_size/*=sizeof(CvContour)*/, int mode/*=CV_RETR_LIST*/,
             int method/*=CV_CHAIN_APPROX_SIMPLE*/, CvPoint.ByValue offset/*=cvPoint(0,0)*/);
+    public static int cvFindContours(CvArr image, CvMemStorage storage, CvSeq.PointerByReference first_contour,
+            int header_size/*=sizeof(CvContour)*/, int mode/*=CV_RETR_LIST*/, int method/*=CV_CHAIN_APPROX_SIMPLE*/) {
+        return cvFindContours(image, storage, first_contour, header_size, mode, method, CvPoint.ZERO);
+    }
     public static native CvContourScanner cvStartFindContours(CvArr image, CvMemStorage storage,
             int header_size/*=sizeof(CvContour)*/, int mode/*=CV_RETR_LIST*/,
             int method/*=CV_CHAIN_APPROX_SIMPLE*/, CvPoint.ByValue offset/*=cvPoint(0,0)*/);
+    public static CvContourScanner cvStartFindContours(CvArr image, CvMemStorage storage,
+            int header_size/*=sizeof(CvContour)*/, int mode/*=CV_RETR_LIST*/, int method/*=CV_CHAIN_APPROX_SIMPLE*/) {
+        return cvStartFindContours(image, storage, header_size, mode, method, CvPoint.ZERO);
+    }
     public static native CvSeq cvFindNextContour(CvContourScanner scanner);
     public static native void cvSubstituteContour(CvContourScanner scanner, CvSeq new_contour);
     public static native CvSeq cvEndFindContours(CvContourScanner.PointerByReference scanner);
@@ -1775,6 +1789,10 @@ public class cv {
     public static native CvSeq cvHaarDetectObjects(CvArr image, CvHaarClassifierCascade cascade,
             CvMemStorage storage, double scale_factor/*=1.1*/, int min_neighbors/*=3*/,
             int flags/*=0*/, CvSize.ByValue min_size/*=cvSize(0,0)*/);
+    public static CvSeq cvHaarDetectObjects(CvArr image, CvHaarClassifierCascade cascade,
+            CvMemStorage storage, double scale_factor/*=1.1*/, int min_neighbors/*=3*/, int flags/*=0*/) {
+        return cvHaarDetectObjects(image, cascade, storage, scale_factor, min_neighbors, flags, CvSize.ZERO);
+    }
     public static native void cvSetImagesForHaarClassifierCascade(CvHaarClassifierCascade cascade,
             CvArr sum, CvArr sqsum, CvArr tilted_sum, double scale);
     public static native int cvRunHaarClassifierCascade(CvHaarClassifierCascade cascade,

@@ -80,12 +80,12 @@ public class ReflectanceInitializer {
 
         IplImage roiMask = IplImage.create(w, h, IPL_DEPTH_8U, 1);
         cvSetZero(roiMask);
-        cvFillConvexPoly(roiMask, CvPoint.createArray(16, roiPts), 4, CvScalar.WHITE, 8, 16);
+        cvFillConvexPoly(roiMask, CvPoint.createArray((byte)16, roiPts), 4, CvScalar.WHITE, 8, 16);
 
         // make the images very very smooth to compensate for small movements
         IplImage float1 = cameraImages[0];
         IplImage float2 = cameraImages[1];
-        IplImage reflectance = (IplImage)float2.clone();
+        IplImage reflectance = float2.clone();
         cvSmooth(float1, float1, CV_GAUSSIAN, smoothingSize, 0, 0, 0);
         cvSmooth(float2, float2, CV_GAUSSIAN, smoothingSize, 0, 0, 0);
 
@@ -152,7 +152,7 @@ public class ReflectanceInitializer {
         ProCamTransformer transformer = new ProCamTransformer(roiPts, cameraDevice, projectorDevice, null);
         transformer.setProjectorImage(projectorImages[2], alignerSettings.pyramidLevels);
 
-        ProCamTransformer.Parameters parameters = (ProCamTransformer.Parameters)transformer.createParameters();
+        ProCamTransformer.Parameters parameters = transformer.createParameters();
         parameters.set(8,  0);
         parameters.set(9,  0);
         parameters.set(10, -1/cameraDevice.getSettings().nominalDistance);

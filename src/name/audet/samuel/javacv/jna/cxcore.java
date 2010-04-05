@@ -198,14 +198,14 @@ public class cxcore {
         public static void fillArray(CvPoint[] array, int ... pts) {
             fillArray(array, pts, 0, pts.length);
         }
-        public static void fillArray(CvPoint[] array, int shift, double[] pts, int offset, int length) {
+        public static void fillArray(CvPoint[] array, byte shift, double[] pts, int offset, int length) {
             int[] a = new int[length];
             for (int i = 0; i < length; i++) {
                 a[i] = (int)Math.round(pts[offset + i] * (1<<shift));
             }
             fillArray(array, a, 0, length);
         }
-        public static void fillArray(CvPoint[] array, int shift, double ... pts) {
+        public static void fillArray(CvPoint[] array, byte shift, double ... pts) {
             fillArray(array, shift, pts, 0, pts.length);
         }
 
@@ -223,12 +223,12 @@ public class cxcore {
         public static CvPoint[] createArray(int ... pts) {
             return createArray(pts, 0, pts.length);
         }
-        public static CvPoint[] createArray(int shift, double[] pts, int offset, int length) {
+        public static CvPoint[] createArray(byte shift, double[] pts, int offset, int length) {
             CvPoint[] a = CvPoint.createArray(length/2);
             fillArray(a, shift, pts, offset, length);
             return a;
         }
-        public static CvPoint[] createArray(int shift, double ... pts) {
+        public static CvPoint[] createArray(byte shift, double ... pts) {
             return createArray(shift, pts, 0, pts.length);
         }
 
@@ -243,11 +243,11 @@ public class cxcore {
             this.x = o.x;
             this.y = o.y;
         }
-        public void set(CvPoint2D32f o, int shift) {
+        public void set(CvPoint2D32f o, byte shift) {
             this.x = (int)Math.round(o.x * (1<<shift));
             this.y = (int)Math.round(o.y * (1<<shift));
         }
-        public void set(CvPoint2D64f o, int shift) {
+        public void set(CvPoint2D64f o, byte shift) {
             this.x = (int)Math.round(o.x * (1<<shift));
             this.y = (int)Math.round(o.y * (1<<shift));
         }
@@ -299,6 +299,8 @@ public class cxcore {
         }
 
         @Override public String toString() { return "(" + x + ", " + y + ")"; }
+
+        public static final ByValue ZERO = new ByValue(0, 0);
     }
 
     public static CvPoint.ByValue cvPoint(int x, int y) {
@@ -623,6 +625,8 @@ public class cxcore {
         }
 
         @Override public String toString() { return "(" + width + ", " + height + ")"; }
+
+        public static final ByValue ZERO = new ByValue(0, 0);
     }
 
     public static CvSize.ByValue cvSize(int width, int height) {
@@ -1032,7 +1036,7 @@ public class cxcore {
                 release();
             }
         }
-        @Override public Object clone() {
+        @Override public CvMat clone() {
             CvMat m = cvCloneMat(this);
             if (m != null) {
                 m.cvcreated = true;
@@ -1458,7 +1462,7 @@ public class cxcore {
                 release();
             }
         }
-        @Override public Object clone() {
+        @Override public CvMatND clone() {
             CvMatND m = cvCloneMatND(this);
             if (m != null) {
                 m.cvcreated = true;
@@ -1540,7 +1544,7 @@ public class cxcore {
                 release();
             }
         }
-        @Override public Object clone() {
+        @Override public CvSparseMat clone() {
             CvSparseMat m = cvCloneSparseMat(this);
             if (m != null) {
                 m.cvcreated = true;
@@ -1784,7 +1788,7 @@ public class cxcore {
                 release();
             }
         }
-        @Override public Object clone() {
+        @Override public IplImage clone() {
             IplImage i = cvCloneImage(this);
             if (i != null) {
                 i.cvcreated = true;
@@ -2369,7 +2373,7 @@ public class cxcore {
     }
 
 
-    public static class CvArr extends Structure {
+    public static class CvArr extends Structure implements Cloneable {
         public CvArr() { }
         public CvArr(Pointer m) { super(m); if (getClass() == CvArr.class) read(); }
         public static class ByReference extends CvArr implements Structure.ByReference { }
@@ -3621,6 +3625,10 @@ public class cxcore {
     public static native void cvDrawContours(CvArr img, CvSeq contour, CvScalar.ByValue external_color,
             CvScalar.ByValue hole_color, int max_level, int thickness/*=1*/, 
             int line_type/*=8*/, CvPoint.ByValue offset/*=cvPoint(0,0)*/);
+    public static void cvDrawContours(CvArr img, CvSeq contour, CvScalar.ByValue external_color,
+            CvScalar.ByValue hole_color, int max_level, int thickness/*=1*/, int line_type/*=8*/) {
+        cvDrawContours(img, contour, external_color, hole_color, max_level, thickness, line_type, CvPoint.ZERO);
+    }
 
     public static class CvLineIterator extends Structure {
         public Pointer ptr;
@@ -3940,8 +3948,14 @@ public class cxcore {
     public static native void cvSave(String filename, Pointer struct_ptr,
             String name/*=null*/, String comment/*=null*/,
             CvAttrList.ByValue attributes/*=cvAttrList()*/);
+    public static void cvSave(String filename, Pointer struct_ptr) {
+        cvSave(filename, struct_ptr, null, null, null);
+    }
     public static native Pointer cvLoad(String filename, CvMemStorage memstorage/*=null*/,
             String name/*=null*/, StringByReference real_name/*=null*/);
+    public static Pointer cvLoad(String filename) {
+        return cvLoad(filename, null, null, null);
+    }
 
 
     public static final int

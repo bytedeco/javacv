@@ -167,7 +167,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             } else if (imageWidth <= 1600 && imageHeight <= 1200) {
                 c = FLYCAPTURE_VIDEOMODE_1600x1200RGB;
             }
-        } else if (colorMode == ColorMode.GRAYSCALE) {
+        } else if (colorMode == ColorMode.GRAY) {
             if (imageWidth <= 0 || imageHeight <= 0) {
                 c = FLYCAPTURE_VIDEOMODE_ANY;
             } else if (imageWidth <= 640 && imageHeight <= 480) {
@@ -345,7 +345,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         if ((depth == IPL_DEPTH_8U || frameEndian.equals(ByteOrder.nativeOrder())) &&
                 (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3 &&
                                                 raw_image.pixelFormat == FLYCAPTURE_BGR) ||
-                (colorMode == ColorMode.GRAYSCALE && numChannels == 1 && !colorbayer))) {
+                (colorMode == ColorMode.GRAY && numChannels == 1 && !colorbayer))) {
             if (return_image == null) {
                 return_image = IplImage.createHeader(w, h, depth, numChannels);
             }
@@ -357,7 +357,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                 return_image = IplImage.create(w, h, depth, colorMode == ColorMode.BGR ? 3 : 1);
             }
             if (temp_image == null) {
-                if (colorMode == ColorMode.GRAYSCALE && colorbayer) {
+                if (colorMode == ColorMode.GRAY && colorbayer) {
                     temp_image = IplImage.create(w, h, depth, 3);
                 } else {
                     temp_image = return_image;
@@ -398,7 +398,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             out.put(in);
         }
 
-        if (colorMode == ColorMode.GRAYSCALE && colorbayer) {
+        if (colorMode == ColorMode.GRAY && colorbayer) {
             cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
         }
 

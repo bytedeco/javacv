@@ -34,7 +34,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
             CvMat n, double[] referencePoints, CvMat X, int numGains, int numBiases) {
         super(K1, K2, R, t, n, referencePoints);
 
-        this.X = X == null ? null : (CvMat)X.clone();
+        this.X = X == null ? null : X.clone();
 
         this.numGains = numGains;
         this.numBiases = numBiases;
@@ -176,7 +176,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 
     }
 
-    @Override public ImageTransformer.Parameters createParameters() {
+    @Override public Parameters createParameters() {
         return new Parameters();
     }
 
@@ -380,3 +380,4 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
     }
 
 }
+

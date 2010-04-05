@@ -163,7 +163,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
             } else if (imageWidth <= 1600 && imageHeight <= 1200) {
                 c = DC1394_VIDEO_MODE_1600x1200_RGB8;
             }
-        } else if (colorMode == ColorMode.GRAYSCALE) {
+        } else if (colorMode == ColorMode.GRAY) {
             if (imageWidth <= 0 || imageHeight <= 0) {
                 c = -1;
             } else if (imageWidth <= 640 && imageHeight <= 480) {
@@ -416,7 +416,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
 
         if ((depth <= 8 || frameEndian.equals(ByteOrder.nativeOrder())) && !coloryuv &&
                 (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3) ||
-                (colorMode == ColorMode.GRAYSCALE && numChannels == 1 && !colorbayer))) {
+                (colorMode == ColorMode.GRAY && numChannels == 1 && !colorbayer))) {
             if (return_image == null) {
                 return_image = IplImage.createHeader(w, h, iplDepth, numChannels);
             }
@@ -438,11 +438,11 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
                     temp_image = IplImage.create(w, h+padding1, iplDepth, 1);
                     temp_image.height -= padding1;
-                } else if (colorMode == ColorMode.GRAYSCALE &&
+                } else if (colorMode == ColorMode.GRAY &&
                         (coloryuv || colorbayer || (colorrgb && depth > 8))) {
                     temp_image = IplImage.create(w, h+padding3, iplDepth, 3);
                     temp_image.height -= padding3;
-                } else if (colorMode == ColorMode.GRAYSCALE && colorrgb) {
+                } else if (colorMode == ColorMode.GRAY && colorrgb) {
                     temp_image = IplImage.createHeader(w, h, iplDepth, 3);
                     temp_image.widthStep = stride;
                     temp_image.imageSize = size;
@@ -520,7 +520,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
         // should we copy the padding as well?
         if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
             cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
-        } else if (colorMode == ColorMode.GRAYSCALE &&
+        } else if (colorMode == ColorMode.GRAY &&
                 (colorbayer || colorrgb || coloryuv)) {
             cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
         }

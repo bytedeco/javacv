@@ -56,7 +56,6 @@
 package name.audet.samuel.javacv.jna;
 
 import com.sun.jna.Callback;
-import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
 import com.sun.jna.Structure;

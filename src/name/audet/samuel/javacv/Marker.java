@@ -30,7 +30,7 @@ import static name.audet.samuel.javacv.jna.ARToolKitPlus.*;
  *
  * @author Samuel Audet
  */
-public class Marker {
+public class Marker implements Cloneable {
     public Marker(int id, double[] corners, double confidence) {
         this.id = id;
         this.corners = corners;
@@ -39,7 +39,7 @@ public class Marker {
     public Marker(int id, double ... corners) {
         this(id, corners, 1.0);
     }
-    @Override public Object clone() {
+    @Override public Marker clone() {
         return new Marker(id, corners.clone(), confidence);
     }
     public int id;

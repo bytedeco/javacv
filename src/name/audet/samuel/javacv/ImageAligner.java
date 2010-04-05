@@ -57,7 +57,7 @@ public interface ImageAligner {
             this.constrained = constrained;
         }
 
-        @Override public Object clone() {
+        @Override public Settings clone() {
             return new Settings(this);
         }
     }

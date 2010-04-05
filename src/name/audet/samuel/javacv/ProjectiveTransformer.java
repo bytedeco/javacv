@@ -32,19 +32,19 @@ import static name.audet.samuel.javacv.jna.cv.*;
  */
 public class ProjectiveTransformer implements ImageTransformer {
     public ProjectiveTransformer(CvMat K1, CvMat K2, CvMat R, CvMat t, CvMat n, double[] referencePoints) {
-        this.K1    = K1 == null ? null : (CvMat)K1.clone();
-        this.K2    = K2 == null ? null : (CvMat)K2.clone();
-        this.invK1 = K1 == null ? null : (CvMat)K1.clone();
-        this.invK2 = K2 == null ? null : (CvMat)K2.clone();
+        this.K1    = K1 == null ? null : K1.clone();
+        this.K2    = K2 == null ? null : K2.clone();
+        this.invK1 = K1 == null ? null : K1.clone();
+        this.invK2 = K2 == null ? null : K2.clone();
         if (K1 != null) {
             cvInvert(K1, invK1);
         }
         if (K2 != null) {
             cvInvert(K2, invK2);
         }
-        this.R = R == null ? null : (CvMat)R.clone();
-        this.t = t == null ? null : (CvMat)t.clone();
-        this.n = n == null ? null : (CvMat)n.clone();
+        this.R = R == null ? null : R.clone();
+        this.t = t == null ? null : t.clone();
+        this.n = n == null ? null : n.clone();
 
         this.referencePoints = referencePoints == null ? null : referencePoints.clone();
     }
@@ -244,7 +244,7 @@ public class ProjectiveTransformer implements ImageTransformer {
 
     }
 
-    public ImageTransformer.Parameters createParameters() {
+    public Parameters createParameters() {
         return new Parameters();
     }
 
@@ -554,7 +554,7 @@ if (false) {
             setUpdateNeeded(false);
         }
 
-        @Override public Object clone() {
+        @Override public Parameters clone() {
             Parameters p = new Parameters();
             p.set(this);
             return p;
@@ -575,5 +575,5 @@ if (false) {
 
     }
 
-
 }
+

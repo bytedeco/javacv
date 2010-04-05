@@ -317,7 +317,7 @@ public class ProCamGeometricCalibrator {
             // deep cloning... warp board markers in projector plane
             Marker[] inProjectorBoardMarkers = new Marker[imagedBoardMarkers.length];
             for (int i = 0; i < inProjectorBoardMarkers.length; i++) {
-                inProjectorBoardMarkers[i] = (Marker)imagedBoardMarkers[i].clone();
+                inProjectorBoardMarkers[i] = imagedBoardMarkers[i].clone();
             }
             cvInvert(projWarp[cameraNumber], tempWarp);
             Marker.applyWarp(inProjectorBoardMarkers, tempWarp);
@@ -350,7 +350,7 @@ public class ProCamGeometricCalibrator {
         // deep cloning...
         Marker[] prewrappedProjMarkers = new Marker[projectorPlane.getMarkers().length];
         for (int i = 0; i < prewrappedProjMarkers.length; i++) {
-            prewrappedProjMarkers[i] = (Marker)projectorPlane.getMarkers()[i].clone();
+            prewrappedProjMarkers[i] = projectorPlane.getMarkers()[i].clone();
         }
         // prewarp points for the projectorCalibrator
         Marker.applyWarp(prewrappedProjMarkers, projectorPlane.getPrewarp());
@@ -442,11 +442,11 @@ public class ProCamGeometricCalibrator {
 
                 // remove radial distortion from all points imaged by the camera
                 for (int i = 0; i < distortedBoardMarkers.length; i++) {
-                    Marker m = undistortedBoardMarkers[i] = (Marker)distortedBoardMarkers[i].clone();
+                    Marker m = undistortedBoardMarkers[i] = distortedBoardMarkers[i].clone();
                     m.corners = cameraCalibrators[cameraNumber].getProjectiveDevice().undistort(m.corners);
                 }
                 for (int i = 0; i < distortedProjectorMarkers.length; i++) {
-                    Marker m = undistortedProjectorMarkers[i] = (Marker)distortedProjectorMarkers[i].clone();
+                    Marker m = undistortedProjectorMarkers[i] = distortedProjectorMarkers[i].clone();
                     m.corners = cameraCalibrators[cameraNumber].getProjectiveDevice().undistort(m.corners);
                 }
 

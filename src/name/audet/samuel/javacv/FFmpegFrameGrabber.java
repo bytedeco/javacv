@@ -152,37 +152,40 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             throw new Exception("Could not allocate frame.");
         }
 
+        int width  = getImageWidth()  > 0 ? getImageWidth()  : pCodecCtx.width;
+        int height = getImageHeight() > 0 ? getImageHeight() : pCodecCtx.height;
+
         switch (colorMode) {
             case BGR:
                 // Determine required buffer size and allocate buffer
-                numBytes = avpicture_get_size(PIX_FMT_BGR24, pCodecCtx.width, pCodecCtx.height);
+                numBytes = avpicture_get_size(PIX_FMT_BGR24, width, height);
                 buffer = av_malloc(numBytes);
 
                 // Assign appropriate parts of buffer to image planes in pFrameRGB
                 // Note that pFrameRGB is an AVFrame, but AVFrame is a superset
                 // of AVPicture
-                avpicture_fill(pFrameRGB, buffer, PIX_FMT_BGR24, pCodecCtx.width, pCodecCtx.height);
+                avpicture_fill(pFrameRGB, buffer, PIX_FMT_BGR24, width, height);
 
                 // Convert the image into YUV format that SDL uses
                 img_convert_ctx = sws_getContext(pCodecCtx.width, pCodecCtx.height, pCodecCtx.pix_fmt,
-                        pCodecCtx.width, pCodecCtx.height, PIX_FMT_BGR24, SWS_BICUBIC, null, null, null);
+                        width, height, PIX_FMT_BGR24, SWS_BILINEAR, null, null, null);
                 if (img_convert_ctx == null) {
                     throw new Exception("Cannot initialize the conversion context.");
                 }
 
-                return_image = IplImage.createHeader(pCodecCtx.width, pCodecCtx.height, IPL_DEPTH_8U, 3);
+                return_image = IplImage.createHeader(width, height, IPL_DEPTH_8U, 3);
                 break;
 
-            case GRAYSCALE:
-                numBytes = avpicture_get_size(PIX_FMT_GRAY8, pCodecCtx.width, pCodecCtx.height);
+            case GRAY:
+                numBytes = avpicture_get_size(PIX_FMT_GRAY8, width, height);
                 buffer = av_malloc(numBytes);
-                avpicture_fill(pFrameRGB, buffer, PIX_FMT_GRAY8, pCodecCtx.width, pCodecCtx.height);
+                avpicture_fill(pFrameRGB, buffer, PIX_FMT_GRAY8, width, height);
                 img_convert_ctx = sws_getContext(pCodecCtx.width, pCodecCtx.height, pCodecCtx.pix_fmt,
-                        pCodecCtx.width, pCodecCtx.height, PIX_FMT_GRAY8, SWS_BICUBIC, null, null, null);
+                        width, height, PIX_FMT_GRAY8, SWS_BILINEAR, null, null, null);
                 if (img_convert_ctx == null) {
                     throw new Exception("Cannot initialize the conversion context.");
                 }
-                return_image = IplImage.createHeader(pCodecCtx.width, pCodecCtx.height, IPL_DEPTH_8U, 1);
+                return_image = IplImage.createHeader(width, height, IPL_DEPTH_8U, 1);
                 break;
 
             case RAW:
@@ -253,8 +256,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             // Is this a packet from the video stream?
             if (packet.stream_index == videoStream) {
                 // Decode video frame
-                int len = avcodec_decode_video(pCodecCtx, pFrame, frameFinished,
-                            packet.data, packet.size);
+                int len = avcodec_decode_video2(pCodecCtx, pFrame, frameFinished, packet);
 
                 if (packet.dts == AV_NOPTS_VALUE && pFrame.opaque != null &&
                         pFrame.opaque.getLong(0) != AV_NOPTS_VALUE) {
@@ -270,7 +272,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 if (len > 0 && frameFinished.getValue() != 0) {
                     switch (colorMode) {
                         case BGR:
-                        case GRAYSCALE:
+                        case GRAY:
                             // Convert the image from its native format to RGB
                             sws_scale(img_convert_ctx, pFrame.getPointer(), pFrame.linesize, 0,
                                     pCodecCtx.height, pFrameRGB.getPointer(), pFrameRGB.linesize);
@@ -278,15 +280,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             return_image.widthStep = pFrameRGB.linesize[0];
                             break;
                         case RAW:
+                            assert (pCodecCtx.width  == return_image.width &&
+                                    pCodecCtx.height == return_image.height);
                             return_image.imageData = pFrame.data0;
                             return_image.widthStep = pFrame.linesize[0];
                             break;
                         default:
-                            assert(false);
+                            assert (false);
                     }
-
-                    return_image.width     = pCodecCtx.width;
-                    return_image.height    = pCodecCtx.height;
                     return_image.imageSize = return_image.height * return_image.widthStep;
 
                     done = true;

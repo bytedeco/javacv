@@ -34,7 +34,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         this.imageHeight = imageHeight;
 
         this.pixelFormat = 1;
-        this.codecID     = -1;
+        this.codecID     = CV_FOURCC_DEFAULT;
         this.bitrate     = 0;
         this.frameRate   = 30;
     }

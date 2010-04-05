@@ -88,7 +88,7 @@ public abstract class FrameGrabber {
 
 
     public static enum ColorMode {
-        BGR, GRAYSCALE, RAW
+        BGR, GRAY, RAW
     }
 
     protected int imageWidth = 0, imageHeight = 0;

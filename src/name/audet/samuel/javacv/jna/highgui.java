@@ -56,6 +56,7 @@
 
 package name.audet.samuel.javacv.jna;
 
+import com.sun.jna.Callback;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
 import com.sun.jna.ptr.IntByReference;
@@ -79,7 +80,6 @@ public class highgui {
     public static class v10 extends v10or11 { }
     public static class v11 extends v10or11 {
         public static final int
-            CV_FOURCC_PROMPT  = -1,
             CV_FOURCC_DEFAULT = -1;
     }
     public static class v10or11 extends highgui {
@@ -94,6 +94,12 @@ public class highgui {
     }
     public static class v20 extends highgui {
         public static final String libname = Loader.load(paths, libnames);
+
+        public static interface CvTrackbarCallback2 extends Callback {
+            void callback(int pos, Pointer userdata);
+        }
+        public static native int cvCreateTrackbar2(String trackbar_name, String window_name,
+                IntByReference value, int count, CvTrackbarCallback2 on_change, Pointer userdata/*=null*/);
 
         public static final int
                 CV_IMWRITE_JPEG_QUALITY = 1,
@@ -119,11 +125,65 @@ public class highgui {
             CV_CAP_PROP_WHITE_BALANCE = 17,
             CV_CAP_PROP_RECTIFICATION = 18,
 
-            CV_FOURCC_PROMPT  = -1,
             CV_FOURCC_DEFAULT = CV_FOURCC('I', 'Y', 'U', 'V');
 
         public static native int cvGetCaptureDomain(CvCapture capture);
     }
+
+    public static final boolean is10or11;
+    static {
+        boolean b = true;
+        try {
+            b = highgui.v20.libname == null;
+        } catch (Throwable t) { }
+        is10or11 = b;
+    }
+
+    public static native int cvInitSystem(int argc, StringByReference argv);
+    public static native int cvStartWindowThread();
+    public static final int CV_WINDOW_AUTOSIZE = 1;
+    public static native int cvNamedWindow(String name, int flags/*=CV_WINDOW_AUTOSIZE*/);
+    public static native void cvShowImage(String name, CvArr image);
+    public static native void cvResizeWindow(String name, int width, int height);
+    public static native void cvMoveWindow(String name, int x, int y);
+    public static native void cvDestroyWindow(String name);
+    public static native void cvDestroyAllWindows();
+    public static native Pointer cvGetWindowHandle(String name);
+    public static native String cvGetWindowName(Pointer window_handle);
+
+    public static interface CvTrackbarCallback extends Callback {
+        void callback(int pos);
+    }
+    public static native int cvCreateTrackbar(String trackbar_name, String window_name,
+            IntByReference value, int count, CvTrackbarCallback on_change);
+
+    public static native int cvGetTrackbarPos(String trackbar_name, String window_name);
+    public static native void cvSetTrackbarPos(String trackbar_name, String window_name, int pos);
+
+    public static final int
+            CV_EVENT_MOUSEMOVE     = 0,
+            CV_EVENT_LBUTTONDOWN   = 1,
+            CV_EVENT_RBUTTONDOWN   = 2,
+            CV_EVENT_MBUTTONDOWN   = 3,
+            CV_EVENT_LBUTTONUP     = 4,
+            CV_EVENT_RBUTTONUP     = 5,
+            CV_EVENT_MBUTTONUP     = 6,
+            CV_EVENT_LBUTTONDBLCLK = 7,
+            CV_EVENT_RBUTTONDBLCLK = 8,
+            CV_EVENT_MBUTTONDBLCLK = 9,
+
+            CV_EVENT_FLAG_LBUTTON  = 1,
+            CV_EVENT_FLAG_RBUTTON  = 2,
+            CV_EVENT_FLAG_MBUTTON  = 4,
+            CV_EVENT_FLAG_CTRLKEY  = 8,
+            CV_EVENT_FLAG_SHIFTKEY = 16,
+            CV_EVENT_FLAG_ALTKEY   = 32;
+
+    public static interface CvMouseCallback extends Callback {
+        void callback(int event, int x, int y, int flags, Pointer param);
+    }
+    public static native void cvSetMouseCallback(String window_name,
+            CvMouseCallback on_mouse, Pointer param/*=null*/);
 
 
     public static final int
@@ -137,6 +197,13 @@ public class highgui {
         return cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
     }
     public static native CvMat cvLoadImageM(String filename, int iscolor/*=CV_LOAD_IMAGE_COLOR*/);
+    public static int cvSaveImage(String filename, CvArr image) {
+        if (is10or11) {
+            return v10or11.cvSaveImage(filename, image);
+        } else {
+            return v20.cvSaveImage(filename, image, null);
+        }
+    }
 
     public static final int
             CV_CVTIMG_FLIP     = 1,
@@ -199,6 +266,13 @@ public class highgui {
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native void cvReleaseCapture(CvCapture.PointerByReference capture);
     public static native int cvGrabFrame(CvCapture capture);
+    public static IplImage cvRetrieveFrame(CvCapture capture) {
+        if (is10or11) {
+            return v10or11.cvRetrieveFrame(capture);
+        } else {
+            return v20.cvRetrieveFrame(capture, 0);
+        }
+    }
     public static native IplImage cvQueryFrame(CvCapture capture);
 
     public static final int
@@ -250,6 +324,9 @@ public class highgui {
     public static int CV_FOURCC(char c1, char c2, char c3, char c4) {
         return CV_FOURCC((byte)c1, (byte)c2, (byte)c3, (byte)c4);
     }
+    public static final int
+        CV_FOURCC_PROMPT  = -1,
+        CV_FOURCC_DEFAULT = is10or11 ? v10or11.CV_FOURCC_DEFAULT : v20.CV_FOURCC_DEFAULT;
     public static native CvVideoWriter cvCreateVideoWriter(String filename, int fourcc,
             double fps, CvSize.ByValue frame_size, int is_color/*=1*/);
     public static native void cvReleaseVideoWriter(CvVideoWriter.PointerByReference writer);

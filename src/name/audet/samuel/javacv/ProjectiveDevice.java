@@ -404,11 +404,13 @@ public class ProjectiveDevice {
         return xu;
     }
 
-    private static boolean is20 = false;
+    public static final boolean is20;
     static {
+        boolean b = false;
         try {
-            is20 = name.audet.samuel.javacv.jna.cv.v20.libname != null;
+            b = name.audet.samuel.javacv.jna.cv.v20.libname != null;
         } catch (Throwable t) { }
+        is20 = b;
     }
 
     private IplImage undistortMap1 = null, undistortMap2 = null;
@@ -460,7 +462,7 @@ public class ProjectiveDevice {
         return undistortMap2;
     }
     public void undistort(IplImage src, IplImage dst) {
-        undistort(src, dst, is20);
+        undistort(src, dst, true);
     }
     public void undistort(IplImage src, IplImage dst, boolean useFixedPointMaps) {
         if (src != null && dst != null) {
@@ -505,7 +507,7 @@ public class ProjectiveDevice {
         return distortMap2;
     }
     public void distort(IplImage src, IplImage dst) {
-        distort(src, dst, is20);
+        distort(src, dst, true);
     }
     public void distort(IplImage src, IplImage dst, boolean useFixedPointMaps) {
         if (src != null && dst != null) {
@@ -755,3 +757,4 @@ public class ProjectiveDevice {
         return s;
     }
 }
+

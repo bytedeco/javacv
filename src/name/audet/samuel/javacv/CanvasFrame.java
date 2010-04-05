@@ -59,7 +59,6 @@ public class CanvasFrame extends JFrame {
         }
         return descriptions;
     }
-
     public static DisplayMode getDisplayMode(int screenNumber) {
         GraphicsDevice[] screens = getScreenDevices();
         if (screenNumber >= 0 && screenNumber < screens.length) {
@@ -68,6 +67,7 @@ public class CanvasFrame extends JFrame {
             return null;
         }
     }
+
     public static GraphicsDevice getScreenDevice(int screenNumber) throws Exception {
         GraphicsDevice[] screens = getScreenDevices();
         if (screenNumber >= screens.length) {
@@ -80,32 +80,29 @@ public class CanvasFrame extends JFrame {
         return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
     }
 
-    public CanvasFrame(boolean fullScreen) {
-        this(fullScreen, null, null, null);
+    public CanvasFrame() {
+        super();
+        init(false, null);
     }
-    public CanvasFrame(boolean fullScreen,  String title) {
-        this(fullScreen, title, null, null);
+    public CanvasFrame(GraphicsConfiguration gc) {
+        super(gc);
+        init(false, null);
     }
-    public CanvasFrame(boolean fullScreen, int screenNumber) throws Exception {
-        this(fullScreen, null, getScreenDevice(screenNumber).getDefaultConfiguration(), null);
+    public CanvasFrame(String title) {
+        super(title);
+        init(false, null);
     }
-    public CanvasFrame(boolean fullScreen, GraphicsConfiguration gc) {
-        this(fullScreen, null, gc, null);
-    }
-    public CanvasFrame(boolean fullScreen, int screenNumber, DisplayMode displayMode) throws Exception {
-        this(fullScreen, null, getScreenDevice(screenNumber).getDefaultConfiguration(), displayMode);
-    }
-    public CanvasFrame(boolean fullScreen, GraphicsConfiguration gc, DisplayMode displayMode) {
-        this(fullScreen, null, gc, displayMode);
-    }
-    public CanvasFrame(boolean fullScreen,  String title,
-            int screenNumber, DisplayMode displayMode) throws Exception {
-        this(fullScreen, title, getScreenDevice(screenNumber).getDefaultConfiguration(), displayMode);
-    }
-    public CanvasFrame(boolean fullScreen, String title,
-            GraphicsConfiguration gc, DisplayMode displayMode) {
+    public CanvasFrame(String title, GraphicsConfiguration gc) {
         super(title, gc);
-        init(fullScreen, displayMode);
+        init(false, null);
+    }
+    public CanvasFrame(int screenNumber, DisplayMode displayMode) throws Exception {
+        super(getScreenDevice(screenNumber).getDefaultConfiguration());
+        init(true, displayMode);
+    }
+    public CanvasFrame(String title, int screenNumber, DisplayMode displayMode) throws Exception {
+        super(title, getScreenDevice(screenNumber).getDefaultConfiguration());
+        init(true, displayMode);
     }
 
     @Override public void dispose() {
@@ -120,16 +117,16 @@ public class CanvasFrame extends JFrame {
         int b = displayMode == null ? 0 : displayMode.getBitDepth();
         int r = displayMode == null ? 0 : displayMode.getRefreshRate();
         DisplayMode d = gd.getDisplayMode();
-        displayMode = new DisplayMode(w > 0 ? w : d.getWidth(), h > 0 ? h : d.getHeight(),
+        displayMode = new DisplayMode(w > 0 ? w : d.getWidth(),    h > 0 ? h : d.getHeight(),
                                       b > 0 ? b : d.getBitDepth(), r > 0 ? r : d.getRefreshRate());
-        if (!displayMode.equals(d)) {
-            gd.setDisplayMode(displayMode);
-        }
         if (fullScreen) {
             setUndecorated(true);
             getRootPane().setWindowDecorationStyle(JRootPane.NONE);
             setResizable(false);
             gd.setFullScreenWindow(this);
+        }
+        if (!displayMode.equals(d)) {
+            gd.setDisplayMode(displayMode);
         }
 
         // must be called after the fullscreen stuff, but before
@@ -207,7 +204,7 @@ public class CanvasFrame extends JFrame {
     public Canvas getCanvas() {
         return canvas;
     }
-    public BufferStrategy getBufferStrategy() {
+    @Override public BufferStrategy getBufferStrategy() {
         return bufferStrategy;
     }
 

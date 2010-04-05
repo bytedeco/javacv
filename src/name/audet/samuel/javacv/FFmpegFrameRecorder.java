@@ -113,7 +113,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         /* allocate the output media context */
-        oc = av_alloc_format_context();
+        oc = avformat_alloc_context();
         if (oc == null) {
             throw new Exception("Memory error");
         }
