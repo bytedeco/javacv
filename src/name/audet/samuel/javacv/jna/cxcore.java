@@ -105,11 +105,12 @@ import java.util.HashMap;
  */
 public class cxcore {
     // OpenCV does not always install itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
-            "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
-            "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "cxcore", "cxcore_64", "cxcore200", "cxcore200_64",
-            "cxcore110", "cxcore110_64", "cxcore100", "cxcore100_64" };
+    public static final String[] paths = { "/usr/local/lib/", "/usr/local/lib64/",
+            "C:/OpenCV2.1/bin/Release/", "C:/OpenCV2.1/bin/",
+            "C:/OpenCV2.0/bin/Release/", "C:/OpenCV2.0/bin/",
+            "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/" };
+    public static final String[] libnames = { "cxcore", "cxcore_64", "cxcore210", "cxcore210_64",
+            "cxcore200", "cxcore200_64", "cxcore110", "cxcore110_64", "cxcore100", "cxcore100_64" };
     public static final String libname = Loader.load(paths, libnames);
 
 
@@ -149,6 +150,26 @@ public class cxcore {
         public static native int cvSetImageIOFunctions(Function _load_image,
                 Function _load_image_m, Function _save_image,
                 Function _show_image);
+    }
+    public static class v21 extends v11or20 {
+        public static final String libname = Loader.load(paths, libnames);
+
+        public static native void cvRectangleR(CvArr img, CvRect.ByValue r, CvScalar.ByValue color,
+                int thickness/*=1*/, int line_type/*=8*/, int shift/*=0*/);
+
+        public static final int
+                CV_CPU_NONE   =  0,
+                CV_CPU_MMX    =  1,
+                CV_CPU_SSE    =  2,
+                CV_CPU_SSE2   =  3,
+                CV_CPU_SSE3   =  4,
+                CV_CPU_SSSE3  =  5,
+                CV_CPU_SSE4_1 =  6,
+                CV_CPU_SSE4_2 =  7,
+                CV_CPU_AVX    = 10,
+                CV_HARDWARE_MAX_FEATURE = 255;
+
+        public static native int cvCheckHardwareSupport(int feature);
     }
 
 
@@ -980,12 +1001,12 @@ public class cxcore {
     public static final String CV_TYPE_NAME_MAT   = "opencv-matrix";
 
     public static class CvMat extends CvArr {
-        public CvMat() { fullSize = getSize(); cvcreated = false; }
+        public CvMat() { fullSize = getSize(); releasable = false; }
         public CvMat(Pointer m) { super(m); if (getClass() == CvMat.class) read();
-            fullSize = getSize(); cvcreated = true; }
+            fullSize = getSize(); releasable = true; }
         public CvMat(int rows, int cols, int type, Pointer data, int step) {
             cvInitMatHeader(this, rows, cols, type, data, step);
-            fullSize = getSize(); cvcreated = false;
+            fullSize = getSize(); releasable = false;
         }
         public CvMat(int rows, int cols, int type, Pointer data) {
             this(rows, cols, type, data, cols*CV_ELEM_SIZE(type));
@@ -1001,7 +1022,7 @@ public class cxcore {
             CvMat m = cvCreateMat(rows, cols, type);
             if (m != null) {
                 m.fullSize = m.getSize();
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
@@ -1016,7 +1037,7 @@ public class cxcore {
             CvMat m = cvCreateMatHeader(rows, cols, type);
             if (m != null) {
                 m.fullSize = m.getSize();
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
@@ -1028,22 +1049,22 @@ public class cxcore {
         }
 
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseMat(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
         @Override public CvMat clone() {
             CvMat m = cvCloneMat(this);
             if (m != null) {
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
 
         public int type;
@@ -1441,35 +1462,35 @@ public class cxcore {
             CV_MAX_DIM_HEAP     = (1 << 16);
 
     public static class CvMatND extends CvArr {
-        public CvMatND() { cvcreated = false; }
+        public CvMatND() { releasable = false; }
         public CvMatND(Pointer m) { super(m); if (getClass() == CvMatND.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvMatND create(int dims, int[] sizes, int type) {
             CvMatND m = cvCreateMatND(dims, sizes, type);
             if (m != null) {
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
 
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseMatND(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
         @Override public CvMatND clone() {
             CvMatND m = cvCloneMatND(this);
             if (m != null) {
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
 
         public int type;
@@ -1523,35 +1544,35 @@ public class cxcore {
     public static final String CV_TYPE_NAME_SPARSE_MAT = "opencv-sparse-matrix";
 
     public static class CvSparseMat extends CvArr {
-        public CvSparseMat() { cvcreated = false; }
+        public CvSparseMat() { releasable = false; }
         public CvSparseMat(Pointer m) { super(m); if (getClass() == CvSparseMat.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvSparseMat create(int dims, int[] sizes, int type) {
             CvSparseMat m = cvCreateSparseMat(dims, sizes, type);
             if (m != null) {
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
 
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseSparseMat(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
         @Override public CvSparseMat clone() {
             CvSparseMat m = cvCloneSparseMat(this);
             if (m != null) {
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
 
         public int type;
@@ -1689,14 +1710,14 @@ public class cxcore {
             IPL_BORDER_WRAP      = 3;
 
     public static class IplImage extends CvArr {
-        public IplImage() { cvcreated = false; cvcreatedHeader = false; }
+        public IplImage() { releasable = false; releasableHeader = false; }
         public IplImage(Pointer m) { super(m); if (getClass() == IplImage.class) read();
-            cvcreated = true; }
+            releasable = true; }
         public static IplImage create(CvSize.ByValue size, int depth, int channels) {
             IplImage i = cvCreateImage(size, depth, channels);
             if (i != null) {
-                i.cvcreated = true;
-                i.cvcreatedHeader = false;
+                i.releasable = true;
+                i.releasableHeader = false;
             }
             return i;
         }
@@ -1721,8 +1742,8 @@ public class cxcore {
         public static IplImage createHeader(CvSize.ByValue size, int depth, int channels) {
             IplImage i = cvCreateImageHeader(size, depth, channels);
             if (i != null) {
-                i.cvcreated = false;
-                i.cvcreatedHeader = true;
+                i.releasable = false;
+                i.releasableHeader = true;
             }
             return i;
         }
@@ -1775,29 +1796,29 @@ public class cxcore {
         }
 
         public void release() {
-            if (cvcreatedHeader) {
+            if (releasableHeader) {
                 cvReleaseImageHeader(pointerByReference());
-            } else if (cvcreated) {
+            } else if (releasable) {
                 cvReleaseImage(pointerByReference());
             }
-            cvcreated = false;
-            cvcreatedHeader = false;
+            releasable = false;
+            releasableHeader = false;
         }
         @Override protected void finalize() {
-            if (cvcreated || cvcreatedHeader) {
+            if (releasable || releasableHeader) {
                 release();
             }
         }
         @Override public IplImage clone() {
             IplImage i = cvCloneImage(this);
             if (i != null) {
-                i.cvcreated = true;
-                i.cvcreatedHeader = false;
+                i.releasable = true;
+                i.releasableHeader = false;
             }
             return i;
         }
-        private boolean cvcreated = false;
-        private boolean cvcreatedHeader = false;
+        private boolean releasable = false;
+        private boolean releasableHeader = false;
 
 
         public int  nSize;
@@ -2820,14 +2841,14 @@ public class cxcore {
     }
 
     public static class CvMemStorage extends Structure {
-        public CvMemStorage() { cvcreated = false; }
+        public CvMemStorage() { releasable = false; }
         public CvMemStorage(Pointer m) { super(m); if (getClass() == CvMemStorage.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvMemStorage create(int block_size) {
             CvMemStorage m = cvCreateMemStorage(block_size);
             if (m != null) {
-                m.cvcreated = true;
+                m.releasable = true;
             }
             return m;
         }
@@ -2836,15 +2857,15 @@ public class cxcore {
         }
     
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseMemStorage(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
 
         public int signature;
@@ -3433,28 +3454,28 @@ public class cxcore {
     }
 
     public static class CvGraphScanner extends Structure  {
-        public CvGraphScanner() { cvcreated = false; }
+        public CvGraphScanner() { releasable = false; }
         public CvGraphScanner(Pointer m) { super(m); if (getClass() == CvGraphScanner.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvGraphScanner create(CvGraph graph,
                 CvGraphVtx vtx/*=null*/, int mask/*=CV_GRAPH_ALL_ITEMS*/) {
             CvGraphScanner g = cvCreateGraphScanner(graph, vtx, mask);
             if (g != null) {
-                g.cvcreated = true;
+                g.releasable = true;
             }
             return g;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseGraphScanner(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public CvGraphVtx .ByReference vtx;
         public CvGraphVtx .ByReference dst;
@@ -3543,7 +3564,7 @@ public class cxcore {
     }
     public static void cvEllipseBox(CvArr img, CvBox2D.ByValue box, CvScalar.ByValue color,
             int thickness/*=1*/, int line_type/*=8*/, int shift/*=0*/) {
-        CvSize.ByValue axes = new CvSize.ByValue((int)Math.round(box.size.height*0.5), (int)Math.round(box.size.width*0.5));
+        CvSize.ByValue axes = new CvSize.ByValue((int)Math.round(box.size.width*0.5), (int)Math.round(box.size.height*0.5));
         cvEllipse(img, new CvPoint(box.center).byValue(), axes, box.angle,
                    0, 360, color, thickness, line_type, shift);
     }
@@ -3674,27 +3695,27 @@ public class cxcore {
 
 
     public static class CvFileStorage extends PointerType {
-        public CvFileStorage() { cvcreated = false; }
-        public CvFileStorage(Pointer p) { super(p); cvcreated = true; }
+        public CvFileStorage() { releasable = false; }
+        public CvFileStorage(Pointer p) { super(p); releasable = true; }
 
         public static CvFileStorage open(String filename, CvMemStorage memstorage, int flags) {
             CvFileStorage f = cvOpenFileStorage(filename, memstorage, flags);
             if (f != null) {
-                f.cvcreated = true;
+                f.releasable = true;
             }
             return f;
         }
 
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseFileStorage(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
             public PointerByReference() { }

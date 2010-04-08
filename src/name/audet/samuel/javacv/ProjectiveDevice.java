@@ -26,6 +26,9 @@ import java.nio.FloatBuffer;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.v11or20.*;
+import name.audet.samuel.javacv.jna.cv.v21;
+import name.audet.samuel.javacv.jna.cv.v20;
+import name.audet.samuel.javacv.jna.cv.v11;
 
 /**
  *
@@ -404,19 +407,21 @@ public class ProjectiveDevice {
         return xu;
     }
 
-    public static final boolean is20;
+    public static final boolean is20or21;
     static {
         boolean b = false;
         try {
             b = name.audet.samuel.javacv.jna.cv.v20.libname != null;
-        } catch (Throwable t) { }
-        is20 = b;
+        } catch (Throwable t) { 
+            b = name.audet.samuel.javacv.jna.cv.v21.libname != null;
+        }
+        is20or21 = b;
     }
 
     private IplImage undistortMap1 = null, undistortMap2 = null;
     private void initUndistortMaps(boolean useFixedPointMaps) {
         //cvUndistort2(src, dst, cameraMatrix, distortionCoeffs);
-        if (is20) {
+        if (is20or21) {
             if (undistortMap1 == null || undistortMap2 == null) {
                 if (useFixedPointMaps) {
                     undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
@@ -435,14 +440,14 @@ public class ProjectiveDevice {
                 FloatBuffer bufy = mapy.getFloatBuffer();
                 for (int y = 0; y < mapx.height; y++) {
                     for (int x = 0; x < mapx.width; x++) {
-                        double[] distxy = undistort(x, y);
-                        bufx.put((float)distxy[0]);
-                        bufy.put((float)distxy[1]);
+                        double[] undistxy = undistort(x, y);
+                        bufx.put((float)undistxy[0]);
+                        bufy.put((float)undistxy[1]);
                     }
                 }
                 if (useFixedPointMaps) {
                     undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
-                    undistortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 1);
+                    undistortMap2 = IplImage.create(imageWidth, imageHeight, is20or21 ? IPL_DEPTH_16U : IPL_DEPTH_16S, 1);
                     cvConvertMaps(mapx, mapy, undistortMap1, undistortMap2);
                     mapx.release();
                     mapy.release();
@@ -488,7 +493,7 @@ public class ProjectiveDevice {
             }
             if (useFixedPointMaps) {
                 distortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
-                distortMap2 = IplImage.create(imageWidth, imageHeight, is20 ? IPL_DEPTH_16U : IPL_DEPTH_16S, 1);
+                distortMap2 = IplImage.create(imageWidth, imageHeight, is20or21 ? IPL_DEPTH_16U : IPL_DEPTH_16S, 1);
                 cvConvertMaps(mapx, mapy, distortMap1, distortMap2);
                 mapx.release();
                 mapy.release();
@@ -558,10 +563,24 @@ public class ProjectiveDevice {
         CvSize.ByValue imageSize = // ??
                 new CvSize((peer.imageWidth  + imageWidth )/2,
                            (peer.imageHeight + imageHeight)/2).byValue();
-        cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
-                        peer.distortionCoeffs, distortionCoeffs,
-                        imageSize, relativeR, relativeT,
-                        R1, R2, P1, P2, null, 0);
+        try {
+            v21.cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
+                            peer.distortionCoeffs, distortionCoeffs,
+                            imageSize, relativeR, relativeT,
+                            R1, R2, P1, P2, null, 0, -1, CvSize.ZERO, null, null);
+        } catch (Throwable t) {
+            try {
+                v20.cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
+                                peer.distortionCoeffs, distortionCoeffs,
+                                imageSize, relativeR, relativeT,
+                                R1, R2, P1, P2, null, 0);
+            } catch (Throwable tt) {
+                v11.cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
+                                peer.distortionCoeffs, distortionCoeffs,
+                                imageSize, relativeR, relativeT,
+                                R1, R2, P1, P2, null, 0);
+            }
+        }
         cvMatMul(cameraMatrix, R2, R2);
         cvInvert(cameraMatrix, R1);
         cvMatMul(R2, R1, H);

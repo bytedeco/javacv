@@ -74,11 +74,9 @@ import static name.audet.samuel.javacv.jna.cxcore.*;
  */
 public class cv {
     // OpenCV does not always install itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
-            "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
-            "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "cv", "cv_64", "cv200", "cv200_64",
-            "cv110", "cv110_64", "cv100", "cv100_64" };
+    public static final String[] paths = cxcore.paths;
+    public static final String[] libnames = { "cv", "cv_64", "cv210", "cv210_64",
+            "cv200", "cv200_64", "cv110", "cv110_64", "cv100", "cv100_64" };
     public static final String libname = Loader.load(paths, libnames);
 
 
@@ -90,6 +88,25 @@ public class cv {
         public static native void cvFindExtrinsicCameraParams2(CvMat object_points, CvMat image_points,
                 CvMat camera_matrix, CvMat distortion_coeffs,
                 CvMat rotation_vector, CvMat translation_vector);
+
+        public static native CvConDensation cvCreateConDensation(int dynam_params, int measure_params, int sample_count);
+        public static native void cvReleaseConDensation(CvConDensation.PointerByReference condens);
+        public static native void cvConDensInitSampleSet(CvConDensation condens, CvMat lower_bound, CvMat upper_bound);
+        public static native void cvConDensUpdateByTime(CvConDensation condens);
+
+        public static final int CV_DOMINANT_IPAN = 1;
+        public static native CvSeq cvFindDominantPoints(CvSeq contour, CvMemStorage storage,
+                int method/*=CV_DOMINANT_IPAN*/, double parameter1/*=0*/,
+                double parameter2/*=0*/, double parameter3/*=0*/, double parameter4/*=0*/);
+
+        public static native double cvContourArea(CvArr contour, CvSlice.ByValue slice/*=CV_WHOLE_SEQ*/);
+
+        public static native void cvCalcPGH(CvSeq contour, CvHistogram hist);
+
+        public static native void cvCalcImageHomography(float[] line, CvPoint3D32f center,
+                float[] intrinsic, float[] homography);
+
+        public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
     }
     public static class v11 extends v11or20 {
         public static final String libname = Loader.load(paths, libnames);
@@ -101,6 +118,42 @@ public class cv {
                 CvMat rotation_vector, CvMat translation_vector);
 
         public static native void cvReprojectImageTo3D(CvArr disparityImage, CvArr _3dImage, CvMat Q);
+
+        public static native CvConDensation cvCreateConDensation(int dynam_params, int measure_params, int sample_count);
+        public static native void cvReleaseConDensation(CvConDensation.PointerByReference condens);
+        public static native void cvConDensInitSampleSet(CvConDensation condens, CvMat lower_bound, CvMat upper_bound);
+        public static native void cvConDensUpdateByTime(CvConDensation condens);
+
+        public static final int CV_DOMINANT_IPAN = 1;
+        public static native CvSeq cvFindDominantPoints(CvSeq contour, CvMemStorage storage,
+                int method/*=CV_DOMINANT_IPAN*/, double parameter1/*=0*/,
+                double parameter2/*=0*/, double parameter3/*=0*/, double parameter4/*=0*/);
+
+        public static native double cvContourArea(CvArr contour, CvSlice.ByValue slice/*=CV_WHOLE_SEQ*/);
+
+        public static native void cvCalcPGH(CvSeq contour, CvHistogram hist);
+
+        public static native void cvCalcImageHomography(float[] line, CvPoint3D32f center,
+                float[] intrinsic, float[] homography);
+
+        public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
+
+        public static native void cvStereoRectify(CvMat camera_matrix1, CvMat camera_matrix2,
+                CvMat dist_coeffs1, CvMat dist_coeffs2, CvSize.ByValue image_size, CvMat R, CvMat T,
+                CvMat R1, CvMat R2, CvMat P1, CvMat P2, CvMat Q/*=null*/,
+                int flags/*=CV_CALIB_ZERO_DISPARITY*/);
+
+        public static class CvStereoBMState extends v11or20.CvStereoBMState {
+            public CvStereoBMState() { releasable = false; }
+            public CvStereoBMState(Pointer m) { super(m); if (getClass() == CvStereoBMState.class) read();
+                releasable = true; }
+
+            public CvMat.ByReference preFilteredImg0;
+            public CvMat.ByReference preFilteredImg1;
+            public CvMat.ByReference slidingSumBuf;
+            public CvMat.ByReference dbmin;
+            public CvMat.ByReference dbmax;
+        }
     }
     public static class v11or20 extends cv {
         public static final String libname = Loader.load(paths, libnames);
@@ -241,7 +294,7 @@ public class cv {
         public static final int
                 CV_CALIB_FIX_INTRINSIC     = 256,
                 CV_CALIB_SAME_FOCAL_LENGTH = 512;
-        public static native void cvStereoCalibrate(CvMat object_points, CvMat image_points1,
+        public static native double cvStereoCalibrate(CvMat object_points, CvMat image_points1,
                 CvMat image_points2, CvMat point_counts,
                 CvMat camera_matrix1, CvMat dist_coeffs1,
                 CvMat camera_matrix2, CvMat dist_coeffs2,
@@ -249,11 +302,10 @@ public class cv {
                 CvMat F/*=null*/, CvTermCriteria.ByValue term_crit /*=cvTermCriteria(
                 CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,30,1e-6)*/, int flags/*=CV_CALIB_FIX_INTRINSIC*/);
         public static final int CV_CALIB_ZERO_DISPARITY = 1024;
-        public static native void cvStereoRectify(CvMat camera_matrix1, CvMat camera_matrix2,
-                CvMat dist_coeffs1, CvMat dist_coeffs2,
-                CvSize.ByValue image_size, CvMat R, CvMat T,
-                CvMat R1, CvMat R2, CvMat P1, CvMat P2, CvMat Q/*=null*/,
-                int flags/*=CV_CALIB_ZERO_DISPARITY*/);
+//        public static native void cvStereoRectify(CvMat camera_matrix1, CvMat camera_matrix2,
+//                CvMat dist_coeffs1, CvMat dist_coeffs2, CvSize.ByValue image_size, CvMat R, CvMat T,
+//                CvMat R1, CvMat R2, CvMat P1, CvMat P2, CvMat Q/*=null*/,
+//                int flags/*=CV_CALIB_ZERO_DISPARITY*/);
         public static native int cvStereoRectifyUncalibrated(CvMat points1, CvMat points2,
                 CvMat F, CvSize.ByValue img_size, CvMat H1, CvMat H2, double threshold/*=5*/);
 
@@ -267,29 +319,31 @@ public class cv {
         public static native int cvRANSACUpdateNumIters(double p, double err_prob, int model_points, int max_iters);
 
 
-        public static final int CV_STEREO_BM_NORMALIZED_RESPONSE = 0;
+        public static final int 
+                CV_STEREO_BM_NORMALIZED_RESPONSE = 0,
+                CV_STEREO_BM_XSOBEL              = 1;
         public static class CvStereoBMState extends Structure {
-            public CvStereoBMState() { cvcreated = false; }
+            public CvStereoBMState() { releasable = false; }
             public CvStereoBMState(Pointer m) { super(m); if (getClass() == CvStereoBMState.class) read();
-                cvcreated = true; }
+                releasable = true; }
 
             public static CvStereoBMState create(int preset, int numberOfDisparities) {
                 CvStereoBMState m = cvCreateStereoBMState(preset, numberOfDisparities);
                 if (m != null) {
-                    m.cvcreated = true;
+                    m.releasable = true;
                 }
                 return m;
             }
             public void release() {
-                cvcreated = false;
+                releasable = false;
                 cvReleaseStereoBMState(pointerByReference());
             }
             @Override protected void finalize() {
-                if (cvcreated) {
+                if (releasable) {
                     release();
                 }
             }
-            private boolean cvcreated = false;
+            protected boolean releasable = false;
 
             public int preFilterType = CV_STEREO_BM_NORMALIZED_RESPONSE;
             public int preFilterSize;
@@ -306,11 +360,11 @@ public class cv {
 
             public int trySmallerWindows;
 
-            public CvMat.ByReference preFilteredImg0;
-            public CvMat.ByReference preFilteredImg1;
-            public CvMat.ByReference slidingSumBuf;
-            public CvMat.ByReference dbmin;
-            public CvMat.ByReference dbmax;
+//            public CvMat.ByReference preFilteredImg0;
+//            public CvMat.ByReference preFilteredImg1;
+//            public CvMat.ByReference slidingSumBuf;
+//            public CvMat.ByReference dbmin;
+//            public CvMat.ByReference dbmax;
 
             public static class ByReference extends CvStereoBMState implements Structure.ByReference { }
 
@@ -347,27 +401,27 @@ public class cv {
 
         public static final int CV_STEREO_GC_OCCLUDED = Short.MAX_VALUE;
         public static class CvStereoGCState extends Structure {
-            public CvStereoGCState() { cvcreated = false; }
+            public CvStereoGCState() { releasable = false; }
             public CvStereoGCState(Pointer m) { super(m); if (getClass() == CvStereoGCState.class) read();
-                cvcreated = true; }
+                releasable = true; }
 
             public static CvStereoGCState create(int numberOfDisparities, int maxIters) {
                 CvStereoGCState m = cvCreateStereoGCState(numberOfDisparities, maxIters);
                 if (m != null) {
-                    m.cvcreated = true;
+                    m.releasable = true;
                 }
                 return m;
             }
             public void release() {
-                cvcreated = false;
+                releasable = false;
                 cvReleaseStereoGCState(pointerByReference());
             }
             @Override protected void finalize() {
-                if (cvcreated) {
+                if (releasable) {
                     release();
                 }
             }
-            private boolean cvcreated = false;
+            private boolean releasable = false;
 
             public int Ithreshold;
             public int interactionRadius;
@@ -418,7 +472,7 @@ public class cv {
         public static native void cvConvertPointsHomogeneous(CvMat src, CvMat dst);
     }
 
-    public static class v20 extends v11or20 {
+    public static class v20or21 extends v11or20 {
         public static final String libname = Loader.load(paths, libnames);
 
         public static native CvFeatureTree cvCreateKDTree(CvMat desc);
@@ -590,6 +644,99 @@ public class cv {
         }
     }
 
+    public static class v20 extends v20or21 {
+        public static final String libname = Loader.load(paths, libnames);
+
+        public static native CvConDensation cvCreateConDensation(int dynam_params, int measure_params, int sample_count);
+        public static native void cvReleaseConDensation(CvConDensation.PointerByReference condens);
+        public static native void cvConDensInitSampleSet(CvConDensation condens, CvMat lower_bound, CvMat upper_bound);
+        public static native void cvConDensUpdateByTime(CvConDensation condens);
+
+        public static final int CV_DOMINANT_IPAN = 1;
+        public static native CvSeq cvFindDominantPoints(CvSeq contour, CvMemStorage storage,
+                int method/*=CV_DOMINANT_IPAN*/, double parameter1/*=0*/,
+                double parameter2/*=0*/, double parameter3/*=0*/, double parameter4/*=0*/);
+
+        public static native double cvContourArea(CvArr contour, CvSlice.ByValue slice/*=CV_WHOLE_SEQ*/);
+
+        public static native void cvCalcPGH(CvSeq contour, CvHistogram hist);
+
+        public static native void cvCalcImageHomography(float[] line, CvPoint3D32f center,
+                float[] intrinsic, float[] homography);
+
+        public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
+
+        public static native void cvStereoRectify(CvMat camera_matrix1, CvMat camera_matrix2,
+                CvMat dist_coeffs1, CvMat dist_coeffs2, CvSize.ByValue image_size, CvMat R, CvMat T,
+                CvMat R1, CvMat R2, CvMat P1, CvMat P2, CvMat Q/*=null*/,
+                int flags/*=CV_CALIB_ZERO_DISPARITY*/);
+
+        public static class CvStereoBMState extends v11or20.CvStereoBMState {
+            public CvStereoBMState() { releasable = false; }
+            public CvStereoBMState(Pointer m) { super(m); if (getClass() == CvStereoBMState.class) read();
+                releasable = true; }
+
+            public CvMat.ByReference preFilteredImg0;
+            public CvMat.ByReference preFilteredImg1;
+            public CvMat.ByReference slidingSumBuf;
+            public CvMat.ByReference dbmin;
+            public CvMat.ByReference dbmax;
+        }
+    }
+
+    public static class v21 extends v20or21 {
+        public static final String libname = Loader.load(paths, libnames);
+
+        public static class CvSubdiv2DPoint extends v20.CvSubdiv2DPoint {
+            public CvSubdiv2DPoint() { }
+            public CvSubdiv2DPoint(Pointer m) { super(m); if (getClass() == CvSubdiv2DPoint.class) read(); }
+
+            public int id;
+        }
+
+        public static native void cvCalcOpticalFlowFarneback(CvArr prev, CvArr next,
+                CvArr flow, double pyr_scale, int levels, int winsize,
+                int iterations, int poly_n, double poly_sigma, int flags);
+
+        public static native double cvContourArea(CvArr contour,
+                CvSlice.ByValue slice/*=CV_WHOLE_SEQ*/, int oriented/*=0*/);
+
+        public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix,
+                CvMat distortion_coeffs, CvMat new_camera_matrix/*=null*/);
+
+        public static native void cvGetOptimalNewCameraMatrix(CvMat camera_matrix,
+                CvMat dist_coeffs, CvSize.ByValue image_size, double alpha, CvMat new_camera_matrix,
+                CvSize.ByValue new_imag_size/*=cvSize(0,0)*/, CvRect valid_pixel_ROI/*=null*/);
+
+        public static native int cvCheckChessboard(IplImage src, CvSize.ByValue size);
+
+        public static native void cvStereoRectify(CvMat camera_matrix1, CvMat camera_matrix2,
+                CvMat dist_coeffs1, CvMat dist_coeffs2, CvSize.ByValue image_size, CvMat R, CvMat T,
+                CvMat R1, CvMat R2, CvMat P1, CvMat P2, CvMat Q/*=null*/, int flags/*=CV_CALIB_ZERO_DISPARITY*/,
+                double alpha/*=-1*/, CvSize.ByValue new_image_size/*=cvSize(0,0)*/,
+                CvRect valid_pix_ROI1/*=null*/, CvRect valid_pix_ROI2/*=null*/);
+
+        public static class CvStereoBMState extends v11or20.CvStereoBMState {
+            public CvStereoBMState() { releasable = false; }
+            public CvStereoBMState(Pointer m) { super(m); if (getClass() == CvStereoBMState.class) read();
+                releasable = true; }
+
+            public CvRect roi1, roi2;
+            public int disp12MaxDiff;
+
+            public CvMat.ByReference preFilteredImg0;
+            public CvMat.ByReference preFilteredImg1;
+            public CvMat.ByReference slidingSumBuf;
+            public CvMat.ByReference cost;
+            public CvMat.ByReference disp;
+        }
+
+        public static native CvRect.ByValue cvGetValidDisparityROI(CvRect.ByValue roi1,
+                CvRect.ByValue roi2, int minDisparity, int numberOfDisparities, int SADWindowSize);
+        public static native void cvValidateDisparity(CvArr disparity, CvArr cost,
+                int minDisparity, int numberOfDisparities, int disp12MaxDiff/*=1*/);
+    }
+
 
     public static final int
             CV_SCHARR          = -1,
@@ -682,29 +829,29 @@ public class cv {
 
 
     public static class IplConvKernel extends Structure {
-        public IplConvKernel() { cvcreated = false; }
+        public IplConvKernel() { releasable = false; }
         public IplConvKernel(Pointer m) { super(m); if (getClass() == IplConvKernel.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static IplConvKernel create(int cols, int rows,
                 int anchor_x, int anchor_y, int shape, int[] values/*=null*/) {
             IplConvKernel k = cvCreateStructuringElementEx(cols, rows,
                     anchor_x, anchor_y, shape, values);
             if (k != null) {
-                k.cvcreated = true;
+                k.releasable = true;
             }
             return k;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseStructuringElement(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public int  nCols;
         public int  nRows;
@@ -750,6 +897,8 @@ public class cv {
     public static native void cvDilate(CvArr src, CvArr dst,
             IplConvKernel element/*=null*/, int iterations/*=1*/);
     public static final int
+            CV_MOP_ERODE       = 0,
+            CV_MOP_DILATE      = 1,
             CV_MOP_OPEN        = 2,
             CV_MOP_CLOSE       = 3,
             CV_MOP_GRADIENT    = 4,
@@ -1071,28 +1220,28 @@ public class cv {
             CV_HIST_UNIFORM       = 1;
 
     public static class CvHistogram extends Structure {
-        public CvHistogram() { cvcreated = false; }
+        public CvHistogram() { releasable = false; }
         public CvHistogram(Pointer m) { super(m); if (getClass() == CvHistogram.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvHistogram create(int dims, int[] sizes, int type,
                 FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
             CvHistogram h = cvCreateHist(dims, sizes, type, ranges, uniform);
             if (h != null) {
-                h.cvcreated = true;
+                h.releasable = true;
             }
             return h;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseHist(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
 
         public int /* CvHistType */           type;
@@ -1273,12 +1422,8 @@ public class cv {
     public static final int CV_POLY_APPROX_DP = 0;
     public static native CvSeq cvApproxPoly(Pointer src_seq, int header_size, CvMemStorage storage,
             int method/*=CV_POLY_APPROX_DP*/, double parameter, int parameter2/*=0*/);
-    public static final int CV_DOMINANT_IPAN = 1;
-    public static native CvSeq cvFindDominantPoints(CvSeq contour, CvMemStorage storage,
-            int method/*=CV_DOMINANT_IPAN*/, double parameter1/*=0*/,
-            double parameter2/*=0*/, double parameter3/*=0*/, double parameter4/*=0*/);
     public static native CvRect.ByValue cvBoundingRect(CvArr points, int update/*=0*/);
-    public static native double cvContourArea(CvArr contour, CvSlice.ByValue slice/*=CV_WHOLE_SEQ*/);
+//    public static native double cvContourArea(CvArr contour, CvSlice.ByValue slice/*=CV_WHOLE_SEQ*/);
     public static native double cvArcLength(Pointer curve, CvSlice.ByValue slice/*=CV_WHOLE_SEQ*/,
             int is_closed/*=-1*/);
     public static double cvContourPerimeter(Pointer contour) {
@@ -1321,7 +1466,6 @@ public class cv {
     public static native double cvPointPolygonTest(CvArr contour, CvPoint2D32f.ByValue pt, int measure_dist);
     public static native CvBox2D.ByValue cvMinAreaRect2(CvArr points, CvMemStorage storage/*=null*/);
     public static native int cvMinEnclosingCircle(CvArr points, CvPoint2D32f center, FloatByReference radius);
-    public static native void cvCalcPGH(CvSeq contour, CvHistogram hist);
 
 
     //typedef size_t CvSubdiv2DEdge;
@@ -1512,28 +1656,28 @@ public class cv {
 
 
     public static class CvKalman extends Structure {
-        public CvKalman() { cvcreated = false; }
+        public CvKalman() { releasable = false; }
         public CvKalman(Pointer m) { super(m); if (getClass() == CvKalman.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvKalman create(int dynam_params, int measure_params,
                 int control_params/*=0*/) {
             CvKalman k = cvCreateKalman(dynam_params, measure_params, control_params);
             if (k != null) {
-                k.cvcreated = true;
+                k.releasable = true;
             }
             return k;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseKalman(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public int MP;
         public int DP;
@@ -1605,28 +1749,53 @@ public class cv {
     }
 
     public static class CvConDensation extends Structure {
-        public CvConDensation() { cvcreated = false; }
+        public CvConDensation() { releasable = false; }
         public CvConDensation(Pointer m) { super(m); if (getClass() == CvConDensation.class) read();
-            cvcreated = true; }
+            releasable = true; }
+
+        private static int version;
 
         public static CvConDensation create(int dynam_params, int measure_params,
                 int sample_count) {
-            CvConDensation c = cvCreateConDensation(dynam_params, measure_params, sample_count);
+            CvConDensation c = null;
+            try {
+                c = cvaux.v21.cvCreateConDensation(dynam_params, measure_params, sample_count);
+                version = 21;
+            } catch (Throwable t) {
+                try {
+                    c = v20.cvCreateConDensation(dynam_params, measure_params, sample_count);
+                    version = 20;
+                } catch (Throwable tt) {
+                    try {
+                        c = v11.cvCreateConDensation(dynam_params, measure_params, sample_count);
+                        version = 11;
+                    } catch (Throwable ttt) {
+                        c = v10.cvCreateConDensation(dynam_params, measure_params, sample_count);
+                        version = 10;
+                    }
+                }
+            }
             if (c != null) {
-                c.cvcreated = true;
+                c.releasable = true;
             }
             return c;
         }
         public void release() {
-            cvcreated = false;
-            cvReleaseConDensation(pointerByReference());
+            releasable = false;
+            switch (version) {
+                case 21: cvaux.v21.cvReleaseConDensation(pointerByReference()); break;
+                case 20: v20.cvReleaseConDensation(pointerByReference()); break;
+                case 11: v11.cvReleaseConDensation(pointerByReference()); break;
+                case 10: v10.cvReleaseConDensation(pointerByReference()); break;
+                default: assert (false);
+            }
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public int MP;
         public int DP;
@@ -1664,10 +1833,6 @@ public class cv {
             return new PointerByReference(this);
         }
     }
-    public static native CvConDensation cvCreateConDensation(int dynam_params, int measure_params, int sample_count);
-    public static native void cvReleaseConDensation(CvConDensation.PointerByReference condens);
-    public static native void cvConDensInitSampleSet(CvConDensation condens, CvMat lower_bound, CvMat upper_bound);
-    public static native void cvConDensUpdateByTime(CvConDensation condens);
 
 
     public static final int CV_HAAR_MAGIC_VAL    = 0x42500000;
@@ -1716,29 +1881,29 @@ public class cv {
     public static class CvHidHaarClassifierCascade extends PointerType { }
 
     public static class CvHaarClassifierCascade extends Structure {
-        public CvHaarClassifierCascade() { cvcreated = false; }
+        public CvHaarClassifierCascade() { releasable = false; }
         public CvHaarClassifierCascade(Pointer m) { super(m); if (getClass() == CvHaarClassifierCascade.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvHaarClassifierCascade load(String directory,
                 CvSize.ByValue orig_window_size) {
             CvHaarClassifierCascade h = cvLoadHaarClassifierCascade(directory,
                     orig_window_size);
             if (h != null) {
-                h.cvcreated = true;
+                h.releasable = true;
             }
             return h;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseHaarClassifierCascade(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
 
         public int  flags;
@@ -1822,19 +1987,20 @@ public class cv {
             CV_CALIB_FIX_K1              = 32,
             CV_CALIB_FIX_K2              = 64,
             CV_CALIB_FIX_K3              = 128;
-    public static native void cvCalibrateCamera2(CvMat object_points, CvMat image_points,
+    public static native double cvCalibrateCamera2(CvMat object_points, CvMat image_points,
             CvMat point_counts, CvSize.ByValue image_size,
             CvMat intrinsic_matrix, CvMat distortion_coeffs,
             CvMat rotation_vectors/*=null*/, CvMat translation_vectors/*=null*/, int flags/*=0*/);
     public static native int cvRodrigues2(CvMat src, CvMat dst, CvMat jacobian/*=null*/);
-    public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
+//    public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
     public static native void cvInitUndistortMap(CvMat intrinsic_matrix, CvMat distortion_coeffs,
             CvArr mapx, CvArr mapy);
 
     public static final int
             CV_CALIB_CB_ADAPTIVE_THRESH = 1,
             CV_CALIB_CB_NORMALIZE_IMAGE = 2,
-            CV_CALIB_CB_FILTER_QUADS    = 4;
+            CV_CALIB_CB_FILTER_QUADS    = 4,
+            CV_CALIB_CB_FAST_CHECK      = 8;
     public static native int cvFindChessboardCorners(CvArr image, CvSize.ByValue pattern_size,
             CvPoint2D32f corners, IntByReference corner_count/*=null*/,
             int flags/*=CV_CALIB_CB_ADAPTIVE_THRESH */);
@@ -1855,27 +2021,27 @@ public class cv {
 
 
     public static class CvPOSITObject extends PointerType {
-        public CvPOSITObject() { cvcreated = false; }
-        public CvPOSITObject(Pointer p) { super(p); cvcreated = true; }
+        public CvPOSITObject() { releasable = false; }
+        public CvPOSITObject(Pointer p) { super(p); releasable = true; }
 
         public static CvPOSITObject create(CvPoint3D32f[] points) {
             CvPOSITObject p = cvCreatePOSITObject(points, points.length);
             if (p != null) {
-                p.cvcreated = true;
+                p.releasable = true;
             }
             return p;
         }
 
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleasePOSITObject(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
             public PointerByReference() { }
@@ -1912,8 +2078,6 @@ public class cv {
                 focal_length, criteria, rotation_matrix, translation_vector);
     }
     public static native void cvReleasePOSITObject(CvPOSITObject.PointerByReference posit_object);
-    public static native void cvCalcImageHomography(float[] line, CvPoint3D32f center,
-            float[] intrinsic, float[] homography);
 
 
     public static final int

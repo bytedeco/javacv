@@ -173,7 +173,6 @@ public class MarkedPlane {
         double rmse = Double.POSITIVE_INFINITY;
         int pointsPerMarker = useCenters ? 1 : 4;
 
-        CvMat tempWarp  = CvMat.take(3, 3);
         CvMat srcPts    = CvMat.take(markers.length*pointsPerMarker, 2);
         CvMat dstPts    = CvMat.take(markers.length*pointsPerMarker, 2);
 
@@ -198,7 +197,11 @@ public class MarkedPlane {
         if (numPoints > 4 || (srcPts.rows == 4 && numPoints == 4)) {
             // compute homography ... should we use a robust method?
             srcPts.rows = dstPts.rows = numPoints;
-            cvFindHomography(srcPts, dstPts, totalWarp);
+            if (numPoints == 4) {
+                JavaCV.getPerspectiveTransform(srcPts.get(), dstPts.get(), totalWarp);
+            } else {
+                cvFindHomography(srcPts, dstPts, totalWarp);
+            }
 
             // compute transformed source<->dest RMSE
             srcPts.cols = 1; srcPts.setType(CV_64F, 2);
@@ -218,12 +221,13 @@ public class MarkedPlane {
 
             if (prewarp != null) {
                 // remove pre-warp from total warp
+                CvMat tempWarp  = CvMat.take(3, 3);
                 cvInvert(prewarp, tempWarp);
                 cvMatMul(totalWarp, tempWarp, totalWarp);
+                tempWarp.pool();
             }
 //            System.out.println("totalWarp:\n" + totalWarp);
         }
-        tempWarp.pool();
         srcPts.rows = markers.length*pointsPerMarker; srcPts.pool();
         dstPts.rows = markers.length*pointsPerMarker; dstPts.pool();
         return rmse;

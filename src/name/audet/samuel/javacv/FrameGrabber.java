@@ -50,12 +50,21 @@ public abstract class FrameGrabber {
     }
     public static Class<? extends FrameGrabber> getDefault() {
         Class<? extends FrameGrabber> c = null;
-        // select first frame grabber that can load..
+        // select first frame grabber that can load and that may have some cameras..
         for (int i = 0; i < FrameGrabber.list.size(); i++) {
             try {
                 c = FrameGrabber.list.get(i);
                 c.getMethod("tryLoad").invoke(null);
-                break;
+                boolean mayContainCameras = true;
+                try {
+                    String[] s = (String[])c.getMethod("getDeviceDescriptions").invoke(null);
+                    if (s.length == 0) {
+                        mayContainCameras = false;
+                    }
+                } catch (Throwable t) { }
+                if (mayContainCameras) {
+                    break;
+                }
             } catch (Exception ex) { }
         }
         return c;

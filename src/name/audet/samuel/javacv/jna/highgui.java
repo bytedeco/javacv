@@ -69,11 +69,9 @@ import static name.audet.samuel.javacv.jna.cxcore.*;
  */
 public class highgui {
     // OpenCV does not always install itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
-            "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
-            "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "highgui", "highgui_64", "highgui200", "highgui200_64",
-            "highgui110", "highgui110_64", "highgui100", "highgui100_64" };
+    public static final String[] paths = cxcore.paths;
+    public static final String[] libnames = { "highgui", "highgui_64", "highgui210", "highgui210_64",
+            "highgui200", "highgui200_64", "highgui110", "highgui110_64", "highgui100", "highgui100_64" };
     public static final String libname = Loader.load(paths, libnames);
 
 
@@ -129,12 +127,24 @@ public class highgui {
 
         public static native int cvGetCaptureDomain(CvCapture capture);
     }
+    public static class v21 extends v20 {
+        public static final String libname = Loader.load(paths, libnames);
+
+        public static final int
+                CV_WND_PROP_FULLSCREEN = 0,
+                CV_WND_PROP_AUTOSIZE   = 1,
+                CV_WINDOW_NORMAL       = 0,
+                CV_WINDOW_FULLSCREEN   = 1;
+
+        public static native void cvSetWindowProperty(String name, int prop_id, double prop_value);
+        public static native double cvGetWindowProperty(String name, int prop_id);
+    }
 
     public static final boolean is10or11;
     static {
         boolean b = true;
         try {
-            b = highgui.v20.libname == null;
+            b = v20.libname == null;
         } catch (Throwable t) { }
         is10or11 = b;
     }
@@ -262,7 +272,9 @@ public class highgui {
 
             CV_CAP_UNICAP  = 600,
 
-            CV_CAP_DSHOW   = 700;
+            CV_CAP_DSHOW   = 700,
+
+            CV_CAP_PVAPI   = 800;
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native void cvReleaseCapture(CvCapture.PointerByReference capture);
     public static native int cvGrabFrame(CvCapture capture);

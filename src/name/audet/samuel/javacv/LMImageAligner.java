@@ -115,7 +115,7 @@ public class LMImageAligner implements ImageAligner {
         }
 
         double[] zeroThresholds = {1.0, 0.75, 0.5, 0.25, 0.0};
-        double[] LMLambdas      = {0.0, 1.0};
+        double[] LMLambdas      = {0.0, 0.5};
         double errorDecreaseMin = 0.02;
         double displacementMax  = 0.15;
 

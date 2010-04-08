@@ -56,6 +56,7 @@
 package name.audet.samuel.javacv.jna;
 
 import com.sun.jna.Callback;
+import com.sun.jna.Function;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
 import com.sun.jna.Structure;
@@ -73,24 +74,64 @@ import static name.audet.samuel.javacv.jna.cv.*;
  */
 public class cvaux {
     // OpenCV does not always install itself in the PATH :(
-    public static final String[] paths = { "C:/OpenCV2.0/bin/release/", "C:/OpenCV2.0/bin/",
-            "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/",
-            "/usr/local/lib/", "/usr/local/lib64/" };
-    public static final String[] libnames = { "cvaux", "cvaux_64", "cvaux200", "cvaux200_64",
-            "cvaux110", "cvaux110_64", "cvaux100", "cvaux100_64" };
+    public static final String[] paths = cxcore.paths;
+    public static final String[] libnames = { "cvaux", "cvaux_64", "cvaux210", "cvaux210_64",
+            "cvaux200", "cvaux200_64", "cvaux110", "cvaux110_64", "cvaux100", "cvaux100_64" };
     public static final String libname = Loader.load(paths, libnames);
 
 
-    public static class v10 extends cvaux { }
-    public static class v11 extends cvaux { }
-    public static class v20 extends cvaux { }
+    public static class v10 extends cvaux {
+        public interface CvUpdateBGStatModel extends Callback {
+            int callback(IplImage curr_frame, CvBGStatModel bg_model);
+        }
+        public static int cvUpdateBGStatModel(IplImage current_frame, CvBGStatModel bg_model) {
+            if (bg_model != null && bg_model.update != null) {
+                //return bg_model.update.callback(current_frame, bg_model);
+                return bg_model.update.invokeInt(new Object[] { current_frame, bg_model } );
+            } else {
+                return 0;
+            }
+        }
+    }
+    public static class v11 extends v10 { }
+    public static class v20 extends v10 { }
+    public static class v21 extends cvaux {
+        public static final String libname = Loader.load(paths, libnames);
+
+        public static native void cvCalcImageHomography(float[] line,
+                CvPoint3D32f center, float[] intrinsic, float[] homography);
+
+        public static native void cvCalcPGH(CvSeq contour, CvHistogram hist);
+        public static final int CV_DOMINANT_IPAN = 1;
+        public static native CvSeq cvFindDominantPoints(CvSeq contour,
+                CvMemStorage storage, int method/*=CV_DOMINANT_IPAN*/,
+                double parameter1/*=0*/, double parameter2/*=0*/,
+                double parameter3/*=0*/, double parameter4/*=0*/);
+
+        public interface CvUpdateBGStatModel extends Callback {
+            int callback(IplImage curr_frame, CvBGStatModel bg_model, double learningRate);
+        }
+        public static int cvUpdateBGStatModel(IplImage current_frame, CvBGStatModel bg_model, double learningRate/*=-1*/) {
+            if (bg_model != null && bg_model.update != null) {
+                //return bg_model.update.callback(current_frame, bg_model, learningRate);
+                return bg_model.update.invokeInt(new Object[] { current_frame, bg_model, learningRate } );
+            } else {
+                return 0;
+            }
+        }
+
+        public static native CvConDensation cvCreateConDensation(int dynam_params, int measure_params, int sample_count);
+        public static native void cvReleaseConDensation(CvConDensation.PointerByReference condens);
+        public static native void cvConDensUpdateByTime(CvConDensation condens);
+        public static native void cvConDensInitSampleSet(CvConDensation condens, CvMat lower_bound, CvMat upper_bound);
+    }
 
 
     public static native CvSeq cvSegmentImage(CvArr srcarr, CvArr dstarr,
             double canny_threshold, double ffill_threshold, CvMemStorage storage);
 
 
-    public static interface CvCallback extends Callback {
+    public interface CvCallback extends Callback {
         int callback(int index, Pointer buffer, Pointer user_data);
     }
 
@@ -112,27 +153,27 @@ public class cvaux {
 
 
     public static class CvImgObsInfo extends Structure {
-        public CvImgObsInfo() { cvcreated = false; }
+        public CvImgObsInfo() { releasable = false; }
         public CvImgObsInfo(Pointer m) { super(m); if (getClass() == CvImgObsInfo.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvImgObsInfo create(CvSize.ByValue numObs, int obsSize) {
             CvImgObsInfo c = cvCreateObsInfo(numObs, obsSize);
             if (c != null) {
-                c.cvcreated = true;
+                c.releasable = true;
             }
             return c;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseObsInfo(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public int obs_x;
         public int obs_y;
@@ -195,27 +236,27 @@ public class cvaux {
     }
 
     public static class CvEHMM extends Structure {
-        public CvEHMM() { cvcreated = false; }
+        public CvEHMM() { releasable = false; }
         public CvEHMM(Pointer m) { super(m); if (getClass() == CvEHMM.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvEHMM create(int[] stateNumber, int[] numMix, int obsSize) {
             CvEHMM c = cvCreate2DHMM(stateNumber, numMix, obsSize);
             if (c != null) {
-                c.cvcreated = true;
+                c.releasable = true;
             }
             return c;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvRelease2DHMM(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public int level;
         public int num_states;
@@ -621,8 +662,8 @@ public class cvaux {
             CV_GLCM_DESC                               = 2;
 
     public static class CvGLCM extends PointerType {
-        public CvGLCM() { cvcreated = false; }
-        public CvGLCM(Pointer p) { super(p); cvcreated = true; }
+        public CvGLCM() { releasable = false; }
+        public CvGLCM(Pointer p) { super(p); releasable = true; }
 
         public static CvGLCM create(IplImage srcImage, int stepMagnitude) {
             return create(srcImage, stepMagnitude, null, 0, CV_GLCM_OPTIMIZATION_NONE);
@@ -633,21 +674,21 @@ public class cvaux {
             CvGLCM p = cvCreateGLCM(srcImage, stepMagnitude, stepDirections,
                     numStepDirections, optimizationType);
             if (p != null) {
-                p.cvcreated = true;
+                p.releasable = true;
             }
             return p;
         }
 
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseGLCM(pointerByReference(), CV_GLCM_ALL);
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
             public PointerByReference() { }
@@ -682,28 +723,28 @@ public class cvaux {
 
 
     public static class CvFaceTracker extends PointerType {
-        public CvFaceTracker() { cvcreated = false; }
-        public CvFaceTracker(Pointer p) { super(p); cvcreated = true; }
+        public CvFaceTracker() { releasable = false; }
+        public CvFaceTracker(Pointer p) { super(p); releasable = true; }
 
         public static CvFaceTracker create(CvFaceTracker pFaceTracking,
                 IplImage imgGray, CvRect[] pRects, int nRects) {
             CvFaceTracker p = cvInitFaceTracker(new CvFaceTracker(), imgGray, pRects, nRects);
             if (p != null) {
-                p.cvcreated = true;
+                p.releasable = true;
             }
             return p;
         }
 
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseFaceTracker(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public static class PointerByReference extends com.sun.jna.ptr.PointerByReference {
             public PointerByReference() { }
@@ -954,46 +995,43 @@ public class cvaux {
             CV_BG_MODEL_MOG        = 1,
             CV_BG_MODEL_FGD_SIMPLE = 2;
 
-    public static interface CvReleaseBGStatModel extends Callback {
+    public interface CvReleaseBGStatModel extends Callback {
         void callback(CvBGStatModel.PointerByReference bg_model);
-    }
-    public static interface CvUpdateBGStatModel extends Callback {
-        int callback(IplImage curr_frame, CvBGStatModel bg_model);
     }
 
     public static class CvBGStatModel extends Structure {
-        public CvBGStatModel() { cvcreated = false; }
+        public CvBGStatModel() { releasable = false; }
         public CvBGStatModel(Pointer m) { super(m); if (getClass() == CvBGStatModel.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvBGStatModel create(IplImage first_frame, CvFGDStatModelParams parameters) {
             CvBGStatModel c = cvCreateFGDStatModel(first_frame, parameters);
             if (c != null) {
-                c.cvcreated = true;
+                c.releasable = true;
             }
             return c;
         }
         public static CvBGStatModel create(IplImage first_frame, CvGaussBGStatModelParams parameters) {
             CvBGStatModel c = cvCreateGaussianBGModel(first_frame, parameters);
             if (c != null) {
-                c.cvcreated = true;
+                c.releasable = true;
             }
             return c;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseBGStatModel(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public int                         type;
         public CvReleaseBGStatModel        release;
-        public CvUpdateBGStatModel         update;
+        public Function /*CvUpdateBGStatModel*/ update;
         public IplImage.ByReference        background;
         public IplImage.ByReference        foreground;
         public IplImage.PointerByReference layers;
@@ -1026,13 +1064,6 @@ public class cvaux {
     public static void cvReleaseBGStatModel(CvBGStatModel.PointerByReference bg_model) {
         if (bg_model != null && bg_model.getStructure() != null && bg_model.getStructure().release != null)
             bg_model.getStructure().release.callback(bg_model);
-    }
-    public static int cvUpdateBGStatModel(IplImage current_frame, CvBGStatModel  bg_model) {
-        if (bg_model != null && bg_model.update != null) {
-            return bg_model.update.callback(current_frame, bg_model);
-        } else {
-            return 0;
-        }
     }
     public static native void cvRefineForegroundMaskBySegm(CvSeq segments, CvBGStatModel bg_model);
     public static native int cvChangeDetection(IplImage prev_frame, IplImage curr_frame, IplImage change_mask);
@@ -1197,27 +1228,27 @@ public class cvaux {
     }
 
     public static class CvBGCodeBookModel extends Structure {
-        public CvBGCodeBookModel() { cvcreated = false; }
+        public CvBGCodeBookModel() { releasable = false; }
         public CvBGCodeBookModel(Pointer m) { super(m); if (getClass() == CvBGCodeBookModel.class) read();
-            cvcreated = true; }
+            releasable = true; }
 
         public static CvBGCodeBookModel create() {
             CvBGCodeBookModel c = cvCreateBGCodeBookModel();
             if (c != null) {
-                c.cvcreated = true;
+                c.releasable = true;
             }
             return c;
         }
         public void release() {
-            cvcreated = false;
+            releasable = false;
             cvReleaseBGCodeBookModel(pointerByReference());
         }
         @Override protected void finalize() {
-            if (cvcreated) {
+            if (releasable) {
                 release();
             }
         }
-        private boolean cvcreated = false;
+        private boolean releasable = false;
 
         public CvSize size;
         public int t;
@@ -1262,5 +1293,4 @@ public class cvaux {
             CvRect.ByValue roi/*=cvRect(0,0,0,0)*/, CvArr mask/*=null*/);
     public static native CvSeq cvSegmentFGMask(CvArr fgmask, int poly1Hull0/*=1*/, float perimScale/*=4.f*/,
             CvMemStorage storage/*=null*/, CvPoint.ByValue offset/*=cvPoint(0,0)*/);
-
 }
