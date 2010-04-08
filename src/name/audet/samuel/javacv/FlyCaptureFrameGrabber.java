@@ -252,7 +252,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
 
     public void stop() throws Exception {
         int error = flycaptureStop(context);
-        if (error != FLYCAPTURE_OK || error != FLYCAPTURE_FAILED) {
+        if (error != FLYCAPTURE_OK && error != FLYCAPTURE_FAILED) {
             throw new Exception("flycaptureStop() Error " + error);
         }
         temp_image    = null;
