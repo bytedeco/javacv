@@ -411,10 +411,8 @@ public class ProjectiveDevice {
     static {
         boolean b = false;
         try {
-            b = name.audet.samuel.javacv.jna.cv.v20.libname != null;
-        } catch (Throwable t) { 
-            b = name.audet.samuel.javacv.jna.cv.v21.libname != null;
-        }
+            b = name.audet.samuel.javacv.jna.cv.v20or21.libname != null;
+        } catch (Throwable t) { }
         is20or21 = b;
     }
 
