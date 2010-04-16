@@ -164,47 +164,47 @@ if (false) {
             return rows;
         }
         public void setRows(int rows) {
-            pcs.firePropertyChange("rows", this.rows, this.rows = rows);
+            firePropertyChange("rows", this.rows, this.rows = rows);
         }
 
         public int getColumns() {
             return columns;
         }
         public void setColumns(int columns) {
-            pcs.firePropertyChange("columns", this.columns, this.columns = columns);
+            firePropertyChange("columns", this.columns, this.columns = columns);
         }
 
         public double getSizeX() {
             return sizeX;
         }
         public void setSizeX(double sizeX) {
-            pcs.firePropertyChange("sizeX", this.sizeX, this.sizeX = sizeX);
+            firePropertyChange("sizeX", this.sizeX, this.sizeX = sizeX);
         }
         public double getSizeY() {
             return sizeY;
         }
         public void setSizeY(double sizeY) {
-            pcs.firePropertyChange("sizeY", this.sizeY, this.sizeY = sizeY);
+            firePropertyChange("sizeY", this.sizeY, this.sizeY = sizeY);
         }
 
         public double getSpacingX() {
             return spacingX;
         }
         public void setSpacingX(double spacingX) {
-            pcs.firePropertyChange("spacingX", this.spacingX, this.spacingX = spacingX);
+            firePropertyChange("spacingX", this.spacingX, this.spacingX = spacingX);
         }
         public double getSpacingY() {
             return spacingY;
         }
         public void setSpacingY(double spacingY) {
-            pcs.firePropertyChange("spacingY", this.spacingY, this.spacingY = spacingY);
+            firePropertyChange("spacingY", this.spacingY, this.spacingY = spacingY);
         }
 
         public boolean isCheckered() {
             return checkered;
         }
         public void setCheckered(boolean checkered) {
-            pcs.firePropertyChange("checkered", this.checkered, this.checkered = checkered);
+            firePropertyChange("checkered", this.checkered, this.checkered = checkered);
         }
     }
     public static Marker[][] createArray(ArraySettings settings) {

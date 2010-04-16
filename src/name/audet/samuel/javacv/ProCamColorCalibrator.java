@@ -107,7 +107,7 @@ public class ProCamColorCalibrator {
     }
 
     public Color[] getProjectorColors() {
-        double gamma = projector.getSettings().responseGamma;
+        double invgamma = 1/projector.getSettings().getResponseGamma();
         int s = settings.samplesPerChannel;
         if (projectorColors == null) {
             projectorColors = new Color[s*s*s];
@@ -115,9 +115,9 @@ public class ProCamColorCalibrator {
             for (int i = 0; i < projectorColors.length; i++) {
                  int j = i/s;
                  int k = j/s;
-                double r = Math.pow((double)(i%s)/(s-1), 1/gamma);
-                double g = Math.pow((double)(j%s)/(s-1), 1/gamma);
-                double b = Math.pow((double)(k%s)/(s-1), 1/gamma);
+                double r = Math.pow((double)(i%s)/(s-1), invgamma);
+                double g = Math.pow((double)(j%s)/(s-1), invgamma);
+                double b = Math.pow((double)(k%s)/(s-1), invgamma);
                 projectorColors[i] = new Color((float)r, (float)g, (float)b);
             }
         }
@@ -321,7 +321,7 @@ public class ProCamColorCalibrator {
     public double calibrate() {
         Color[] cc = getCameraColors();
         Color[] pc = getProjectorColors();
-        assert(counter == pc.length);
+        assert (counter == pc.length);
 
         ColorCalibrator calibrator = new ColorCalibrator(projector);
         projector.avgColorErr = calibrator.calibrate(cc, pc);

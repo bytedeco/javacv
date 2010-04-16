@@ -31,12 +31,12 @@ import static name.audet.samuel.javacv.jna.cv.*;
  *
  * @author Samuel Audet
  */
-public class LMImageAligner implements ImageAligner {
-    public LMImageAligner(ImageTransformer transformer, Parameters initialParameters,
+public class GNImageAligner implements ImageAligner {
+    public GNImageAligner(ImageTransformer transformer, Parameters initialParameters,
             IplImage template0, double[] roiPts, IplImage target0) {
         this(transformer, initialParameters, template0, roiPts, target0, new Settings());
     }
-    public LMImageAligner(ImageTransformer transformer, Parameters initialParameters, 
+    public GNImageAligner(ImageTransformer transformer, Parameters initialParameters,
             IplImage template0, double[] roiPts, IplImage target0, Settings settings) {
         setSettings(settings);
 
@@ -109,13 +109,13 @@ public class LMImageAligner implements ImageAligner {
         public Settings(Settings s) {
             super(s);
             zeroThresholds   = s.zeroThresholds;
-            LMLambdas        = s.LMLambdas;
+            lineSearch       = s.lineSearch;
             errorDecreaseMin = s.errorDecreaseMin;
             displacementMax  = s.displacementMax;
         }
 
         double[] zeroThresholds = {1.0, 0.75, 0.5, 0.25, 0.0};
-        double[] LMLambdas      = {0.0, 0.5};
+        double[] lineSearch     = {1.0, 0.25};
         double errorDecreaseMin = 0.02;
         double displacementMax  = 0.15;
 
@@ -126,11 +126,11 @@ public class LMImageAligner implements ImageAligner {
             this.zeroThresholds = zeroThresholds;
         }
 
-        public double[] getLMLambdas() {
-            return LMLambdas;
+        public double[] getLineSearch() {
+            return lineSearch;
         }
-        public void setLMLambdas(double[] LMLambdas) {
-            this.LMLambdas = LMLambdas;
+        public void setLineSearch(double[] lineSearch) {
+            this.lineSearch = lineSearch;
         }
 
         public double getErrorDecreaseMin() {
@@ -167,9 +167,9 @@ public class LMImageAligner implements ImageAligner {
     private ImageTransformer transformer;
     private Data[][] hessianGradientTransformerData, residualTransformerData;
     private Parameters parameters, parametersArray[], tempParameters[];
-    private CvMat hessian, dampedHessian, gradient, update, prior;
+    private CvMat hessian, regularizedHessian, gradient, update, prior;
     private double[] updateScale;
-    private int pyramidLevel, lmLambdaIndex = 0;
+    private int pyramidLevel;
     private double RMSE;
     private boolean residualUpdateNeeded = true;
 
@@ -182,7 +182,7 @@ public class LMImageAligner implements ImageAligner {
         if (template0.depth == IPL_DEPTH_32F) {
             template[0] = template0;
         } else {
-            cvConvertScale(template0, template[0], 1.0/255.0, 0);
+            cvConvertScale(template0, template[0], 1.0/template0.getMaxIntensity(), 0);
         }
 
         for (int i = 1; i < template.length; i++) {
@@ -215,7 +215,7 @@ public class LMImageAligner implements ImageAligner {
         }
 
         if (target0.depth != IPL_DEPTH_32F) {
-            cvConvertScale(target0, target[0], 1.0/255.0, 0);
+            cvConvertScale(target0, target[0], 1.0/target0.getMaxIntensity(), 0);
             cvResetImageROI(target0);
         }
 
@@ -247,24 +247,17 @@ public class LMImageAligner implements ImageAligner {
     }
     public void setConstrained(boolean constrained) {
         if (settings.constrained == constrained && hessian != null &&
-                dampedHessian != null && gradient != null && update != null) {
+                regularizedHessian != null && gradient != null && update != null) {
             return;
         }
         settings.constrained = constrained;
         int n = parameters.size();
         int m = constrained ? n+1 : n;
         hessian       = CvMat.create(m, m);
-        dampedHessian = CvMat.create(m, m);
+        regularizedHessian = CvMat.create(m, m);
         gradient      = CvMat.create(m, 1);
         update        = CvMat.create(m, 1);
         updateScale   = new double[m];
-    }
-
-    public int getLmLambdaIndex() {
-        return lmLambdaIndex;
-    }
-    public void setLmLambdaIndex(int lmLambdaIndex) {
-        this.lmLambdaIndex = lmLambdaIndex;
     }
 
     public Parameters getParameters() {
@@ -317,23 +310,18 @@ long accTime = 0;
         final double[] prevParameters = parameters.get();
 
 //long start = System.currentTimeMillis();
-        if (lmLambdaIndex == 0) {
-            doHessianGradient(updateScale);
-        }
+        doHessianGradient(updateScale);
 
 //System.err.println((float)(hessian.get(9,9) + hessian.get(10,10) + hessian.get(11,11)) /
 //                    (hessian.get(8,9) + hessian.get(8,10) + hessian.get(8,11)));
 //System.out.println("condition number: " + JavaCV.cond(hessian, 2));
 //long gradientHessianTime = System.currentTimeMillis();
 
-        // add Levenberg-Marquardt damping factor + Tikonov regularization gammaTgamma
+        // add Tikhonov regularization
         for (int i = 0; i < hessian.rows; i++) {
             for (int j = 0; j < hessian.cols; j++) {
                 double h = hessian.get(i, j);
-                if (i == j) {
-                    h *= 1+settings.LMLambdas[lmLambdaIndex];
-                }
-                double g = 0; 
+                double g = 0;
                 if (settings.gammaTgamma != null && i < settings.gammaTgamma.rows && j < settings.gammaTgamma.cols) {
                     g = settings.gammaTgamma.get(i, j);
                 }
@@ -341,38 +329,33 @@ long accTime = 0;
                 if (i == j && i < n) {
                     a = settings.tikhonovAlpha;
                 }
-                dampedHessian.put(i, j, h + g + a);
+                regularizedHessian.put(i, j, h + g + a);
             }
         }
 
         // solve for optimal parameter update
-        cvSolve(dampedHessian, gradient, update, CV_SVD);
+        cvSolve(regularizedHessian, gradient, update, CV_SVD);
         for (int i = 0; i < n; i++) {
-            parameters.set(i, parameters.get(i) + update.get(i)*updateScale[i]);
+            parameters.set(i, parameters.get(i) + settings.lineSearch[0]*update.get(i)*updateScale[i]);
         }
         residualUpdateNeeded = true;
 
 //long solveTime = System.currentTimeMillis();
 
-        double newRMSE = getRMSE();
-        if (RMSE > prevRMSE) {
+        for (int j = 1; j < settings.lineSearch.length && getRMSE() > prevRMSE; j++) {
             RMSE = prevRMSE;
             parameters.set(prevParameters);
-            residualUpdateNeeded = false;
-        } else {
-            RMSE = newRMSE;
+            for (int i = 0; i < n; i++) {
+                parameters.set(i, parameters.get(i) + settings.lineSearch[j]*update.get(i)*updateScale[i]);
+            }
+            residualUpdateNeeded = true;
         }
 
-        if (lmLambdaIndex < settings.LMLambdas.length-1 && newRMSE > prevRMSE) {
-            lmLambdaIndex++;
-        } else {
-            lmLambdaIndex = 0;
-            if (newRMSE > prevRMSE*(1.0-settings.errorDecreaseMin)) {
-                if (pyramidLevel > 0) {
-                    setPyramidLevel(pyramidLevel-1);
-                } else {
-                    converged = true;
-                }
+        if (getRMSE() > prevRMSE*(1.0-settings.errorDecreaseMin)) {
+            if (pyramidLevel > 0) {
+                setPyramidLevel(pyramidLevel-1);
+            } else {
+                converged = true;
             }
         }
 
@@ -386,7 +369,7 @@ long accTime = 0;
 //                 "  accTime = " + accTime);
 
         if (delta != null) {
-            for (int i = 0; i < delta.length; i++) {
+            for (int i = 0; i < delta.length && i < updateScale.length; i++) {
                 delta[i] = update.get(i)*updateScale[i];
             }
         }

@@ -34,11 +34,11 @@ import static name.audet.samuel.javacv.jna.cv.v11or20.*;
 public class ReflectanceInitializer {
 
     public ReflectanceInitializer(CameraDevice cameraDevice, ProjectorDevice projectorDevice,
-            int channels, LMImageAligner.Settings alignerSettings) {
+            int channels, GNImageAligner.Settings alignerSettings) {
         this(cameraDevice, projectorDevice, channels, alignerSettings, 51, 0.01);
     }
     public ReflectanceInitializer(CameraDevice cameraDevice, ProjectorDevice projectorDevice,
-            int channels, LMImageAligner.Settings alignerSettings, int smoothingSize, double reflectanceMin) {
+            int channels, GNImageAligner.Settings alignerSettings, int smoothingSize, double reflectanceMin) {
         this.alignerSettings = alignerSettings;
         this.smoothingSize   = smoothingSize;
         this.reflectanceMin  = reflectanceMin;
@@ -62,7 +62,7 @@ public class ReflectanceInitializer {
         H.pool();
     }
 
-    private LMImageAligner.Settings alignerSettings;
+    private GNImageAligner.Settings alignerSettings;
     private int smoothingSize;
     private double reflectanceMin;
     private CameraDevice cameraDevice;
@@ -160,7 +160,7 @@ public class ReflectanceInitializer {
         for (int i = 0; i < ambientLight.length; i++) {
             parameters.set(12+i, ambientLight[i]);
         }
-        LMImageAligner aligner = new LMImageAligner(transformer, parameters,
+        ImageAligner aligner = new GNImageAligner(transformer, parameters,
                 reflectance, roiPts, cameraImages[2], alignerSettings);
 
         double[] delta = new double[parameters.size()+1];

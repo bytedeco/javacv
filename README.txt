@@ -1,7 +1,7 @@
 =JavaCV=
 
 ==Introduction==
-JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, ARToolKitPlus, libdc1394 2.x, PGR FlyCapture, and FFmpeg. Moreover, utility classes make it easy to use their functionality on the Java platform. JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `LMImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
+JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, ARToolKitPlus, libdc1394 2.x, PGR FlyCapture, and FFmpeg. Moreover, utility classes make it easy to use their functionality on the Java platform. JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
 
 To learn how to use the API, since documentation currently lacks, please refer to the Quick Start section below as well as the source code of ProCamCalib and ProCamTracker.
 
@@ -47,8 +47,12 @@ import static name.audet.samuel.javacv.jna.cvaux.*;
 public class Test {
     public static void main(String[] args) {
         IplImage image = cvLoadImage("test.png", 1);
-        cvSmooth(image, image, CV_GAUSSIAN, 3, 0, 0, 0);
-        // ...
+        if (image == null) {
+            System.err.println("Could not load image file.");
+        } else {
+            cvSmooth(image, image, CV_GAUSSIAN, 3, 0, 0, 0);
+            // ...
+        }
     }
 }
 }}}
@@ -181,6 +185,13 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===April 16, 2010===
+ * Modified `IplImage`, `FrameGrabber`, and `CanvasFrame` to get better default behavior of gamma correction
+ * Fixed `cv.CvHistogram` and related histogram functions
+ * `CameraDevice.Settings.triggerFlushSize` now defaults to 5 (only affects `OpenCVFrameGrabber` and `FFmpegFrameGrabber`)
+ * Replaced `LMImageAligner` by `GNImageAligner`, a more appropriate name for Gauss-Newton with `lineSearch`
+ * Fixed a few things related with `ProjectiveDevice.Settings`
+
 ===April 8, 2010===
  * Added support for OpenCV 2.1
 

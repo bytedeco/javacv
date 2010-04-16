@@ -33,10 +33,14 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
+import java.awt.color.ColorSpace;
+import java.awt.color.ICC_ColorSpace;
+import java.awt.color.ICC_ProfileRGB;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
 
@@ -67,7 +71,26 @@ public class CanvasFrame extends JFrame {
             return null;
         }
     }
+    public static double getGamma(int screenNumber) {
+        GraphicsDevice[] screens = getScreenDevices();
+        if (screenNumber >= 0 && screenNumber < screens.length) {
+            return getGamma(screens[screenNumber]);
+        } else {
+            return 0.0;
+        }
+    }
 
+    public static double getGamma(GraphicsDevice screen) {
+        ColorSpace cs = screen.getDefaultConfiguration().getColorModel().getColorSpace();
+        if (cs.isCS_sRGB()) {
+            return 2.2;
+        } else {
+            try {
+                return ((ICC_ProfileRGB)((ICC_ColorSpace)cs).getProfile()).getGamma(0);
+            } catch (Exception e) { }
+        }
+        return 0.0;
+    }
     public static GraphicsDevice getScreenDevice(int screenNumber) throws Exception {
         GraphicsDevice[] screens = getScreenDevices();
         if (screenNumber >= screens.length) {
@@ -82,27 +105,30 @@ public class CanvasFrame extends JFrame {
 
     public CanvasFrame() {
         super();
-        init(false, null);
+        init(false, null, 0.0);
     }
     public CanvasFrame(GraphicsConfiguration gc) {
         super(gc);
-        init(false, null);
+        init(false, null, 0.0);
     }
     public CanvasFrame(String title) {
         super(title);
-        init(false, null);
+        init(false, null, 0.0);
     }
     public CanvasFrame(String title, GraphicsConfiguration gc) {
         super(title, gc);
-        init(false, null);
+        init(false, null, 0.0);
     }
     public CanvasFrame(int screenNumber, DisplayMode displayMode) throws Exception {
         super(getScreenDevice(screenNumber).getDefaultConfiguration());
-        init(true, displayMode);
+        init(true, displayMode, 0.0);
     }
     public CanvasFrame(String title, int screenNumber, DisplayMode displayMode) throws Exception {
+        this(title, screenNumber, displayMode, 0.0);
+    }
+    public CanvasFrame(String title, int screenNumber, DisplayMode displayMode, double gamma) throws Exception {
         super(title, getScreenDevice(screenNumber).getDefaultConfiguration());
-        init(true, displayMode);
+        init(true, displayMode, gamma);
     }
 
     @Override public void dispose() {
@@ -110,7 +136,7 @@ public class CanvasFrame extends JFrame {
         super.dispose();
     }
 
-    private void init(boolean fullScreen, DisplayMode displayMode) {
+    private void init(boolean fullScreen, DisplayMode displayMode, double gamma) {
         GraphicsDevice gd = getGraphicsConfiguration().getDevice();
         int w = displayMode == null ? 0 : displayMode.getWidth();
         int h = displayMode == null ? 0 : displayMode.getHeight();
@@ -128,6 +154,10 @@ public class CanvasFrame extends JFrame {
         if (!displayMode.equals(d)) {
             gd.setDisplayMode(displayMode);
         }
+        if (gamma == 0.0) {
+            gamma = getGamma(gd);
+        }
+        invgamma = gamma == 0.0 ? 1.0 : 1.0/gamma;
 
         // must be called after the fullscreen stuff, but before
         // getting our BufferStrategy
@@ -173,6 +203,7 @@ public class CanvasFrame extends JFrame {
 
     private Canvas canvas = null;
     private BufferStrategy bufferStrategy = null;
+    private double invgamma;
 
     public long getLatency() {
         // if there exists some way to estimate the latency in real time,
@@ -260,14 +291,19 @@ public class CanvasFrame extends JFrame {
         showImage(image, 1.0);
     }
 
+    // Java2D will do gamma correction for TYPE_CUSTOM BufferedImage, but
+    // not for the standard types, so we need to do it manually...
     public void showImage(IplImage image, int w, int h) {
-        showImage(image.getBufferedImage(), w, h);
+        showImage(image.getBufferedImage(image.getBufferedImageType() ==
+                BufferedImage.TYPE_CUSTOM ? 1.0 : invgamma), w, h);
     }
     public void showImage(IplImage image, double scale) {
-        showImage(image.getBufferedImage(), scale);
+        showImage(image.getBufferedImage(image.getBufferedImageType() ==
+                BufferedImage.TYPE_CUSTOM ? 1.0 : invgamma), scale);
     }
     public void showImage(IplImage image) {
-        showImage(image.getBufferedImage());
+        showImage(image.getBufferedImage(image.getBufferedImageType() ==
+                BufferedImage.TYPE_CUSTOM ? 1.0 : invgamma));
     }
 
     public void showColor(Color color) {

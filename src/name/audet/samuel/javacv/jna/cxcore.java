@@ -189,7 +189,7 @@ public class cxcore {
                 getPointer().setString(0, value);
             }
         }
-        public String getString() {
+        public String getValue() {
             if (getPointer() == null) {
                 return null;
             } else {
@@ -232,8 +232,7 @@ public class cxcore {
 
 
         public static CvPoint[] createArray(int size) {
-            CvPoint p = new CvPoint();
-            p.useMemory(new Memory(p.size() * size), 0);
+            CvPoint p = new CvPoint(new Memory(Native.getNativeSize(ByValue.class) * size));
             return (CvPoint[])p.toArray(size);
         }
         public static CvPoint[] createArray(int[] pts, int offset, int length) {
@@ -341,8 +340,7 @@ public class cxcore {
         }
 
         public static CvPoint2D32f[] createArray(int size) {
-            CvPoint2D32f p = new CvPoint2D32f();
-            p.useMemory(new Memory(p.size() * size), 0);
+            CvPoint2D32f p = new CvPoint2D32f(new Memory(Native.getNativeSize(ByValue.class) * size));
             return (CvPoint2D32f[])p.toArray(size);
         }
         public static CvPoint2D32f[] createArray(double[] pts, int offset, int length) {
@@ -412,8 +410,7 @@ public class cxcore {
         }
 
         public static CvPoint3D32f[] createArray(int size) {
-            CvPoint3D32f p = new CvPoint3D32f();
-            p.useMemory(new Memory(p.size() * size), 0);
+            CvPoint3D32f p = new CvPoint3D32f(new Memory(Native.getNativeSize(ByValue.class) * size));
             return (CvPoint3D32f[])p.toArray(size);
         }
         public static CvPoint3D32f[] createArray(double[] pts, int offset, int length) {
@@ -487,8 +484,7 @@ public class cxcore {
         }
 
         public static CvPoint2D64f[] createArray(int size) {
-            CvPoint2D64f p = new CvPoint2D64f();
-            p.useMemory(new Memory(p.size() * size), 0);
+            CvPoint2D64f p = new CvPoint2D64f(new Memory(Native.getNativeSize(ByValue.class) * size));
             return (CvPoint2D64f[])p.toArray(size);
         }
         public static CvPoint2D64f[] createArray(double[] pts, int offset, int length) {
@@ -558,8 +554,7 @@ public class cxcore {
         }
 
         public static CvPoint3D64f[] createArray(int size) {
-            CvPoint3D64f p = new CvPoint3D64f();
-            p.useMemory(new Memory(p.size() * size), 0);
+            CvPoint3D64f p = new CvPoint3D64f(new Memory(Native.getNativeSize(ByValue.class) * size));
             return (CvPoint3D64f[])p.toArray(size);
         }
         public static CvPoint3D64f[] createArray(double[] pts, int offset, int length) {
@@ -1581,7 +1576,7 @@ public class cxcore {
         public int hdr_refcount;
 
         public CvSet.ByReference heap;
-        public Pointer /* void** */ hashtable;
+        public PointerByReference hashtable;
         public int hashsize;
         public int valoffset;
         public int idxoffset;
@@ -2201,21 +2196,15 @@ public class cxcore {
             }
         }
         private BufferedImage bufferedImage = null;
-        public BufferedImage getBufferedImage() {
-            return getBufferedImage(0.0);
-        }
-        public BufferedImage getBufferedImage(double gamma) {
-            return getBufferedImage(null, gamma);
-        }
-        public BufferedImage getBufferedImage(ColorSpace cs, double gamma) {
+        public int getBufferedImageType() {
             // precanned BufferedImage types are confusing... in practice though,
             // they all use the sRGB color model when blitting:
             //     http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5051418
             // and we should use them because they are *A LOT* faster with Java 2D.
             // workaround: do gamma correction ourselves ("gamma" parameter)
             //             since we'll never use getRGB() and setRGB(), right?
-            int type = -1;
-            if (width*(depth&~IPL_DEPTH_SIGN)*nChannels/8 == widthStep && cs == null) {
+            int type = BufferedImage.TYPE_CUSTOM;
+            if (width*(depth&~IPL_DEPTH_SIGN)*nChannels/8 == widthStep) {
                 if (nChannels == 1) {
                     if (depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) {
                         type = BufferedImage.TYPE_BYTE_GRAY;
@@ -2233,19 +2222,22 @@ public class cxcore {
                     }
                 }
             }
-
-            if (type != -1) {
-                if (gamma == 0.0) {
-                    gamma = 1/2.2;
-                }
+            return type;
+        }
+        public BufferedImage getBufferedImage() {
+            return getBufferedImage(1.0);
+        }
+        public BufferedImage getBufferedImage(double gamma) {
+            return getBufferedImage(gamma, null);
+        }
+        public BufferedImage getBufferedImage(double gamma, ColorSpace cs) {
+            int type = getBufferedImageType();
+            if (type != BufferedImage.TYPE_CUSTOM && cs == null) {
                 if (bufferedImage == null || type != bufferedImage.getType() ||
                         width != bufferedImage.getWidth() || height != bufferedImage.getHeight()) {
                     bufferedImage = new BufferedImage(width, height, type);
                 }
-            } else if (type == -1) {
-                if (gamma == 0.0) {
-                    gamma = 1.0;
-                }
+            } else {
                 boolean alpha = false;
                 int[] offsets = null;
                 if (nChannels == 1) {
@@ -2397,7 +2389,10 @@ public class cxcore {
     public static class CvArr extends Structure implements Cloneable {
         public CvArr() { }
         public CvArr(Pointer m) { super(m); if (getClass() == CvArr.class) read(); }
-        public static class ByReference extends CvArr implements Structure.ByReference { }
+        public static class ByReference extends CvArr implements Structure.ByReference {
+            @Override protected void allocateMemory() { }
+            @Override protected void allocateMemory(int size) { }
+        }
         public static class PointerByReference extends com.sun.jna.ptr.ByReference {
             public PointerByReference() { this(null); }
             public PointerByReference(int dataSize) { super(dataSize); }
@@ -2510,7 +2505,7 @@ public class cxcore {
             return mat_iterator.node = mat_iterator.node.next;
         } else {
             int idx;
-            Pointer[] hashtable = mat_iterator.mat.hashtable.getPointerArray(0, mat_iterator.mat.hashsize);
+            Pointer[] hashtable = mat_iterator.mat.hashtable.getPointer().getPointerArray(0, mat_iterator.mat.hashsize);
             for (idx = ++mat_iterator.curidx; idx < mat_iterator.mat.hashsize; idx++) {
                 if (hashtable[idx] != null) {
                     mat_iterator.curidx = idx;

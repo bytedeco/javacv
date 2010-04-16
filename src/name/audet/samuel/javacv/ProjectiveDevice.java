@@ -62,18 +62,19 @@ public class ProjectiveDevice {
     public static class Settings extends BaseSettings {
         public Settings() { }
         public Settings(ProjectiveDevice.Settings settings) {
-            this.name = settings.name;
-            this.responseGamma = settings.responseGamma;
+            this.name            = settings.name;
+            this.responseGamma   = settings.responseGamma;
+            this.nominalDistance = settings.nominalDistance;
         }
         String name = "";
-        double responseGamma = 1.0;
+        double responseGamma = 0.0;
         double nominalDistance = 20000;
 
         @Override public String getName() {
             return name;
         }
         public void setName(String name) {
-            pcs.firePropertyChange("name", this.name, this.name = name);
+            firePropertyChange("name", this.name, this.name = name);
         }
 
         public double getResponseGamma() {
@@ -96,7 +97,7 @@ public class ProjectiveDevice {
         public CalibrationSettings(ProjectiveDevice.CalibrationSettings settings) {
             super(settings);
             this.initAspectRatio = settings.initAspectRatio;
-            this.flags = settings.flags;
+            this.flags           = settings.flags;
         }
 
         double initAspectRatio = 1.0;
@@ -282,7 +283,7 @@ public class ProjectiveDevice {
         }
     }
 
-    int[] getRGBColorOrder() {
+    public int[] getRGBColorOrder() {
         int[] order = new int[3];
         for (int i = 0; i < 3; i++) {
             switch (Character.toUpperCase(colorOrder.charAt(i))) {
@@ -656,11 +657,11 @@ public class ProjectiveDevice {
     public void writeParameters(CvFileStorage fs) {
         CvAttrList.ByValue a = cvAttrList();
 
-        cvStartWriteStruct(fs, getSettings().name, CV_NODE_MAP, null, a);
+        cvStartWriteStruct(fs, getSettings().getName(), CV_NODE_MAP, null, a);
 
         cvWriteInt(fs, "imageWidth", imageWidth);
         cvWriteInt(fs, "imageHeight", imageHeight);
-        cvWriteReal(fs, "responseGamma", getSettings().responseGamma);
+        cvWriteReal(fs, "responseGamma", getSettings().getResponseGamma());
 //        cvWriteReal(fs, "initAspectRatio", settings.initAspectRatio);
 //        cvWriteInt(fs, "flags", getSettings().flags);
         if (cameraMatrix != null)
@@ -704,15 +705,20 @@ public class ProjectiveDevice {
     }
     public void readParameters(CvFileStorage fs) throws Exception {
         if (fs == null) {
-            throw new Exception("Error: CvFileStorage is null, cannot read parameters.");
+            throw new Exception("Error: CvFileStorage is null, cannot read parameters for device " + 
+                    getSettings().getName() + ". Is the parametersFile correct?");
         }
         CvAttrList.ByValue a = cvAttrList();
 
-        CvFileNode fn = cvGetFileNodeByName(fs, null, getSettings().name);
+        CvFileNode fn = cvGetFileNodeByName(fs, null, getSettings().getName());
+        if (fn == null) {
+            throw new Exception("Error: CvFileNode is null, cannot read parameters for device " + 
+                    getSettings().getName() + ". Is the name correct?");
+        }
 
         imageWidth = cvReadIntByName(fs, fn, "imageWidth", imageWidth);
         imageHeight = cvReadIntByName(fs, fn, "imageHeight", imageHeight);
-        getSettings().responseGamma = cvReadRealByName(fs, fn, "gamma", getSettings().responseGamma);
+        getSettings().setResponseGamma(cvReadRealByName(fs, fn, "gamma", getSettings().getResponseGamma()));
 //        getSettings().initAspectRatio = cvReadRealByName(fs, fn, "initAspectRatio", getSettings().initAspectRatio);
 //        getSettings().flags = cvReadIntByName(fs, fn, "flags", getSettings().flags);
         Pointer p = cvReadByName(fs, fn, "cameraMatrix", a);

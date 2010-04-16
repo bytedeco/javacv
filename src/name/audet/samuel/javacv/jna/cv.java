@@ -58,10 +58,12 @@ package name.audet.samuel.javacv.jna;
 
 import com.sun.jna.Callback;
 import com.sun.jna.Function;
+import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
 import com.sun.jna.Structure;
+import com.sun.jna.ptr.ByReference;
 import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
@@ -216,6 +218,13 @@ public class cv {
         public static native CvMat.PointerByReference cvCreatePyramid(CvArr img, int extra_layers,
                 double rate, CvSize layer_sizes, CvArr bufarr, int calc, int filter);
         public static native void cvReleasePyramid(Pointer /* CvMat*** */ pyramid, int extra_layers);
+        public static void cvReleasePyramid(CvMat.PointerByReference[] /* CvMat*** */ pyramid, int extra_layers) {
+            Memory m = new Memory(Pointer.SIZE * pyramid.length);
+            for (int i = 0; i < pyramid.length; i++) {
+                m.setPointer(Pointer.SIZE * i, pyramid[i].getPointer());
+            }
+            cvReleasePyramid(m, extra_layers);
+        }
 
 
         public static native void cvConvertMaps(CvArr mapx, CvArr mapy, CvArr mapxy, CvArr mapalpha);
@@ -1219,6 +1228,39 @@ public class cv {
 
             CV_HIST_UNIFORM       = 1;
 
+    public static class FloatPointerByReference extends ByReference {
+        public FloatPointerByReference() {
+            this(null);
+        }
+        public FloatPointerByReference(FloatByReference[] value) {
+            super(1);
+            setValue(value);
+        }
+        public void setValue(FloatByReference[] value) {
+            if (value == null) {
+                setPointer(null);
+            } else {
+                setPointer(new Memory(Pointer.SIZE * value.length));
+                for (int i = 0; i < value.length; i++) {
+                    getPointer().setPointer(Pointer.SIZE * i, value[i].getPointer());
+                }
+
+            }
+        }
+        public FloatByReference[] getValue() {
+            if (getPointer() == null) {
+                return null;
+            } else {
+                Memory m = (Memory)getPointer();
+                FloatByReference[] value = new FloatByReference[(int)(m.getSize()/Pointer.SIZE)];
+                for (int i = 0; i < value.length; i++) {
+                    value[i].setPointer(m.getPointer(Pointer.SIZE * i));
+                }
+                return value;
+            }
+        }
+    }
+
     public static class CvHistogram extends Structure {
         public CvHistogram() { releasable = false; }
         public CvHistogram(Pointer m) { super(m); if (getClass() == CvHistogram.class) read();
@@ -1244,10 +1286,11 @@ public class cv {
         private boolean releasable = false;
 
 
-        public int /* CvHistType */           type;
-        public CvArr.ByReference              bins;
-        public float[][]                      thresh = new float[CV_MAX_DIM][2];
-        public FloatByReference /* float** */ thresh2;
+        public int /* CvHistType */    type;
+        public CvArr.ByReference       bins;
+        //public float[][]               thresh = new float[CV_MAX_DIM][2];
+        public float[]                 thresh = new float[CV_MAX_DIM*2];
+        public FloatPointerByReference thresh2;
         public CvMatND mat;
 
 
@@ -1315,24 +1358,24 @@ public class cv {
     }
 
     public static native CvHistogram cvCreateHist(int dims, int[] sizes, int type,
-            FloatByReference ranges/*=null*/, int uniform/*=1*/);
+            FloatPointerByReference ranges/*=null*/, int uniform/*=1*/);
     public static CvHistogram cvCreateHist(int dims, int[] sizes, int type,
             FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
-        return cvCreateHist(dims, sizes, type, ranges[0], uniform);
+        return cvCreateHist(dims, sizes, type, new FloatPointerByReference(ranges), uniform);
     }
     public static native void cvSetHistBinRanges(CvHistogram hist,
-            FloatByReference ranges, int uniform/*=1*/);
+            FloatPointerByReference ranges, int uniform/*=1*/);
     public static void cvSetHistBinRanges(CvHistogram hist,
             FloatByReference[] ranges, int uniform/*=1*/) {
-        cvSetHistBinRanges(hist, ranges[0], uniform);
+        cvSetHistBinRanges(hist, new FloatPointerByReference(ranges), uniform);
     }
     public static native void cvReleaseHist(CvHistogram.PointerByReference hist);
     public static native void cvClearHist(CvHistogram hist);
     public static native CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
-            float[] data, FloatByReference ranges/*=null*/, int uniform/*=1*/);
+            float[] data, FloatPointerByReference ranges/*=null*/, int uniform/*=1*/);
     public static CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
             float[] data, FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
-        return cvMakeHistHeaderForArray(dims, sizes, hist, data, ranges[0], uniform);
+        return cvMakeHistHeaderForArray(dims, sizes, hist, data, new FloatPointerByReference(ranges), uniform);
     }
     public static native void cvGetMinMaxHistValue(CvHistogram hist,
             FloatByReference min_value, FloatByReference max_value,
@@ -1358,12 +1401,13 @@ public class cv {
             int accumulate/*=0*/, CvArr mask/*=null*/) {
         cvCalcArrHist(arr[0], hist, accumulate, mask);
     }
-    public static void cvCalcHist(CvArr.PointerByReference[] arr, CvHistogram hist,
+    public static void cvCalcHist(IplImage.PointerByReference arr, CvHistogram hist,
+            int accumulate/*=0*/, CvArr mask/*=null*/) {
+        cvCalcArrHist(arr, hist, accumulate, mask);
+    }
+    public static void cvCalcHist(IplImage.PointerByReference[] arr, CvHistogram hist,
             int accumulate/*=0*/, CvArr mask/*=null*/) {
         cvCalcArrHist(arr[0], hist, accumulate, mask);
-    }
-    public static void cvCalcHist(CvArr.PointerByReference[] arr, CvHistogram hist) {
-        cvCalcArrHist(arr[0], hist, 0, null);
     }
     public static native void cvCalcArrBackProject(CvArr image, CvArr dst, CvHistogram hist);
     public static void cvCalcArrBackProject(CvArr[] image, CvArr dst, CvHistogram hist) {
@@ -1802,8 +1846,8 @@ public class cv {
         public FloatByReference DynamMatr;
         public FloatByReference State;
         public int SamplesNum;
-        public FloatByReference /* float** */ flSamples;
-        public FloatByReference /* float** */ flNewSamples;
+        public FloatPointerByReference flSamples;
+        public FloatPointerByReference flNewSamples;
         public FloatByReference flConfidence;
         public FloatByReference flCumulative;
         public FloatByReference Temp;

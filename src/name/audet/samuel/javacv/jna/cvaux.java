@@ -64,6 +64,7 @@ import com.sun.jna.Union;
 import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.*;
@@ -261,7 +262,7 @@ public class cvaux {
         public int level;
         public int num_states;
         public FloatByReference transP;
-        public FloatByReference /* float** */ obsProb;
+        public FloatPointerByReference obsProb;
 
         public static class U extends Union {
             public CvEHMMState.ByReference state;
@@ -382,12 +383,12 @@ public class cvaux {
 
     public static class CvCliqueFinder extends Structure {
         public CvGraph.ByReference graph;
-        public IntByReference /* int** */ adj_matr;
+        public PointerByReference /* int** */ adj_matr;
         public int N;
 
         public int k;
         public IntByReference current_comp;
-        public IntByReference /* int** */ All;
+        public PointerByReference /* int** */ All;
 
         public IntByReference ne;
         public IntByReference ce;

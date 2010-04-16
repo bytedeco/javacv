@@ -59,6 +59,7 @@ package name.audet.samuel.javacv.jna;
 import com.sun.jna.Callback;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
+import com.sun.jna.StringArray;
 import com.sun.jna.ptr.IntByReference;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
@@ -149,7 +150,7 @@ public class highgui {
         is10or11 = b;
     }
 
-    public static native int cvInitSystem(int argc, StringByReference argv);
+    public static native int cvInitSystem(int argc, StringArray argv);
     public static native int cvStartWindowThread();
     public static final int CV_WINDOW_AUTOSIZE = 1;
     public static native int cvNamedWindow(String name, int flags/*=CV_WINDOW_AUTOSIZE*/);

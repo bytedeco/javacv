@@ -34,7 +34,10 @@ import java.util.logging.LogRecord;
  * @author Samuel Audet
  */
 public abstract class BaseSettings implements Comparable<BaseSettings> {
-    protected final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        pcs.firePropertyChange(propertyName, oldValue, newValue);
+    }
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }

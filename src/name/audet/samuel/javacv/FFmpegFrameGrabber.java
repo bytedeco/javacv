@@ -98,6 +98,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private Pointer         buffer;
     private IplImage return_image = null;
 
+    @Override public double getGamma() {
+        // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
+        if (gamma == 0.0) {
+            return 2.2;
+        } else {
+            return gamma;
+        }
+    }
+
     public void start() throws Exception {
 	// Open video file
         PointerByReference p = new PointerByReference();

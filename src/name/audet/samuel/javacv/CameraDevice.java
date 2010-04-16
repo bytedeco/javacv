@@ -141,8 +141,8 @@ public class CameraDevice extends ProjectiveDevice {
                 }
             }
             String oldDescription = getDescription();
-            pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = deviceNumber);
-            pcs.firePropertyChange("description", oldDescription, getDescription());
+            firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = deviceNumber);
+            firePropertyChange("description", oldDescription, getDescription());
         }
 
         public File getDeviceFile() {
@@ -163,8 +163,8 @@ public class CameraDevice extends ProjectiveDevice {
                 }
             }
             String oldDescription = getDescription();
-            pcs.firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = deviceFile);
-            pcs.firePropertyChange("description", oldDescription, getDescription());
+            firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = deviceFile);
+            firePropertyChange("description", oldDescription, getDescription());
         }
         public String getDeviceFilename() {
             return getDeviceFile() == null ? "" : getDeviceFile().getPath();
@@ -192,8 +192,8 @@ public class CameraDevice extends ProjectiveDevice {
                 }
             }
             String oldDescription = getDescription();
-            pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = devicePath);
-            pcs.firePropertyChange("description", oldDescription, getDescription());
+            firePropertyChange("devicePath", this.devicePath, this.devicePath = devicePath);
+            firePropertyChange("description", oldDescription, getDescription());
         }
 
         public Class<? extends FrameGrabber> getFrameGrabber() {
@@ -201,34 +201,43 @@ public class CameraDevice extends ProjectiveDevice {
         }
         public void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber) {
             String oldDescription = getDescription();
-            pcs.firePropertyChange("frameGrabber", this.frameGrabber, this.frameGrabber = frameGrabber);
-            pcs.firePropertyChange("description", oldDescription, getDescription());
+            firePropertyChange("frameGrabber", this.frameGrabber, this.frameGrabber = frameGrabber);
+            firePropertyChange("description", oldDescription, getDescription());
 
             if (frameGrabber == null) {
-                pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = null);
-                pcs.firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = null);
-                pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = null);
+                firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = null);
+                firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = null);
+                firePropertyChange("devicePath", this.devicePath, this.devicePath = null);
                 return;
             }
 
+            boolean hasDeviceNumber = false;
             try {
                 frameGrabber.getConstructor(int.class);
+                hasDeviceNumber = true;
             } catch (NoSuchMethodException e) {
                 try {
                     frameGrabber.getConstructor(Integer.class);
+                    hasDeviceNumber = true;
                 } catch (NoSuchMethodException e2) {
-                    pcs.firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = null);
+                    firePropertyChange("deviceNumber", this.deviceNumber, this.deviceNumber = null);
                 }
             }
             try {
                 frameGrabber.getConstructor(File.class);
             } catch (NoSuchMethodException e) {
-                pcs.firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = null);
+                firePropertyChange("deviceFile", this.deviceFile, this.deviceFile = null);
             }
             try {
                 frameGrabber.getConstructor(String.class);
             } catch (NoSuchMethodException e) {
-                pcs.firePropertyChange("devicePath", this.devicePath, this.devicePath = null);
+                firePropertyChange("devicePath", this.devicePath, this.devicePath = null);
+            }
+
+            if (hasDeviceNumber && deviceNumber == null && deviceFile == null && devicePath == null) {
+                try {
+                    setDeviceNumber(0);
+                } catch (Exception e) { }
             }
         }
 
@@ -249,7 +258,7 @@ public class CameraDevice extends ProjectiveDevice {
         int imageWidth = 0, imageHeight = 0;
         double frameRate = 0;
         boolean triggerMode = false;
-        int triggerFlushSize = 0;
+        int triggerFlushSize = 5;
         int bpp = 0;
         FrameGrabber.ColorMode colorMode = FrameGrabber.ColorMode.RAW;
         int timeout = 10000;
@@ -322,14 +331,25 @@ public class CameraDevice extends ProjectiveDevice {
 
     // pouah.. hurray for Scala!
     public static class CalibrationSettings extends ProjectiveDevice.CalibrationSettings implements Settings {
-        public CalibrationSettings() { name = si.name; }
+        public CalibrationSettings() { }
         public CalibrationSettings(ProjectiveDevice.CalibrationSettings settings) {
             super(settings);
             if (settings instanceof CalibrationSettings) {
                 si = new SettingsImplementation(((CalibrationSettings)settings).si);
             }
         }
-        SettingsImplementation si = new SettingsImplementation();
+        SettingsImplementation si = new SettingsImplementation() {
+            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+                CalibrationSettings.this.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        };
+
+        @Override public String getName() { return si.getName(); }
+        @Override public void setName(String name) { si.setName(name); }
+        @Override public double getResponseGamma() { return si.getResponseGamma(); }
+        @Override public void setResponseGamma(double responseGamma) { si.setResponseGamma(responseGamma); }
+        @Override public double getNominalDistance() { return si.getNominalDistance(); }
+        @Override public void setNominalDistance(double nominalDistance) { si.setNominalDistance(nominalDistance); }
 
         public Integer getDeviceNumber() { return si.getDeviceNumber(); }
         public void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException { si.setDeviceNumber(deviceNumber); }
@@ -361,26 +381,28 @@ public class CameraDevice extends ProjectiveDevice {
         public void setTimeout(int timeout) { si.setTimeout(timeout); }
         public int getNumBuffers() { return si.getNumBuffers(); }
         public void setNumBuffers(int numBuffers) { si.setNumBuffers(numBuffers); }
-
-        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
-            super.addPropertyChangeListener(listener);
-               si.addPropertyChangeListener(listener);
-        }
-        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
-            super.removePropertyChangeListener(listener);
-               si.removePropertyChangeListener(listener);
-        }
     }
 
     public static class CalibratedSettings extends ProjectiveDevice.CalibratedSettings implements Settings {
-        public CalibratedSettings() { name = si.name; }
+        public CalibratedSettings() { }
         public CalibratedSettings(ProjectiveDevice.CalibratedSettings settings) {
             super(settings);
             if (settings instanceof CalibratedSettings) {
                 si = new SettingsImplementation(((CalibratedSettings)settings).si);
             }
         }
-        SettingsImplementation si = new SettingsImplementation();
+        SettingsImplementation si = new SettingsImplementation() {
+            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+                CalibratedSettings.this.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        };
+
+        @Override public String getName() { return si.getName(); }
+        @Override public void setName(String name) { si.setName(name); }
+        @Override public double getResponseGamma() { return si.getResponseGamma(); }
+        @Override public void setResponseGamma(double responseGamma) { si.setResponseGamma(responseGamma); }
+        @Override public double getNominalDistance() { return si.getNominalDistance(); }
+        @Override public void setNominalDistance(double nominalDistance) { si.setNominalDistance(nominalDistance); }
 
         public Integer getDeviceNumber() { return si.getDeviceNumber(); }
         public void setDeviceNumber(Integer deviceNumber) throws PropertyVetoException { si.setDeviceNumber(deviceNumber); }
@@ -412,15 +434,6 @@ public class CameraDevice extends ProjectiveDevice {
         public void setTimeout(int timeout) { si.setTimeout(timeout); }
         public int getNumBuffers() { return si.getNumBuffers(); }
         public void setNumBuffers(int numBuffers) { si.setNumBuffers(numBuffers); }
-
-        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
-            super.addPropertyChangeListener(listener);
-               si.addPropertyChangeListener(listener);
-        }
-        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
-            super.removePropertyChangeListener(listener);
-               si.removePropertyChangeListener(listener);
-        }
     }
 
     private Settings settings;
@@ -439,8 +452,8 @@ public class CameraDevice extends ProjectiveDevice {
         } else {
             this.settings = new SettingsImplementation((ProjectiveDevice.Settings)settings);
         }
-        if (settings.name == null || settings.name.length() == 0) {
-            settings.name = "Camera " + String.format("%2d", this.settings.getDeviceNumber());
+        if (this.settings.getName() == null || this.settings.getName().length() == 0) {
+            this.settings.setName("Camera " + String.format("%2d", this.settings.getDeviceNumber()));
         }
     }
 
@@ -469,6 +482,7 @@ public class CameraDevice extends ProjectiveDevice {
             f.setColorMode(settings.getColorMode());
             f.setTimeout(settings.getTimeout());
             f.setNumBuffers(settings.getNumBuffers());
+            f.setGamma(settings.getResponseGamma());
             return f;
         } catch (InvocationTargetException ex) {
             Throwable t = ex.getTargetException();

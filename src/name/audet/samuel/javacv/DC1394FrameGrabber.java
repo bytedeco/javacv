@@ -22,6 +22,7 @@ package name.audet.samuel.javacv;
 
 import com.sun.jna.NativeLong;
 import com.sun.jna.Platform;
+import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -48,19 +49,21 @@ public class DC1394FrameGrabber extends FrameGrabber {
             throw new Exception("dc1394_camera_enumerate() Error " + err + ": Failed to enumerate cameras.");
         }
         dc1394camera_list_t l = list.getStructure();
-
-        dc1394camera_id_t[] ids = (dc1394camera_id_t[])(l.ids.toArray(l.num));
         String[] descriptions = new String[l.num];
-        for (int i = 0; i < l.num; i ++) {
-            dc1394camera_t camera = dc1394_camera_new_unit(d, ids[i].guid, ids[i].unit);
-            if (camera == null) {
-                throw new Exception("dc1394_camera_new_unit() Error: Failed to initialize camera with GUID 0x" +
-                        Long.toHexString(ids[i].guid)+ " / " + camera.unit + ".");
+
+        if (l.num > 0) {
+            dc1394camera_id_t[] ids = (dc1394camera_id_t[])(l.ids.toArray(l.num));
+            for (int i = 0; i < l.num; i ++) {
+                dc1394camera_t camera = dc1394_camera_new_unit(d, ids[i].guid, ids[i].unit);
+                if (camera == null) {
+                    throw new Exception("dc1394_camera_new_unit() Error: Failed to initialize camera with GUID 0x" +
+                            Long.toHexString(ids[i].guid)+ " / " + camera.unit + ".");
+                }
+                descriptions[i] = camera.vendor + " " + camera.model + " 0x" +
+                        Long.toHexString(camera.guid) + " / " + camera.unit;
+                camera.setAutoSynch(false);
+                dc1394_camera_free(camera);
             }
-            descriptions[i] = camera.vendor + " " + camera.model + " 0x" +
-                    Long.toHexString(camera.guid) + " / " + camera.unit;
-            camera.setAutoSynch(false);
-            dc1394_camera_free(camera);
         }
 
         l.setAutoSynch(false);
@@ -143,6 +146,11 @@ public class DC1394FrameGrabber extends FrameGrabber {
     private dc1394video_frame_t enqueue_image = null;
     private IplImage temp_image, return_image = null;
     private IntByReference tempInt = new IntByReference();
+    private FloatByReference gammaRef = new FloatByReference();
+
+    @Override public double getGamma() {
+        return gammaRef.getValue();
+    }
 
     public void start() throws Exception {
         start(true, true);
@@ -268,6 +276,17 @@ public class DC1394FrameGrabber extends FrameGrabber {
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_capture_setup() Error " + err + ": Could not setup camera-\n" +
                         "make sure that the video mode and framerate are\nsupported by your camera.");
+            }
+
+            if (gamma != 0.0) {
+                err=dc1394_feature_set_absolute_value(camera, DC1394_FEATURE_GAMMA, (float)gamma);
+                if (err != DC1394_SUCCESS) {
+                    throw new Exception("dc1394_feature_set_absolute_value() Error " + err + ": Could not set gamma.");
+                }
+            }
+            err=dc1394_feature_get_absolute_value(camera, DC1394_FEATURE_GAMMA, gammaRef);
+            if (err != DC1394_SUCCESS) {
+                gammaRef.setValue(2.2f);
             }
 
             if (Platform.isLinux()) {

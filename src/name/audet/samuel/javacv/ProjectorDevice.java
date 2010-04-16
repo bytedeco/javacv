@@ -75,17 +75,17 @@ public class ProjectorDevice extends ProjectiveDevice {
     }
 
     public static class SettingsImplementation extends ProjectiveDevice.Settings implements Settings {
-        public SettingsImplementation() { name = "Projector  0"; this.responseGamma = 2.2; setScreenNumber(screenNumber); }
+        public SettingsImplementation() { name = "Projector  0"; setScreenNumber(screenNumber); }
         public SettingsImplementation(ProjectiveDevice.Settings settings) {
             super(settings);
             if (settings instanceof SettingsImplementation) {
                 SettingsImplementation s = (SettingsImplementation)settings;
-                this.screenNumber         = s.screenNumber;
-                this.latency              = s.latency;
-                this.imageWidth           = s.imageWidth;
-                this.imageHeight          = s.imageHeight;
-                this.bitDepth             = s.bitDepth;
-                this.refreshRate          = s.refreshRate;
+                this.screenNumber = s.screenNumber;
+                this.latency      = s.latency;
+                this.imageWidth   = s.imageWidth;
+                this.imageHeight  = s.imageHeight;
+                this.bitDepth     = s.bitDepth;
+                this.refreshRate  = s.refreshRate;
             }
         }
 
@@ -98,12 +98,13 @@ public class ProjectorDevice extends ProjectiveDevice {
         public void setScreenNumber(int screenNumber) {
             DisplayMode d = CanvasFrame.getDisplayMode(screenNumber);
             String oldDescription = getDescription();
-            pcs.firePropertyChange("screenNumber", this.screenNumber, this.screenNumber = screenNumber);
-            pcs.firePropertyChange("description", oldDescription, getDescription());
-            pcs.firePropertyChange("imageWidth", this.imageWidth, imageWidth = d == null ? 0 : d.getWidth());
-            pcs.firePropertyChange("imageHeight", this.imageHeight, imageHeight = d == null ? 0 : d.getHeight());
-            pcs.firePropertyChange("bitDepth", this.bitDepth, bitDepth = d == null ? 0 : d.getBitDepth());
-            pcs.firePropertyChange("refreshRate", this.refreshRate, refreshRate = d == null ? 0 : d.getRefreshRate());
+            firePropertyChange("screenNumber",  this.screenNumber,  this.screenNumber  = screenNumber);
+            firePropertyChange("description", oldDescription, getDescription());
+            firePropertyChange("imageWidth",    this.imageWidth,    this.imageWidth    = d == null ? 0 : d.getWidth());
+            firePropertyChange("imageHeight",   this.imageHeight,   this.imageHeight   = d == null ? 0 : d.getHeight());
+            firePropertyChange("bitDepth",      this.bitDepth,      this.bitDepth      = d == null ? 0 : d.getBitDepth());
+            firePropertyChange("refreshRate",   this.refreshRate,   this.refreshRate   = d == null ? 0 : d.getRefreshRate());
+            firePropertyChange("responseGamma", this.responseGamma, this.responseGamma = CanvasFrame.getGamma(screenNumber));
         }
 
         public long getLatency() {
@@ -130,14 +131,14 @@ public class ProjectorDevice extends ProjectiveDevice {
             return imageWidth;
         }
         public void setImageWidth(int imageWidth) {
-            pcs.firePropertyChange("imageWidth", this.imageWidth, this.imageWidth = imageWidth);
+            firePropertyChange("imageWidth", this.imageWidth, this.imageWidth = imageWidth);
         }
 
         public int getImageHeight() {
             return imageHeight;
         }
         public void setImageHeight(int imageHeight) {
-            pcs.firePropertyChange("imageHeight", this.imageHeight, this.imageHeight = imageHeight);
+            firePropertyChange("imageHeight", this.imageHeight, this.imageHeight = imageHeight);
         }
 
         public int getBitDepth() {
@@ -158,7 +159,7 @@ public class ProjectorDevice extends ProjectiveDevice {
 
     // pouah.. hurray for Scala!
     public static class CalibrationSettings extends ProjectiveDevice.CalibrationSettings implements Settings {
-        public CalibrationSettings() { name = si.name; responseGamma = si.responseGamma; }
+        public CalibrationSettings() { }
         public CalibrationSettings(ProjectiveDevice.CalibrationSettings settings) {
             super(settings);
             if (settings instanceof CalibrationSettings) {
@@ -168,7 +169,18 @@ public class ProjectorDevice extends ProjectiveDevice {
                 this.brightnessForeground = s.brightnessForeground;
             }
         }
-        SettingsImplementation si = new SettingsImplementation();
+        SettingsImplementation si = new SettingsImplementation() {
+            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+                CalibrationSettings.this.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        };
+
+        @Override public String getName() { return si.getName(); }
+        @Override public void setName(String name) { si.setName(name); }
+        @Override public double getResponseGamma() { return si.getResponseGamma(); }
+        @Override public void setResponseGamma(double responseGamma) { si.setResponseGamma(responseGamma); }
+        @Override public double getNominalDistance() { return si.getNominalDistance(); }
+        @Override public void setNominalDistance(double nominalDistance) { si.setNominalDistance(nominalDistance); }
 
         public int getScreenNumber() { return si.getScreenNumber(); }
         public void setScreenNumber(int screenNumber) { si.setScreenNumber(screenNumber); }
@@ -191,7 +203,7 @@ public class ProjectorDevice extends ProjectiveDevice {
             return brightnessBackground;
         }
         public void setBrightnessBackground(double brightnessBackground) {
-            pcs.firePropertyChange("brightnessBackground", this.brightnessBackground,
+            firePropertyChange("brightnessBackground", this.brightnessBackground,
                     this.brightnessBackground = brightnessBackground);
         }
 
@@ -199,29 +211,31 @@ public class ProjectorDevice extends ProjectiveDevice {
             return brightnessForeground;
         }
         public void setBrightnessForeground(double brightnessForeground) {
-            pcs.firePropertyChange("brightnessForeground", this.brightnessForeground,
+            firePropertyChange("brightnessForeground", this.brightnessForeground,
                     this.brightnessForeground = brightnessForeground);
-        }
-
-        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
-            super.addPropertyChangeListener(listener);
-               si.addPropertyChangeListener(listener);
-        }
-        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
-            super.removePropertyChangeListener(listener);
-               si.removePropertyChangeListener(listener);
         }
     }
 
     public static class CalibratedSettings extends ProjectiveDevice.CalibratedSettings implements Settings {
-        public CalibratedSettings() { name = si.name; responseGamma = si.responseGamma; }
+        public CalibratedSettings() { }
         public CalibratedSettings(ProjectiveDevice.CalibratedSettings settings) {
             super(settings);
             if (settings instanceof CalibratedSettings) {
                 si = new SettingsImplementation(((CalibratedSettings)settings).si);
             }
         }
-        SettingsImplementation si = new SettingsImplementation();
+        SettingsImplementation si = new SettingsImplementation() {
+            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+                CalibratedSettings.this.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        };
+
+        @Override public String getName() { return si.getName(); }
+        @Override public void setName(String name) { si.setName(name); }
+        @Override public double getResponseGamma() { return si.getResponseGamma(); }
+        @Override public void setResponseGamma(double responseGamma) { si.setResponseGamma(responseGamma); }
+        @Override public double getNominalDistance() { return si.getNominalDistance(); }
+        @Override public void setNominalDistance(double nominalDistance) { si.setNominalDistance(nominalDistance); }
 
         public int getScreenNumber() { return si.getScreenNumber(); }
         public void setScreenNumber(int screenNumber) { si.setScreenNumber(screenNumber); }
@@ -237,15 +251,6 @@ public class ProjectorDevice extends ProjectiveDevice {
         public void setBitDepth(int bitDepth) { si.setBitDepth(bitDepth); }
         public int getRefreshRate() { return si.getRefreshRate(); }
         public void setRefreshRate(int refreshRate) { si.setRefreshRate(refreshRate); }
-
-        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
-            super.addPropertyChangeListener(listener);
-               si.addPropertyChangeListener(listener);
-        }
-        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
-            super.removePropertyChangeListener(listener);
-               si.removePropertyChangeListener(listener);
-        }
     }
 
     private Settings settings;
@@ -264,8 +269,8 @@ public class ProjectorDevice extends ProjectiveDevice {
         } else {
             this.settings = new SettingsImplementation((ProjectiveDevice.Settings)settings);
         }
-        if (settings.name == null || settings.name.length() == 0) {
-            settings.name = "Projector " + String.format("%2d", this.settings.getScreenNumber());
+        if (this.settings.getName() == null || this.settings.getName().length() == 0) {
+            this.settings.setName("Projector " + String.format("%2d", this.settings.getScreenNumber()));
         }
     }
 
@@ -275,7 +280,7 @@ public class ProjectorDevice extends ProjectiveDevice {
         }
         DisplayMode d = new DisplayMode(settings.getImageWidth(), settings.getImageHeight(),
                 settings.getBitDepth(), settings.getRefreshRate());
-        CanvasFrame c = new CanvasFrame(settings.getName(), settings.getScreenNumber(), d);
+        CanvasFrame c = new CanvasFrame(settings.getName(), settings.getScreenNumber(), d, settings.getResponseGamma());
         c.setLatency(settings.getLatency());
 
         Dimension size = c.getCanvasSize();
@@ -310,9 +315,9 @@ public class ProjectorDevice extends ProjectiveDevice {
         double attenuation = cosangle/distance2;
 //        System.out.println(distance + " " + cosangle + " " + attenuation);
 
-        B.pool();
-        x2.pool();
         x3.pool();
+        x2.pool();
+        B .pool();
 
         return attenuation;
     }

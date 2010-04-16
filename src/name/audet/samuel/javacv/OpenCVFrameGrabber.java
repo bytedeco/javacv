@@ -77,6 +77,15 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     private CvCapture capture = null;
     private IplImage return_image = null;
 
+    @Override public double getGamma() {
+        // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
+        if (gamma == 0.0) {
+            return 2.2;
+        } else {
+            return gamma;
+        }
+    }
+
     public void start() throws Exception {
         if (filename != null && filename.length() > 0) {
             capture = cvCreateFileCapture(filename);

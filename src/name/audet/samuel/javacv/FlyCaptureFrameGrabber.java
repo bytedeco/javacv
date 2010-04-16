@@ -23,6 +23,7 @@ package name.audet.samuel.javacv;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.NativeLongByReference;
 import java.nio.ByteBuffer;
@@ -48,19 +49,23 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureBusCameraCount() Error " + error);
         }
+        int c = count.getValue();
+        String[] descriptions = new String[c];
 
-        FlyCaptureInfoEx[] info = FlyCaptureInfoEx.createArray(count.getValue());
-        error = flycaptureBusEnumerateCamerasEx(info, count);
-        if (error != FLYCAPTURE_OK) {
-            throw new Exception("flycaptureBusEnumerateCamerasEx() Error " + error);
+        if (c > 0) {
+            FlyCaptureInfoEx[] info = FlyCaptureInfoEx.createArray(c);
+            error = flycaptureBusEnumerateCamerasEx(info, count);
+            if (error != FLYCAPTURE_OK) {
+                throw new Exception("flycaptureBusEnumerateCamerasEx() Error " + error);
+            }
+
+            for (int i = 0; i < descriptions.length; i++) {
+                descriptions[i] = Native.toString(info[i].pszVendorName) + " " +
+                                  Native.toString(info[i].pszModelName) + " " +
+                                  info[i].SerialNumber;
+            }
         }
 
-        String[] descriptions = new String[count.getValue()];
-        for (int i = 0; i < descriptions.length; i++) {
-            descriptions[i] = Native.toString(info[i].pszVendorName) + " " +
-                              Native.toString(info[i].pszModelName) + " " +
-                              info[i].SerialNumber;
-        }
         return descriptions;
     }
 
@@ -126,9 +131,13 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
     private FlyCaptureImage raw_image = new FlyCaptureImage();
     private FlyCaptureImage conv_image = new FlyCaptureImage();
     private IplImage temp_image, return_image = null;
-
     private NativeLongByReference regVal = new NativeLongByReference();
     private NativeLong setRegVal = new NativeLong();
+    private FloatByReference gammaRef = new FloatByReference();
+
+    @Override public double getGamma() {
+        return gammaRef.getValue();
+    }
 
     public void start() throws Exception {
         int f = FLYCAPTURE_FRAMERATE_ANY;
@@ -224,6 +233,18 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureSetBusSpeed() Error " + error);
         }
+
+        if (gamma != 0.0) {
+            error = flycaptureSetCameraAbsProperty(context, FLYCAPTURE_GAMMA, (float)gamma);
+            if (error != FLYCAPTURE_OK) {
+                throw new Exception("flycaptureSetCameraAbsProperty() Error " + error + ": Could not set gamma.");
+            }
+        }
+        error = flycaptureGetCameraAbsProperty(context, FLYCAPTURE_GAMMA, gammaRef);
+        if (error != FLYCAPTURE_OK) {
+            gammaRef.setValue(2.2f);
+        }
+
         error = flycaptureStart(context, c, f);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureStart() Error " + error);

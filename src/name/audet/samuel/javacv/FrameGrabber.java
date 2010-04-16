@@ -108,6 +108,7 @@ public abstract class FrameGrabber {
     protected ColorMode colorMode = ColorMode.BGR;
     protected int timeout = 10000;
     protected int numBuffers = 4;
+    protected double gamma = 0.0;
 
     public int getImageWidth() {
         return imageWidth;
@@ -170,6 +171,13 @@ public abstract class FrameGrabber {
     }
     public void setNumBuffers(int numBuffers) {
         this.numBuffers = numBuffers;
+    }
+
+    public double getGamma() {
+        return gamma;
+    }
+    public void setGamma(double gamma) {
+        this.gamma = gamma;
     }
 
     public abstract void start() throws Exception;
@@ -238,10 +246,14 @@ public abstract class FrameGrabber {
             long newestTimestamp = 0;
             for (int i = 0; i < frameGrabbers.length; i++) {
                 grabbedImages[i] = frameGrabbers[i].grab();
-                newestTimestamp = Math.max(newestTimestamp, grabbedImages[i].getTimestamp());
+                if (grabbedImages[i] != null) {
+                    newestTimestamp = Math.max(newestTimestamp, grabbedImages[i].getTimestamp());
+                }
             }
             for (int i = 0; i < frameGrabbers.length; i++) {
-                latencies[i] = newestTimestamp-grabbedImages[i].getTimestamp();
+                if (grabbedImages[i] != null) {
+                    latencies[i] = newestTimestamp-grabbedImages[i].getTimestamp();
+                }
             }
             if (bestLatencies == null) {
                 bestLatencies = Arrays.copyOf(latencies, latencies.length);
@@ -267,12 +279,15 @@ public abstract class FrameGrabber {
             // the bestLatencies looking up to 2 frames ahead ...
             for (int j = 0; j < 2; j++) {
                 for (int i = 0; i < frameGrabbers.length; i++) {
-                    if (frameGrabbers[i].isTriggerMode()) {
+                    if (frameGrabbers[i].isTriggerMode() || grabbedImages[i] == null) {
                         continue;
                     }
                     int latency = (int)(newestTimestamp - grabbedImages[i].getTimestamp());
                     while (latency-bestLatencies[i] > 0.1*bestLatencies[i]) {
                         grabbedImages[i] = frameGrabbers[i].grab();
+                        if (grabbedImages[i] == null) {
+                            break;
+                        }
                         latency = (int)(newestTimestamp - grabbedImages[i].getTimestamp());
                         if (latency < 0) {
                             // woops, a camera seems to have dropped a frame somewhere...
