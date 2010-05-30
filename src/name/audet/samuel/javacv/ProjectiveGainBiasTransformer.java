@@ -74,6 +74,9 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         } else {
             cvSetImageROI(dstImage, roi.byValue());
         }
+        X2.put(0, 3, X2.get(0, 3)*dstImage.getMaxIntensity());
+        X2.put(1, 3, X2.get(1, 3)*dstImage.getMaxIntensity());
+        X2.put(2, 3, X2.get(2, 3)*dstImage.getMaxIntensity());
         cvTransform(srcImage, dstImage, X2, null);
         X2.rows = 4;
         X2.pool();

@@ -76,38 +76,37 @@ public class JavaCV {
               t1 = CvMat.take(3, 1),  t2 = CvMat.take(3, 1),
               n1 = CvMat.take(3, 1),  n2 = CvMat.take(3, 1),
               H1 = CvMat.take(3, 3),  H2 = CvMat.take(3, 3);
-        double zeta = JavaCV.homogToRt(H, R1, t1, n1, R2, t2, n2);
+        CvMat S = CvMat.take(3, 3);
+        CvMat U = CvMat.take(3, 3);
+        CvMat V = CvMat.take(3, 3);
+        double zeta = homogToRt(H, S, U, V, R1, t1, n1, R2, t2, n2);
 
-        // H = R^-1 * H
-        cvGEMM(R1, H, 1, null, 0, H1, CV_GEMM_A_T);
-        cvGEMM(R2, H, 1, null, 0, H2, CV_GEMM_A_T);
+        // H = (R^-1 * H)/s2
+        cvGEMM(R1, H, 1/S.get(4),  null, 0,  H1, CV_GEMM_A_T);
+        cvGEMM(R2, H, 1/S.get(4),  null, 0,  H2, CV_GEMM_A_T);
 
-        // H = normalize(H) - I
-        double k1 = (H1.get(0) + H1.get(4))/2;
-        double k2 = (H2.get(0) + H2.get(4))/2;
-        cvConvertScale(H1, H1, 1/k1, 0);
-        cvConvertScale(H2, H2, 1/k2, 0);
+        // H = H - I
         H1.put(0, H1.get(0)-1); H1.put(4, H1.get(4)-1); H1.put(8, H1.get(8)-1);
         H2.put(0, H2.get(0)-1); H2.put(4, H2.get(4)-1); H2.put(8, H2.get(8)-1);
 
         // Now H should ~= -tn^T, so extract "average" t
-        double d1 = cvNorm(n, null, CV_L1);
+        double d   =    Math.abs   (n.get(0)) + Math.abs   (n.get(1)) + Math.abs   (n.get(2));
         double s[] = { -Math.signum(n.get(0)), -Math.signum(n.get(1)), -Math.signum(n.get(2)) };
-        cvSetZero(t1);
-        cvSetZero(t2);
+        t1.put(0.0, 0.0, 0.0);
+        t2.put(0.0, 0.0, 0.0);
         for (int i = 0; i < 3; i++) {
-            t1.put(0, t1.get(0) + s[i]*H1.get(i)  /d1);
-            t1.put(1, t1.get(1) + s[i]*H1.get(i+3)/d1);
-            t1.put(2, t1.get(2) + s[i]*H1.get(i+6)/d1);
+            t1.put(0, t1.get(0) + s[i]*H1.get(i)  /d);
+            t1.put(1, t1.get(1) + s[i]*H1.get(i+3)/d);
+            t1.put(2, t1.get(2) + s[i]*H1.get(i+6)/d);
 
-            t2.put(0, t2.get(0) + s[i]*H2.get(i)  /d1);
-            t2.put(1, t2.get(1) + s[i]*H2.get(i+3)/d1);
-            t2.put(2, t2.get(2) + s[i]*H2.get(i+6)/d1);
+            t2.put(0, t2.get(0) + s[i]*H2.get(i)  /d);
+            t2.put(1, t2.get(1) + s[i]*H2.get(i+3)/d);
+            t2.put(2, t2.get(2) + s[i]*H2.get(i+6)/d);
         }
 
         // H = H + tn^T
-        cvGEMM(t1, n, 1, H1, 1, H1, CV_GEMM_B_T);
-        cvGEMM(t2, n, 1, H2, 1, H2, CV_GEMM_B_T);
+        cvGEMM(t1, n, 1,  H1, 1,  H1, CV_GEMM_B_T);
+        cvGEMM(t2, n, 1,  H2, 1,  H2, CV_GEMM_B_T);
 
         // take what's left as the error of the model,
         // this either indicates inaccurate camera matrix K or normal vector n
@@ -133,10 +132,14 @@ public class JavaCV {
             err = err2;
         }
 
-        R1.pool(); R2.pool();
-        t1.pool(); t2.pool();
-        n1.pool(); n2.pool();
-        H1.pool(); H2.pool();
+        V.pool();
+        U.pool();
+        S.pool();
+
+        H2.pool(); H1.pool();
+        n2.pool(); n1.pool();
+        t2.pool(); t1.pool();
+        R2.pool(); R1.pool();
 
         return err;
     }
@@ -150,7 +153,15 @@ public class JavaCV {
         CvMat S = CvMat.take(3, 3);
         CvMat U = CvMat.take(3, 3);
         CvMat V = CvMat.take(3, 3);
-
+        double zeta = homogToRt(H, S, U, V, R1, t1, n1, R2, t2, n2);
+        V.pool();
+        U.pool();
+        S.pool();
+        return zeta;
+    }
+    public static double homogToRt(CvMat H, CvMat S, CvMat U, CvMat V,
+            CvMat R1, CvMat t1, CvMat n1,
+            CvMat R2, CvMat t2, CvMat n2) {
         cvSVD(H, S, U, V, 0);
         double s1 = S.get(0)/S.get(4);
         double s3 = S.get(8)/S.get(4);
@@ -161,13 +172,13 @@ public class JavaCV {
         double[] cd = unitize(1+s1*s3, a1*b1);
         double[] ef = unitize(-ab[1]/s1, -ab[0]/s3);
 
-        S.put(cd[0],0,cd[1], 0,1,0, -cd[1],0,cd[0]);
-        cvGEMM(U , S, 1, null, 0, R1, 0);
-        cvGEMM(R1, V, 1, null, 0, R1, CV_GEMM_B_T);
+        R1.put(cd[0],0,cd[1], 0,1,0, -cd[1],0,cd[0]);
+        cvGEMM(U , R1, 1,  null, 0,  R1, 0);
+        cvGEMM(R1, V,  1,  null, 0,  R1, CV_GEMM_B_T);
 
-        S.put(cd[0],0,-cd[1], 0,1,0, cd[1],0,cd[0]);
-        cvGEMM(U , S, 1, null, 0, R2, 0);
-        cvGEMM(R2, V, 1, null, 0, R2, CV_GEMM_B_T);
+        R2.put(cd[0],0,-cd[1], 0,1,0, cd[1],0,cd[0]);
+        cvGEMM(U , R2, 1,  null, 0,  R2, 0);
+        cvGEMM(R2, V,  1,  null, 0,  R2, CV_GEMM_B_T);
 
         double[] v1 = { V.get(0), V.get(3), V.get(6) };
         double[] v3 = { V.get(2), V.get(5), V.get(8) };
@@ -190,10 +201,6 @@ public class JavaCV {
                 }
             }
         }
-
-        S.pool();
-        U.pool();
-        V.pool();
 
         return zeta;
     }
@@ -371,7 +378,49 @@ public class JavaCV {
 
     }
 
+    // vector norm
+    public static double norm(double[] v) {
+        return norm(v, 2.0);
+    }
+    public static double norm(double[] v, double p) {
+        double norm = 0;
+        if (p == 1.0) {
+            for (double e : v) {
+                norm += Math.abs(e);
+            }
+        } else if (p == 2.0) {
+            for (double e : v) {
+                norm += e*e;
+            }
+            norm = Math.sqrt(norm);
+        } else if (p == Double.POSITIVE_INFINITY) {
+            for (double e : v) {
+                e = Math.abs(e);
+                if (e > norm) {
+                    norm = e;
+                }
+            }
+        } else if (p == Double.NEGATIVE_INFINITY) {
+            norm = Double.MAX_VALUE;
+            for (double e : v) {
+                e = Math.abs(e);
+                if (e < norm) {
+                    norm = e;
+                }
+            }
+        } else {
+            for (double e : v) {
+                norm += Math.pow(Math.abs(e), p);
+            }
+            norm = Math.pow(norm, 1/p);
+        }
+        return norm;
+    }
+
     // induced norm
+    public static double norm(CvMat A) {
+        return norm(A, 2.0);
+    }
     public static double norm(CvMat A, double p) {
         double norm = -1;
 
@@ -419,6 +468,17 @@ public class JavaCV {
             Ainv.pool();
         }
         return cond;
+    }
+
+    public static double randn(CvRNG state, double sigma) {
+        return randn(state, cvRealScalar(sigma));
+    }
+    public static double randn(CvRNG state, CvScalar sigma) {
+        CvMat values = CvMat.take(1, 1);
+        cvRandArr(state, values, CV_RAND_NORMAL, CvScalar.ZERO, sigma.byValue());
+        double res = values.get(0);
+        values.pool();
+        return res;
     }
 
     public static final double SQRT2 = 1.41421356237309504880;

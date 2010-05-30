@@ -63,10 +63,10 @@ import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
 import com.sun.jna.Structure;
-import com.sun.jna.ptr.ByReference;
 import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
+import java.nio.FloatBuffer;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 
@@ -107,6 +107,8 @@ public class cv {
 
         public static native void cvCalcImageHomography(float[] line, CvPoint3D32f center,
                 float[] intrinsic, float[] homography);
+        public static native void cvCalcImageHomography(FloatBuffer line, CvPoint3D32f center,
+                FloatBuffer intrinsic, FloatBuffer homography);
 
         public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
     }
@@ -137,6 +139,8 @@ public class cv {
 
         public static native void cvCalcImageHomography(float[] line, CvPoint3D32f center,
                 float[] intrinsic, float[] homography);
+        public static native void cvCalcImageHomography(FloatBuffer line, CvPoint3D32f center,
+                FloatBuffer intrinsic, FloatBuffer homography);
 
         public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
 
@@ -238,6 +242,20 @@ public class cv {
                 CvArr curr_pyr, CvPoint2D32f[] prev_features, CvPoint2D32f[] curr_features,
                 float[] matrices, int count, CvSize.ByValue win_size, int level,
                 byte[] status, float[] track_error, CvTermCriteria.ByValue criteria, int flags) {
+            for (Structure s : prev_features) { s.write(); }
+            cvCalcAffineFlowPyrLK(prev, curr, prev_pyr, curr_pyr,
+                    prev_features[0], curr_features[0], matrices, count, win_size, level,
+                    status, track_error, criteria, flags);
+            for (Structure s : curr_features) { s.read(); }
+        }
+        public static native void cvCalcAffineFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
+                CvArr curr_pyr, CvPoint2D32f prev_features, CvPoint2D32f curr_features,
+                FloatBuffer matrices, int count, CvSize.ByValue win_size, int level,
+                byte[] status, FloatBuffer track_error, CvTermCriteria.ByValue criteria, int flags);
+        public static void cvCalcAffineFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
+                CvArr curr_pyr, CvPoint2D32f[] prev_features, CvPoint2D32f[] curr_features,
+                FloatBuffer matrices, int count, CvSize.ByValue win_size, int level,
+                byte[] status, FloatBuffer track_error, CvTermCriteria.ByValue criteria, int flags) {
             for (Structure s : prev_features) { s.write(); }
             cvCalcAffineFlowPyrLK(prev, curr, prev_pyr, curr_pyr,
                     prev_features[0], curr_features[0], matrices, count, win_size, level,
@@ -672,6 +690,8 @@ public class cv {
 
         public static native void cvCalcImageHomography(float[] line, CvPoint3D32f center,
                 float[] intrinsic, float[] homography);
+        public static native void cvCalcImageHomography(FloatBuffer line, CvPoint3D32f center,
+                FloatBuffer intrinsic, FloatBuffer homography);
 
         public static native void cvUndistort2(CvArr src, CvArr dst, CvMat intrinsic_matrix, CvMat distortion_coeffs);
 
@@ -1063,7 +1083,8 @@ public class cv {
         public double area;
         public CvScalar value;
         public CvRect rect;
-        public CvSeq.ByReference contour;
+        // OpenCV usually returns garbage in the contour field...
+        public Pointer /* CvSeq.ByReference */ contour;
     }
 
     public static final int
@@ -1132,7 +1153,7 @@ public class cv {
 
         public CvRect rect;
         public int color;
-        public int reserved1, reserved2, reserved3;
+        public int reserved0, reserved1, reserved2;
 
         public static class ByValue extends CvContour implements Structure.ByValue { }
     }
@@ -1228,38 +1249,55 @@ public class cv {
 
             CV_HIST_UNIFORM       = 1;
 
-    public static class FloatPointerByReference extends ByReference {
-        public FloatPointerByReference() {
-            this(null);
-        }
-        public FloatPointerByReference(FloatByReference[] value) {
-            super(1);
-            setValue(value);
-        }
-        public void setValue(FloatByReference[] value) {
-            if (value == null) {
-                setPointer(null);
-            } else {
-                setPointer(new Memory(Pointer.SIZE * value.length));
-                for (int i = 0; i < value.length; i++) {
-                    getPointer().setPointer(Pointer.SIZE * i, value[i].getPointer());
-                }
 
-            }
-        }
-        public FloatByReference[] getValue() {
-            if (getPointer() == null) {
+    public static class FloatPointerByReference extends com.sun.jna.ptr.ByReference {
+        public FloatPointerByReference() { super(Pointer.SIZE); }
+        public FloatPointerByReference(float[][] floatArrayArray) { 
+            super(floatArrayArray.length*Pointer.SIZE); set(floatArrayArray); }
+
+        private Memory memoryArray[];
+
+        public float[][] get() {
+            Memory memory = (Memory)getPointer();
+            if (memory == null) {
                 return null;
-            } else {
-                Memory m = (Memory)getPointer();
-                FloatByReference[] value = new FloatByReference[(int)(m.getSize()/Pointer.SIZE)];
-                for (int i = 0; i < value.length; i++) {
-                    value[i].setPointer(m.getPointer(Pointer.SIZE * i));
+            }
+            float[][] floatArrayArray = new float[(int)(memory.getSize()/Pointer.SIZE)][];
+            for (int i = 0; i < floatArrayArray.length; i++) {
+                if (memoryArray[i] != null) {
+                    floatArrayArray[i] = memoryArray[i].getFloatArray(0, (int)(memoryArray[i].getSize()*8/Float.SIZE));
                 }
-                return value;
+            }
+            return floatArrayArray;
+        }
+        public void set(float[][] floatArrayArray) {
+            if (floatArrayArray == null) {
+                setPointer(null);
+                memoryArray = null;
+                return;
+            }
+            Memory memory = (Memory)getPointer();
+            long s = floatArrayArray.length*Pointer.SIZE;
+            if (memory == null || memory.getSize() != s) {
+                memory = new Memory(s);
+                setPointer(memory);
+            }
+            memoryArray = new Memory[floatArrayArray.length];
+            for (int i = 0; i < floatArrayArray.length; i++) {
+                if (floatArrayArray[i] == null || floatArrayArray[i].length == 0) {
+                    memoryArray[i] = null;
+                } else {
+                    s = floatArrayArray[i].length*Float.SIZE/8;
+                    if (memoryArray[i] == null || memoryArray[i].getSize() != s) {
+                        memoryArray[i] = new Memory(s);
+                    }
+                    memoryArray[i].write(0, floatArrayArray[i], 0, floatArrayArray[i].length);
+                }
+                memory.setPointer(Pointer.SIZE*i, memoryArray[i]);
             }
         }
     }
+
 
     public static class CvHistogram extends Structure {
         public CvHistogram() { releasable = false; }
@@ -1267,7 +1305,7 @@ public class cv {
             releasable = true; }
 
         public static CvHistogram create(int dims, int[] sizes, int type,
-                FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
+                float[][] ranges/*=null*/, int uniform/*=1*/) {
             CvHistogram h = cvCreateHist(dims, sizes, type, ranges, uniform);
             if (h != null) {
                 h.releasable = true;
@@ -1360,13 +1398,13 @@ public class cv {
     public static native CvHistogram cvCreateHist(int dims, int[] sizes, int type,
             FloatPointerByReference ranges/*=null*/, int uniform/*=1*/);
     public static CvHistogram cvCreateHist(int dims, int[] sizes, int type,
-            FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
+            float[][] ranges/*=null*/, int uniform/*=1*/) {
         return cvCreateHist(dims, sizes, type, new FloatPointerByReference(ranges), uniform);
     }
     public static native void cvSetHistBinRanges(CvHistogram hist,
             FloatPointerByReference ranges, int uniform/*=1*/);
     public static void cvSetHistBinRanges(CvHistogram hist,
-            FloatByReference[] ranges, int uniform/*=1*/) {
+            float[][] ranges, int uniform/*=1*/) {
         cvSetHistBinRanges(hist, new FloatPointerByReference(ranges), uniform);
     }
     public static native void cvReleaseHist(CvHistogram.PointerByReference hist);
@@ -1374,7 +1412,13 @@ public class cv {
     public static native CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
             float[] data, FloatPointerByReference ranges/*=null*/, int uniform/*=1*/);
     public static CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
-            float[] data, FloatByReference[] ranges/*=null*/, int uniform/*=1*/) {
+            float[] data, float[][] ranges/*=null*/, int uniform/*=1*/) {
+        return cvMakeHistHeaderForArray(dims, sizes, hist, data, new FloatPointerByReference(ranges), uniform);
+    }
+    public static native CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
+            FloatBuffer data, FloatPointerByReference ranges/*=null*/, int uniform/*=1*/);
+    public static CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
+            FloatBuffer data, float[][] ranges/*=null*/, int uniform/*=1*/) {
         return cvMakeHistHeaderForArray(dims, sizes, hist, data, new FloatPointerByReference(ranges), uniform);
     }
     public static native void cvGetMinMaxHistValue(CvHistogram hist,
@@ -1397,36 +1441,41 @@ public class cv {
     }
     public static native void cvCalcArrHist(CvArr.PointerByReference arr, CvHistogram hist,
             int accumulate/*=0*/, CvArr mask/*=null*/);
-    public static void cvCalcArrHist(CvArr.PointerByReference[] arr, CvHistogram hist,
+    public static void cvCalcArrHist(CvArr[] arr, CvHistogram hist,
             int accumulate/*=0*/, CvArr mask/*=null*/) {
-        cvCalcArrHist(arr[0], hist, accumulate, mask);
+        cvCalcArrHist(new CvArr.PointerByReference(arr), hist, accumulate, mask);
     }
     public static void cvCalcHist(IplImage.PointerByReference arr, CvHistogram hist,
             int accumulate/*=0*/, CvArr mask/*=null*/) {
         cvCalcArrHist(arr, hist, accumulate, mask);
     }
-    public static void cvCalcHist(IplImage.PointerByReference[] arr, CvHistogram hist,
+    public static void cvCalcHist(IplImage[] arr, CvHistogram hist,
             int accumulate/*=0*/, CvArr mask/*=null*/) {
-        cvCalcArrHist(arr[0], hist, accumulate, mask);
+        cvCalcArrHist(new IplImage.PointerByReference(arr), hist, accumulate, mask);
     }
-    public static native void cvCalcArrBackProject(CvArr image, CvArr dst, CvHistogram hist);
+    public static native void cvCalcArrBackProject(CvArr.PointerByReference image, CvArr dst, CvHistogram hist);
     public static void cvCalcArrBackProject(CvArr[] image, CvArr dst, CvHistogram hist) {
-        for (Structure s : image) { s.write(); }
-        cvCalcArrBackProject(image[0], dst, hist);
+        cvCalcArrBackProject(new CvArr.PointerByReference(image), dst, hist);
     }
-    public static void cvCalcBackProject(CvArr[] image, CvArr dst, CvHistogram hist) {
+    public static void cvCalcBackProject(IplImage.PointerByReference image, CvArr dst, CvHistogram hist) {
         cvCalcArrBackProject(image, dst, hist);
     }
-    public static native void cvCalcArrBackProjectPatch(CvArr image, CvArr dst, CvSize.ByValue range,
+    public static void cvCalcBackProject(IplImage[] image, CvArr dst, CvHistogram hist) {
+        cvCalcArrBackProject(new IplImage.PointerByReference(image), dst, hist);
+    }
+    public static native void cvCalcArrBackProjectPatch(CvArr.PointerByReference image, CvArr dst, CvSize.ByValue range,
             CvHistogram hist, int method, double factor);
     public static void cvCalcArrBackProjectPatch(CvArr[] image, CvArr dst, CvSize.ByValue range,
             CvHistogram hist, int method, double factor) {
-        for (Structure s : image) { s.write(); }
-        cvCalcArrBackProjectPatch(image[0], dst, range, hist, method, factor);
+        cvCalcArrBackProjectPatch(new CvArr.PointerByReference(image), dst, range, hist, method, factor);
     }
-    public static void cvCalcBackProjectPatch(CvArr[] image, CvArr dst, CvSize.ByValue range,
+    public static void cvCalcBackProjectPatch(IplImage.PointerByReference image, CvArr dst, CvSize.ByValue range,
             CvHistogram hist, int method, double factor) {
         cvCalcArrBackProjectPatch(image, dst, range, hist, method, factor);
+    }
+    public static void cvCalcBackProjectPatch(IplImage[] image, CvArr dst, CvSize.ByValue range,
+            CvHistogram hist, int method, double factor) {
+        cvCalcArrBackProjectPatch(new IplImage.PointerByReference(image), dst, range, hist, method, factor);
     }
     public static native void cvCalcProbDensity(CvHistogram hist1, CvHistogram hist2,
             CvHistogram dst_hist, double scale/*=255*/);
@@ -1491,6 +1540,8 @@ public class cv {
     public static native CvBox2D.ByValue cvFitEllipse2(CvArr points);
     public static native void cvFitLine(CvArr points, int dist_type, double param,
             double reps, double aeps, float[] line);
+    public static native void cvFitLine(CvArr points, int dist_type, double param,
+            double reps, double aeps, FloatBuffer line);
     public static final int
             CV_CLOCKWISE         = 1,
             CV_COUNTER_CLOCKWISE = 2;
@@ -1671,6 +1722,17 @@ public class cv {
                 beta, gamma, coeff_usage, win, criteria, calc_gradient);
         for (Structure s : points) { s.read(); }
     }
+    public static native void cvSnakeImage(IplImage image, CvPoint points, int length, FloatBuffer alpha,
+            FloatBuffer beta, FloatBuffer gamma, int coeff_usage, CvSize.ByValue win,
+            CvTermCriteria.ByValue criteria, int calc_gradient/*=1*/);
+    public static void cvSnakeImage(IplImage image, CvPoint[] points, int length, FloatBuffer alpha,
+            FloatBuffer beta, FloatBuffer gamma, int coeff_usage, CvSize.ByValue win,
+            CvTermCriteria.ByValue criteria, int calc_gradient/*=1*/) {
+        for (Structure s : points) { s.write(); }
+        cvSnakeImage(image, points[0], length, alpha,
+                beta, gamma, coeff_usage, win, criteria, calc_gradient);
+        for (Structure s : points) { s.read(); }
+    }
 
 
     public static native void cvCalcOpticalFlowHS(CvArr prev, CvArr curr, int use_previous, CvArr velx,
@@ -1691,6 +1753,20 @@ public class cv {
             CvArr curr_pyr,  CvPoint2D32f[] prev_features, CvPoint2D32f[] curr_features,
             int count, CvSize.ByValue win_size, int level, byte[] status,
             float[] track_error, CvTermCriteria.ByValue criteria, int flags) {
+        for (Structure s : prev_features) { s.write(); }
+        cvCalcOpticalFlowPyrLK(prev, curr, prev_pyr, curr_pyr, prev_features[0],
+                curr_features[0], count, win_size, level, status,
+                track_error, criteria, flags);
+        for (Structure s : curr_features) { s.read(); }
+    }
+    public static native void cvCalcOpticalFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
+            CvArr curr_pyr, CvPoint2D32f prev_features, CvPoint2D32f curr_features,
+            int count, CvSize.ByValue win_size, int level, byte[] status,
+            FloatBuffer track_error, CvTermCriteria.ByValue criteria, int flags);
+    public static void cvCalcOpticalFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
+            CvArr curr_pyr,  CvPoint2D32f[] prev_features, CvPoint2D32f[] curr_features,
+            int count, CvSize.ByValue win_size, int level, byte[] status,
+            FloatBuffer track_error, CvTermCriteria.ByValue criteria, int flags) {
         for (Structure s : prev_features) { s.write(); }
         cvCalcOpticalFlowPyrLK(prev, curr, prev_pyr, curr_pyr, prev_features[0],
                 curr_features[0], count, win_size, level, status,
@@ -1787,7 +1863,7 @@ public class cv {
     public static class CvRandState extends Structure {
         long /* CvRNG */ state;
         int              disttype;
-        CvScalar[]       param = new CvScalar[2];
+        CvScalar         param0, param1;
 
         public static class ByReference extends CvRandState implements Structure.ByReference { }
     }
@@ -2117,6 +2193,16 @@ public class cv {
     public static void cvPOSIT(CvPOSITObject posit_object, CvPoint2D32f[] image_points,
             double focal_length, CvTermCriteria.ByValue criteria,
             float[] /*CvMatr32f*/ rotation_matrix, float[] /*CvVect32f*/ translation_vector) {
+        for (Structure s : image_points) { s.write(); }
+        cvPOSIT(posit_object, image_points[0],
+                focal_length, criteria, rotation_matrix, translation_vector);
+    }
+    public static native void cvPOSIT(CvPOSITObject posit_object, CvPoint2D32f image_points,
+            double focal_length, CvTermCriteria.ByValue criteria,
+            FloatBuffer /*CvMatr32f*/ rotation_matrix, FloatBuffer /*CvVect32f*/ translation_vector);
+    public static void cvPOSIT(CvPOSITObject posit_object, CvPoint2D32f[] image_points,
+            double focal_length, CvTermCriteria.ByValue criteria,
+            FloatBuffer /*CvMatr32f*/ rotation_matrix, FloatBuffer /*CvVect32f*/ translation_vector) {
         for (Structure s : image_points) { s.write(); }
         cvPOSIT(posit_object, image_points[0],
                 focal_length, criteria, rotation_matrix, translation_vector);

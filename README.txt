@@ -5,7 +5,7 @@ JavaCV first provides wrappers to commonly used libraries by researchers in the 
 
 To learn how to use the API, since documentation currently lacks, please refer to the Quick Start section below as well as the source code of ProCamCalib and ProCamTracker.
 
-I will continue as I go to add all code that I am developing for my PhD research.
+I will continue as I go to add all code that I am developing for my doctoral research.
 
 
 ==Required Software==
@@ -16,7 +16,7 @@ To use JavaCV, you will need to download and install the following software:
   * IBM JDK 6  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE 6 for Mac OS X  http://developer.apple.com/java/  etc.
  * OpenCV 1.0, 1.1pre1, 2.0, or 2.1  http://sourceforge.net/projects/opencvlibrary/files/
- * Java Native Access 3.2.4  https://jna.dev.java.net/
+ * Java Native Access 3.2.5  http://jna.dev.java.net/
 
 Further, although not always required, some functionality of JavaCV will also use:
  * libdc1394 2.1.2 (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
@@ -106,18 +106,6 @@ public class Test2 {
                  grayImage    = IplImage.create(grabbedImage.width, grabbedImage.height, IPL_DEPTH_8U, 1),
                  rotatedImage = grabbedImage.clone();
 
-        // We can "cast" Pointer objects by instantiating a new object of the desired class.
-        CvHaarClassifierCascade cascade = new CvHaarClassifierCascade(cvLoad(cascadeName));
-
-        // Objects allocated with a create*() or clone() factory method are automatically 
-        // garbage collected, but may also explicitly be freed with the release() method.
-        CvMemStorage storage = CvMemStorage.create();
-
-        // Contiguous regions of native memory may be allocated using createArray() factory methods.
-        CvPoint[] hatPoints = CvPoint.createArray(3);
-        CvSeq.PointerByReference contourPointer = new CvSeq.PointerByReference(); 
-        int sizeofCvContour = com.sun.jna.Native.getNativeSize(CvContour.ByValue.class);
-
         // Let's create some random 3D rotation...
         CvMat randomR = CvMat.create(3, 3), randomAxis = CvMat.create(3, 1);
         // We can easily and efficiently access the elements of CvMat objects
@@ -129,6 +117,18 @@ public class Test2 {
                                                 randomR.put(1, 2, randomR.get(1, 2)*f);
         randomR.put(2, 0, randomR.get(2, 0)/f); randomR.put(2, 1, randomR.get(2, 1)/f);
         System.out.println(randomR);
+
+        // We can "cast" Pointer objects by instantiating a new object of the desired class.
+        CvHaarClassifierCascade cascade = new CvHaarClassifierCascade(cvLoad(cascadeName));
+
+        // Objects allocated with a create*() or clone() factory method are automatically 
+        // garbage collected, but may also explicitly be freed with the release() method.
+        CvMemStorage storage = CvMemStorage.create();
+
+        // Contiguous regions of native memory may be allocated using createArray() factory methods.
+        CvPoint[] hatPoints = CvPoint.createArray(3);
+        CvSeq.PointerByReference contourPointer = new CvSeq.PointerByReference(); 
+        int sizeofCvContour = com.sun.jna.Native.getNativeSize(CvContour.ByValue.class);
 
         // Again, FFmpegFrameRecorder also exists as a more versatile alternative.
         FrameRecorder recorder = new OpenCVFrameRecorder("output.avi", grabbedImage.width, grabbedImage.height);
@@ -170,7 +170,7 @@ public class Test2 {
             frame.showImage(rotatedImage);
             recorder.record(rotatedImage);
 
-            storage.clearMem();
+            cvClearMemStorage(storage);
         }
         recorder.stop();
         grabber.stop();
@@ -185,6 +185,27 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===May 30, 2010===
+ * Removed redundant `CvMemStorage.clearMem()` method, use `cvClearMemStorage()`
+ * Fixed the sample `Test2` class that did not work under Windows
+ * Fixed corruption by the `cvkernels` `transformer` at the borders
+ * Modified `CanvasFrame` constructors and added a `gamma` argument used by `showImage(IplImage)`
+ * `CanvasFrame` now lets users resize the frame, while displayed images are stretched to fit the new size
+ * Renamed `CanvasFrame.acquireGraphics()` to `createGraphics()` for consistency
+ * When `FlyCaptureFrameGrabber` cannot set fastest speed, it now safely fails by setting any supported speed
+ * Added a new `Parallel.loop()` method that can use more threads than the number of CPU cores detected
+ * Added new `numThreads` property to `GNImageAligner` and fixed a few minor inconsistencies as well
+ * Fixed incorrect `Java.HnToRt()`, and added a few `norm()` and `randn()` methods
+ * For functions with `float[]` and `double[]` arguments in `cvaux` and `cv`, added complementary `FloatBuffer` and `DoubleBuffer` declarations
+ * Fixed loading problems with `cvaux`
+ * Fixed and enhanced histogram, back projection, and other CAMSHIFT related functionality
+ * Added code for `CvRNG`
+ * Added "/opt/local/lib/" and "/opt/local/lib64/" (standard on Mac OS X) to the default list of search paths for OpenCV
+ * Added `CvScalar.getVal()` and `CvIntScalar.getVal()`, which simply return the `val` field, convenient for Scala where `val` is a reserved word
+ * Fixed the construction of `IplImage` from a `Pointer`
+ * Removed incorrect cases when an `IplImage` gets converted to a `BufferedImage.TYPE_CUSTOM`
+ * Made `CvArr.PointerByReference` a bit more consistent and general
+
 ===April 16, 2010===
  * Modified `IplImage`, `FrameGrabber`, and `CanvasFrame` to get better default behavior of gamma correction
  * Fixed `cv.CvHistogram` and related histogram functions
@@ -209,7 +230,7 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
  * Added to `CameraDevice.Settings` and `FrameGrabber` a `triggerFlushSize` property to indicate the number of buffers to flush on `trigger()` to compensate for cheap cameras that keep old images in memory indefinitely
  * Changed the type of `CameraDevice.Settings.deviceNumber` to `Integer` so we may set it to `null`
  * Fixed and enhanced `CanvasFrame.showImage()` methods a bit
- * In `triggerMode` `DC1394FrameGrabber` nows tries to use a real software trigger and only falls back to one-shot mode on error
+ * In `triggerMode` `DC1394FrameGrabber` now tries to use a real software trigger and only falls back to one-shot mode on error
  * Fixed array constructors of `IplImage.PointerByReference()` and `CvImgObsInfo.PointerByReference()`
  * Added `CvPoint.fillArray()` methods to reuse preallocated arrays and changed `createArray()` a bit as well
  * Fixed and enhanced all `IplImage.copy*()` methods, including new support for ROIs and subimages, which affects `create*()` and `getBufferedImage()` methods as well

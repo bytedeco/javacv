@@ -59,7 +59,10 @@ public class Parallel {
     }
 
     public static void loop(int from, int to, final Looper looper) {
-        int numLoopers = Math.min(to-from, numCores);
+        loop(from, to, numCores, looper);
+    }
+    public static void loop(int from, int to, int numThreads, final Looper looper) {
+        int numLoopers = Math.min(to-from, numThreads);
         Runnable[] runnables = new Runnable[numLoopers];
         for (int i = 0; i < numLoopers; i++) {
             final int subFrom = (to-from)*i/numLoopers + from;

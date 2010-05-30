@@ -231,7 +231,11 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         error = flycaptureSetBusSpeed(context,
                 FLYCAPTURE_S_FASTEST, FLYCAPTURE_S_FASTEST);
         if (error != FLYCAPTURE_OK) {
-            throw new Exception("flycaptureSetBusSpeed() Error " + error);
+            error = flycaptureSetBusSpeed(context,
+                    FLYCAPTURE_ANY, FLYCAPTURE_ANY);
+            if (error != FLYCAPTURE_OK) {
+                throw new Exception("flycaptureSetBusSpeed() Error " + error);
+            }
         }
 
         if (gamma != 0.0) {

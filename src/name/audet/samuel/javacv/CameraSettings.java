@@ -76,10 +76,7 @@ public class CameraSettings extends BeanContextSupport {
         return frameGrabber;
     }
     public void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber) {
-        this.frameGrabber = frameGrabber;
-        for (Object o : this) {
-            ((CameraDevice.Settings)o).setFrameGrabber(frameGrabber);
-        }
+        pcSupport.firePropertyChange("frameGrabber", this.frameGrabber, this.frameGrabber = frameGrabber);
     }
 
     @Override public Object[] toArray() {

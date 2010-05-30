@@ -73,20 +73,19 @@ public class GNImageAligner implements ImageAligner {
         this.dstRoiPtsArray = CvPoint.createArray(4);
         this.roi       = new CvRect.ByValue();
 
-        int numThreads = Parallel.numCores;
-        this.subroi    = new CvRect.ByValue[numThreads];
+        this.subroi    = new CvRect.ByValue[settings.numThreads];
         for (int i = 0; i < subroi.length; i++) {
             this.subroi[i] = new CvRect.ByValue();
         }
         this.transformer = transformer;
-        this.hessianGradientTransformerData = new Data[numThreads][n];
+        this.hessianGradientTransformerData = new Data[settings.numThreads][n];
         for (int i = 0; i < hessianGradientTransformerData.length; i++) {
             for (int j = 0; j < hessianGradientTransformerData[i].length; j++) {
                 hessianGradientTransformerData[i][j] = new Data(template[pyramidLevel],
                         warped[pyramidLevel], residual[pyramidLevel], null, null, n);
             }
         }
-        this.residualTransformerData = new Data[numThreads][1];
+        this.residualTransformerData = new Data[settings.numThreads][1];
         for (int i = 0; i < residualTransformerData.length; i++) {
             residualTransformerData[i][0] = new Data(template[pyramidLevel],
                     target[pyramidLevel], null, warped[pyramidLevel], residual[pyramidLevel], 1);
@@ -112,12 +111,14 @@ public class GNImageAligner implements ImageAligner {
             lineSearch       = s.lineSearch;
             errorDecreaseMin = s.errorDecreaseMin;
             displacementMax  = s.displacementMax;
+            numThreads       = s.numThreads;
         }
 
         double[] zeroThresholds = {1.0, 0.75, 0.5, 0.25, 0.0};
         double[] lineSearch     = {1.0, 0.25};
         double errorDecreaseMin = 0.02;
         double displacementMax  = 0.15;
+        int numThreads = Parallel.numCores;
 
         public double[] getZeroThresholds() {
             return zeroThresholds;
@@ -147,6 +148,13 @@ public class GNImageAligner implements ImageAligner {
             this.displacementMax = displacementMax;
         }
 
+        public int getNumThreads() {
+            return numThreads;
+        }
+        public void setNumThreads(int numThreads) {
+            this.numThreads = numThreads;
+        }
+
         @Override public Settings clone() {
             return new Settings(this);
         }
@@ -172,12 +180,18 @@ public class GNImageAligner implements ImageAligner {
     private int pyramidLevel;
     private double RMSE;
     private boolean residualUpdateNeeded = true;
+    private int lastLinePosition = 0;
 
     public IplImage getTemplateImage() {
         return template[pyramidLevel];
     }
     public void setTemplateImage(IplImage template0, double[] roiPts) {
-        this.srcRoiPts.put(roiPts);
+        if (roiPts == null) {
+            this.srcRoiPts.put(0.0, 0.0,  template0.width, 0.0,
+                    template0.width, template0.height,  0.0, template0.height);
+        } else {
+            this.srcRoiPts.put(roiPts);
+        }
 
         if (template0.depth == IPL_DEPTH_32F) {
             template[0] = template0;
@@ -261,10 +275,6 @@ public class GNImageAligner implements ImageAligner {
     }
 
     public Parameters getParameters() {
-        if (residualUpdateNeeded) {
-            doRoi();
-            doResidual();
-        }
         return parameters;
     }
     public void setParameters(Parameters parameters) {
@@ -302,6 +312,17 @@ public class GNImageAligner implements ImageAligner {
         return dstCount;
     }
 
+    public CvRect getROI() {
+        if (residualUpdateNeeded) {
+            doRoi();
+        }
+        return roi;
+    }
+    public int getLastLinePosition() {
+        return lastLinePosition;
+    }
+
+
 long accTime = 0;
     public boolean iterate(double[] delta) {
         boolean converged = false;
@@ -333,6 +354,8 @@ long accTime = 0;
             }
         }
 
+        lastLinePosition = 0;
+
         // solve for optimal parameter update
         cvSolve(regularizedHessian, gradient, update, CV_SVD);
         for (int i = 0; i < n; i++) {
@@ -345,13 +368,20 @@ long accTime = 0;
         for (int j = 1; j < settings.lineSearch.length && getRMSE() > prevRMSE; j++) {
             RMSE = prevRMSE;
             parameters.set(prevParameters);
+            lastLinePosition = j;
             for (int i = 0; i < n; i++) {
                 parameters.set(i, parameters.get(i) + settings.lineSearch[j]*update.get(i)*updateScale[i]);
             }
             residualUpdateNeeded = true;
         }
 
-        if (getRMSE() > prevRMSE*(1.0-settings.errorDecreaseMin)) {
+        if (getRMSE() >= prevRMSE*(1.0-settings.errorDecreaseMin)) {
+            if (getRMSE() > prevRMSE) {
+                RMSE = prevRMSE;
+                parameters.set(prevParameters);
+                residualUpdateNeeded = true;
+                cvSetZero(update);
+            }
             if (pyramidLevel > 0) {
                 setPyramidLevel(pyramidLevel-1);
             } else {
@@ -370,7 +400,7 @@ long accTime = 0;
 
         if (delta != null) {
             for (int i = 0; i < delta.length && i < updateScale.length; i++) {
-                delta[i] = update.get(i)*updateScale[i];
+                delta[i] = settings.lineSearch[lastLinePosition]*update.get(i)*updateScale[i];
             }
         }
 
@@ -396,7 +426,7 @@ long accTime = 0;
             constraintGrad[i] = tempParameters[i].getConstraintError() - constraintError;
         }}});
 
-        Parallel.loop(0, hessianGradientTransformerData.length, new Looper() {
+        Parallel.loop(0, hessianGradientTransformerData.length, settings.numThreads, new Looper() {
         public void loop(int from, int to, int looperID) {
             for (int i = 0; i < n; i++) {
                 Data d = hessianGradientTransformerData[looperID][i];
@@ -504,7 +534,7 @@ long accTime = 0;
 
     private void doResidual() {
         parameters.getConstraintError();
-        Parallel.loop(0, residualTransformerData.length, new Looper() {
+        Parallel.loop(0, residualTransformerData.length, settings.numThreads, new Looper() {
         public void loop(int from, int to, int looperID) {
             Data d = residualTransformerData[looperID][0];
             d.srcImg    = template[pyramidLevel];

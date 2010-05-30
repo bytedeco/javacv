@@ -132,7 +132,7 @@ public class ObjectFinder {
 
         CvSeq.PointerByReference keypointsRef = new CvSeq.PointerByReference(),
                                  descriptorsRef = new CvSeq.PointerByReference();
-        storage.clearMem();
+        cvClearMemStorage(storage);
         cvExtractSURF(settings.objectImage, null, keypointsRef, descriptorsRef, storage, settings.parameters, 0);
         CvSeq keypoints = keypointsRef.getStructure();
         CvSeq descriptors = descriptorsRef.getStructure();
@@ -176,7 +176,7 @@ public class ObjectFinder {
                 settings.objectImage.width, settings.objectImage.height,  0, settings.objectImage.height);
         CvPoint2D64f[] dstCorners = locatePlanarObject(objectKeypoints, objectDescriptors,
                 imageKeypoints, imageDescriptors, srcCorners);
-        tempStorage.clearMem();
+        cvClearMemStorage(tempStorage);
         return dstCorners;
     }
 

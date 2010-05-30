@@ -65,6 +65,8 @@ import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static name.audet.samuel.javacv.jna.cv.*;
@@ -101,6 +103,8 @@ public class cvaux {
 
         public static native void cvCalcImageHomography(float[] line,
                 CvPoint3D32f center, float[] intrinsic, float[] homography);
+        public static native void cvCalcImageHomography(FloatBuffer line,
+                CvPoint3D32f center, FloatBuffer intrinsic, FloatBuffer homography);
 
         public static native void cvCalcPGH(CvSeq contour, CvHistogram hist);
         public static final int CV_DOMINANT_IPAN = 1;
@@ -152,6 +156,15 @@ public class cvaux {
     public static native void cvEigenProjection(Pointer eigInput, int nEigObjs, int ioFlags,
             Pointer userData, float[] coeffs, IplImage avg, IplImage proj);
 
+    public static native void cvCalcCovarMatrixEx(int nObjects, Pointer input, int ioFlags,
+            int ioBufSize, Pointer buffer, Pointer userData, IplImage avg, FloatBuffer covarMatrix);
+    public static native void cvCalcEigenObjects(int nObjects, Pointer input, Pointer output,
+            int ioFlags, int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, FloatBuffer eigVals);
+    public static native void cvEigenDecomposite(IplImage obj, int nEigObjs, Pointer eigInput,
+            int ioFlags, Pointer userData, IplImage avg, FloatBuffer coeffs);
+    public static native void cvEigenProjection(Pointer eigInput, int nEigObjs, int ioFlags,
+            Pointer userData, FloatBuffer coeffs, IplImage avg, IplImage proj);
+
 
     public static class CvImgObsInfo extends Structure {
         public CvImgObsInfo() { releasable = false; }
@@ -185,7 +198,7 @@ public class cvaux {
         public IntByReference mix;
 
         public static class PointerByReference extends com.sun.jna.ptr.ByReference {
-            public PointerByReference() { this((CvImgObsInfo)null); }
+            public PointerByReference() { super(Pointer.SIZE); }
             public PointerByReference(CvImgObsInfo p) { super(Pointer.SIZE); setStructure(p); }
             public void setValue(Pointer value) {
                 getPointer().setPointer(0, value);
@@ -320,6 +333,8 @@ public class cvaux {
     public static native void cvReleaseObsInfo(CvImgObsInfo.PointerByReference obs_info);
     public static native void cvImgToObs_DCT(CvArr arr, float[] obs, CvSize.ByValue dctSize,
             CvSize.ByValue obsSize, CvSize.ByValue delta);
+    public static native void cvImgToObs_DCT(CvArr arr, FloatBuffer obs, CvSize.ByValue dctSize,
+            CvSize.ByValue obsSize, CvSize.ByValue delta);
     public static native void cvUniformImgSegm(CvImgObsInfo obs_info, CvEHMM ehmm);
     public static native void cvInitMixSegm(CvImgObsInfo.PointerByReference obs_info_array,
             int num_img, CvEHMM hmm);
@@ -348,6 +363,25 @@ public class cvaux {
             CvMemStorage storage, CvSeq.PointerByReference numbers);
     public static void cvFindHandRegionA(CvPoint3D32f[] points, int count, CvSeq indexs,
             float[] line, CvSize2D32f.ByValue size, int jc, CvPoint3D32f center,
+            CvMemStorage storage, CvSeq.PointerByReference numbers) {
+        for (CvPoint3D32f p : points) { p.write(); }
+        cvFindHandRegionA(points[0], count, indexs, line, size, jc, center, storage, numbers);
+    }
+
+    public static native void cvFindHandRegion(CvPoint3D32f points, int count, CvSeq indexs,
+            FloatBuffer line, CvSize2D32f.ByValue size, int flag, CvPoint3D32f center,
+            CvMemStorage storage, CvSeq.PointerByReference numbers);
+    public static void cvFindHandRegion(CvPoint3D32f[] points, int count, CvSeq indexs,
+            FloatBuffer line, CvSize2D32f.ByValue size, int flag, CvPoint3D32f center,
+            CvMemStorage storage, CvSeq.PointerByReference numbers) {
+        for (CvPoint3D32f p : points) { p.write(); }
+        cvFindHandRegion(points[0], count, indexs, line, size, flag, center, storage, numbers);
+    }
+    public static native void cvFindHandRegionA(CvPoint3D32f points, int count, CvSeq indexs,
+            FloatBuffer line, CvSize2D32f.ByValue size, int jc, CvPoint3D32f center,
+            CvMemStorage storage, CvSeq.PointerByReference numbers);
+    public static void cvFindHandRegionA(CvPoint3D32f[] points, int count, CvSeq indexs,
+            FloatBuffer line, CvSize2D32f.ByValue size, int jc, CvPoint3D32f center,
             CvMemStorage storage, CvSeq.PointerByReference numbers) {
         for (CvPoint3D32f p : points) { p.write(); }
         cvFindHandRegionA(points[0], count, indexs, line, size, jc, center, storage, numbers);
@@ -503,6 +537,8 @@ public class cvaux {
 
     public static native int icvConvertWarpCoordinates(double[] coeffs/*[3][3]*/,
             CvPoint2D32f cameraPoint, CvPoint2D32f warpPoint, int direction);
+    public static native int icvConvertWarpCoordinates(DoubleBuffer coeffs/*[3][3]*/,
+            CvPoint2D32f cameraPoint, CvPoint2D32f warpPoint, int direction);
     public static native int icvGetSymPoint3D(CvPoint3D64f.ByValue pointCorner,
             CvPoint3D64f.ByValue point1, CvPoint3D64f.ByValue point2, CvPoint3D64f pointSym2);
     public static native void icvGetPieceLength3D(CvPoint3D64f.ByValue point1,
@@ -514,6 +550,11 @@ public class cvaux {
             double[] convRotMatr, double[] convTransVect);
     public static native int icvConvertPointSystem(CvPoint3D64f.ByValue M2,
             CvPoint3D64f M1, double[] rotMatr, double[] transVect);
+    public static native int icvCreateConvertMatrVect(DoubleBuffer rotMatr1,
+            DoubleBuffer transVect1,  DoubleBuffer rotMatr2,  DoubleBuffer transVect2,
+            DoubleBuffer convRotMatr, DoubleBuffer convTransVect);
+    public static native int icvConvertPointSystem(CvPoint3D64f.ByValue M2,
+            CvPoint3D64f M1, DoubleBuffer rotMatr, DoubleBuffer transVect);
     public static native int icvComputeCoeffForStereo(CvStereoCamera stereoCamera);
 
     public static native int icvGetCrossPieceVector(CvPoint2D32f.ByValue p1_start,
@@ -540,13 +581,21 @@ public class cvaux {
 
     public static native void cvComputePerspectiveMap(double[] coeffs/*[3][3]*/,
             CvArr rectMapX, CvArr rectMapY);
+    public static native void cvComputePerspectiveMap(DoubleBuffer coeffs/*[3][3]*/,
+            CvArr rectMapX, CvArr rectMapY);
 
     public static native int icvComCoeffForLine(CvPoint2D64f.ByValue point1,
             CvPoint2D64f.ByValue point2, CvPoint2D64f.ByValue point3, CvPoint2D64f.ByValue point4,
             double[] camMatr1, double[] rotMatr1, double[] transVect1, double[] camMatr2,
             double[] rotMatr2, double[] transVect2, CvStereoLineCoeff coeffs, IntByReference needSwapCameras);
+    public static native int icvComCoeffForLine(CvPoint2D64f.ByValue point1,
+            CvPoint2D64f.ByValue point2, CvPoint2D64f.ByValue point3, CvPoint2D64f.ByValue point4,
+            DoubleBuffer camMatr1, DoubleBuffer rotMatr1, DoubleBuffer transVect1, DoubleBuffer camMatr2,
+            DoubleBuffer rotMatr2, DoubleBuffer transVect2, CvStereoLineCoeff coeffs, IntByReference needSwapCameras);
     public static native int icvGetDirectionForPoint(CvPoint2D64f.ByValue point,
             double[] camMatr, CvPoint3D64f direct);
+    public static native int icvGetDirectionForPoint(CvPoint2D64f.ByValue point,
+            DoubleBuffer camMatr, CvPoint3D64f direct);
     public static native int icvGetCrossLines(CvPoint3D64f.ByValue point11, CvPoint3D64f.ByValue point12,
             CvPoint3D64f.ByValue point21, CvPoint3D64f.ByValue point22, CvPoint3D64f midPoint);
     public static native int icvComputeStereoLineCoeffs(CvPoint3D64f.ByValue pointA, CvPoint3D64f.ByValue pointB,
@@ -565,10 +614,16 @@ public class cvaux {
 
     public static native void icvComputeeInfiniteProject1(double[] rotMatr, double[] camMatr1,
             double[] camMatr2, CvPoint2D32f.ByValue point1, CvPoint2D32f point2);
+    public static native void icvComputeeInfiniteProject1(DoubleBuffer rotMatr, DoubleBuffer camMatr1,
+            DoubleBuffer camMatr2, CvPoint2D32f.ByValue point1, CvPoint2D32f point2);
     public static native void icvComputeeInfiniteProject2(double[] rotMatr, double[] camMatr1,
             double[] camMatr2, CvPoint2D32f point1, CvPoint2D32f.ByValue point2);
+    public static native void icvComputeeInfiniteProject2(DoubleBuffer rotMatr, DoubleBuffer camMatr1,
+            DoubleBuffer camMatr2, CvPoint2D32f point1, CvPoint2D32f.ByValue point2);
 
     public static native void icvGetCrossDirectDirect(double[] direct1, double[] direct2,
+            CvPoint2D64f cross, IntByReference result);
+    public static native void icvGetCrossDirectDirect(DoubleBuffer direct1, DoubleBuffer direct2,
             CvPoint2D64f cross, IntByReference result);
     public static native void icvGetCrossPieceDirect(CvPoint2D64f.ByValue p_start,
             CvPoint2D64f.ByValue p_end, double a, double b, double c,
@@ -584,11 +639,18 @@ public class cvaux {
             IntByReference result);
     public static native void icvProjectPointToImage(CvPoint3D64f.ByValue point,
             double[] camMatr, double[] rotMatr, double[] transVect, CvPoint2D64f projPoint);
+    public static native void icvProjectPointToImage(CvPoint3D64f.ByValue point,
+            DoubleBuffer camMatr, DoubleBuffer rotMatr, DoubleBuffer transVect, CvPoint2D64f projPoint);
     public static native void icvGetQuadsTransform(CvSize.ByValue imageSize,
             double[] camMatr1, double[] rotMatr1, double[] transVect1,
             double[] camMatr2, double[] rotMatr2, double[] transVect2,
             CvSize   warpSize, double[] quad1/*[4][2]*/, double[] quad2/*[4][2]*/,
             double[] fundMatr, CvPoint3D64f epipole1, CvPoint3D64f epipole2);
+    public static native void icvGetQuadsTransform(CvSize.ByValue imageSize,
+            DoubleBuffer camMatr1, DoubleBuffer rotMatr1, DoubleBuffer transVect1,
+            DoubleBuffer camMatr2, DoubleBuffer rotMatr2, DoubleBuffer transVect2,
+            CvSize   warpSize, DoubleBuffer quad1/*[4][2]*/, DoubleBuffer quad2/*[4][2]*/,
+            DoubleBuffer fundMatr, CvPoint3D64f epipole1, CvPoint3D64f epipole2);
 
     public static native void icvGetQuadsTransformStruct(CvStereoCamera stereoCamera);
     public static native void icvComputeStereoParamsForCameras(CvStereoCamera stereoCamera);
@@ -597,16 +659,26 @@ public class cvaux {
             CvPoint2D64f.ByValue epipole, CvSize.ByValue imageSize,
             CvPoint2D64f point11, CvPoint2D64f point12,
             CvPoint2D64f point21, CvPoint2D64f point22, IntByReference result);
+    public static native void icvGetCutPiece(DoubleBuffer areaLineCoef1, DoubleBuffer areaLineCoef2,
+            CvPoint2D64f.ByValue epipole, CvSize.ByValue imageSize,
+            CvPoint2D64f point11, CvPoint2D64f point12,
+            CvPoint2D64f point21, CvPoint2D64f point22, IntByReference result);
     public static native void icvGetMiddleAnglePoint(CvPoint2D64f.ByValue basePoint,
             CvPoint2D64f.ByValue point1, CvPoint2D64f.ByValue point2, CvPoint2D64f midPoint);
     public static native void icvGetNormalDirect(double[] direct,
             CvPoint2D64f.ByValue point, double[] normDirect);
+    public static native void icvGetNormalDirect(DoubleBuffer direct,
+            CvPoint2D64f.ByValue point, DoubleBuffer normDirect);
     public static native double icvGetVect(CvPoint2D64f.ByValue basePoint,
             CvPoint2D64f.ByValue point1, CvPoint2D64f.ByValue point2);
     public static native void icvProjectPointToDirect(CvPoint2D64f.ByValue point,
             double[] lineCoeff, CvPoint2D64f projectPoint);
+    public static native void icvProjectPointToDirect(CvPoint2D64f.ByValue point,
+            DoubleBuffer lineCoeff, CvPoint2D64f projectPoint);
     public static native void icvGetDistanceFromPointToDirect(CvPoint2D64f.ByValue point,
             double[] lineCoef, DoubleByReference dist);
+    public static native void icvGetDistanceFromPointToDirect(CvPoint2D64f.ByValue point,
+            DoubleBuffer lineCoef, DoubleByReference dist);
 
     public static native IplImage icvCreateIsometricImage(IplImage src, IplImage dst,
             int desired_depth, int desired_num_channels);
@@ -798,8 +870,8 @@ public class cvaux {
         public CvRect RightEyeRect;
     }
 
-    public static native CvSeq cvFindFace(IplImage Image, CvMemStorage storage);
-    public static native CvSeq cvPostBoostingFindFace(IplImage Image, CvMemStorage storage);
+//    public static native CvSeq cvFindFace(IplImage Image, CvMemStorage storage);
+//    public static native CvSeq cvPostBoostingFindFace(IplImage Image, CvMemStorage storage);
 
 
     //typedef unsigned char CvBool;
@@ -967,12 +1039,21 @@ public class cvaux {
         for (CvPoint2D32f v : vertex) { v.write(); }
         cvInitPerspectiveTransform(size, vertex[0], matrix, rectMap);
     }
+    public static native void cvInitPerspectiveTransform(CvSize.ByValue size,
+            CvPoint2D32f vertex/*[4]*/, DoubleBuffer matrix/*[3][3]*/, CvArr rectMap);
+    public static void cvInitPerspectiveTransform(CvSize.ByValue size,
+            CvPoint2D32f[] vertex/*[4]*/, DoubleBuffer matrix/*[3][3]*/, CvArr rectMap) {
+        for (CvPoint2D32f v : vertex) { v.write(); }
+        cvInitPerspectiveTransform(size, vertex[0], matrix, rectMap);
+    }
 
 //    public static native void cvInitStereoRectification(CvStereoCamera params,
 //            CvArr rectMap1, CvArr rectMap2, int do_undistortion);
 
 
     public static native void cvMakeScanlines(float[] matrix/*[3][3]*/, CvSize.ByValue img_size,
+            int[] scanlines1, int[] scanlines2, int[] lengths1, int[] lengths2, int[] line_count);
+    public static native void cvMakeScanlines(FloatBuffer matrix/*[3][3]*/, CvSize.ByValue img_size,
             int[] scanlines1, int[] scanlines2, int[] lengths1, int[] lengths2, int[] line_count);
     public static native void cvPreWarpImage(int line_count, IplImage img, Pointer dst,
             int[] dst_nums, int[] scanlines);

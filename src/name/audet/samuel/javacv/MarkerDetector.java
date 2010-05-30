@@ -233,7 +233,8 @@ public class MarkerDetector {
                         continue;
 
                 points.put(m.vertex);
-                CvBox2D box = cvMinAreaRect2(points, memory); memory.clearMem();
+                CvBox2D box = cvMinAreaRect2(points, memory); 
+                cvClearMemStorage(memory);
                 if (box.size.width <= 0 || box.size.height <= 0 || 
                         box.size.width/box.size.height < 0.1 || 
                         box.size.width/box.size.height > 10) {

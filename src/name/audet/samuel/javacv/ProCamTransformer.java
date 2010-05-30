@@ -68,11 +68,14 @@ public class ProCamTransformer implements ImageTransformer {
         return projectorImage[pyramidLevel];
     }
     public void setProjectorImage(IplImage projectorImage0, int pyramidLevels) {
+        setProjectorImage(projectorImage0, pyramidLevels, true);
+    }
+    public void setProjectorImage(IplImage projectorImage0, int pyramidLevels, boolean convertToFloat) {
         if (projectorImage == null || projectorImage.length != pyramidLevels) {
             projectorImage = new IplImage[pyramidLevels];
         }
 
-        if (projectorImage0.depth == IPL_DEPTH_32F) {
+        if (projectorImage0.depth == IPL_DEPTH_32F || !convertToFloat) {
             projectorImage[0] = projectorImage0;
         } else {
             if (projectorImage[0] == null) {

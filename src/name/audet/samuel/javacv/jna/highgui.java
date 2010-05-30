@@ -221,6 +221,10 @@ public class highgui {
             CV_CVTIMG_SWAP_RB  = 2;
     public static native void cvConvertImage(CvArr src, CvArr dst, int flags/*=0*/);
 
+    public static native int cvWaitKey(int delay/*=0*/);
+    public static int cvWaitKey() {
+        return cvWaitKey(0);
+    }
 
     public static class CvCapture extends PointerType {
         public CvCapture() { }

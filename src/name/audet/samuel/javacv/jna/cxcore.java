@@ -106,6 +106,7 @@ import java.util.HashMap;
 public class cxcore {
     // OpenCV does not always install itself in the PATH :(
     public static final String[] paths = { "/usr/local/lib/", "/usr/local/lib64/",
+            "/opt/local/lib/", "/opt/local/lib64/",
             "C:/OpenCV2.1/bin/Release/", "C:/OpenCV2.1/bin/",
             "C:/OpenCV2.0/bin/Release/", "C:/OpenCV2.0/bin/",
             "C:/Program Files/OpenCV/bin/", "C:/Program Files (x86)/OpenCV/bin/" };
@@ -767,7 +768,8 @@ public class cxcore {
             val[0] = val0; val[1] = val1; val[2] = val2; val[3] = val3;
         }
 
-        public double val[] = new double[4];
+        public double[] val = new double[4];
+        public double[] getVal() { return val; }
 
         public void scale(double s) {
             for (int i = 0; i < val.length; i++) {
@@ -813,7 +815,7 @@ public class cxcore {
 
         @Override public String toString() { return "(" + (float)val[0] + ", " +
             (float)val[1] + ", " + (float)val[2] + ", " + (float)val[3] + ")"; }
-    
+
         public static final ByValue
                 ZERO    = new ByValue(0.0, 0.0, 0.0, 0.0),
                 ONE     = new ByValue(1.0, 1.0, 1.0, 1.0),
@@ -846,7 +848,8 @@ public class cxcore {
             val[0] = val0; val[1] = val1; val[2] = val2; val[3] = val3;
         }
 
-        public long val[] = new long[4];
+        public long[] val = new long[4];
+        public long[] getVal() { return val; }
 
         public static class ByValue extends CvIntScalar implements Structure.ByValue {
             public ByValue() { }
@@ -1392,9 +1395,9 @@ public class cxcore {
 
         public static class PointerByReference extends CvArr.PointerByReference {
             public PointerByReference() { }
-            public PointerByReference(CvMat p) {
-                setStructure(p);
-            }
+            public PointerByReference(CvMat p) { setStructure(p); }
+            public PointerByReference(CvMat[] a) { super(a); }
+
             public CvMat getStructure() {
                 return new CvMat(getValue());
             }
@@ -1587,9 +1590,9 @@ public class cxcore {
 
         public static class PointerByReference extends CvArr.PointerByReference {
             public PointerByReference() { }
-            public PointerByReference(CvSparseMat p) {
-                setStructure(p);
-            }
+            public PointerByReference(CvSparseMat p) { setStructure(p); }
+            public PointerByReference(CvSparseMat[] a) { super(a); }
+
             public CvSparseMat getStructure() {
                 return new CvSparseMat(getValue());
             }
@@ -1821,8 +1824,8 @@ public class cxcore {
         public int  nChannels;
         public int  alphaChannel;
         public int  depth;
-        public byte colorModel[] = new byte[4];
-        public byte channelSeq[] = new byte[4];
+        public byte colorModel0, colorModel1, colorModel2, colorModel3;
+        public byte channelSeq0, channelSeq1, channelSeq2, channelSeq3;
         public int  dataOrder;
         public int  origin;
         public int  align;
@@ -1835,8 +1838,8 @@ public class cxcore {
         public int  imageSize;
         public Pointer imageData;
         public int widthStep;
-        public int BorderMode[]  = new int[4];
-        public int BorderConst[] = new int[4];
+        public int BorderMode0,  BorderMode1,  BorderMode2,  BorderMode3;
+        public int BorderConst0, BorderConst1, BorderConst2, BorderConst3;
         public Pointer imageDataOrigin;
 
 
@@ -2204,22 +2207,20 @@ public class cxcore {
             // workaround: do gamma correction ourselves ("gamma" parameter)
             //             since we'll never use getRGB() and setRGB(), right?
             int type = BufferedImage.TYPE_CUSTOM;
-            if (width*(depth&~IPL_DEPTH_SIGN)*nChannels/8 == widthStep) {
-                if (nChannels == 1) {
-                    if (depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) {
-                        type = BufferedImage.TYPE_BYTE_GRAY;
-                    } else if (depth == IPL_DEPTH_16U) {
-                        type = BufferedImage.TYPE_USHORT_GRAY;
-                    }
-                } else if (nChannels == 3) {
-                    if (depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) {
-                        type = BufferedImage.TYPE_3BYTE_BGR;
-                    }
-                } else if (nChannels == 4 && ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-                    // with big endian, the empty channel ends up at the wrong end for OpenCV...
-                    if (depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) {
-                        type = BufferedImage.TYPE_INT_RGB;
-                    }
+            if (nChannels == 1) {
+                if (depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) {
+                    type = BufferedImage.TYPE_BYTE_GRAY;
+                } else if (depth == IPL_DEPTH_16U) {
+                    type = BufferedImage.TYPE_USHORT_GRAY;
+                }
+            } else if (nChannels == 3) {
+                if (depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) {
+                    type = BufferedImage.TYPE_3BYTE_BGR;
+                }
+            } else if (nChannels == 4 && ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+                // with big endian, the empty channel ends up at the wrong end for OpenCV...
+                if (depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) {
+                    type = BufferedImage.TYPE_INT_RGB;
                 }
             }
             return type;
@@ -2323,9 +2324,9 @@ public class cxcore {
 
         public static class PointerByReference extends CvArr.PointerByReference {
             public PointerByReference() { }
-            public PointerByReference(IplImage p) {
-                setStructure(p);
-            }
+            public PointerByReference(IplImage p) { setStructure(p); }
+            public PointerByReference(IplImage[] a) { super(a); }
+
             public IplImage getStructure() {
                 return new IplImage(getValue());
             }
@@ -2336,19 +2337,6 @@ public class cxcore {
             public void setStructure(IplImage p) {
                 p.write();
                 setValue(p.getPointer());
-            }
-
-            public PointerByReference(IplImage[] a) {
-                super(Pointer.SIZE * a.length);
-                Pointer p = getPointer();
-                for (int i = 0; i < a.length; i++) {
-                    if (a[i] != null) {
-                        a[i].write();
-                        p.setPointer(Pointer.SIZE * i, a[i].getPointer());
-                    } else {
-                        p.setPointer(Pointer.SIZE * i, null);
-                    }
-                }
             }
         }
         public PointerByReference pointerByReference() {
@@ -2394,23 +2382,34 @@ public class cxcore {
             @Override protected void allocateMemory(int size) { }
         }
         public static class PointerByReference extends com.sun.jna.ptr.ByReference {
-            public PointerByReference() { this(null); }
-            public PointerByReference(int dataSize) { super(dataSize); }
+            public PointerByReference() { super(Pointer.SIZE); }
             public PointerByReference(Pointer value) { super(Pointer.SIZE); setValue(value); }
-            public void setValue(Pointer value) {
-                getPointer().setPointer(0, value);
-            }
-            public Pointer getValue() {
-                return getPointer().getPointer(0);
+            public PointerByReference(CvArr[] a) {
+                super(Pointer.SIZE * a.length);
+                Pointer p = getPointer();
+                for (int i = 0; i < a.length; i++) {
+                    if (a[i] != null) {
+                        a[i].write();
+                        p.setPointer(Pointer.SIZE * i, a[i].getPointer());
+                    } else {
+                        p.setPointer(Pointer.SIZE * i, null);
+                    }
+                }
             }
             public static PointerByReference[] createArray(int size) {
                 PointerByReference[] a = new PointerByReference[size];
                 Pointer p = new Memory(Pointer.SIZE * size);
                 for (int i = 0; i < size; i++) {
-                    a[i] = new PointerByReference();
-                    a[i].setPointer(p.share(Pointer.SIZE * i));
+                    a[i] = new PointerByReference(p.share(Pointer.SIZE * i));
                 }
                 return a;
+            }
+
+            public void setValue(Pointer value) {
+                getPointer().setPointer(0, value);
+            }
+            public Pointer getValue() {
+                return getPointer().getPointer(0);
             }
         }
     }
@@ -2491,9 +2490,9 @@ public class cxcore {
     }
     public static native int cvInitNArrayIterator(int count, CvArr.PointerByReference arrs,
             CvArr mask, CvMatND stubs, CvNArrayIterator array_iterator, int flags/*=0*/);
-    public static int cvInitNArrayIterator(int count, CvArr.PointerByReference[] arrs,
+    public static int cvInitNArrayIterator(int count, CvArr[] arrs,
             CvArr mask, CvMatND stubs, CvNArrayIterator array_iterator, int flags/*=0*/) {
-        return cvInitNArrayIterator(count, arrs[0], mask, stubs, array_iterator, flags);
+        return cvInitNArrayIterator(count, new CvArr.PointerByReference(arrs), mask, stubs, array_iterator, flags);
     }
     public static native int cvNextNArraySlice(CvNArrayIterator array_iterator);
 
@@ -2588,8 +2587,7 @@ public class cxcore {
         cvMixChannels(src[0], src_count, dst[0], dst_count, from_to, pair_count);
         for (Structure s : dst) { s.read(); } for (Structure s : dst) { s.read(); }
     }
-    public static native void cvRandShuffle(CvArr mat, LongByReference /* CvRNG* */ rng,
-            double iter_factor/*=1*/);
+    public static native void cvRandShuffle(CvArr mat, CvRNG rng, double iter_factor/*=1*/);
 
 
     public static native void cvLUT(CvArr src, CvArr dst, CvArr lut);
@@ -2797,10 +2795,30 @@ public class cxcore {
     public static native int cvSolveCubic(CvMat coeffs, CvMat roots);
 
 
+    public static class CvRNG extends LongByReference {
+        public CvRNG() { super(-1); }
+        public CvRNG(long seed) { super(seed); }
+    }
+    public static CvRNG cvRNG() {
+        return new CvRNG();
+    }
+    public static CvRNG cvRNG(long seed/*=-1*/) {
+        return new CvRNG(seed);
+    }
+    public static int cvRandInt(CvRNG rng) {
+        long temp = rng.getValue();
+        temp = ((temp&0xFFFFFFFFL)*4164903690L) + ((temp >> 32)&0xFFFFFFFFL);
+        rng.setValue(temp);
+        return (int)temp;
+    }
+    public static double cvRandReal(CvRNG rng) {
+        return ((long)cvRandInt(rng)&0xFFFFFFFFL)*2.3283064365386962890625e-10;
+    }
+
     public static final int
         CV_RAND_UNI     = 0,
         CV_RAND_NORMAL  = 1;
-    public static native void cvRandArr(LongByReference /* CvRNG* */ rng, CvArr arr, int dist_type,
+    public static native void cvRandArr(CvRNG rng, CvArr arr, int dist_type,
             CvScalar.ByValue param1, CvScalar.ByValue param2);
 
 
@@ -2870,10 +2888,6 @@ public class cxcore {
         public int block_size;
         public int free_space;
 
-
-        public void clearMem() {
-            cvClearMemStorage(this);
-        }
 
         public static class ByReference extends CvMemStorage implements Structure.ByReference { }
 

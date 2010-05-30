@@ -103,26 +103,22 @@ public class CanvasFrame extends JFrame {
         return GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
     }
 
-    public CanvasFrame() {
-        super();
-        init(false, null, 0.0);
-    }
-    public CanvasFrame(GraphicsConfiguration gc) {
-        super(gc);
-        init(false, null, 0.0);
-    }
     public CanvasFrame(String title) {
+        this(title, 0.0);
+    }
+    public CanvasFrame(String title, double gamma) {
         super(title);
-        init(false, null, 0.0);
+        init(false, null, gamma);
     }
+
     public CanvasFrame(String title, GraphicsConfiguration gc) {
+        this(title, gc, 0.0);
+    }
+    public CanvasFrame(String title, GraphicsConfiguration gc, double gamma) {
         super(title, gc);
-        init(false, null, 0.0);
+        init(false, null, gamma);
     }
-    public CanvasFrame(int screenNumber, DisplayMode displayMode) throws Exception {
-        super(getScreenDevice(screenNumber).getDefaultConfiguration());
-        init(true, displayMode, 0.0);
-    }
+
     public CanvasFrame(String title, int screenNumber, DisplayMode displayMode) throws Exception {
         this(title, screenNumber, displayMode, 0.0);
     }
@@ -166,6 +162,9 @@ public class CanvasFrame extends JFrame {
         canvas = new Canvas();
         if (fullScreen) {
             canvas.setSize(getSize());
+            needInitialResize = false;
+        } else {
+            needInitialResize = true;
         }
         getContentPane().add(canvas);
         canvas.setVisible(true);
@@ -202,6 +201,7 @@ public class CanvasFrame extends JFrame {
     private KeyEvent keyEvent = null;
 
     private Canvas canvas = null;
+    private boolean needInitialResize = false;
     private BufferStrategy bufferStrategy = null;
     private double invgamma;
 
@@ -239,7 +239,7 @@ public class CanvasFrame extends JFrame {
         return bufferStrategy;
     }
 
-    public Graphics2D acquireGraphics() {
+    public Graphics2D createGraphics() {
         return (Graphics2D)bufferStrategy.getDrawGraphics();
     }
     public void releaseGraphics(Graphics2D g) {
@@ -262,12 +262,13 @@ public class CanvasFrame extends JFrame {
         pack();
         canvas.setSize(width+1, height+1);
         canvas.setSize(width, height);
+        needInitialResize = false;
     }
 
     public void showImage(Image image, final int w, final int h) {
         if (image == null)
             return;
-        if (isResizable() && (canvas.getWidth() != w || canvas.getHeight() != h)) {
+        if (isResizable() && needInitialResize) {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
@@ -276,8 +277,8 @@ public class CanvasFrame extends JFrame {
                 });
             } catch (Exception ex) { }
         }
-        Graphics2D g = acquireGraphics();
-        g.drawImage(image, 0, 0, w, h, null);
+        Graphics2D g = createGraphics();
+        g.drawImage(image, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
         releaseGraphics(g);
     }
     public void showImage(Image image, double scale) {
@@ -307,7 +308,7 @@ public class CanvasFrame extends JFrame {
     }
 
     public void showColor(Color color) {
-        Graphics2D g = acquireGraphics();
+        Graphics2D g = createGraphics();
         g.setColor(color);
         g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         releaseGraphics(g);

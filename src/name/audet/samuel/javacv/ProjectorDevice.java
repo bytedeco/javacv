@@ -191,7 +191,7 @@ public class ProjectorDevice extends ProjectiveDevice {
         public int getImageWidth() { return si.getImageWidth(); }
         public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
         public int getImageHeight() { return si.getImageHeight(); }
-        public void setImageHeight(int imageHeight) { si.getImageHeight(); }
+        public void setImageHeight(int imageHeight) { si.setImageHeight(imageHeight); }
         public int getBitDepth() { return si.getBitDepth(); }
         public void setBitDepth(int bitDepth) { si.setBitDepth(bitDepth); }
         public int getRefreshRate() { return si.getRefreshRate(); }
@@ -246,7 +246,7 @@ public class ProjectorDevice extends ProjectiveDevice {
         public int getImageWidth() { return si.getImageWidth(); }
         public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
         public int getImageHeight() { return si.getImageHeight(); }
-        public void setImageHeight(int imageHeight) { si.getImageHeight(); }
+        public void setImageHeight(int imageHeight) { si.setImageHeight(imageHeight); }
         public int getBitDepth() { return si.getBitDepth(); }
         public void setBitDepth(int bitDepth) { si.setBitDepth(bitDepth); }
         public int getRefreshRate() { return si.getRefreshRate(); }
