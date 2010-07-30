@@ -66,6 +66,7 @@ public interface ImageTransformer {
         void set(Parameters p);
         void reset(boolean asIdentity);
         boolean addDelta(int i);
+        boolean addDelta(int i, double scale);
         double getConstraintError();
         void compose(Parameters p1, boolean inverse1, Parameters p2, boolean inverse2);
         Parameters clone();

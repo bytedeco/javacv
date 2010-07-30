@@ -32,6 +32,7 @@ import java.io.File;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
 import static net.sf.ffmpeg_java.AVCodecLibrary.*;
+import static net.sf.ffmpeg_java.AVDeviceLibrary.*;
 import static net.sf.ffmpeg_java.AVFormatLibrary.*;
 import static net.sf.ffmpeg_java.AVUtilLibrary.*;
 import static net.sf.ffmpeg_java.SWScaleLibrary.*;
@@ -50,6 +51,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } else {
             try {
                 Object avcodec  = AVCodecLibrary .INSTANCE;
+                Object avdevice = AVDeviceLibrary.INSTANCE;
                 Object avformat = AVFormatLibrary.INSTANCE;
                 Object avutil   = AVUtilLibrary  .INSTANCE;
                 Object swscale  = SWScaleLibrary .INSTANCE;
@@ -64,15 +66,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public FFmpegFrameGrabber(File file) {
-        this(file.getAbsolutePath());
+        this(file.getAbsolutePath(), null);
     }
     public FFmpegFrameGrabber(String filename) {
-	// Register all formats and codecs
-	avcodec_init();
-	avcodec_register_all();
-	av_register_all();
+        this(filename, null);
+    }
+    public FFmpegFrameGrabber(String filename, String inputFormatName) {
+        // Register all formats and codecs
+        avcodec_init();
+        avcodec_register_all();
+        avdevice_register_all();
+        av_register_all();
 
         this.filename = filename;
+        this.inputFormatName = inputFormatName;
     }
     public void release() throws Exception {
         stop();
@@ -83,7 +90,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } catch (Exception ex) { }
     }
 
-    private String filename = null;
+    private String filename = null, inputFormatName = null;
     private AVFormatContext pFormatCtx;
     private int             videoStream;
     private AVStream        pStream;
@@ -108,25 +115,41 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
-	// Open video file
+        // Open video file
         PointerByReference p = new PointerByReference();
-	if (av_open_input_file(p, filename, null, 0, null) != 0) {
+        AVInputFormat f = null;
+        if (inputFormatName != null) {
+            f = av_find_input_format(inputFormatName);
+            if (f == null) {
+                throw new Exception("Could not find input format.");
+            }
+        }
+        AVFormatParameters fp = null;
+        if (frameRate > 0 || bpp > 0 || imageWidth > 0 || imageHeight > 0) {
+            fp = new AVFormatParameters();
+            fp.time_base = av_d2q(1/frameRate, FFmpegFrameRecorder.DEFAULT_FRAME_RATE_BASE);
+            fp.sample_rate = bpp;
+            fp.channels = colorMode == ColorMode.BGR ? 3 : 1;
+            fp.width = imageWidth;
+            fp.height = imageHeight;
+        }
+        if (av_open_input_file(p, filename, f, 0, fp) != 0) {
             throw new Exception("Could not open file.");
         }
         pFormatCtx = new AVFormatContext(p.getValue());
         pFormatCtx.setAutoSynch(false);
 
-	// Retrieve stream information
-	if (av_find_stream_info(pFormatCtx) < 0) {
+        // Retrieve stream information
+        if (av_find_stream_info(pFormatCtx) < 0) {
            throw new Exception("Could not find stream information.");
         }
 
-	// Dump information about file onto standard error
-	dump_format(pFormatCtx, 0, filename, 0);
+        // Dump information about file onto standard error
+        dump_format(pFormatCtx, 0, filename, 0);
 
-	// Find the first video stream
+        // Find the first video stream
         videoStream = -1;
-	for (int i = 0; i < pFormatCtx.nb_streams; i++) {
+        for (int i = 0; i < pFormatCtx.nb_streams; i++) {
             pStream = new AVStream(pFormatCtx.getStreams()[i]);
             pStream.setAutoSynch(false);
             // Get a pointer to the codec context for the video stream
@@ -137,27 +160,27 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 break;
             }
         }
-	if (videoStream == -1) {
+        if (videoStream == -1) {
             throw new Exception("Did not find a video stream.");
         }
 
-	// Find the decoder for the video stream
-	pCodec = avcodec_find_decoder(pCodecCtx.codec_id);
-	if (pCodec == null) {
+        // Find the decoder for the video stream
+        pCodec = avcodec_find_decoder(pCodecCtx.codec_id);
+        if (pCodec == null) {
             throw new Exception("Unsupported codec or codec not found: " + pCodecCtx.codec_id + ".");
-	}
+        }
         pCodec.setAutoSynch(false);
-	// Open codec
-	if (avcodec_open(pCodecCtx, pCodec) < 0) {
+        // Open codec
+        if (avcodec_open(pCodecCtx, pCodec) < 0) {
             throw new Exception("Could not open codec.");
         }
 
-	// Allocate video frame
-	pFrame = avcodec_alloc_frame();
+        // Allocate video frame
+        pFrame = avcodec_alloc_frame();
 
-	// Allocate an AVFrame structure
-	pFrameRGB = avcodec_alloc_frame();
-	if (pFrameRGB == null) {
+        // Allocate an AVFrame structure
+        pFrameRGB = avcodec_alloc_frame();
+        if (pFrameRGB == null) {
             throw new Exception("Could not allocate frame.");
         }
 
@@ -210,11 +233,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void stop() throws Exception {
-	// Free the RGB image
+        // Free the RGB image
         if (buffer != null) {
             av_free(buffer);
             buffer = null;
-	}
+        }
         if (pFrameRGB != null) {
             av_free(pFrameRGB.getPointer());
             pFrameRGB = null;
@@ -305,7 +328,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             // Free the packet that was allocated by av_read_frame
             av_free_packet(packet);
-	}
+        }
 
         return_image.setTimestamp(pts);
         return return_image;

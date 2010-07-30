@@ -134,20 +134,22 @@ public class CanvasFrame extends JFrame {
 
     private void init(boolean fullScreen, DisplayMode displayMode, double gamma) {
         GraphicsDevice gd = getGraphicsConfiguration().getDevice();
-        int w = displayMode == null ? 0 : displayMode.getWidth();
-        int h = displayMode == null ? 0 : displayMode.getHeight();
-        int b = displayMode == null ? 0 : displayMode.getBitDepth();
-        int r = displayMode == null ? 0 : displayMode.getRefreshRate();
         DisplayMode d = gd.getDisplayMode();
-        displayMode = new DisplayMode(w > 0 ? w : d.getWidth(),    h > 0 ? h : d.getHeight(),
-                                      b > 0 ? b : d.getBitDepth(), r > 0 ? r : d.getRefreshRate());
+        if (displayMode != null && d != null) {
+            int w = displayMode.getWidth();
+            int h = displayMode.getHeight();
+            int b = displayMode.getBitDepth();
+            int r = displayMode.getRefreshRate();
+            displayMode = new DisplayMode(w > 0 ? w : d.getWidth(),    h > 0 ? h : d.getHeight(),
+                                          b > 0 ? b : d.getBitDepth(), r > 0 ? r : d.getRefreshRate());
+        }
         if (fullScreen) {
             setUndecorated(true);
             getRootPane().setWindowDecorationStyle(JRootPane.NONE);
             setResizable(false);
             gd.setFullScreenWindow(this);
         }
-        if (!displayMode.equals(d)) {
+        if (displayMode != null && !displayMode.equals(d)) {
             gd.setDisplayMode(displayMode);
         }
         if (gamma == 0.0) {

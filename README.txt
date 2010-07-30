@@ -23,7 +23,7 @@ Further, although not always required, some functionality of JavaCV will also us
  * PGR FlyCapture 1 or 2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * ARToolKitPlus 2.1.1c  http://code.google.com/p/javacv/downloads/list
  * FFmpeg-Java  http://code.google.com/p/javacv/downloads/list
- * which needs FFmpeg 0.5 or more recent:
+ * which needs FFmpeg 0.6 or more recent:
   * Source code  http://ffmpeg.org/download.html
   * Precompiled Windows DLLs  http://ffmpeg.arrozcru.org/autobuilds/
 
@@ -185,6 +185,14 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===July 30, 2010===
+ * Fixed crash that would occur in `CanvasFrame` for some video drivers
+ * `FFmpegFrameGrabber` now supports other input formats (devices), such as `x11grab` that can be used for screencasting
+ * Added `JavaCV.median()` function, and `JavaCV.fractalTriangleWave()` now respects image ROI
+ * Fixed background subtraction in `cvaux`
+ * Fixed crash inside the code for direct alignment caused by the ROI getting set outside the image plane
+ * Added `deltaScale` and `tryToFixPlane` to `GNImageAligner.Settings` (the first used in `ImageTransformer.Parameters` as increment, randomly selected forward or backward, for finite difference), which sometimes help to jump over local minima
+
 ===May 30, 2010===
  * Removed redundant `CvMemStorage.clearMem()` method, use `cvClearMemStorage()`
  * Fixed the sample `Test2` class that did not work under Windows
@@ -329,4 +337,3 @@ Project site: http://code.google.com/p/javacv/
 
 Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.
 Please refer to LICENSE.txt or http://www.gnu.org/licenses/ for details.
-

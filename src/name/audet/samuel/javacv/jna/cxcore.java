@@ -819,6 +819,7 @@ public class cxcore {
         public static final ByValue
                 ZERO    = new ByValue(0.0, 0.0, 0.0, 0.0),
                 ONE     = new ByValue(1.0, 1.0, 1.0, 1.0),
+                ONEHALF = new ByValue(0.5, 0.5, 0.5, 0.5),
 
                 WHITE   = CV_RGB(255, 255, 255),
                 GRAY    = CV_RGB(128, 128, 128),

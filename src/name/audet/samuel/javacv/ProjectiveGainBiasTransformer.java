@@ -262,10 +262,10 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                 }
             }
         }
-        @Override public boolean addDelta(int i) {
+        @Override public boolean addDelta(int i, double scale) {
             int s = super.size();
             if (i < s) {
-                return super.addDelta(i);
+                return super.addDelta(i, scale);
             } else {
                 // gradient varies linearly with intensity, so
                 // the increment value is not very important, but

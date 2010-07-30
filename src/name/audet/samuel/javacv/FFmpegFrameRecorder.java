@@ -146,7 +146,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
            of which frame timestamps are represented. for fixed-fps content,
            timebase should be 1/framerate and timestamp increments should be
            identically 1. */
-        c.time_base = new AVRational(av_d2q(1/frameRate, DEFAULT_FRAME_RATE_BASE));
+        c.time_base = av_d2q(1/frameRate, DEFAULT_FRAME_RATE_BASE);
         c.gop_size = 12; /* emit one intra frame every twelve frames at most */
         c.pix_fmt = pixelFormat;
         if (c.codec_id == CODEC_ID_MPEG2VIDEO) {

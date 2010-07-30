@@ -78,6 +78,7 @@ public interface ImageAligner {
     IplImage getResidualImage();
     IplImage getRoiMaskImage();
     double getRMSE();
+    CvRect getROI();
 
     boolean iterate(double[] delta);
 }

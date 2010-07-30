@@ -25,6 +25,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 import name.audet.samuel.javacv.Parallel.Looper;
 
 import static name.audet.samuel.javacv.jna.cxcore.*;
@@ -481,6 +482,21 @@ public class JavaCV {
         return res;
     }
 
+    public static double median(double[] doubles) {
+        double[] sorted = doubles.clone();
+        Arrays.sort(sorted);
+        if (doubles.length%2 == 0) {
+            return (sorted[doubles.length/2 - 1] + sorted[doubles.length/2])/2;
+        } else {
+            return sorted[doubles.length/2];
+        }
+    }
+    public static <T extends Object> T median(T[] objects) {
+        T[] sorted = objects.clone();
+        Arrays.sort(sorted);
+        return sorted[sorted.length/2];
+    }
+
     public static final double SQRT2 = 1.41421356237309504880;
     public static void fractalTriangleWave(double[] line, int i, int j, double a) {
         int m = (j-i)/2+i;
@@ -499,10 +515,18 @@ public class JavaCV {
         fractalTriangleWave(line, line.length/2, line.length-1, -1);
 
         double[] minMax = { Double.MAX_VALUE, Double.MIN_VALUE };
-        FloatBuffer fb = image.getFloatBuffer();
+        int height = image.height;
+        int width = image.width;
+        int start = 0;
+        if (image.roi != null) {
+            height = image.roi.height;
+            width  = image.roi.width;
+            start  = image.roi.yOffset*image.widthStep/4 + image.roi.xOffset*image.nChannels;
+        }
+        FloatBuffer fb = image.getFloatBuffer(start);
         double[] h = H == null ? null : H.get();
-        for (int y = 0; y < image.height; y++) {
-            for (int x = 0; x < image.width; x++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 for (int z = 0; z < image.nChannels; z++) {
                     double sum = 0.0;
                     if (h == null) {

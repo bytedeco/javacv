@@ -85,10 +85,10 @@ public class ProCamTransformer implements ImageTransformer {
             IplROI ir = projectorImage0.roi;
             if (ir != null) {
                 int align  = 1<<projectorImage.length;
-                roi.x      = (int)Math.floor((double)ir.xOffset/align)*align;
-                roi.y      = (int)Math.floor((double)ir.yOffset/align)*align;
-                roi.width  = (int)Math.ceil ((double)ir.width  /align)*align;
-                roi.height = (int)Math.ceil ((double)ir.height /align)*align;
+                roi.x      = Math.max(0, (int)Math.floor((double)ir.xOffset/align)*align);
+                roi.y      = Math.max(0, (int)Math.floor((double)ir.yOffset/align)*align);
+                roi.width  = Math.min(projectorImage0.width,  (int)Math.ceil((double)ir.width /align)*align);
+                roi.height = Math.min(projectorImage0.height, (int)Math.ceil((double)ir.height/align)*align);
                 cvSetImageROI(projectorImage0,   roi);
                 cvSetImageROI(projectorImage[0], roi);
             } else {
@@ -383,15 +383,18 @@ public class ProCamTransformer implements ImageTransformer {
             this.projectorParameters = projectorParameters;
         }
         public boolean addDelta(int i) {
+            return addDelta(i, 1);
+        }
+        public boolean addDelta(int i, double scale) {
             // gradient varies linearly with intensity, so
             // the increment value is not very important, but
             // referenceCameraImage is good only for the value 1,
             // so let's use that
             if (i < getSizeForSurface()) {
-                surfaceParameters.addDelta(i);
+                surfaceParameters.addDelta(i, scale);
                 projectorParameters.setUpdateNeeded(true);
             } else {
-                projectorParameters.addDelta(getProjectorOffset()+i);
+                projectorParameters.addDelta(getProjectorOffset()+i, scale);
             }
 
             return false;
@@ -537,11 +540,12 @@ public class ProCamTransformer implements ImageTransformer {
                     setUpdateNeeded(true);
                 }
             }
-            @Override public boolean addDelta(int i) {
-                return super.addDelta(super.size()-size()+i);
+            @Override public boolean addDelta(int i, double scale) {
+                return super.addDelta(super.size()-size()+i, scale);
             }
 
-            private CvMat n = CvMat.create(3, 1);
+            private CvMat n2 = CvMat.create(3, 1);
+            private boolean ignoreUpdate = false;
             @Override protected void update() {
                 if (!isUpdateNeeded()) {
                     return;
@@ -551,15 +555,29 @@ public class ProCamTransformer implements ImageTransformer {
                 CvMat R  = proCamParameters.surfaceParameters.getR();
                 CvMat t  = proCamParameters.surfaceParameters.getT();
 
-                // transform the initial normal n1 using motion derived from the homography
-                // n^T = n1^T [R^T | -t]
-                // n   = (R*n1) / (1 - t^T*n1)
-                double d = 1 - cvDotProduct(t, n1);
-                cvGEMM(R, n1, 1/d, null, 0, n, 0);
-                n.get(projectiveParameters);
-
+                if (!ignoreUpdate) {
+                    // transform the initial normal n1 using motion derived from the homography
+                    // n^T = n1^T [R^T | -t]
+                    // n   = (R*n1) / (1 - t^T*n1)
+                    double d = 1 - cvDotProduct(t, n1);
+                    cvGEMM(R, n1, 1/d, null, 0, n2, 0);
+                    n2.get(projectiveParameters);
+                }
                 super.update();
                 setUpdateNeeded(false);
+            }
+
+            public double[] getN2() {
+                return projectiveParameters;
+            }
+            public void setN2(double[] n2) {
+                if (n2 == null) {
+                    ignoreUpdate = false;
+                } else {
+                    System.arraycopy(n2, 0, projectiveParameters, 0, n2.length);
+                    ignoreUpdate = true;
+                    super.update();
+                }
             }
 
             @Override public Parameters clone() {

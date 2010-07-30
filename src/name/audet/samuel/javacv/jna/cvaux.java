@@ -56,7 +56,6 @@
 package name.audet.samuel.javacv.jna;
 
 import com.sun.jna.Callback;
-import com.sun.jna.Function;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
 import com.sun.jna.Structure;
@@ -89,8 +88,7 @@ public class cvaux {
         }
         public static int cvUpdateBGStatModel(IplImage current_frame, CvBGStatModel bg_model) {
             if (bg_model != null && bg_model.update != null) {
-                //return bg_model.update.callback(current_frame, bg_model);
-                return bg_model.update.invokeInt(new Object[] { current_frame, bg_model } );
+                return bg_model.update.v10.callback(current_frame, bg_model);
             } else {
                 return 0;
             }
@@ -118,8 +116,7 @@ public class cvaux {
         }
         public static int cvUpdateBGStatModel(IplImage current_frame, CvBGStatModel bg_model, double learningRate/*=-1*/) {
             if (bg_model != null && bg_model.update != null) {
-                //return bg_model.update.callback(current_frame, bg_model, learningRate);
-                return bg_model.update.invokeInt(new Object[] { current_frame, bg_model, learningRate } );
+                return bg_model.update.v21.callback(current_frame, bg_model, learningRate);
             } else {
                 return 0;
             }
@@ -1113,7 +1110,11 @@ public class cvaux {
 
         public int                         type;
         public CvReleaseBGStatModel        release;
-        public Function /*CvUpdateBGStatModel*/ update;
+        public static class CvUpdateBGStatModel extends Union {
+            public v10.CvUpdateBGStatModel v10;
+            public v21.CvUpdateBGStatModel v21;
+        }
+        public CvUpdateBGStatModel         update;
         public IplImage.ByReference        background;
         public IplImage.ByReference        foreground;
         public IplImage.PointerByReference layers;

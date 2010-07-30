@@ -322,9 +322,9 @@ public class ProjectiveTransformer implements ImageTransformer {
         }
 
         public boolean addDelta(int i) {
-            return addDelta(i, 1/*(1<<pyramidLevel)*/);
+            return addDelta(i, 1);
         }
-        public boolean addDelta(int i, int scale) {
+        public boolean addDelta(int i, double scale) {
             if (referencePoints != null && i < 8) {
                 // add one pixel..
                 projectiveParameters[i] += scale;

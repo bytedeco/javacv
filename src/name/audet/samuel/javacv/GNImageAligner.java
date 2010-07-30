@@ -20,6 +20,8 @@
 
 package name.audet.samuel.javacv;
 
+import java.util.Arrays;
+import java.util.Random;
 import name.audet.samuel.javacv.ImageTransformer.Data;
 import name.audet.samuel.javacv.ImageTransformer.Parameters;
 import name.audet.samuel.javacv.Parallel.Looper;
@@ -119,6 +121,8 @@ public class GNImageAligner implements ImageAligner {
         double errorDecreaseMin = 0.02;
         double displacementMax  = 0.15;
         int numThreads = Parallel.numCores;
+        double deltaScale = 0.1;
+        boolean tryToFixPlane = false;
 
         public double[] getZeroThresholds() {
             return zeroThresholds;
@@ -155,6 +159,20 @@ public class GNImageAligner implements ImageAligner {
             this.numThreads = numThreads;
         }
 
+        public double getDeltaScale() {
+            return deltaScale;
+        }
+        public void setDeltaScale(double deltaScale) {
+            this.deltaScale = deltaScale;
+        }
+
+        public boolean isTryToFixPlane() {
+            return tryToFixPlane;
+        }
+        public void setTryToFixPlane(boolean tryToFixPlane) {
+            this.tryToFixPlane = tryToFixPlane;
+        }
+
         @Override public Settings clone() {
             return new Settings(this);
         }
@@ -181,6 +199,8 @@ public class GNImageAligner implements ImageAligner {
     private double RMSE;
     private boolean residualUpdateNeeded = true;
     private int lastLinePosition = 0;
+    private boolean fixN2 = false;
+    private Random random = new Random(-1);
 
     public IplImage getTemplateImage() {
         return template[pyramidLevel];
@@ -217,10 +237,10 @@ public class GNImageAligner implements ImageAligner {
             setPyramidLevel(0);
             doRoi(settings.displacementMax);
             int align = 1<<target.length;
-            subroi[0].x      = (int)Math.floor((double)roi.x     /align)*align;
-            subroi[0].y      = (int)Math.floor((double)roi.y     /align)*align;
-            subroi[0].width  = (int)Math.ceil ((double)roi.width /align)*align;
-            subroi[0].height = (int)Math.ceil ((double)roi.height/align)*align;
+            subroi[0].x      = Math.max(0, (int)Math.floor((double)roi.x/align)*align);
+            subroi[0].y      = Math.max(0, (int)Math.floor((double)roi.y/align)*align);
+            subroi[0].width  = Math.min(target0.width,  (int)Math.ceil((double)roi.width /align)*align);
+            subroi[0].height = Math.min(target0.height, (int)Math.ceil((double)roi.height/align)*align);
             cvSetImageROI(target0,   subroi[0]);
             cvSetImageROI(target[0], subroi[0]);
         } else {
@@ -331,6 +351,7 @@ long accTime = 0;
         final double[] prevParameters = parameters.get();
 
 //long start = System.currentTimeMillis();
+        boolean fixedN2 = fixN2;
         doHessianGradient(updateScale);
 
 //System.err.println((float)(hessian.get(9,9) + hessian.get(10,10) + hessian.get(11,11)) /
@@ -375,14 +396,24 @@ long accTime = 0;
             residualUpdateNeeded = true;
         }
 
-        if (getRMSE() >= prevRMSE*(1.0-settings.errorDecreaseMin)) {
-            if (getRMSE() > prevRMSE) {
+        if (delta != null) {
+            for (int i = 0; i < delta.length && i < updateScale.length; i++) {
+                delta[i] = settings.lineSearch[lastLinePosition]*update.get(i)*updateScale[i];
+            }
+        }
+
+        if (getRMSE() >= prevRMSE*(1.0-settings.errorDecreaseMin) ||
+                Double.isNaN(RMSE) || Double.isInfinite(RMSE)) {
+            if (getRMSE() >= prevRMSE || Double.isNaN(RMSE) || Double.isInfinite(RMSE)) {
                 RMSE = prevRMSE;
                 parameters.set(prevParameters);
                 residualUpdateNeeded = true;
                 cvSetZero(update);
+                Arrays.fill(delta, 0);
             }
-            if (pyramidLevel > 0) {
+            if (settings.tryToFixPlane && !fixedN2) {
+                fixN2 = true;
+            } else if (pyramidLevel > 0) {
                 setPyramidLevel(pyramidLevel-1);
             } else {
                 converged = true;
@@ -398,12 +429,6 @@ long accTime = 0;
 //                 "  totalTime = " + (residualTime-start) +
 //                 "  accTime = " + accTime);
 
-        if (delta != null) {
-            for (int i = 0; i < delta.length && i < updateScale.length; i++) {
-                delta[i] = settings.lineSearch[lastLinePosition]*update.get(i)*updateScale[i];
-            }
-        }
-
         return converged;
     }
 
@@ -416,15 +441,31 @@ long accTime = 0;
         cvSetZero(gradient);
         cvSetZero(hessian);
 
+        final double[] deltaSign = constraintGrad;//new double[n];
+        for (int i = 0; i < n; i++) {
+            deltaSign[i] = random.nextBoolean() ? 1 : -1;
+        }
         Parallel.loop(0, n, new Looper() {
         public void loop(int from, int to, int looperID) {
 //        for (int i = 0; i < n; i++) {
         for (int i = from; i < to; i++) {
             tempParameters[i].set(parameters);
-            tempParameters[i].addDelta(i);
+            tempParameters[i].addDelta(i, (1<<pyramidLevel)*settings.deltaScale*deltaSign[i]);
             scale[i] = tempParameters[i].get(i) - parameters.get(i);
             constraintGrad[i] = tempParameters[i].getConstraintError() - constraintError;
         }}});
+
+        if (fixN2) {
+            for (int i = 0; i < n; i++) {
+                ((ProCamTransformer.Parameters)tempParameters[i]).getProjectorParameters().setN2(
+                        ((ProCamTransformer.Parameters)parameters).getProjectorParameters().getN2());
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                ((ProCamTransformer.Parameters)tempParameters[i]).getProjectorParameters().setN2(null);
+            }
+        }
+        fixN2 = false;
 
         Parallel.loop(0, hessianGradientTransformerData.length, settings.numThreads, new Looper() {
         public void loop(int from, int to, int looperID) {
@@ -520,10 +561,10 @@ long accTime = 0;
 
         // there seems to be something funny with memory alignment and
         // ROIs, so let's align our ROI to a 16 byte boundary just in case..
-        roi.x      = (int)Math.floor(minX/16)*16;
-        roi.y      = (int)Math.floor(minY);
-        roi.width  = (int)Math.ceil (maxX/16)*16 - roi.x;
-        roi.height = (int)Math.ceil (maxY)       - roi.y;
+        roi.x      = Math.max(0, (int)Math.floor(minX/16)*16);
+        roi.y      = Math.max(0, (int)Math.floor(minY));
+        roi.width  = Math.min(roiMask[pyramidLevel].width,  (int)Math.ceil(maxX/16)*16) - roi.x;
+        roi.height = Math.min(roiMask[pyramidLevel].height, (int)Math.ceil(maxY))       - roi.y;
 //        roi.x      = 0;
 //        roi.y      = 0;
 //        roi.width  = roiMask[pyramidLevel].width;
