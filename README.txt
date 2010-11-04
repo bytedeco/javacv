@@ -1,9 +1,11 @@
 =JavaCV=
 
 ==Introduction==
-JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, ARToolKitPlus, libdc1394 2.x, PGR FlyCapture, and FFmpeg. Moreover, utility classes make it easy to use their functionality on the Java platform. JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
+JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, ARToolKitPlus, libdc1394 2.x, PGR FlyCapture, and FFmpeg. The following classes, found under the `com.googlecode.javacv.jna` package namespace, expose their complete APIs: `cxcore`, `cv`, `highgui`, `cvaux`, `ARToolKitPlus`, `dc1394`, `PGRFlyCapture`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, and `swscale`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform. 
 
-To learn how to use the API, since documentation currently lacks, please refer to the Quick Start section below as well as the source code of ProCamCalib and ProCamTracker.
+JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
+
+To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV] section below as well as the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
 
 I will continue as I go to add all code that I am developing for my doctoral research.
 
@@ -16,19 +18,17 @@ To use JavaCV, you will need to download and install the following software:
   * IBM JDK 6  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE 6 for Mac OS X  http://developer.apple.com/java/  etc.
  * OpenCV 1.0, 1.1pre1, 2.0, or 2.1  http://sourceforge.net/projects/opencvlibrary/files/
- * Java Native Access 3.2.5  http://jna.dev.java.net/
+ * Java Native Access 3.2.7  http://jna.dev.java.net/
 
 Further, although not always required, some functionality of JavaCV will also use:
  * libdc1394 2.1.2 (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
  * PGR FlyCapture 1 or 2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * ARToolKitPlus 2.1.1c  http://code.google.com/p/javacv/downloads/list
- * FFmpeg-Java  http://code.google.com/p/javacv/downloads/list
- * which needs FFmpeg 0.6 or more recent:
-  * Source code  http://ffmpeg.org/download.html
+ * FFmpeg 0.6.x  http://ffmpeg.org/download.html
   * Precompiled Windows DLLs  http://ffmpeg.arrozcru.org/autobuilds/
 
 To modify the source code, note that the project files were created with:
- * NetBeans 6.8  http://www.netbeans.org/downloads/
+ * NetBeans 6.9  http://www.netbeans.org/downloads/
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
@@ -39,10 +39,10 @@ And feel free to ask questions on the mailing list if you encounter any problems
 First, put `javacv.jar` and `jna.jar` somewhere in your classpath. Then, the wrappers of OpenCV can automatically access all of the C API from the `cxcore`, `cv`, `highgui`, and `cvaux` modules. OpenCV simply needs to be placed in its default installation directory and it should work. JavaCV will look it up there. It will also search the system PATH, such as the current directory under Windows. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original syntax as possible. For example, one can load an image file and smooth it with a program like this:
 
 {{{
-import static name.audet.samuel.javacv.jna.cxcore.*;
-import static name.audet.samuel.javacv.jna.cv.*;
-import static name.audet.samuel.javacv.jna.highgui.*;
-import static name.audet.samuel.javacv.jna.cvaux.*;
+import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.jna.cv.*;
+import static com.googlecode.javacv.jna.highgui.*;
+import static com.googlecode.javacv.jna.cvaux.*;
 
 public class Test {
     public static void main(String[] args) {
@@ -60,10 +60,10 @@ public class Test {
 
 Additionally, I placed version specific functionality in separate classes. To access newer functions of OpenCV 2.1 for example, one would import the `v21` subclasses instead, e.g.:
 {{{
-import static name.audet.samuel.javacv.jna.cxcore.v21.*;
-import static name.audet.samuel.javacv.jna.cv.v21.*;
-import static name.audet.samuel.javacv.jna.highgui.v21.*;
-import static name.audet.samuel.javacv.jna.cvaux.v21.*;
+import static com.googlecode.javacv.jna.cxcore.v21.*;
+import static com.googlecode.javacv.jna.cv.v21.*;
+import static com.googlecode.javacv.jna.highgui.v21.*;
+import static com.googlecode.javacv.jna.cvaux.v21.*;
 }}}
 and similarly for `v10`, `v11`, and `v20`.
 
@@ -74,9 +74,9 @@ and similarly for `v10`, `v11`, and `v20`.
 JavaCV also comes with helper classes and methods on top of OpenCV to facilitate its integration to the Java platform. Here is a small program demonstrating the most frequently useful parts:
 
 {{{
-import name.audet.samuel.javacv.*;
-import static name.audet.samuel.javacv.jna.cxcore.*;
-import static name.audet.samuel.javacv.jna.cv.*;
+import com.googlecode.javacv.*;
+import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.jna.cv.*;
 
 public class Test2 {
     public static void main(String[] args) throws Exception {
@@ -185,6 +185,23 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===November 4, 2010===
+ * Renamed the package namespace to `com.googlecode.javacv`, which makes more sense now that JavaCV has been well anchored at Google Code for more than a year, piggybacking on the unique and easy-to-remember domain name
+ * Included new FFmpeg wrapper classes `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, and `swscale`, eliminating the need of the separate FFmpeg-Java package
+ * `CanvasFrame` now redraws its `Canvas` after the user resizes the `Frame`
+ * Fixed the `Error` thrown when calling `CanvasFrame.showImage()` from the EDT
+ * Added check to `DC1394FrameGrabber` so that a "Failed to initialize libdc1394" does not crash the JVM
+ * `FFmpegFrameGrabber` does not crash anymore when forgetting to call `start()` before a `grab()` or `trigger()`
+ * `FrameGrabber` now selects the default grabber a bit better
+ * Made sweeping changes (for the better, but still not finalized) to `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, and `ProCamTransformer`...
+ * Added to `JavaCV` more methods related to transformation of planes: `perspectiveTransform()`, `getPlaneParameters()`, `getPerspectiveTransform()`, and `HtoRt()`, as well as `ProjectiveDevice.getFrontoParallelH()`
+ * Added a static `autoSynch` flag to all `Structure` classes of `cxcore`, `cv`, and `cvaux`, which you may set to `false` prior to the return of things like big and heavy `CvSeq` to make them load faster and to avoid stack overflows, but accessing fields will then require manual calls to `readField()` and `writeField()` (issue #10 and #14)
+ * Added missing `ByValue` subclasses to `CvSeq`, `CvSet`, `CvContourTree`, and `CvChain`... Any others missing?
+ * Fixed `Exception` thrown from `cvCreateHist()` under JNA 3.2.7 (issue #26)
+ * Enhanced `CvMat.put()`, which now supports setting submatrices
+ * Improved inside `IplImage` the support of `BufferedImage`, especially those using a `DirectColorModel` (issue #23)
+ * Fixed crash in `cvkernels` when color transformation `X` is `null`
+
 ===July 30, 2010===
  * Fixed crash that would occur in `CanvasFrame` for some video drivers
  * `FFmpegFrameGrabber` now supports other input formats (devices), such as `x11grab` that can be used for screencasting
@@ -296,7 +313,7 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
  * Fixed `CvIntScalar` to mirror `CvScalar`
 
 ===October 14, 2009===
- * Change of plan: JavaCV now works with any of OpenCV 1.0, 1.1pre1, or 2.0! Version specific functionality is enclosed in subclasses, e.g., the class `name.audet.samuel.javacv.jna.cv.v20` can access everything from the `cv` module of OpenCV 2.0
+ * Change of plan: JavaCV now works with any of OpenCV 1.0, 1.1pre1, or 2.0! Version specific functionality is enclosed in subclasses, e.g., the class `cv.v20` can access everything from the `cv` module of OpenCV 2.0
  * Added a few missing functions and adjusted some mappings to make them closer to the C API
  * Added a few more helper methods to `CvPoint*`
  * Added temporary storage to `ObjectFinder` to plug the memory leak

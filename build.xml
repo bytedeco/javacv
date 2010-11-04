@@ -14,7 +14,7 @@
         <format property="TIMESTAMP" pattern="yyyyMMddhhmm" timezone=""/>
     </tstamp>
     <manifest file="manifest.mf">
-        <section name="name/audet/samuel/javacv/">
+        <section name="com/googlecode/javacv/">
             <attribute name="Implementation-Title" value="JavaCV"/>
             <attribute name="Implementation-Vendor" value="Samuel Audet"/>
             <attribute name="Implementation-Version" value="${TIMESTAMP}"/>
