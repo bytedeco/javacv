@@ -187,6 +187,9 @@ public class cvaux {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = {
+            "obs_x", "obs_y", "obs_size", "obs", "state", "mix" };
+        { setFieldOrder(fieldOrder); }
         public int obs_x;
         public int obs_y;
         public int obs_size;
@@ -243,6 +246,9 @@ public class cvaux {
         public CvEHMMState(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvEHMMState.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "num_mix", "mu", "inv_var", "log_var_val", "weight" };
+        { setFieldOrder(fieldOrder); }
         public int num_mix;
         public FloatByReference mu;
         public FloatByReference inv_var;
@@ -276,6 +282,9 @@ public class cvaux {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = {
+            "level", "num_states", "transP", "obsProb", "u" };
+        { setFieldOrder(fieldOrder); }
         public int level;
         public int num_states;
         public FloatByReference transP;
@@ -285,7 +294,7 @@ public class cvaux {
             public CvEHMMState.ByReference state;
             public CvEHMM.ByReference ehmm;
         }
-        U u;
+        public U u;
 
         public static class ByReference extends CvEHMM implements Structure.ByReference { }
 
@@ -406,6 +415,8 @@ public class cvaux {
     public static int CV_PREV_INT(CvSeqReader reader) { return reader.prev_elem.getInt(0); }
 
     public static class CvGraphWeightedVtx extends CvGraphVtx {
+        private static final String[] fieldOrder = { "weight" };
+        { setFieldOrder(fieldOrder); }
         public float weight;
     }
 
@@ -425,6 +436,11 @@ public class cvaux {
         public CvCliqueFinder(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvCliqueFinder.class) read(); }
 
+        private static final String[] fieldOrder = { "graph", "adj_matr", "N",
+            "k", "current_comp", "All", "ne", "ce", "fixp", "nod", "s",
+            "status", "best_score", "weighted", "weighted_edges", "best_weight",
+            "edge_weights", "vertex_weights", "cur_weight", "cand_weight" };
+        { setFieldOrder(fieldOrder); }
         public CvGraph.ByReference graph;
         public PointerByReference /* int** */ adj_matr;
         public int N;
@@ -494,6 +510,11 @@ public class cvaux {
         public CvStereoLineCoeff(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvStereoLineCoeff.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "Xcoef", "XcoefA", "XcoefB", "XcoefAB",
+            "Ycoef", "YcoefA", "YcoefB", "YcoefAB",
+            "Zcoef", "ZcoefA", "ZcoefB", "ZcoefAB" };
+        { setFieldOrder(fieldOrder); }
         public double Xcoef;
         public double XcoefA;
         public double XcoefB;
@@ -518,6 +539,9 @@ public class cvaux {
         public CvCamera(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvCamera.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "imgSize", "matrix", "distortion", "rotMatr", "transVect" };
+        { setFieldOrder(fieldOrder); }
         public float[] imgSize    = new float[2];
         public float[] matrix     = new float[9];
         public float[] distortion = new float[4];
@@ -533,6 +557,10 @@ public class cvaux {
         public CvStereoCamera(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvStereoCamera.class) read(); }
 
+        private static final String[] fieldOrder = { "camera", "fundMatr",
+            "epipole", "quad", "coeffs", "border", "warpSize", "lineCoeffs",
+            "needSwapCameras", "rotMatrix", "transVector" };
+        { setFieldOrder(fieldOrder); }
         public CvCamera.ByReference[] camera = new CvCamera.ByReference[2];
         public float[] fundMatr = new float[9];
 
@@ -553,6 +581,9 @@ public class cvaux {
         public CvContourOrientation(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvContourOrientation.class) read(); }
 
+        private static final String[] fieldOrder = { "egvals", "egvects",
+            "max", "min", "imax", "imin" };
+        { setFieldOrder(fieldOrder); }
         public float[] egvals  = new float[2];
         public float[] egvects = new float[4];
 
@@ -899,6 +930,8 @@ public class cvaux {
         public CvFace(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvFace.class) read(); }
 
+        private static final String[] fieldOrder = { "MouthRect", "LeftEyeRect", "RightEyeRect" };
+        { setFieldOrder(fieldOrder); }
         public CvRect MouthRect;
         public CvRect LeftEyeRect;
         public CvRect RightEyeRect;
@@ -916,6 +949,8 @@ public class cvaux {
         public Cv3dTracker2dTrackedObject(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == Cv3dTracker2dTrackedObject.class) read(); }
 
+        private static final String[] fieldOrder = { "id", "p" };
+        { setFieldOrder(fieldOrder); }
         public int id;
         public CvPoint2D32f p;
     }
@@ -932,6 +967,8 @@ public class cvaux {
         public Cv3dTrackerTrackedObject(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == Cv3dTrackerTrackedObject.class) read(); }
 
+        private static final String[] fieldOrder = { "id", "p" };
+        { setFieldOrder(fieldOrder); }
         public int id;
         public CvPoint3D32f p;
     }
@@ -948,6 +985,8 @@ public class cvaux {
         public Cv3dTrackerCameraInfo(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == Cv3dTrackerCameraInfo.class) read(); }
 
+        private static final String[] fieldOrder = { "valid", "mat", "principal_point" };
+        { setFieldOrder(fieldOrder); }
         public byte /*CvBool*/ valid;
         public float[] mat = new float[4*4];
         public CvPoint2D32f principal_point;
@@ -959,6 +998,8 @@ public class cvaux {
         public Cv3dTrackerCameraIntrinsics(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == Cv3dTrackerCameraIntrinsics.class) read(); }
 
+        private static final String[] fieldOrder = { "principal_point", "focal_length", "distortion" };
+        { setFieldOrder(fieldOrder); }
         public CvPoint2D32f principal_point;
         public float[] focal_length = new float[2];
         public float[] distortion   = new float[4];
@@ -1036,6 +1077,8 @@ public class cvaux {
         public CvVoronoiSite2D(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvVoronoiSite2D.class) read(); }
 
+        private static final String[] fieldOrder = { "node", "edge", "next" };
+        { setFieldOrder(fieldOrder); }
         public CvVoronoiNode2D.ByReference[] node = new CvVoronoiNode2D.ByReference[2];
         public CvVoronoiEdge2D.ByReference[] edge = new CvVoronoiEdge2D.ByReference[2];
 
@@ -1050,6 +1093,8 @@ public class cvaux {
         public CvVoronoiEdge2D(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvVoronoiEdge2D.class) read(); }
 
+        private static final String[] fieldOrder = { "node", "site", "next" };
+        { setFieldOrder(fieldOrder); }
         public CvVoronoiNode2D.ByReference[] node = new CvVoronoiNode2D.ByReference[2];
         public CvVoronoiSite2D.ByReference[] site = new CvVoronoiSite2D.ByReference[2];
         public CvVoronoiEdge2D.ByReference[] next = new CvVoronoiEdge2D.ByReference[4];
@@ -1063,6 +1108,8 @@ public class cvaux {
         public CvVoronoiNode2D(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvVoronoiNode2D.class) read(); }
 
+        private static final String[] fieldOrder = { "pt", "radius" };
+        { setFieldOrder(fieldOrder); }
         public CvPoint2D32f pt;
         public float radius;
 
@@ -1075,6 +1122,8 @@ public class cvaux {
         public CvVoronoiDiagram2D(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvVoronoiDiagram2D.class) read(); }
 
+        private static final String[] fieldOrder = { "sites" };
+        { setFieldOrder(fieldOrder); }
         CvSet.ByReference sites;
     }
 
@@ -1096,6 +1145,8 @@ public class cvaux {
         public CvLCMEdge(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvLCMEdge.class) read(); }
 
+        private static final String[] fieldOrder = { "chain", "width", "index1", "index2" };
+        { setFieldOrder(fieldOrder); }
         public CvSeq.ByReference chain;
         public float width;
         public int index1;
@@ -1108,6 +1159,8 @@ public class cvaux {
         public CvLCMNode(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvLCMNode.class) read(); }
 
+        private static final String[] fieldOrder = { "contour" };
+        { setFieldOrder(fieldOrder); }
         public CvContour.ByReference contour;
     }
 
@@ -1196,6 +1249,9 @@ public class cvaux {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = { "type", "release", "update",
+            "background", "foreground", "layers", "layer_count", "storage", "foreground_regions" };
+        { setFieldOrder(fieldOrder); }
         public int                         type;
         public CvReleaseBGStatModel        release;
         public static class CvUpdateBGStatModel extends Union {
@@ -1263,6 +1319,10 @@ public class cvaux {
         public CvFGDStatModelParams(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvFGDStatModelParams.class) read(); }
 
+        private static final String[] fieldOrder = { "Lc", "N1c", "N2c",
+            "Lcc", "N1cc", "N2cc", "is_obj_without_holes", "perform_morphing",
+            "alpha1", "alpha2", "alpha3", "delta", "T", "minArea"};
+        { setFieldOrder(fieldOrder); }
         public int    Lc;
         public int    N1c;
         public int    N2c;
@@ -1289,6 +1349,8 @@ public class cvaux {
         public CvBGPixelCStatTable(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvBGPixelCStatTable.class) read(); }
 
+        private static final String[] fieldOrder = { "Pv", "Pvb", "v" };
+        { setFieldOrder(fieldOrder); }
         public float          Pv, Pvb;
         public byte[]         v = new byte[3];
 
@@ -1301,6 +1363,8 @@ public class cvaux {
         public CvBGPixelCCStatTable(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvBGPixelCCStatTable.class) read(); }
 
+        private static final String[] fieldOrder = { "Pv", "Pvb", "v" };
+        { setFieldOrder(fieldOrder); }
         public float          Pv, Pvb;
         public byte[]         v = new byte[6];
 
@@ -1313,6 +1377,9 @@ public class cvaux {
         public CvBGPixelStat(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvBGPixelStat.class) read(); }
 
+        private static final String[] fieldOrder = { "Pbc", "Pbcc",
+            "ctable", "cctable", "is_trained_st_model", "is_trained_dyn_model"};
+        { setFieldOrder(fieldOrder); }
         public float                 Pbc;
         public float                 Pbcc;
         public CvBGPixelCStatTable.ByReference  ctable;
@@ -1329,6 +1396,9 @@ public class cvaux {
         public CvFGDStatModel(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvFGDStatModel.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "pixel_stat", "Ftd", "Fbd", "prev_frame", "params" };
+        { setFieldOrder(fieldOrder); }
         CvBGPixelStat.ByReference         pixel_stat;
         IplImage.ByReference              Ftd;
         IplImage.ByReference              Fbd;
@@ -1361,6 +1431,9 @@ public class cvaux {
         public CvGaussBGStatModelParams(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvGaussBGStatModelParams.class) read(); }
 
+        private static final String[] fieldOrder = { "win_size", "n_gauss",
+            "bg_threshold", "std_threshold", "minArea", "weight_init", "variance_init" };
+        { setFieldOrder(fieldOrder); }
         public int     win_size;
         public int     n_gauss;
         public double  bg_threshold, std_threshold, minArea;
@@ -1373,6 +1446,9 @@ public class cvaux {
         public CvGaussBGValues(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvGaussBGValues.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "match_sum", "weight", "variance", "mean" };
+        { setFieldOrder(fieldOrder); }
         public int      match_sum;
         public double   weight;
         public double[] variance = new double[CV_BGFG_MOG_NCOLORS];
@@ -1398,6 +1474,9 @@ public class cvaux {
         public CvGaussBGModel(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvGaussBGModel.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "params", "g_point", "countFrames" };
+        { setFieldOrder(fieldOrder); }
         public CvGaussBGStatModelParams   params;
         public CvGaussBGPoint.ByReference g_point;
         public int                        countFrames;
@@ -1413,6 +1492,9 @@ public class cvaux {
         public CvBGCodeBookElem(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvBGCodeBookElem.class) read(); }
 
+        private static final String[] fieldOrder = { "next", "tLastUpdate", "stale",
+            "boxMin", "boxMax", "learnMin", "learnMax" };
+        { setFieldOrder(fieldOrder); }
         public CvBGCodeBookElem.ByReference next;
         public int tLastUpdate;
         public int stale;
@@ -1469,6 +1551,9 @@ public class cvaux {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = { "size", "t", "cbBounds",
+            "modMin", "modMax", "cbmap", "storage", "freeList" };
+        { setFieldOrder(fieldOrder); }
         public CvSize size;
         public int t;
         public byte[] cbBounds = new byte[3];

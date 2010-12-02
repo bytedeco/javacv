@@ -272,7 +272,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     public void trigger() throws Exception {
         if (pFormatCtx == null) {
-            throw new Exception("Could not trigger: No AVFormatContext (not started?)");
+            throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
         }
         for (int i = 0; i < triggerFlushSize; i++) {
             if (av_read_frame(pFormatCtx, packet) < 0) {
@@ -284,7 +284,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     public IplImage grab() throws Exception {
         if (pFormatCtx == null) {
-            throw new Exception("Could not grab: No AVFormatContext (not started?)");
+            throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }
         boolean done = false;
         long pts = 0;

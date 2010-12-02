@@ -20,12 +20,14 @@ To use JavaCV, you will need to download and install the following software:
  * OpenCV 1.0, 1.1pre1, 2.0, or 2.1  http://sourceforge.net/projects/opencvlibrary/files/
  * Java Native Access 3.2.7  http://jna.dev.java.net/
 
-Further, although not always required, some functionality of JavaCV will also use:
+Further, although not always required, some functionality of JavaCV will also rely on:
  * libdc1394 2.1.2 (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
  * PGR FlyCapture 1 or 2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * ARToolKitPlus 2.1.1c  http://code.google.com/p/javacv/downloads/list
  * FFmpeg 0.6.x  http://ffmpeg.org/download.html
-  * Precompiled Windows DLLs  http://ffmpeg.arrozcru.org/autobuilds/
+  * Precompiled Windows DLLs and Mac OS X dylibs  http://ffmpeg.arrozcru.org/autobuilds/
+ * Android SDK API 8  http://developer.android.com/sdk/
+  * Sample code with precompiled JNA and OpenCV  http://code.google.com/p/javacv/downloads/list
 
 To modify the source code, note that the project files were created with:
  * NetBeans 6.9  http://www.netbeans.org/downloads/
@@ -80,7 +82,7 @@ import static com.googlecode.javacv.jna.cv.*;
 
 public class Test2 {
     public static void main(String[] args) throws Exception {
-        String cascadeName = args.length > 0 ? args[0] : "haarcascade_frontalface_alt.xml";
+        String classifierName = args.length > 0 ? args[0] : "haarcascade_frontalface_alt.xml";
 
         // Make sure to call JavaCvErrorCallback.redirectError() to prevent your 
         // application from simply crashing with no warning on some error of OpenCV.
@@ -119,7 +121,7 @@ public class Test2 {
         System.out.println(randomR);
 
         // We can "cast" Pointer objects by instantiating a new object of the desired class.
-        CvHaarClassifierCascade cascade = new CvHaarClassifierCascade(cvLoad(cascadeName));
+        CvHaarClassifierCascade classifier = new CvHaarClassifierCascade(cvLoad(classifierName));
 
         // Objects allocated with a create*() or clone() factory method are automatically 
         // garbage collected, but may also explicitly be freed with the release() method.
@@ -138,7 +140,7 @@ public class Test2 {
 
             // Let's try to detect some faces! but we need a grayscale image...
             cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
-            CvSeq faces = cvHaarDetectObjects(grayImage, cascade, storage, 1.1, 3, 0/*CV_HAAR_DO_CANNY_PRUNING*/);
+            CvSeq faces = cvHaarDetectObjects(grayImage, classifier, storage, 1.1, 3, 0/*CV_HAAR_DO_CANNY_PRUNING*/);
             for (int i = 0; i < faces.total; i++) {
                 CvRect r = new CvRect(cvGetSeqElem(faces, i));
                 cvRectangle(grabbedImage, cvPoint(r.x, r.y), cvPoint(r.x+r.width, r.y+r.height), CvScalar.RED, 1, CV_AA, 0);
@@ -185,6 +187,13 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===December 2, 2010===
+ * Now works on Android with the Dalvik VM (for more details, please refer to the FacePreview sample available on the download page)
+ * Added more hacks to `CanvasFrame` in the hope to make it behave better outside the EDT
+ * Made clearer the error messages thrown from `FrameGrabber` objects, when `start()` may not have been called
+ * Fixed version specific declarations of `CvStereoBMState` and related functions
+ * Fixed conditions that could crash `cvkernels`
+
 ===November 4, 2010===
  * Renamed the package namespace to `com.googlecode.javacv`, which makes more sense now that JavaCV has been well anchored at Google Code for more than a year, piggybacking on the unique and easy-to-remember domain name
  * Included new FFmpeg wrapper classes `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, and `swscale`, eliminating the need of the separate FFmpeg-Java package

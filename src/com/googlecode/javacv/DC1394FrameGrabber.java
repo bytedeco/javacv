@@ -396,12 +396,12 @@ public class DC1394FrameGrabber extends FrameGrabber {
         if (Platform.isLinux()) {
             fds.events = Poll.POLLIN;
             if (Poll.poll(fds, one, timeout) == 0) {
-                throw new Exception("poll() Error: Timeout occured.");
+                throw new Exception("poll() Error: Timeout occured. (Has start() been called?)");
             }
         }
         int err=dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_WAIT, raw_image);
         if (err != DC1394_SUCCESS) {
-            throw new Exception("dc1394_capture_dequeue(WAIT) Error " + err + ": Could not capture a frame.");
+            throw new Exception("dc1394_capture_dequeue(WAIT) Error " + err + ": Could not capture a frame. (Has start() been called?)");
         }
         // try to poll for more images, to get the most recent one...
         while (raw_image.getValue() != null) {

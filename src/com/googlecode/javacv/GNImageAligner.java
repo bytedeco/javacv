@@ -126,7 +126,7 @@ public class GNImageAligner implements ImageAligner {
             deltaMin        = s.deltaMin;
             deltaMax        = s.deltaMax;
             displacementMax = s.displacementMax;
-            subspacePriorK  = s.subspacePriorK;
+            subspaceTermK   = s.subspaceTermK;
             numThreads      = s.numThreads;
         }
 
@@ -136,7 +136,7 @@ public class GNImageAligner implements ImageAligner {
         double deltaMin         = 10;
         double deltaMax         = 300;
         double displacementMax  = 0.15;
-        double subspacePriorK   = 10;
+        double subspaceTermK    = 0.1;
         int numThreads = Parallel.numCores;
 
         public double getStepScale() {
@@ -181,11 +181,11 @@ public class GNImageAligner implements ImageAligner {
             this.displacementMax = displacementMax;
         }
 
-        public double getSubspacePriorK() {
-            return subspacePriorK;
+        public double getSubspaceTermK() {
+            return subspaceTermK;
         }
-        public void setSubspacePriorK(double subspacePriorK) {
-            this.subspacePriorK = subspacePriorK;
+        public void setSubspaceTermK(double subspaceTermK) {
+            this.subspaceTermK = subspaceTermK;
         }
 
         public int getNumThreads() {
@@ -312,7 +312,7 @@ public class GNImageAligner implements ImageAligner {
         settings.constrained = constrained;
         int n = parameters.size();
         int m = constrained ? n+1 : n;
-        if (subspaceParameters != null && settings.subspacePriorK != 0.0) {
+        if (subspaceParameters != null && settings.subspaceTermK != 0.0) {
             m += subspaceParameters.length;
         }
         hessian       = CvMat.create(m, m);
@@ -334,7 +334,7 @@ public class GNImageAligner implements ImageAligner {
     public void setParameters(Parameters parameters) {
         this.parameters.set(parameters);
         subspaceParameters = parameters.getSubspace();
-        if (subspaceParameters != null && settings.subspacePriorK != 0.0) {
+        if (subspaceParameters != null && settings.subspaceTermK != 0.0) {
             for (int i = 0; i < tempSubspaceParameters.length; i++) {
                 tempSubspaceParameters[i] = subspaceParameters.clone();
             }
@@ -591,7 +591,7 @@ public class GNImageAligner implements ImageAligner {
 //        double K = 0.0001*dstCount/n;
 //        K = K*K;
         if (subspaceParameters != null && subspaceParameters.length > 0 &&
-                settings.subspacePriorK != 0.0) {
+                settings.subspaceTermK != 0.0) {
             final int m = subspaceParameters.length;
 //            double[][] subspaceHessian  = new double[n+m][n+m];
 //            double[] subspaceGradient   = new double[n+m];
@@ -639,8 +639,8 @@ public class GNImageAligner implements ImageAligner {
             }
 //            subspaceRMSE = Math.sqrt(subspaceRMSE/n);
 //System.out.println((float)RMSE + " " + (float)subspaceRMSE);
-            final double KK = settings.subspacePriorK * K/subspaceCorrelatedCount /
-                    (stepScale*stepScale*n);
+            final double KK = settings.subspaceTermK * Math.sqrt(K)/subspaceCorrelatedCount /
+                    (stepScale*n);
 //System.out.println(K + "  " + KK);
 
             Parallel.loop(0, n+m, new Looper() {

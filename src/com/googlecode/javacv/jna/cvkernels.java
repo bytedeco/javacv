@@ -41,6 +41,9 @@ public class cvkernels {
     public static final String libname = Loader.load(paths, new String[] { "cvkernels" });
 
     public static class MultiWarpColorTransformData extends Structure {
+        private static final String[] fieldOrder =  { "srcImg", "srcImg2", "subImg", "srcDotImg",  
+            "H1", "H2", "X", "transImg", "dstImg", "dstCount", "dstCountZero", "srcDstDot", "dstDstDot" };
+        { setFieldOrder(fieldOrder); }
         // input
         public Pointer /* IplImage */ srcImg, srcImg2, subImg, srcDotImg;
         public Pointer /* CvMat    */ H1,     H2, X;

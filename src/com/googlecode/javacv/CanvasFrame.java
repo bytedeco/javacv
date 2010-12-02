@@ -132,72 +132,79 @@ public class CanvasFrame extends JFrame {
         bufferStrategy.dispose();
         super.dispose();
     }
-
-    private void init(boolean fullScreen, DisplayMode displayMode, double gamma) {
-        GraphicsDevice gd = getGraphicsConfiguration().getDevice();
-        DisplayMode d = gd.getDisplayMode();
-        if (displayMode != null && d != null) {
-            int w = displayMode.getWidth();
-            int h = displayMode.getHeight();
-            int b = displayMode.getBitDepth();
-            int r = displayMode.getRefreshRate();
-            displayMode = new DisplayMode(w > 0 ? w : d.getWidth(),    h > 0 ? h : d.getHeight(),
-                                          b > 0 ? b : d.getBitDepth(), r > 0 ? r : d.getRefreshRate());
-        }
-        if (fullScreen) {
-            setUndecorated(true);
-            getRootPane().setWindowDecorationStyle(JRootPane.NONE);
-            setResizable(false);
-            gd.setFullScreenWindow(this);
-        }
-        if (displayMode != null && !displayMode.equals(d)) {
-            gd.setDisplayMode(displayMode);
-        }
-        if (gamma == 0.0) {
-            gamma = getGamma(gd);
-        }
-        invgamma = gamma == 0.0 ? 1.0 : 1.0/gamma;
-
-        // must be called after the fullscreen stuff, but before
-        // getting our BufferStrategy
-        setVisible(true);
-
-        canvas = new Canvas() {
-            @Override public void paint(Graphics g) {
-                // Try to redraw the back buffer when the OS
-                // says it has stomped on our front buffer ..
-                // Calling bufferStrategy.show() here
-                // sometimes throws NullPointerException, but
-                // otherwise seems to work fine...
-                try {
-                    bufferStrategy.show();
-                } catch (NullPointerException e) { }
+    private void init(final boolean fullScreen, final DisplayMode displayMode, final double gamma) {
+        Runnable r = new Runnable() { public void run() {
+            GraphicsDevice gd = getGraphicsConfiguration().getDevice();
+            DisplayMode d = gd.getDisplayMode(), d2 = null;
+            if (displayMode != null && d != null) {
+                int w = displayMode.getWidth();
+                int h = displayMode.getHeight();
+                int b = displayMode.getBitDepth();
+                int r = displayMode.getRefreshRate();
+                d2 = new DisplayMode(w > 0 ? w : d.getWidth(),    h > 0 ? h : d.getHeight(),
+                                     b > 0 ? b : d.getBitDepth(), r > 0 ? r : d.getRefreshRate());
             }
-        };
-        if (fullScreen) {
-            canvas.setSize(getSize());
-            needInitialResize = false;
-        } else {
-            needInitialResize = true;
-        }
-        getContentPane().add(canvas);
-        canvas.setVisible(true);
-        canvas.createBufferStrategy(2);
-        //canvas.setIgnoreRepaint(true);
-        bufferStrategy = canvas.getBufferStrategy();
+            if (fullScreen) {
+                setUndecorated(true);
+                getRootPane().setWindowDecorationStyle(JRootPane.NONE);
+                setResizable(false);
+                gd.setFullScreenWindow(CanvasFrame.this);
+            }
+            if (d2 != null && !d2.equals(d)) {
+                gd.setDisplayMode(d2);
+            }
+            double g = gamma == 0.0 ? getGamma(gd) : gamma;
+            invgamma = g == 0.0 ? 1.0 : 1.0/g;
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().
-                addKeyEventDispatcher(new KeyEventDispatcher() {
-            public boolean dispatchKeyEvent(KeyEvent e) {
-                if (e.getID() == KeyEvent.KEY_PRESSED) {
-                    synchronized (CanvasFrame.this) {
-                        keyEvent = e;
-                        CanvasFrame.this.notify();
-                    }
+            // must be called after the fullscreen stuff, but before
+            // getting our BufferStrategy
+            setVisible(true);
+
+            canvas = new Canvas() {
+                @Override public void paint(Graphics g) {
+                    // Try to redraw the front buffer when the OS says it has stomped
+                    // on it, using the back buffer. Calling bufferStrategy.show() here
+                    // sometimes throws NullPointerException or IllegalStateException,
+                    // but otherwise seems to work fine.
+                    try {
+                        bufferStrategy.show();
+                    } catch (NullPointerException e) {
+                    } catch (IllegalStateException e) { }
                 }
-                return false;
+            };
+            if (fullScreen) {
+                canvas.setSize(getSize());
+                needInitialResize = false;
+            } else {
+                needInitialResize = true;
             }
-        });
+            getContentPane().add(canvas);
+            canvas.setVisible(true);
+            canvas.createBufferStrategy(2);
+            //canvas.setIgnoreRepaint(true);
+            bufferStrategy = canvas.getBufferStrategy();
+
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                    addKeyEventDispatcher(new KeyEventDispatcher() {
+                public boolean dispatchKeyEvent(KeyEvent e) {
+                    if (e.getID() == KeyEvent.KEY_PRESSED) {
+                        synchronized (CanvasFrame.this) {
+                            keyEvent = e;
+                            CanvasFrame.this.notify();
+                        }
+                    }
+                    return false;
+                }
+            });
+        }};
+
+        if (EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            try {
+                EventQueue.invokeAndWait(r);
+            } catch (Exception ex) { }
+        }
     }
 
     public DisplayMode getDisplayMode() {
@@ -280,20 +287,20 @@ public class CanvasFrame extends JFrame {
     }
 
     public void showImage(Image image, final int w, final int h) {
-        if (image == null)
+        if (image == null) {
             return;
-        if (isResizable() && needInitialResize) {
-            try {
-                if (EventQueue.isDispatchThread()) {
-                    setCanvasSize(w, h);
-                } else {
+        } else if(isResizable() && needInitialResize) {
+            if (EventQueue.isDispatchThread()) {
+                setCanvasSize(w, h);
+            } else {
+                try {
                     EventQueue.invokeAndWait(new Runnable() {
                         public void run() {
                             setCanvasSize(w, h);
                         }
                     });
-                }
-            } catch (Exception ex) { }
+                } catch (Exception ex) { }
+            }
         }
         Graphics2D g = createGraphics();
         g.drawImage(image, 0, 0, canvas.getWidth(), canvas.getHeight(), null);

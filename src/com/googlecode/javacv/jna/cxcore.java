@@ -60,7 +60,6 @@ import com.sun.jna.Callback;
 import com.sun.jna.Function;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
-import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
 import com.sun.jna.StringArray;
@@ -229,6 +228,8 @@ public class cxcore {
             return createArray(shift, pts, 0, pts.length);
         }
 
+        private static final String[] fieldOrder = { "x", "y" };
+        { setFieldOrder(fieldOrder); }
         public int x;
         public int y;
 
@@ -333,6 +334,8 @@ public class cxcore {
             return createArray(pts, 0, pts.length);
         }
 
+        private static final String[] fieldOrder = { "x", "y" };
+        { setFieldOrder(fieldOrder); }
         public float x;
         public float y;
 
@@ -405,6 +408,8 @@ public class cxcore {
             return createArray(pts, 0, pts.length);
         }
 
+        private static final String[] fieldOrder = { "x", "y", "z" };
+        { setFieldOrder(fieldOrder); }
         public float x;
         public float y;
         public float z;
@@ -481,6 +486,8 @@ public class cxcore {
             return createArray(pts, 0, pts.length);
         }
 
+        private static final String[] fieldOrder = { "x", "y" };
+        { setFieldOrder(fieldOrder); }
         public double x;
         public double y;
 
@@ -553,6 +560,8 @@ public class cxcore {
             return createArray(pts, 0, pts.length);
         }
 
+        private static final String[] fieldOrder = { "x", "y", "z" };
+        { setFieldOrder(fieldOrder); }
         public double x;
         public double y;
         public double z;
@@ -610,6 +619,8 @@ public class cxcore {
             this.height = height;
         }
 
+        private static final String[] fieldOrder = { "width", "height" };
+        { setFieldOrder(fieldOrder); }
         public int width;
         public int height;
 
@@ -646,6 +657,8 @@ public class cxcore {
             this.height = (float)height;
         }
 
+        private static final String[] fieldOrder = { "width", "height" };
+        { setFieldOrder(fieldOrder); }
         public float width;
         public float height;
 
@@ -682,6 +695,8 @@ public class cxcore {
             this.height = height;
         }
 
+        private static final String[] fieldOrder = { "x", "y", "width", "height" };
+        { setFieldOrder(fieldOrder); }
         public int x;
         public int y;
         public int width;
@@ -734,6 +749,8 @@ public class cxcore {
             this.angle = angle;
         }
 
+        private static final String[] fieldOrder = { "center", "size", "angle" };
+        { setFieldOrder(fieldOrder); }
         public CvPoint2D32f center = new CvPoint2D32f();
         public CvSize2D32f  size   = new CvSize2D32f();
         public float angle;
@@ -762,6 +779,8 @@ public class cxcore {
             val[0] = val0; val[1] = val1; val[2] = val2; val[3] = val3;
         }
 
+        private static final String[] fieldOrder = { "val" };
+        { setFieldOrder(fieldOrder); }
         public double[] val = new double[4];
         public double[] getVal() { return val; }
 
@@ -845,6 +864,8 @@ public class cxcore {
             val[0] = val0; val[1] = val1; val[2] = val2; val[3] = val3;
         }
 
+        private static final String[] fieldOrder = { "val" };
+        { setFieldOrder(fieldOrder); }
         public long[] val = new long[4];
         public long[] getVal() { return val; }
 
@@ -889,6 +910,8 @@ public class cxcore {
             this.epsilon = (float)epsilon;
         }
 
+        private static final String[] fieldOrder = { "type", "max_iter", "epsilon" };
+        { setFieldOrder(fieldOrder); }
         public int    type;
         public int    max_iter;
         public double epsilon;
@@ -1065,6 +1088,9 @@ public class cxcore {
         private boolean releasable = false;
 
 
+        private static final String[] fieldOrder = { "type", "step",
+            "refcount", "hdr_refcount", "data", "rows", "cols" };
+        { setFieldOrder(fieldOrder); }
         public int type;
         public int step;
 
@@ -1499,6 +1525,9 @@ public class cxcore {
         private boolean releasable = false;
 
 
+        private static final String[] fieldOrder = {
+            "type", "dims", "refcount", "hdr_refcount", "data", "dim" };
+        { setFieldOrder(fieldOrder); }
         public int type;
         public int dims;
 
@@ -1508,6 +1537,8 @@ public class cxcore {
         public Pointer data;
 
         public static class Dim extends Structure {
+            private static final String[] fieldOrder = { "size", "step" };
+            { setFieldOrder(fieldOrder); }
             public int size;
             public int step;
         }
@@ -1582,6 +1613,10 @@ public class cxcore {
         private boolean releasable = false;
 
 
+        private static final String[] fieldOrder = { "type", "dims",
+            "refcount", "hdr_refcount", "heap", "hashtable", "hashsize",
+            "valoffset", "idxoffset", "size"};
+        { setFieldOrder(fieldOrder); }
         public int type;
         public int dims;
         public IntByReference refcount;
@@ -1632,6 +1667,8 @@ public class cxcore {
         public CvSparseNode(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvSparseNode.class) read(); }
 
+        private static final String[] fieldOrder = { "hashval", "next" };
+        { setFieldOrder(fieldOrder); }
         public int hashval;
         public CvSparseNode.ByReference next;
 
@@ -1687,6 +1724,8 @@ public class cxcore {
         public CvSparseMatIterator(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvSparseMatIterator.class) read(); }
 
+        private static final String[] fieldOrder = { "mat", "node", "curidx" };
+        { setFieldOrder(fieldOrder); }
         public CvSparseMat.ByReference mat;
         public CvSparseNode.ByReference node;
         public int curidx;
@@ -1847,6 +1886,16 @@ public class cxcore {
         private boolean releasableHeader = false;
 
 
+        private static final String[] fieldOrder = {
+            "nSize", "ID", "nChannels", "alphaChannel", "depth",
+            "colorModel0", "colorModel1", "colorModel2", "colorModel3",
+            "channelSeq0", "channelSeq1", "channelSeq2", "channelSeq3",
+            "dataOrder", "origin", "align", "width", "height", "roi", "maskROI",
+            "imageId", "tileInfo", "imageSize", "imageData", "widthStep",
+            "BorderMode0",  "BorderMode1",  "BorderMode2",  "BorderMode3",
+            "BorderConst0", "BorderConst1", "BorderConst2", "BorderConst3",
+            "imageDataOrigin" };
+        { setFieldOrder(fieldOrder); }
         public int  nSize;
         public int  ID;
         public int  nChannels;
@@ -2233,7 +2282,8 @@ public class cxcore {
                 bufferedImage = image;
             }
         }
-        private BufferedImage bufferedImage = null;
+        // not declared as BufferedImage => Android friendly
+        private Object bufferedImage = null;
         public int getBufferedImageType() {
             // precanned BufferedImage types are confusing... in practice though,
             // they all use the sRGB color model when blitting:
@@ -2345,16 +2395,17 @@ public class cxcore {
 
             if (bufferedImage != null) {
                 if (roi != null) {
-                    copyTo(bufferedImage.getSubimage(roi.xOffset, roi.yOffset, roi.width, roi.height), gamma);
+                    copyTo(((BufferedImage)bufferedImage).getSubimage(roi.xOffset, roi.yOffset, roi.width, roi.height), gamma);
                 } else {
-                    copyTo(bufferedImage, gamma);
+                    copyTo((BufferedImage)bufferedImage, gamma);
                 }
             }
 
-            return bufferedImage;
+            return (BufferedImage)bufferedImage;
         }
 
         public static class ByReference extends IplImage implements Structure.ByReference { }
+        public static class ByValue extends IplImage implements Structure.ByValue { }
 
         public static class PointerByReference extends CvArr.PointerByReference {
             public PointerByReference() { }
@@ -2386,6 +2437,9 @@ public class cxcore {
         public IplROI(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == IplROI.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "coi", "xOffset", "yOffset", "width", "height" };
+        { setFieldOrder(fieldOrder); }
         public int coi;
         public int xOffset;
         public int yOffset;
@@ -2394,7 +2448,7 @@ public class cxcore {
 
         public static class ByReference extends IplROI implements Structure.ByReference { }
     }
-    
+
     public static final int
             IPL_IMAGE_HEADER = 1,
             IPL_IMAGE_DATA   = 2,
@@ -2402,9 +2456,9 @@ public class cxcore {
 
             IPL_BORDER_REFLECT_101   = 4,
 
-            IPL_IMAGE_MAGIC_VAL  = new IplImage().size();
+            IPL_IMAGE_MAGIC_VAL  = Native.getNativeSize(IplImage.ByValue.class);
     public static final String CV_TYPE_NAME_IMAGE = "opencv-image";
-    
+
     public static boolean CV_IS_IMAGE_HDR(IplImage img) {
         return img != null && img.nSize == img.size();
     }
@@ -2532,6 +2586,9 @@ public class cxcore {
         public CvNArrayIterator(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvNArrayIterator.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "count", "dims", "size", "ptr", "stack", "hdr" };
+        { setFieldOrder(fieldOrder); }
         public int count;
         public int dims;
         public CvSize size;
@@ -2896,6 +2953,8 @@ public class cxcore {
         public CvMemBlock(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvMemBlock.class) read(); }
 
+        private static final String[] fieldOrder = { "prev", "next" };
+        { setFieldOrder(fieldOrder); }
         public CvMemBlock.ByReference  prev;
         public CvMemBlock.ByReference  next;
 
@@ -2910,6 +2969,8 @@ public class cxcore {
         public CvMemStoragePos(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvMemStoragePos.class) read(); }
 
+        private static final String[] fieldOrder = { "top", "free_space" };
+        { setFieldOrder(fieldOrder); }
         public CvMemBlock.ByReference top;
         public int free_space;
     }
@@ -2943,6 +3004,9 @@ public class cxcore {
         private boolean releasable = false;
 
 
+        private static final String[] fieldOrder = {
+            "signature", "bottom", "top", "parent", "block_size", "free_space" };
+        { setFieldOrder(fieldOrder); }
         public int signature;
         public CvMemBlock.ByReference bottom;
         public CvMemBlock.ByReference top;
@@ -2979,8 +3043,10 @@ public class cxcore {
     public static native CvMemStorage cvCreateChildMemStorage(CvMemStorage parent);
     public static native void cvReleaseMemStorage(CvMemStorage.PointerByReference storage);
     public static native void cvClearMemStorage(CvMemStorage storage);
-    public static native Pointer cvMemStorageAlloc(CvMemStorage storage, NativeLong size);
+    public static native Pointer cvMemStorageAlloc(CvMemStorage storage, size_t size);
     public static class CvString extends Structure {
+        private static final String[] fieldOrder = { "len", "ptr" };
+        { setFieldOrder(fieldOrder); }
         public int len;
         public String ptr;
 
@@ -3126,6 +3192,10 @@ public class cxcore {
         }
 
 
+        private static final String[] fieldOrder = { "flags", "header_size",
+            "h_prev", "h_next", "v_prev", "v_next", "total", "elem_size",
+            "block_max", "ptr", "delta_elems", "storage", "free_blocks", "first" };
+        { setFieldOrder(fieldOrder); }
         public int flags;
         public int header_size;
         public CvSeq.ByReference h_prev;
@@ -3173,6 +3243,9 @@ public class cxcore {
         public CvSeqBlock(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvSeqBlock.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "prev", "next", "start_index", "count", "data" };
+        { setFieldOrder(fieldOrder); }
         public CvSeqBlock.ByReference prev;
         public CvSeqBlock.ByReference next;
         public int     start_index;
@@ -3212,6 +3285,8 @@ public class cxcore {
             this.end_index = end;
         }
 
+        private static final String[] fieldOrder = { "start_index", "end_index" };
+        { setFieldOrder(fieldOrder); }
         public int start_index;
         public int end_index;
 
@@ -3277,6 +3352,9 @@ public class cxcore {
         public CvSeqWriter(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvSeqWriter.class) read(); }
 
+        private static final String[] fieldOrder = { "header_size", "seq",
+            "block", "ptr", "block_min", "block_max" };
+        { setFieldOrder(fieldOrder); }
         public int            header_size;
         public CvSeq.ByReference      seq;
         public CvSeqBlock.ByReference block;
@@ -3296,6 +3374,9 @@ public class cxcore {
         public CvSeqReader(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvSeqReader.class) read(); }
 
+        private static final String[] fieldOrder = { "header_size", "seq",
+            "block", "ptr", "block_min", "block_max", "delta_index", "prev_elem" };
+        { setFieldOrder(fieldOrder); }
         public int            header_size;
         public CvSeq.ByReference      seq;
         public CvSeqBlock.ByReference block;
@@ -3319,6 +3400,8 @@ public class cxcore {
         public CvSetElem(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvSetElem.class) read(); }
 
+        private static final String[] fieldOrder = { "flags", "next_free" };
+        { setFieldOrder(fieldOrder); }
         public int flags;
         public CvSetElem.ByReference next_free;
 
@@ -3361,6 +3444,8 @@ public class cxcore {
             return cvCreateSet(set_flags, header_size, elem_size, storage);
         }
 
+        private static final String[] fieldOrder = { "free_elems", "active_count" };
+        { setFieldOrder(fieldOrder); }
         public CvSetElem.ByReference free_elems;
         public int active_count;
 
@@ -3409,6 +3494,8 @@ public class cxcore {
         public CvGraphEdge(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvGraphEdge.class) read(); }
 
+        private static final String[] fieldOrder = { "flags", "weight", "next", "vtx" };
+        { setFieldOrder(fieldOrder); }
         public int   flags;
         public float weight;
         public CvGraphEdge.ByReference[] next = new CvGraphEdge.ByReference[2];
@@ -3448,6 +3535,8 @@ public class cxcore {
         public CvGraphVtx(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvGraphVtx.class) read(); }
 
+        private static final String[] fieldOrder = { "flags", "first" };
+        { setFieldOrder(fieldOrder); }
         public int flags;
         public CvGraphEdge.ByReference first;
 
@@ -3577,6 +3666,9 @@ public class cxcore {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = { "vtx", "dst", "edge",
+            "graph", "stack", "index", "mask" };
+        { setFieldOrder(fieldOrder); }
         public CvGraphVtx .ByReference vtx;
         public CvGraphVtx .ByReference dst;
         public CvGraphEdge.ByReference edge;
@@ -3622,6 +3714,8 @@ public class cxcore {
         public CvTreeNodeIterator(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvTreeNodeIterator.class) read(); }
 
+        private static final String[] fieldOrder = { "node", "level", "max_level" };
+        { setFieldOrder(fieldOrder); }
         public Pointer node;
         public int level;
         public int max_level;
@@ -3733,6 +3827,9 @@ public class cxcore {
             cvInitFont(this, font_face, scale, scale, 0, thickness, CV_AA);
         }
 
+        private static final String[] fieldOrder = { "font_face", "ascii", "greek",
+            "cyrillic", "hscale", "vscale", "shear", "thickness", "dx", "line_type" };
+        { setFieldOrder(fieldOrder); }
         public int             font_face;
         public IntByReference  ascii;
         public IntByReference  greek;
@@ -3765,6 +3862,9 @@ public class cxcore {
         public CvLineIterator(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvLineIterator.class) read(); }
 
+        private static final String[] fieldOrder = { "ptr", "err",
+            "plus_delta", "minus_delta", "plus_step", "minus_step"};
+        { setFieldOrder(fieldOrder); }
         public Pointer ptr;
 
         public int err;
@@ -3866,6 +3966,8 @@ public class cxcore {
             this.next = new ByReference(next);
         }
 
+        private static final String[] fieldOrder = { "attr", "next" };
+        { setFieldOrder(fieldOrder); }
         public Pointer /* StringArray */ attr = null;
         public CvAttrList.ByReference next = null;
 
@@ -3937,6 +4039,8 @@ public class cxcore {
         public CvStringHashNode(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvStringHashNode.class) read(); }
 
+        private static final String[] fieldOrder = { "hashval", "str", "next" };
+        { setFieldOrder(fieldOrder); }
         public int hashval;
         public CvString str;
         public CvStringHashNode.ByReference next;
@@ -3952,6 +4056,8 @@ public class cxcore {
         public CvFileNode(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvFileNode.class) read(); }
 
+        private static final String[] fieldOrder = { "tag", "info", "data" };
+        { setFieldOrder(fieldOrder); }
         public int tag;
         public CvTypeInfo.ByReference info; 
 
@@ -4070,6 +4176,9 @@ public class cxcore {
         public CvTypeInfo(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvTypeInfo.class) read(); }
 
+        private static final String[] fieldOrder = { "flags", "header_size", "prev",
+            "next", "type_name", "is_instance", "release", "read", "write", "close"};
+        { setFieldOrder(fieldOrder); }
         public int flags;
         public int header_size = size();
         public CvTypeInfo.ByReference prev;
@@ -4205,7 +4314,7 @@ public class cxcore {
             String file_name, int line, Pointer userdata);
 
 
-    public static native Pointer cvAlloc(NativeLong size);
+    public static native Pointer cvAlloc(size_t size);
     public static native void cvFree_(Pointer ptr);
     public static native long cvGetTickCount();
     public static native double cvGetTickFrequency();
@@ -4217,6 +4326,9 @@ public class cxcore {
         public CvPluginFuncInfo(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvPluginFuncInfo.class) read(); }
 
+        private static final String[] fieldOrder = { "func_addr",
+            "default_func_addr", "func_names", "search_modules", "loaded_from" };
+        { setFieldOrder(fieldOrder); }
         PointerByReference func_addr;
         Pointer default_func_addr;
         String func_names;
@@ -4232,6 +4344,8 @@ public class cxcore {
         public CvModuleInfo(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvModuleInfo.class) read(); }
 
+        private static final String[] fieldOrder = { "next", "name", "version", "func_tab" };
+        { setFieldOrder(fieldOrder); }
         CvModuleInfo.ByReference next;
         String name;
         String version;
@@ -4246,7 +4360,7 @@ public class cxcore {
     public static native int cvUseOptimized(int on_off);
 
     public interface CvAllocFunc extends Callback {
-        Pointer callback(NativeLong size, Pointer userdata);
+        Pointer callback(size_t size, Pointer userdata);
     }
     public interface CvFreeFunc extends Callback {
         int callback(Pointer pptr, Pointer userdata);

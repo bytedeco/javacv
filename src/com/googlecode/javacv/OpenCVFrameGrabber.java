@@ -139,14 +139,14 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         }
         int err = cvGrabFrame(capture);
         if (err == 0) {
-            throw new Exception("cvGrabFrame() Error: Could not grab frame.");
+            throw new Exception("cvGrabFrame() Error: Could not grab frame. (Has start() been called?)");
         }
     }
 
     public IplImage grab() throws Exception {
         IplImage image = cvRetrieveFrame(capture);
         if (image == null) {
-            throw new Exception("cvRetrieveFrame() Error: Could not retrieve frame.");
+            throw new Exception("cvRetrieveFrame() Error: Could not retrieve frame. (Has start() been called?)");
         }
         if (!triggerMode) {
             trigger();

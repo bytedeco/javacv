@@ -348,7 +348,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
     public IplImage grab() throws Exception {
         int error = flycaptureGrabImage2(context, raw_image);
         if (error != FLYCAPTURE_OK) {
-            throw new Exception("flycaptureGrabImage2() Error " + error);
+            throw new Exception("flycaptureGrabImage2() Error " + error + " (Has start() been called?)");
         }
 
         int w = raw_image.iCols;

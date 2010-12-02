@@ -154,12 +154,37 @@ public class cv {
             public CvStereoBMState(Pointer m) { super(m); releasable = true;
                     if (autoSynch && getClass() == CvStereoBMState.class) read(); }
 
+            public static CvStereoBMState create(int preset, int numberOfDisparities) {
+                CvStereoBMState m = cvCreateStereoBMState(preset, numberOfDisparities);
+                if (m != null) {
+                    m.releasable = true;
+                }
+                return m;
+            }
+            public void release() {
+                releasable = false;
+                cvReleaseStereoBMState(pointerByReference());
+            }
+            @Override protected void finalize() {
+                if (releasable) {
+                    release();
+                }
+            }
+
+            private static final String[] fieldOrder = { "preFilteredImg0",
+                "preFilteredImg1", "slidingSumBuf", "dbmin", "dbmax" };
+            { setFieldOrder(fieldOrder); }
             public CvMat.ByReference preFilteredImg0;
             public CvMat.ByReference preFilteredImg1;
             public CvMat.ByReference slidingSumBuf;
             public CvMat.ByReference dbmin;
             public CvMat.ByReference dbmax;
         }
+        public static native CvStereoBMState cvCreateStereoBMState(int preset/*=CV_STEREO_BM_BASIC*/,
+                int numberOfDisparities/*=0*/);
+        public static native void cvReleaseStereoBMState(CvStereoBMState.PointerByReference state);
+        public static native void cvFindStereoCorrespondenceBM(CvArr left, CvArr right,
+                CvArr disparity, CvStereoBMState state);
     }
     public static class v11or20 extends cv {
         public static final String libname = Loader.load(paths, libnames);
@@ -190,6 +215,9 @@ public class cv {
                 this.hessian = hessian;
             }
 
+            private static final String[] fieldOrder = {
+                "pt", "laplacian", "size", "dir", "hessian" };
+            { setFieldOrder(fieldOrder); }
             public CvPoint2D32f pt;
             public int laplacian;
             public int size;
@@ -202,6 +230,9 @@ public class cv {
             public CvSURFParams(Pointer m) { super(m); setAutoSynch(autoSynch);
                     if (autoSynch && getClass() == CvSURFParams.class) read(); }
 
+            private static final String[] fieldOrder = {
+                "extended", "hessianThreshold", "nOctaves", "nOctaveLayers" };
+            { setFieldOrder(fieldOrder); }
             public int extended;
             public double hessianThreshold;
             public int nOctaves;
@@ -362,24 +393,13 @@ public class cv {
             public CvStereoBMState(Pointer m) { super(m); setAutoSynch(autoSynch); releasable = true;
                     if (autoSynch && getClass() == CvStereoBMState.class) read(); }
 
-            public static CvStereoBMState create(int preset, int numberOfDisparities) {
-                CvStereoBMState m = cvCreateStereoBMState(preset, numberOfDisparities);
-                if (m != null) {
-                    m.releasable = true;
-                }
-                return m;
-            }
-            public void release() {
-                releasable = false;
-                cvReleaseStereoBMState(pointerByReference());
-            }
-            @Override protected void finalize() {
-                if (releasable) {
-                    release();
-                }
-            }
             protected boolean releasable = false;
 
+            private static final String[] fieldOrder = { "preFilterType", "preFilterSize",
+                "preFilterCap", "SADWindowSize", "minDisparity", "numberOfDisparities",
+                "textureThreshold", "uniquenessRatio", "speckleWindowSize", "speckleRange",
+                "trySmallerWindows" };
+            { setFieldOrder(fieldOrder); }
             public int preFilterType = CV_STEREO_BM_NORMALIZED_RESPONSE;
             public int preFilterSize;
             public int preFilterCap;
@@ -428,11 +448,6 @@ public class cv {
                 CV_STEREO_BM_BASIC = 0,
                 CV_STEREO_BM_FISH_EYE = 1,
                 CV_STEREO_BM_NARROW = 2;
-        public static native CvStereoBMState cvCreateStereoBMState(int preset/*=CV_STEREO_BM_BASIC*/,
-                int numberOfDisparities/*=0*/);
-        public static native void cvReleaseStereoBMState(CvStereoBMState.PointerByReference state);
-        public static native void cvFindStereoCorrespondenceBM(CvArr left, CvArr right,
-                CvArr disparity, CvStereoBMState state);
 
         public static final int CV_STEREO_GC_OCCLUDED = Short.MAX_VALUE;
         public static class CvStereoGCState extends Structure {
@@ -459,6 +474,11 @@ public class cv {
             }
             private boolean releasable = false;
 
+            private static final String[] fieldOrder = { "Ithreshold", "interactionRadius",
+                "K", "lambda", "lambda1", "lambda2", "occlusionCost", "minDisparity",
+                "numberOfDisparities", "maxIters", "left", "right", "dispLeft", "dispRight",
+                "ptrLeft", "ptrRight", "vtxBuf", "edgeBuf"};
+            { setFieldOrder(fieldOrder); }
             public int Ithreshold;
             public int interactionRadius;
             public float K, lambda, lambda1, lambda2;
@@ -558,6 +578,9 @@ public class cv {
             public CvMSERParams(Pointer m) { super(m); setAutoSynch(autoSynch);
                     if (autoSynch && getClass() == CvMSERParams.class) read(); }
 
+            private static final String[] fieldOrder = { "delta", "maxArea", "minArea",
+                "maxVariation", "minDiversity", "maxEvolution", "areaThreshold", "minMargin", "edgeBlurSize" };
+            { setFieldOrder(fieldOrder); }
             public int delta;
             public int maxArea;
             public int minArea;
@@ -603,6 +626,8 @@ public class cv {
             public CvStarKeypoint(Pointer m) { super(m); setAutoSynch(autoSynch);
                     if (autoSynch && getClass() == CvStarKeypoint.class) read(); }
 
+            private static final String[] fieldOrder = { "pt", "size", "response" };
+            { setFieldOrder(fieldOrder); }
             public CvPoint pt;
             public int size;
             public float response;
@@ -632,6 +657,9 @@ public class cv {
             public CvStarDetectorParams(Pointer m) { super(m); setAutoSynch(autoSynch);
                     if (autoSynch && getClass() == CvStarDetectorParams.class) read(); }
 
+            private static final String[] fieldOrder = { "maxSize", "responseThreshold",
+                "lineThresholdProjected", "lineThresholdBinarized", "suppressNonmaxSize" };
+            { setFieldOrder(fieldOrder); }
             public int maxSize;
             public int responseThreshold;
             public int lineThresholdProjected;
@@ -729,12 +757,37 @@ public class cv {
             public CvStereoBMState(Pointer m) { super(m); releasable = true;
                     if (autoSynch && getClass() == CvStereoBMState.class) read(); }
 
+            public static CvStereoBMState create(int preset, int numberOfDisparities) {
+                CvStereoBMState m = cvCreateStereoBMState(preset, numberOfDisparities);
+                if (m != null) {
+                    m.releasable = true;
+                }
+                return m;
+            }
+            public void release() {
+                releasable = false;
+                cvReleaseStereoBMState(pointerByReference());
+            }
+            @Override protected void finalize() {
+                if (releasable) {
+                    release();
+                }
+            }
+
+            private static final String[] fieldOrder = { "preFilteredImg0",
+                "preFilteredImg1", "slidingSumBuf", "dbmin", "dbmax" };
+            { setFieldOrder(fieldOrder); }
             public CvMat.ByReference preFilteredImg0;
             public CvMat.ByReference preFilteredImg1;
             public CvMat.ByReference slidingSumBuf;
             public CvMat.ByReference dbmin;
             public CvMat.ByReference dbmax;
         }
+        public static native CvStereoBMState cvCreateStereoBMState(int preset/*=CV_STEREO_BM_BASIC*/,
+                int numberOfDisparities/*=0*/);
+        public static native void cvReleaseStereoBMState(CvStereoBMState.PointerByReference state);
+        public static native void cvFindStereoCorrespondenceBM(CvArr left, CvArr right,
+                CvArr disparity, CvStereoBMState state);
     }
 
     public static class v21 extends v20or21 {
@@ -745,6 +798,8 @@ public class cv {
             public CvSubdiv2DPoint(Pointer m) { super(m); 
                     if (autoSynch && getClass() == CvSubdiv2DPoint.class) read(); }
 
+            private static final String[] fieldOrder = { "id" };
+            { setFieldOrder(fieldOrder); }
             public int id;
         }
 
@@ -775,6 +830,26 @@ public class cv {
             public CvStereoBMState(Pointer m) { super(m); releasable = true;
                     if (autoSynch && getClass() == CvStereoBMState.class) read(); }
 
+            public static CvStereoBMState create(int preset, int numberOfDisparities) {
+                CvStereoBMState m = cvCreateStereoBMState(preset, numberOfDisparities);
+                if (m != null) {
+                    m.releasable = true;
+                }
+                return m;
+            }
+            public void release() {
+                releasable = false;
+                cvReleaseStereoBMState(pointerByReference());
+            }
+            @Override protected void finalize() {
+                if (releasable) {
+                    release();
+                }
+            }
+
+            private static final String[] fieldOrder = { "roi1", "roi2", "disp12MaxDiff",
+                "preFilteredImg0", "preFilteredImg1", "slidingSumBuf", "cost", "disp" };
+            { setFieldOrder(fieldOrder); }
             public CvRect roi1, roi2;
             public int disp12MaxDiff;
 
@@ -784,6 +859,11 @@ public class cv {
             public CvMat.ByReference cost;
             public CvMat.ByReference disp;
         }
+        public static native CvStereoBMState cvCreateStereoBMState(int preset/*=CV_STEREO_BM_BASIC*/,
+                int numberOfDisparities/*=0*/);
+        public static native void cvReleaseStereoBMState(CvStereoBMState.PointerByReference state);
+        public static native void cvFindStereoCorrespondenceBM(CvArr left, CvArr right,
+                CvArr disparity, CvStereoBMState state);
 
         public static native CvRect.ByValue cvGetValidDisparityROI(CvRect.ByValue roi1,
                 CvRect.ByValue roi2, int minDisparity, int numberOfDisparities, int SADWindowSize);
@@ -908,6 +988,9 @@ public class cv {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = { "nCols", "nRows",
+            "anchorX", "anchorY", "values", "nShiftR" };
+        { setFieldOrder(fieldOrder); }
         public int  nCols;
         public int  nRows;
         public int  anchorX;
@@ -1111,6 +1194,8 @@ public class cv {
         public CvConnectedComp(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvConnectedComp.class) read(); }
 
+        private static final String[] fieldOrder = { "area", "value", "rect", "contour" };
+        { setFieldOrder(fieldOrder); }
         public double area;
         public CvScalar value;
         public CvRect rect;
@@ -1168,6 +1253,8 @@ public class cv {
         public CvChainPtReader(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvChainPtReader.class) read(); }
 
+        private static final String[] fieldOrder = { "code", "pt", "deltas" };
+        { setFieldOrder(fieldOrder); }
         public char      code;
         public CvPoint   pt;
         //public byte[][]    deltas = new byte[8][2];
@@ -1180,6 +1267,8 @@ public class cv {
         public CvContourTree(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvContourTree.class) read(); }
 
+        private static final String[] fieldOrder = { "p1", "p2" };
+        { setFieldOrder(fieldOrder); }
         public CvPoint p1;
         public CvPoint p2;
 
@@ -1192,6 +1281,8 @@ public class cv {
         public CvChain(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvChain.class) read(); }
 
+        private static final String[] fieldOrder = { "origin" };
+        { setFieldOrder(fieldOrder); }
         public CvPoint origin;
 
         public static class ByValue extends CvChain implements Structure.ByValue { }
@@ -1203,6 +1294,9 @@ public class cv {
         public CvContour(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvContour.class) read(); }
 
+        private static final String[] fieldOrder = { "rect", "color",
+            "reserved0", "reserved1", "reserved2" };
+        { setFieldOrder(fieldOrder); }
         public CvRect rect;
         public int color;
         public int reserved0, reserved1, reserved2;
@@ -1244,6 +1338,11 @@ public class cv {
         public CvMoments(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvMoments.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "m00", "m10", "m01", "m20", "m11", "m02", "m30", "m21", "m12", "m03",
+            "mu20", "mu11", "mu02", "mu30", "mu21", "mu12", "mu03",
+            "inv_sqrt_m00" };
+        { setFieldOrder(fieldOrder); }
         public double m00, m10, m01, m20, m11, m02, m30, m21, m12, m03; 
         public double mu20, mu11, mu02, mu30, mu21, mu12, mu03; 
         public double inv_sqrt_m00; 
@@ -1255,6 +1354,9 @@ public class cv {
         public CvHuMoments(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvHuMoments.class) read(); }
 
+        private static final String[] fieldOrder = {
+            "hu1", "hu2", "hu3", "hu4", "hu5", "hu6", "hu7" };
+        { setFieldOrder(fieldOrder); }
         public double hu1, hu2, hu3, hu4, hu5, hu6, hu7;
     }
 
@@ -1386,7 +1488,8 @@ public class cv {
         }
         private boolean releasable = false;
 
-
+        private static final String[] fieldOrder = { "type", "bins", "thresh", "thresh2", "mat" };
+        { setFieldOrder(fieldOrder); }
         public int /* CvHistType */    type;
         public CvArr.ByReference       bins;
         //public float[][]               thresh = new float[CV_MAX_DIM][2];
@@ -1617,6 +1720,8 @@ public class cv {
         public CvConvexityDefect(Pointer m) { super(m); setAutoSynch(autoSynch); 
                 if (autoSynch && getClass() == CvConvexityDefect.class) read(); }
 
+        private static final String[] fieldOrder = { "start", "end", "depth_point", "depth" };
+        { setFieldOrder(fieldOrder); }
         public CvPoint.ByReference start;
         public CvPoint.ByReference end;
         public CvPoint.ByReference depth_point;
@@ -1644,6 +1749,8 @@ public class cv {
         public CvQuadEdge2D(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvQuadEdge2D.class) read(); }
 
+        private static final String[] fieldOrder = { "flags", "pt", "next" };
+        { setFieldOrder(fieldOrder); }
         public int flags;
         public CvSubdiv2DPoint.ByReference[] pt = new CvSubdiv2DPoint.ByReference[4];
         public CvSubdiv2DEdge[] next = new CvSubdiv2DEdge[4];
@@ -1683,6 +1790,8 @@ public class cv {
         public CvSubdiv2DPoint(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvSubdiv2DPoint.class) read(); }
 
+        private static final String[] fieldOrder = { "flags", "first", "pt" };
+        { setFieldOrder(fieldOrder); }
         public int            flags;
         public CvSubdiv2DEdge first;
         public CvPoint2D32f   pt;
@@ -1717,6 +1826,9 @@ public class cv {
         public CvSubdiv2D(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvSubdiv2D.class) read(); }
 
+        private static final String[] fieldOrder = { "quad_edges", "is_geometry_valid",
+            "recent_edge", "topleft", "bottomright" };
+        { setFieldOrder(fieldOrder); }
         public int  quad_edges;
         public int  is_geometry_valid;
         public CvSubdiv2DEdge recent_edge;
@@ -1877,6 +1989,17 @@ public class cv {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = { "MP", "DP", "CP",
+            "PosterState", "PriorState", "DynamMatr", "MeasurementMatr",
+            "MNCovariance", "PNCovariance", "KalmGainMatr", "PriorErrorCovariance",
+            "PosterErrorCovariance", "Temp1", "Temp2",
+
+            "state_pre", "state_post", "transition_matrix", "control_matrix",
+            "measurement_matrix", "process_noise_cov", "measurement_noise_cov",
+            "error_cov_pre", "gain", "error_cov_post",
+
+            "temp1", "temp2", "temp3", "temp4", "temp5" };
+        { setFieldOrder(fieldOrder); }
         public int MP;
         public int DP;
         public int CP;
@@ -1944,6 +2067,8 @@ public class cv {
         public CvRandState(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvRandState.class) read(); }
 
+        private static final String[] fieldOrder = { "state", "disttype", "param0", "param1" };
+        { setFieldOrder(fieldOrder); }
         long /* CvRNG */ state;
         int              disttype;
         CvScalar         param0, param1;
@@ -2001,6 +2126,10 @@ public class cv {
         }
         private boolean releasable = false;
 
+        private static final String[] fieldOrder = { "MP", "DP", "DynamMatr",
+            "State", "SamplesNum", "flSamples", "flNewSamples", "flConfidence",
+            "flCumulative", "Temp", "RandomSample", "RandS" };
+        { setFieldOrder(fieldOrder); }
         public int MP;
         public int DP;
         public FloatByReference DynamMatr;
@@ -2054,8 +2183,12 @@ public class cv {
         public CvHaarFeature(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvHaarFeature.class) read(); }
 
+        private static final String[] fieldOrder = { "tilted", "rect" };
+        { setFieldOrder(fieldOrder); }
         public int tilted;
         public static class Rect extends Structure {
+            private static final String[] fieldOrder = { "r", "weight" };
+            { setFieldOrder(fieldOrder); }
             public CvRect r;
             public float weight;
         }
@@ -2070,6 +2203,9 @@ public class cv {
         public CvHaarClassifier(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvHaarClassifier.class) read(); }
 
+        private static final String[] fieldOrder = { "count", "haar_feature",
+            "threshold", "left", "right", "alpha" };
+        { setFieldOrder(fieldOrder); }
         public int count;
         public CvHaarFeature.ByReference haar_feature;
         public FloatByReference threshold;
@@ -2086,6 +2222,9 @@ public class cv {
         public CvHaarStageClassifier(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvHaarStageClassifier.class) read(); }
 
+        private static final String[] fieldOrder = { "count", "threshold",
+            "classifier", "next", "child", "parent" };
+        { setFieldOrder(fieldOrder); }
         public int  count;
         public float threshold;
         public CvHaarClassifier.ByReference classifier;
@@ -2126,6 +2265,9 @@ public class cv {
         private boolean releasable = false;
 
 
+        private static final String[] fieldOrder = { "flags", "count", "orig_window_size",
+            "real_window_size", "scale", "stage_classifier", "hid_cascade" };
+        { setFieldOrder(fieldOrder); }
         public int  flags;
         public int  count;
         public CvSize orig_window_size;
@@ -2165,6 +2307,8 @@ public class cv {
         public CvAvgComp(Pointer m) { super(m); setAutoSynch(autoSynch);
                 if (autoSynch && getClass() == CvAvgComp.class) read(); }
 
+        private static final String[] fieldOrder = { "rect", "neighbors" };
+        { setFieldOrder(fieldOrder); }
         public CvRect rect;
         public int neighbors;
     }

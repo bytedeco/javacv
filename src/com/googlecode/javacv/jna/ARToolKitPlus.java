@@ -79,6 +79,9 @@ public class ARToolKitPlus {
         public ARMarkerInfo() { }
         public ARMarkerInfo(Pointer m) { useMemory(m); read(); }
 
+        private static final String[] fieldOrder = {
+            "area", "id", "dir", "cf", "pos", "line", "vertex" };
+        { setFieldOrder(fieldOrder); }
         public int      area;
         public int      id;
         public int      dir;
@@ -112,6 +115,9 @@ public class ARToolKitPlus {
     }
 
     public static class ARMultiEachMarkerInfoT extends Structure {
+        private static final String[] fieldOrder = { "patt_id", "width",
+            "center", "trans", "itrans", "pos3d", "visible", "visibleR" };
+        { setFieldOrder(fieldOrder); }
         public int      patt_id;
         public double   width;
         public double[] center = new double[2];
@@ -128,6 +134,9 @@ public class ARToolKitPlus {
     }
 
     public static class ARMultiMarkerInfoT extends Structure {
+        private static final String[] fieldOrder = {
+            "marker", "marker_num", "trans", "prevF", "transR" };
+        { setFieldOrder(fieldOrder); }
         public ARMultiEachMarkerInfoT.ByReference marker;
         public int                     marker_num;
 //        public double[][]              trans = new double[3][4];
