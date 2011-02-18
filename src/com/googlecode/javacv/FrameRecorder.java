@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -22,7 +22,7 @@ package com.googlecode.javacv;
 
 import java.util.LinkedList;
 import java.util.List;
-import com.googlecode.javacv.jna.cxcore.IplImage;
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
 /**
  *

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -34,6 +34,11 @@ public class Parallel {
     private static final ExecutorService threadPool = Executors.newCachedThreadPool();
 
     public static void run(Runnable ... runnables) {
+        if (runnables.length == 1) {
+            runnables[0].run();
+            return;
+        }
+
         Future[] futures = new Future[runnables.length];
         for (int i = 0; i < runnables.length; i++) {
             futures[i] = threadPool.submit(runnables[i]);

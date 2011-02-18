@@ -23,10 +23,71 @@
             <attribute name="Specification-Version" value="${TIMESTAMP}"/>
         </section>
     </manifest>
+    <target name="-pre-jar">
+        <property name="javacpp.options" value=""/>
+        <java jar="${reference.javacpp.jar}" fork="true"> 
+            <arg line="${javacpp.options}"/>
+            <arg value="-classpath"/> <arg value="${build.classes.dir}"/> 
+            <arg value="-jarprefix"/> <arg value="${dist.dir}/javacv"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_core"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_imgproc"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_video"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_features2d"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_calib3d"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_objdetect"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_highgui"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_legacy"/>
+            <arg value="com.googlecode.javacv.cpp.avutil"/>
+            <arg value="com.googlecode.javacv.cpp.avcodec"/>
+            <arg value="com.googlecode.javacv.cpp.avformat"/>
+            <arg value="com.googlecode.javacv.cpp.avdevice"/>
+            <arg value="com.googlecode.javacv.cpp.avfilter"/>
+            <arg value="com.googlecode.javacv.cpp.postproc"/>
+            <arg value="com.googlecode.javacv.cpp.swscale"/>
+            <arg value="com.googlecode.javacv.cpp.dc1394"/>
+            <arg value="com.googlecode.javacv.cpp.PGRFlyCapture"/>
+            <arg value="com.googlecode.javacv.cpp.ARToolKitPlus"/>
+            <arg value="com.googlecode.javacv.cpp.cvkernels"/>
+        </java>
+        <delete file="${build.classes.dir}/com/googlecode/javacv/cpp/avformat.h"/>
+        <delete file="${build.classes.dir}/com/googlecode/javacv/cpp/avutil.h"/>
+        <delete file="${build.classes.dir}/com/googlecode/javacv/cpp/cvkernels.h"/>
+    </target>
     <target name="-post-jar">
-        <delete file="${dist.dir}/README.TXT" />
+        <delete file="${dist.dir}/README.TXT"/>
         <copy file="LICENSE.txt" todir="${dist.dir}"/>
         <copy file="README.txt" todir="${dist.dir}"/>
+    </target>
+    <target name="-init-macrodef-copylibs">
+        <macrodef name="copylibs" uri="http://www.netbeans.org/ns/j2se-project/3">
+            <element name="customize" optional="true"/>
+            <sequential>
+                <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${run.classpath}"/>
+                    <map from="${build.classes.dir.resolved}" to=""/>
+                </pathconvert>
+                <pathconvert pathsep=" " property="jar.classpath">
+                    <path path="${run.classpath.without.build.classes.dir}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <globmapper from="*" to="*"/>
+                    </chainedmapper>
+                </pathconvert>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
+                <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
+                    <fileset dir="${build.classes.dir}"/>
+                    <manifest>
+                        <attribute name="Class-Path" value="${jar.classpath} javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar"/>
+                        <customize/>
+                    </manifest>
+                </copylibs>
+                <move todir="${dist.dir}">
+                    <fileset dir="${dist.dir}/lib/" includes="*"/>
+                </move>
+                <delete dir="${dist.dir}/lib/"/>
+            </sequential>
+        </macrodef>
     </target>
     <!--
 

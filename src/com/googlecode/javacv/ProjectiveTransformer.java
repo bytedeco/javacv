@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,9 +20,13 @@
 
 package com.googlecode.javacv;
 
-import static com.googlecode.javacv.jna.cvkernels.*;
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import java.nio.DoubleBuffer;
+import com.googlecode.javacpp.DoublePointer;
+
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static com.googlecode.javacv.cpp.cvkernels.*;
 
 /**
  *
@@ -62,13 +66,13 @@ public class ProjectiveTransformer implements ImageTransformer {
 
     private CvMat K1 = null, K2 = null, invK1 = null, invK2 = null, R = null, t = null, n = null;
     private double[] referencePoints1 = null, referencePoints2 = null;
-    private CvScalar.ByValue fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
+    private CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
 
-    public CvScalar.ByValue getFillColor() {
+    public CvScalar getFillColor() {
         return fillColor;
     }
     public void setFillColor(CvScalar fillColor) {
-        this.fillColor = fillColor.byValue();
+        this.fillColor = fillColor;
     }
 
     public double[] getReferencePoints1() {
@@ -141,27 +145,28 @@ public class ProjectiveTransformer implements ImageTransformer {
         // use ROI not as a sub-image, but as the region we want to fill in
         // the destination image... so here we compensate for the translation
         // caused by the ROI inside cvWarpPerspective()
-        if (roi != null && (roi.x != 0 || roi.y != 0)) {
+        if (roi != null && (roi.x() != 0 || roi.y() != 0)) {
+            int x = roi.x(), y = roi.y();
             if (inverse) {
-                H.put(2, H.get(0)*roi.x + H.get(1)*roi.y + H.get(2));
-                H.put(5, H.get(3)*roi.x + H.get(4)*roi.y + H.get(5));
-                H.put(8, H.get(6)*roi.x + H.get(7)*roi.y + H.get(8));
+                H.put(2, H.get(0)*x + H.get(1)*y + H.get(2));
+                H.put(5, H.get(3)*x + H.get(4)*y + H.get(5));
+                H.put(8, H.get(6)*x + H.get(7)*y + H.get(8));
             } else {
-                H.put(0, H.get(0) - roi.x*H.get(6));
-                H.put(1, H.get(1) - roi.x*H.get(7));
-                H.put(2, H.get(2) - roi.x*H.get(8));
-                H.put(3, H.get(3) - roi.y*H.get(6));
-                H.put(4, H.get(4) - roi.y*H.get(7));
-                H.put(5, H.get(5) - roi.y*H.get(8));
+                H.put(0, H.get(0) - x*H.get(6));
+                H.put(1, H.get(1) - x*H.get(7));
+                H.put(2, H.get(2) - x*H.get(8));
+                H.put(3, H.get(3) - y*H.get(6));
+                H.put(4, H.get(4) - y*H.get(7));
+                H.put(5, H.get(5) - y*H.get(8));
             }
         }
 
-        dstImage.origin = srcImage.origin; // cvWarpPerspective doesn't use it..
+        dstImage.origin(srcImage.origin()); // cvWarpPerspective doesn't use it..
 
         if (roi == null) {
             cvResetImageROI(dstImage);
         } else {
-            cvSetImageROI(dstImage, roi.byValue());
+            cvSetImageROI(dstImage, roi);
         }
         cvWarpPerspective(srcImage, dstImage, H, CV_INTER_LINEAR |
                 CV_WARP_FILL_OUTLIERS | (inverse ? CV_WARP_INVERSE_MAP : 0),
@@ -203,46 +208,61 @@ public class ProjectiveTransformer implements ImageTransformer {
         }
         if (!allOK) {
             class Cache {
-                MultiWarpColorTransformData[] kernelData;
-                CvMat[] H;
+                Cache(int length) {
+                    this.length = length;
+                    kernelData = new KernelData(length);
+                    H = new CvMat[length];
+                    dstDstDot = new DoublePointer[length];
+                    dstDstDotBuf = new DoubleBuffer[length];
+                }
+                final int length;
+                final KernelData kernelData;
+                final CvMat[] H;
+                final DoublePointer[] dstDstDot;
+                final DoubleBuffer[] dstDstDotBuf;
             }
-            Cache cache = data[0].cache instanceof Cache ?
-                   (Cache)data[0].cache : new Cache();
-            if (cache.kernelData == null || cache.kernelData.length != data.length ||
-                         cache.H == null ||          cache.H.length != data.length) {
-                data[0].cache = cache;
-                cache.kernelData = (MultiWarpColorTransformData[])
-                        new MultiWarpColorTransformData().toArray(data.length);
-                cache.H = new CvMat[data.length];
+            Cache c = data[0].cache instanceof Cache ? (Cache)data[0].cache : null;
+            if (c == null || c.length != data.length) {
+                data[0].cache = c = new Cache(data.length);
             }
-            MultiWarpColorTransformData[] kd = cache.kernelData;
-
-            for (int i = 0; i < kd.length; i++) {
-                Data d = data[i];
-                kd[i].srcImg    = d.srcImg    == null ? null : d.srcImg   .getPointer();
-                kd[i].srcImg2   = null;
-                kd[i].subImg    = d.subImg    == null ? null : d.subImg   .getPointer();
-                kd[i].srcDotImg = d.srcDotImg == null ? null : d.srcDotImg.getPointer();
-
-                CvMat H = cache.H[i] == null ? cache.H[i] = CvMat.create(3, 3) : cache.H[i];
-
-                prepareHomography(H, pyramidLevel, (Parameters)parameters[i], d.inverse);
-
-                kd[i].H1 = H.getPointer();
-                kd[i].H2 = null;
-                kd[i].X  = null;
-
-                kd[i].transImg  = d.transImg  == null ? null : d.transImg .getPointer();
-                kd[i].dstImg    = d.dstImg    == null ? null : d.dstImg   .getPointer();
-                kd[i].dstDstDot = d.dstDstDot;
-            }
-
-            multiWarpColorTransform(kd, mask, roi, zeroThreshold, getFillColor());
 
             for (int i = 0; i < data.length; i++) {
-                data[i].dstCount     = kd[i].dstCount;
-                data[i].dstCountZero = kd[i].dstCountZero;
-                data[i].srcDstDot    = kd[i].srcDstDot;
+                c.kernelData.position(i);
+
+                c.kernelData.srcImg(data[i].srcImg);
+                c.kernelData.srcImg2(null);
+                c.kernelData.subImg(data[i].subImg);
+                c.kernelData.srcDotImg(data[i].srcDotImg);
+
+                if (c.H[i] == null) { c.H[i] = CvMat.create(3, 3); }
+                if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
+                    c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
+                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
+                }
+
+                prepareHomography(c.H[i], pyramidLevel, (Parameters)parameters[i], data[i].inverse);
+
+                c.kernelData.H1(c.H[i]);
+                c.kernelData.H2(null);
+                c.kernelData.X (null);
+
+                c.kernelData.transImg(data[i].transImg);
+                c.kernelData.dstImg(data[i].dstImg);
+                c.kernelData.dstDstDot(c.dstDstDot[i]);
+            }
+
+            multiWarpColorTransform(c.kernelData.position(0), data.length,
+                    mask, roi, zeroThreshold, getFillColor());
+
+            for (int i = 0; i < data.length; i++) {
+                c.kernelData.position(i);
+                data[i].dstCount     = c.kernelData.dstCount();
+                data[i].dstCountZero = c.kernelData.dstCountZero();
+                data[i].srcDstDot    = c.kernelData.srcDstDot();
+                if (data[i].dstDstDot != null) {
+                    c.dstDstDotBuf[i].position(0);
+                    c.dstDstDotBuf[i].get(data[i].dstDstDot);
+                }
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.googlecode.javacv.jna.cxcore.IplImage;
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
 /**
  *
@@ -113,6 +113,7 @@ public abstract class FrameGrabber {
     protected int timeout = 10000;
     protected int numBuffers = 4;
     protected double gamma = 0.0;
+    protected boolean deinterlace = false;
 
     public int getImageWidth() {
         return imageWidth;
@@ -184,6 +185,13 @@ public abstract class FrameGrabber {
         this.gamma = gamma;
     }
 
+    public boolean isDeinterlace() {
+        return deinterlace;
+    }
+    public void setDeinterlace(boolean deinterlace) {
+        this.deinterlace = deinterlace;
+    }
+
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void trigger() throws Exception;
@@ -251,12 +259,12 @@ public abstract class FrameGrabber {
             for (int i = 0; i < frameGrabbers.length; i++) {
                 grabbedImages[i] = frameGrabbers[i].grab();
                 if (grabbedImages[i] != null) {
-                    newestTimestamp = Math.max(newestTimestamp, grabbedImages[i].getTimestamp());
+                    newestTimestamp = Math.max(newestTimestamp, grabbedImages[i].timestamp());
                 }
             }
             for (int i = 0; i < frameGrabbers.length; i++) {
                 if (grabbedImages[i] != null) {
-                    latencies[i] = newestTimestamp-grabbedImages[i].getTimestamp();
+                    latencies[i] = newestTimestamp-grabbedImages[i].timestamp();
                 }
             }
             if (bestLatencies == null) {
@@ -286,17 +294,17 @@ public abstract class FrameGrabber {
                     if (frameGrabbers[i].isTriggerMode() || grabbedImages[i] == null) {
                         continue;
                     }
-                    int latency = (int)(newestTimestamp - grabbedImages[i].getTimestamp());
+                    int latency = (int)(newestTimestamp - grabbedImages[i].timestamp());
                     while (latency-bestLatencies[i] > 0.1*bestLatencies[i]) {
                         grabbedImages[i] = frameGrabbers[i].grab();
                         if (grabbedImages[i] == null) {
                             break;
                         }
-                        latency = (int)(newestTimestamp - grabbedImages[i].getTimestamp());
+                        latency = (int)(newestTimestamp - grabbedImages[i].timestamp());
                         if (latency < 0) {
                             // woops, a camera seems to have dropped a frame somewhere...
                             // bump up the newestTimestamp
-                            newestTimestamp = grabbedImages[i].getTimestamp();
+                            newestTimestamp = grabbedImages[i].timestamp();
                             break;
                         }
                     }

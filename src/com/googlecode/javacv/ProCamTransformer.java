@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,9 +20,13 @@
 
 package com.googlecode.javacv;
 
-import static com.googlecode.javacv.jna.cvkernels.*;
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import java.nio.DoubleBuffer;
+import com.googlecode.javacpp.DoublePointer;
+
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static com.googlecode.javacv.cpp.cvkernels.*;
 
 /**
  *
@@ -60,15 +64,15 @@ public class ProCamTransformer implements ImageTransformer {
     private ProjectiveGainBiasTransformer surfaceTransformer = null;
     private ProjectiveGainBiasTransformer projectorTransformer = null;
     private IplImage[] projectorImage = null, surfaceImage = null;
-    private CvScalar.ByValue fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
-    private CvRect.ByValue roi = new CvRect.ByValue();
+    private CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
+    private CvRect roi = new CvRect();
     private CvMat frontoParallelH = null, invFrontoParallelH = null;
 
-    public CvScalar.ByValue getFillColor() {
+    public CvScalar getFillColor() {
         return fillColor;
     }
     public void setFillColor(CvScalar fillColor) {
-        this.fillColor = fillColor.byValue();
+        this.fillColor = fillColor;
     }
 
     public ProjectiveGainBiasTransformer getSurfaceTransformer() {
@@ -89,20 +93,20 @@ public class ProCamTransformer implements ImageTransformer {
             projectorImage = new IplImage[pyramidLevels];
         }
 
-        if (projectorImage0.depth == IPL_DEPTH_32F || !convertToFloat) {
+        if (projectorImage0.depth() == IPL_DEPTH_32F || !convertToFloat) {
             projectorImage[0] = projectorImage0;
         } else {
             if (projectorImage[0] == null) {
-                projectorImage[0] = IplImage.create(projectorImage0.width, projectorImage0.height,
-                        IPL_DEPTH_32F, projectorImage0.nChannels, projectorImage0.origin);
+                projectorImage[0] = IplImage.create(projectorImage0.width(), projectorImage0.height(),
+                        IPL_DEPTH_32F, projectorImage0.nChannels(), projectorImage0.origin());
             }
-            IplROI ir = projectorImage0.roi;
+            IplROI ir = projectorImage0.roi();
             if (ir != null) {
                 int align  = 1<<projectorImage.length;
-                roi.x      = Math.max(0, (int)Math.floor((double)ir.xOffset/align)*align);
-                roi.y      = Math.max(0, (int)Math.floor((double)ir.yOffset/align)*align);
-                roi.width  = Math.min(projectorImage0.width,  (int)Math.ceil((double)ir.width /align)*align);
-                roi.height = Math.min(projectorImage0.height, (int)Math.ceil((double)ir.height/align)*align);
+                roi.x(Math.max(0, (int)Math.floor((double)ir.xOffset()/align)*align));
+                roi.y(Math.max(0, (int)Math.floor((double)ir.yOffset()/align)*align));
+                roi.width (Math.min(projectorImage0.width(),  (int)Math.ceil((double)ir.width() /align)*align));
+                roi.height(Math.min(projectorImage0.height(), (int)Math.ceil((double)ir.height()/align)*align));
                 cvSetImageROI(projectorImage0,   roi);
                 cvSetImageROI(projectorImage[0], roi);
             } else {
@@ -116,19 +120,19 @@ public class ProCamTransformer implements ImageTransformer {
 //        cvSubS(projectorImage[0], average, projectorImage[0], null);
 
         for (int i = 1; i < pyramidLevels; i++) {
-            int w = projectorImage[i-1].width/2;
-            int h = projectorImage[i-1].height/2;
-            int d = projectorImage[i-1].depth;
-            int c = projectorImage[i-1].nChannels;
-            int o = projectorImage[i-1].origin;
+            int w = projectorImage[i-1].width()/2;
+            int h = projectorImage[i-1].height()/2;
+            int d = projectorImage[i-1].depth();
+            int c = projectorImage[i-1].nChannels();
+            int o = projectorImage[i-1].origin();
             if (projectorImage[i] == null) {
                 projectorImage[i] = IplImage.create(w, h, d, c, o);
             }
 
-            IplROI ir = projectorImage[i-1].roi;
+            IplROI ir = projectorImage[i-1].roi();
             if (ir != null) {
-                roi.x = ir.xOffset/2; roi.width  = ir.width /2;
-                roi.y = ir.yOffset/2; roi.height = ir.height/2;
+                roi.x(ir.xOffset()/2); roi.width (ir.width() /2);
+                roi.y(ir.yOffset()/2); roi.height(ir.height()/2);
                 cvSetImageROI(projectorImage[i], roi);
             } else {
                 cvResetImageROI(projectorImage[i]);
@@ -147,11 +151,11 @@ public class ProCamTransformer implements ImageTransformer {
         surfaceImage[0] = surfaceImage0;
         cvResetImageROI(surfaceImage0);
         for (int i = 1; i < pyramidLevels; i++) {
-            int w = surfaceImage[i-1].width/2;
-            int h = surfaceImage[i-1].height/2;
-            int d = surfaceImage[i-1].depth;
-            int c = surfaceImage[i-1].nChannels;
-            int o = surfaceImage[i-1].origin;
+            int w = surfaceImage[i-1].width()/2;
+            int h = surfaceImage[i-1].height()/2;
+            int d = surfaceImage[i-1].depth();
+            int c = surfaceImage[i-1].nChannels();
+            int o = surfaceImage[i-1].origin();
             if (surfaceImage[i] == null) {
                 surfaceImage[i] = IplImage.create(w, h, d, c, o);
             } else {
@@ -207,7 +211,7 @@ public class ProCamTransformer implements ImageTransformer {
         if (roi == null) {
             cvResetImageROI(p.tempImage[pyramidLevel]);
         } else {
-            cvSetImageROI(p.tempImage[pyramidLevel], roi.byValue());
+            cvSetImageROI(p.tempImage[pyramidLevel], roi);
         }
 
 //        Parallel.run(new Runnable() { public void run() {
@@ -219,7 +223,7 @@ public class ProCamTransformer implements ImageTransformer {
 //        }});
 
         // multiply projector image with template image
-        cvMul(dstImage, p.tempImage[pyramidLevel], dstImage, 1/dstImage.getMaxIntensity());
+        cvMul(dstImage, p.tempImage[pyramidLevel], dstImage, 1/dstImage.highValue());
     }
 
     public void transform(CvMat srcPts, CvMat dstPts, ImageTransformer.Parameters parameters, boolean inverse) {
@@ -247,52 +251,65 @@ public class ProCamTransformer implements ImageTransformer {
         }
         if (!allOK) {
             class Cache {
-                MultiWarpColorTransformData[] kernelData;
-                CvMat[] H1, H2, X;
+                Cache(int length) {
+                    this.length = length;
+                    kernelData = new KernelData(length);
+                    H1 = new CvMat[length];
+                    H2 = new CvMat[length];
+                    X  = new CvMat[length];
+                    dstDstDot = new DoublePointer[length];
+                    dstDstDotBuf = new DoubleBuffer[length];
+                }
+                final int length;
+                final KernelData kernelData;
+                final CvMat[] H1, H2, X;
+                final DoublePointer[] dstDstDot;
+                final DoubleBuffer[] dstDstDotBuf;
             }
-            Cache cache = data[0].cache instanceof Cache ?
-                   (Cache)data[0].cache : new Cache();
-            if (cache.kernelData == null || cache.kernelData.length != data.length ||
-                        cache.H1 == null ||         cache.H1.length != data.length ||
-                        cache.H2 == null ||         cache.H2.length != data.length ||
-                        cache.X  == null ||         cache.X .length != data.length) {
-                data[0].cache = cache;
-                cache.kernelData = (MultiWarpColorTransformData[])
-                        new MultiWarpColorTransformData().toArray(data.length);
-                cache.H1 = new CvMat[data.length];
-                cache.H2 = new CvMat[data.length];
-                cache.X  = new CvMat[data.length];
+            Cache c = data[0].cache instanceof Cache ? (Cache)data[0].cache : null;
+            if (c == null || c.length != data.length) {
+                data[0].cache = c = new Cache(data.length);
             }
-            MultiWarpColorTransformData[] kd = cache.kernelData;
 
             for (int i = 0; i < data.length; i++) {
-                Data d = data[i];
-                kd[i].srcImg    = d.srcImg    == null ? null : d.srcImg   .getPointer();
-                kd[i].srcImg2   = projectorImage[pyramidLevel].getPointer();
-                kd[i].subImg    = d.subImg    == null ? null : d.subImg   .getPointer();
-                kd[i].srcDotImg = d.srcDotImg == null ? null : d.srcDotImg.getPointer();
+                c.kernelData.position(i);
 
-                CvMat H1 = cache.H1[i] == null ? cache.H1[i] = CvMat.create(3, 3) : cache.H1[i];
-                CvMat H2 = cache.H2[i] == null ? cache.H2[i] = CvMat.create(3, 3) : cache.H2[i];
-                CvMat X  = cache.X[i]  == null ? cache.X [i] = CvMat.create(4, 4) : cache.X [i];
+                c.kernelData.srcImg(data[i].srcImg);
+                c.kernelData.srcImg2(projectorImage[pyramidLevel]);
+                c.kernelData.subImg(data[i].subImg);
+                c.kernelData.srcDotImg(data[i].srcDotImg);
 
-                prepareHomographyTransform(H1, H2, X, pyramidLevel, (Parameters)parameters[i]);
+                if (c.H1[i] == null) { c.H1[i] = CvMat.create(3, 3); }
+                if (c.H2[i] == null) { c.H2[i] = CvMat.create(3, 3); }
+                if (c.X [i] == null) { c.X [i] = CvMat.create(4, 4); }
+                if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
+                    c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
+                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
+                }
 
-                kd[i].H1 = H1.getPointer();
-                kd[i].H2 = H2.getPointer();
-                kd[i].X  = X .getPointer();
+                prepareHomographyTransform(c.H1[i], c.H2[i], c.X[i], pyramidLevel, (Parameters)parameters[i]);
 
-                kd[i].transImg  = d.transImg  == null ? null : d.transImg .getPointer();
-                kd[i].dstImg    = d.dstImg    == null ? null : d.dstImg   .getPointer();
-                kd[i].dstDstDot = d.dstDstDot;
+                c.kernelData.H1(c.H1[i]);
+                c.kernelData.H2(c.H2[i]);
+                c.kernelData.X (c.X [i]);
+
+                c.kernelData.transImg(data[i].transImg);
+                c.kernelData.dstImg(data[i].dstImg);
+                c.kernelData.dstDstDot(c.dstDstDot[i]);
             }
 
-            multiWarpColorTransform(kd, mask, roi, zeroThreshold, getFillColor());
+            multiWarpColorTransform(c.kernelData.position(0), data.length,
+                    mask, roi, zeroThreshold, getFillColor());
 
             for (int i = 0; i < data.length; i++) {
-                data[i].dstCount     = kd[i].dstCount;
-                data[i].dstCountZero = kd[i].dstCountZero;
-                data[i].srcDstDot    = kd[i].srcDstDot;
+                c.kernelData.position(i);
+                data[i].dstCount     = c.kernelData.dstCount();
+                data[i].dstCountZero = c.kernelData.dstCountZero();
+                data[i].srcDstDot    = c.kernelData.srcDstDot();
+                if (data[i].dstDstDot != null) {
+                    c.dstDstDotBuf[i].position(0);
+                    c.dstDstDotBuf[i].get(data[i].dstDstDot);
+                }
             }
 
 //            if (data[0].dstCountZero > 0) {

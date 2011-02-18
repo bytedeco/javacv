@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,22 +20,18 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.Pointer;
+import com.googlecode.javacpp.Pointer;
 import java.awt.Component;
 import java.awt.EventQueue;
 import javax.swing.JOptionPane;
 
-import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
  * @author Samuel Audet
- *
- *  VERY IMPORTANT:
- *  need to keep a reference somewhere so it doesn't get garbage collected...
- *
  */
-public class JavaCvErrorCallback implements CvErrorCallback {
+public class JavaCvErrorCallback extends CvErrorCallback {
 
     public JavaCvErrorCallback(boolean showDialog, Component parent, int rc) {
         this.parent = parent;
@@ -57,7 +53,7 @@ public class JavaCvErrorCallback implements CvErrorCallback {
     private boolean showDialog;
     private int rc;
 
-    public int callback(int status, String func_name, String err_msg,
+    @Override public int call(int status, String func_name, String err_msg,
             String file_name, int line, Pointer userdata) {
         final String title = "OpenCV Error";
         final String message = cvErrorStr(status) +
@@ -85,13 +81,5 @@ public class JavaCvErrorCallback implements CvErrorCallback {
             lastErrorTime = System.currentTimeMillis();
         }
         return rc; // 0 = please don't terminate
-    }
-
-    // VERY IMPORTANT:
-    // need to keep a reference here so it doesn't get garbage collected...
-    static private JavaCvErrorCallback notGarbage = null;
-    public CvErrorCallback redirectError() {
-        notGarbage = this;
-        return cvRedirectError(this, null, null);
     }
 }

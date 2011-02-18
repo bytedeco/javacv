@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,12 +20,12 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.Pointer;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.beans.PropertyChangeListener;
+import com.googlecode.javacpp.Pointer;
 
-import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
@@ -306,7 +306,7 @@ public class ProjectorDevice extends ProjectiveDevice {
         // we assume a perfectly Lambertian surface ... ugh ...
         // at a sufficient distance from the projector... ugh...
         cvGEMM(R, T, -1, null, 0, x2, CV_GEMM_A_T);
-        x3.rows = 3;
+        x3.rows(3);
         cvAddWeighted(x3, 1/x3.get(3), x2, -1, 0, x2);
         double distance2 = cvDotProduct(x2, x2);
         double distance = Math.sqrt(distance2);
@@ -314,6 +314,7 @@ public class ProjectorDevice extends ProjectiveDevice {
                 (distance * Math.sqrt(cvDotProduct(n, n)));
         double attenuation = cosangle/distance2;
 //        System.out.println(distance + " " + cosangle + " " + attenuation);
+        x3.rows(4);
 
         x3.pool();
         x2.pool();
@@ -330,14 +331,12 @@ public class ProjectorDevice extends ProjectiveDevice {
     }
     public static ProjectorDevice[] read(CvFileStorage fs) throws Exception {
         CvFileNode node = cvGetFileNodeByName(fs, null, "Projectors");
-        node.data.setType(CvSeq.ByReference.class);
-        node.data.read();
-        node.data.seq.read();
-        int count = node.data.seq.total;
+        CvSeq seq = node.data_seq();
+        int count = seq.total();
 
         ProjectorDevice[] devices = new ProjectorDevice[count];
         for (int i = 0; i < count; i++) {
-            Pointer p = cvGetSeqElem(node.data.seq, i);
+            Pointer p = cvGetSeqElem(seq, i);
             if (p == null) continue;
             String name = cvReadString(new CvFileNode(p), null);
             devices[i] = new ProjectorDevice(name, fs);

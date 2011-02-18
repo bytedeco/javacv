@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 /**
  *
@@ -90,13 +90,13 @@ public class ProCamGeometricCalibrator {
 
         this.boardWarpSrcPts = CvMat.create(1, 4, CV_64F, 2);
         if (boardPlane != null) {
-            int w = boardPlane.getImage().width;
-            int h = boardPlane.getImage().height;
+            int w = boardPlane.getImage().width();
+            int h = boardPlane.getImage().height();
             boardWarpSrcPts.put(0.0, 0.0,  w, 0.0,  w, h,  0.0, h);
         }
         if (projectorPlane != null) {
-            int w = projectorPlane.getImage().width;
-            int h = projectorPlane.getImage().height;
+            int w = projectorPlane.getImage().width();
+            int h = projectorPlane.getImage().height();
             projectorCalibrator.getProjectiveDevice().imageWidth = w;
             projectorCalibrator.getProjectiveDevice().imageHeight = h;
         }
@@ -179,36 +179,36 @@ public class ProCamGeometricCalibrator {
         return processCameraImage(cameraImage, 0);
     }
     public Marker[][] processCameraImage(IplImage cameraImage, final int cameraNumber) {
-        cameraCalibrators[cameraNumber].getProjectiveDevice().imageWidth = cameraImage.width;
-        cameraCalibrators[cameraNumber].getProjectiveDevice().imageHeight = cameraImage.height;
+        cameraCalibrators[cameraNumber].getProjectiveDevice().imageWidth = cameraImage.width();
+        cameraCalibrators[cameraNumber].getProjectiveDevice().imageHeight = cameraImage.height();
 
-        if (cameraImage.nChannels > 1) {
+        if (cameraImage.nChannels() > 1) {
             if (grayscaleImage[cameraNumber] == null ||
-                    grayscaleImage[cameraNumber].width  != cameraImage.width  ||
-                    grayscaleImage[cameraNumber].height != cameraImage.height ||
-                    grayscaleImage[cameraNumber].depth  != cameraImage.depth) {
-                grayscaleImage[cameraNumber] = IplImage.create(cameraImage.width,
-                        cameraImage.height, cameraImage.depth, 1, cameraImage.origin);
+                    grayscaleImage[cameraNumber].width()  != cameraImage.width()  ||
+                    grayscaleImage[cameraNumber].height() != cameraImage.height() ||
+                    grayscaleImage[cameraNumber].depth()  != cameraImage.depth()) {
+                grayscaleImage[cameraNumber] = IplImage.create(cameraImage.width(),
+                        cameraImage.height(), cameraImage.depth(), 1, cameraImage.origin());
             }
             cvCvtColor(cameraImage, grayscaleImage[cameraNumber], CV_BGR2GRAY);
         } else {
             grayscaleImage[cameraNumber] = cameraImage;
         }
 
-        final boolean boardWhiteMarkers = boardPlane.getForegroundColor().getMagnitude() >
-                                          boardPlane.getBackgroundColor().getMagnitude();
-        final boolean projWhiteMarkers = projectorPlane.getForegroundColor().getMagnitude() >
-                                         projectorPlane.getBackgroundColor().getMagnitude();
-        if (grayscaleImage[cameraNumber].depth > 8) {
+        final boolean boardWhiteMarkers = boardPlane.getForegroundColor().magnitude() >
+                                          boardPlane.getBackgroundColor().magnitude();
+        final boolean projWhiteMarkers = projectorPlane.getForegroundColor().magnitude() >
+                                         projectorPlane.getBackgroundColor().magnitude();
+        if (grayscaleImage[cameraNumber].depth() > 8) {
             if (tempImage1[cameraNumber] == null ||
-                    tempImage1[cameraNumber].width  != grayscaleImage[cameraNumber].width  ||
-                    tempImage1[cameraNumber].height != grayscaleImage[cameraNumber].height) {
-                tempImage1[cameraNumber] = IplImage.create(grayscaleImage[cameraNumber].width,
-                        grayscaleImage[cameraNumber].height, IPL_DEPTH_8U, 1,
-                        grayscaleImage[cameraNumber].origin);
-                tempImage2[cameraNumber] = IplImage.create(grayscaleImage[cameraNumber].width,
-                        grayscaleImage[cameraNumber].height, IPL_DEPTH_8U, 1,
-                        grayscaleImage[cameraNumber].origin);
+                    tempImage1[cameraNumber].width()  != grayscaleImage[cameraNumber].width()  ||
+                    tempImage1[cameraNumber].height() != grayscaleImage[cameraNumber].height()) {
+                tempImage1[cameraNumber] = IplImage.create(grayscaleImage[cameraNumber].width(),
+                        grayscaleImage[cameraNumber].height(), IPL_DEPTH_8U, 1,
+                        grayscaleImage[cameraNumber].origin());
+                tempImage2[cameraNumber] = IplImage.create(grayscaleImage[cameraNumber].width(),
+                        grayscaleImage[cameraNumber].height(), IPL_DEPTH_8U, 1,
+                        grayscaleImage[cameraNumber].origin());
             }
             Parallel.run(new Runnable() { public void run() {
                 cvConvertScale(grayscaleImage[cameraNumber],
@@ -323,8 +323,8 @@ public class ProCamGeometricCalibrator {
             Marker.applyWarp(inProjectorBoardMarkers, tempWarp);
 
             // only add markers that are within the projector plane as well
-            int w = projectorPlane.getImage().width;
-            int h = projectorPlane.getImage().height;
+            int w = projectorPlane.getImage().width();
+            int h = projectorPlane.getImage().height();
             Marker[] boardMarkersToAdd = new Marker[imagedBoardMarkers.length];
             int totalToAdd = 0;
             for (int i = 0; i < inProjectorBoardMarkers.length; i++) {

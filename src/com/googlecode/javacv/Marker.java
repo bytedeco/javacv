@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -23,8 +23,8 @@ package com.googlecode.javacv;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.ARToolKitPlus.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.ARToolKitPlus.*;
 
 /**
  *
@@ -111,16 +111,17 @@ if (false) {
         if (prewarp != null) {
             cvGEMM(prewarp, H, 1, null, 0, H, 0);
         }
-        IplImage    marker = getImage();
-        CvScalar.ByValue c = color.byValue();
-        ByteBuffer    mbuf = marker.getByteBuffer();
-        CvMat       srcPts = CvMat.take(4, 1, CV_64F, 2);
-        CvMat       dstPts = CvMat.take(4, 1, CV_64F, 2);
-        CvPoint[]  tempPts = CvPoint.createArray(4);
+        IplImage  marker = getImage();
+        ByteBuffer  mbuf = marker.getByteBuffer();
+        CvMat     srcPts = CvMat.take(4, 1, CV_64F, 2);
+        CvMat     dstPts = CvMat.take(4, 1, CV_64F, 2);
+        CvPoint  tempPts = new CvPoint(4);
 
-        for (int y = 0; y < marker.height; y++) {
-            for (int x = 0; x < marker.width; x++) {
-                if (mbuf.get(y*marker.width + x) == 0) {
+        int h = marker.height();
+        int w = marker.width();
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (mbuf.get(y*w + x) == 0) {
                     srcPts.put(0, x  ); srcPts.put(1, y  );
                     srcPts.put(2, x+1); srcPts.put(3, y  );
                     srcPts.put(4, x+1); srcPts.put(5, y+1);
@@ -143,10 +144,10 @@ if (false) {
                         double dy = centery - b;
                         dx = dx < 0 ? -1 : 0;
                         dy = dy < 0 ? -1 : 0;
-                        tempPts[i].x = (int)Math.round((a*scaleX + dx) * (1<<16));
-                        tempPts[i].y = (int)Math.round((b*scaleY + dy) * (1<<16));
+                        tempPts.position(i).x((int)Math.round((a*scaleX + dx) * (1<<16)));
+                        tempPts.position(i).y((int)Math.round((b*scaleY + dy) * (1<<16)));
                     }
-                    cvFillConvexPoly(image, tempPts, 4, c, 8/*CV_AA*/, 16);
+                    cvFillConvexPoly(image, tempPts.position(0), 4, color, 8/*CV_AA*/, 16);
                 }
             }
         }

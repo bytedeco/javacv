@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -32,8 +32,9 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.v11or20.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static com.googlecode.javacv.cpp.opencv_features2d.*;
 
 /**
  *
@@ -44,7 +45,7 @@ public class ObjectFinder {
             double distanceThreshold, int matchesMin) throws Exception {
         settings = new Settings();
         settings.objectImage = objectImage;
-        settings.parameters = parameters.byValue();
+        settings.parameters = parameters;
         settings.distanceThreshold = distanceThreshold;
         settings.matchesMin = matchesMin;
         setSettings(settings);
@@ -61,7 +62,7 @@ public class ObjectFinder {
 
     public static class Settings extends BaseSettings {
         IplImage objectImage = null;
-        CvSURFParams.ByValue parameters = cvSURFParams(500, 1);
+        CvSURFParams parameters = cvSURFParams(500, 1);
         double distanceThreshold = 0.6;
         int matchesMin = 4;
         double ransacReprojThreshold = 1.0;
@@ -74,31 +75,31 @@ public class ObjectFinder {
         }
 
         public boolean isExtended() {
-            return parameters.extended != 0;
+            return parameters.extended() != 0;
         }
         public void setExtended(boolean extended) {
-            parameters.extended = extended ? 1 : 0;
+            parameters.extended(extended ? 1 : 0);
         }
 
         public double getHessianThreshold() {
-            return parameters.hessianThreshold;
+            return parameters.hessianThreshold();
         }
         public void setHessianThreshold(double hessianThreshold) {
-            parameters.hessianThreshold = hessianThreshold;
+            parameters.hessianThreshold(hessianThreshold);
         }
 
         public int getnOctaves() {
-            return parameters.nOctaves;
+            return parameters.nOctaves();
         }
         public void setnOctaves(int nOctaves) {
-            parameters.nOctaves = nOctaves;
+            parameters.nOctaves(nOctaves);
         }
 
         public int getnOctaveLayers() {
-            return parameters.nOctaveLayers;
+            return parameters.nOctaveLayers();
         }
         public void setnOctaveLayers(int nOctaveLayers) {
-            parameters.nOctaveLayers = nOctaveLayers;
+            parameters.nOctaveLayers(nOctaveLayers);
         }
 
         public double getDistanceThreshold() {
@@ -130,22 +131,19 @@ public class ObjectFinder {
     public void setSettings(Settings settings) throws Exception {
         this.settings = settings;
 
-        CvSeq.PointerByReference keypointsRef = new CvSeq.PointerByReference(),
-                                 descriptorsRef = new CvSeq.PointerByReference();
+        CvSeq keypoints = new CvSeq(null), descriptors = new CvSeq(null);
         cvClearMemStorage(storage);
-        cvExtractSURF(settings.objectImage, null, keypointsRef, descriptorsRef, storage, settings.parameters, 0);
-        CvSeq keypoints = keypointsRef.getStructure();
-        CvSeq descriptors = descriptorsRef.getStructure();
+        cvExtractSURF(settings.objectImage, null, keypoints, descriptors, storage, settings.parameters, 0);
 
-        descriptors.readField("total");
-        descriptors.readField("elem_size");
-        objectKeypoints = new CvSURFPoint[descriptors.total];
-        objectDescriptors = new FloatBuffer[descriptors.total];
-        for (int i = 0; i < descriptors.total; i++ ) {
+        int total = descriptors.total();
+        int elem_size = descriptors.elem_size();
+        objectKeypoints = new CvSURFPoint[total];
+        objectDescriptors = new FloatBuffer[total];
+        for (int i = 0; i < total; i++ ) {
             objectKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
-            objectDescriptors[i] = cvGetSeqElem(descriptors, i).getByteBuffer(0, descriptors.elem_size).asFloatBuffer();
+            objectDescriptors[i] = cvGetSeqElem(descriptors, i).asByteBuffer(elem_size).asFloatBuffer();
         }
-        logger.info(descriptors.total + " object descriptors");
+        logger.info(total + " object descriptors");
     }
 
     private static final Logger logger = Logger.getLogger(ObjectFinder.class.getName());
@@ -155,26 +153,24 @@ public class ObjectFinder {
     private CvSURFPoint[] objectKeypoints   = null;
     private FloatBuffer[] objectDescriptors = null;
 
-    public CvPoint2D64f[] find(IplImage image) {
-        CvSeq.PointerByReference imageKeypointsRef   = new CvSeq.PointerByReference(),
-                                 imageDescriptorsRef = new CvSeq.PointerByReference();
-        cvExtractSURF(image, null, imageKeypointsRef, imageDescriptorsRef, tempStorage, settings.parameters, 0);
-        CvSeq keypoints = imageKeypointsRef.getStructure();
-        CvSeq descriptors = imageDescriptorsRef.getStructure();
+    public double[] find(IplImage image) {
+        CvSeq keypoints = new CvSeq(null), descriptors = new CvSeq(null);
+        cvExtractSURF(image, null, keypoints, descriptors, tempStorage, settings.parameters, 0);
 
-        descriptors.readField("total");
-        descriptors.readField("elem_size");
-        CvSURFPoint[] imageKeypoints = new CvSURFPoint[descriptors.total];
-        FloatBuffer[] imageDescriptors = new FloatBuffer[descriptors.total];
-        for (int i = 0; i < descriptors.total; i++ ) {
+        int total = descriptors.total();
+        int elem_size = descriptors.elem_size();
+        CvSURFPoint[] imageKeypoints = new CvSURFPoint[total];
+        FloatBuffer[] imageDescriptors = new FloatBuffer[total];
+        for (int i = 0; i < total; i++ ) {
             imageKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
-            imageDescriptors[i] = cvGetSeqElem(descriptors, i).getByteBuffer(0, descriptors.elem_size).asFloatBuffer();
+            imageDescriptors[i] = cvGetSeqElem(descriptors, i).asByteBuffer(elem_size).asFloatBuffer();
         }
-        logger.info(descriptors.total + " image descriptors");
+        logger.info(total + " image descriptors");
 
-        CvPoint2D64f[] srcCorners = CvPoint2D64f.createArray(0, 0,  settings.objectImage.width, 0,
-                settings.objectImage.width, settings.objectImage.height,  0, settings.objectImage.height);
-        CvPoint2D64f[] dstCorners = locatePlanarObject(objectKeypoints, objectDescriptors,
+        int w = settings.objectImage.width();
+        int h = settings.objectImage.height();
+        double[] srcCorners = {0, 0,  w, 0,  w, h,  0, h};
+        double[] dstCorners = locatePlanarObject(objectKeypoints, objectDescriptors,
                 imageKeypoints, imageDescriptors, srcCorners);
         cvClearMemStorage(tempStorage);
         return dstCorners;
@@ -203,7 +199,7 @@ public class ObjectFinder {
         for (int i = 0; i < modelDescriptors.length; i++) {
             CvSURFPoint kp = modelKeypoints[i];
             FloatBuffer mvec = modelDescriptors[i];
-            if (laplacian != kp.laplacian)
+            if (laplacian != kp.laplacian())
                 continue;
             d = compareSURFDescriptors(vec, mvec, dist2);
             if (d < dist1) {
@@ -225,7 +221,7 @@ public class ObjectFinder {
         for (int i = 0; i < objectDescriptors.length; i++ ) {
             CvSURFPoint kp = objectKeypoints[i];
             FloatBuffer descriptor = objectDescriptors[i];
-            int nearestNeighbor = naiveNearestNeighbor(descriptor, kp.laplacian, imageKeypoints, imageDescriptors);
+            int nearestNeighbor = naiveNearestNeighbor(descriptor, kp.laplacian(), imageKeypoints, imageDescriptors);
             if (nearestNeighbor >= 0) {
                 ptpairs.add(i);
                 ptpairs.add(nearestNeighbor);
@@ -235,9 +231,8 @@ public class ObjectFinder {
     }
 
     /* a rough implementation for object location */
-    private CvPoint2D64f[] locatePlanarObject(CvSURFPoint[] objectKeypoints, FloatBuffer[] objectDescriptors,
-            CvSURFPoint[] imageKeypoints, FloatBuffer[] imageDescriptors,
-            CvPoint2D64f[] srcCorners) {
+    private double[] locatePlanarObject(CvSURFPoint[] objectKeypoints, FloatBuffer[] objectDescriptors,
+            CvSURFPoint[] imageKeypoints, FloatBuffer[] imageDescriptors, double[] srcCorners) {
         ArrayList<Integer> ptpairs = findPairs(objectKeypoints, objectDescriptors, imageKeypoints, imageDescriptors);
         int n = ptpairs.size()/2;
         logger.info(n + " matching pairs found");
@@ -248,18 +243,18 @@ public class ObjectFinder {
         CvMat pt1  = CvMat.take(1, objectDescriptors.length, CV_32F, 2);
         CvMat pt2  = CvMat.take(1, objectDescriptors.length, CV_32F, 2);
         CvMat mask = CvMat.take(1, objectDescriptors.length, CV_8U,  1);
-        pt1.cols  = n;
-        pt2.cols  = n;
-        mask.cols = n;
+        pt1.cols (n);
+        pt2.cols (n);
+        mask.cols(n);
         for (int i = 0; i < n; i++) {
-            CvPoint2D32f p1 = objectKeypoints[ptpairs.get(i*2)].pt;
-            pt1.put(i*2, p1.x); pt1.put(i*2+1, p1.y);
-            CvPoint2D32f p2 = imageKeypoints[ptpairs.get(i*2+1)].pt;
-            pt2.put(i*2, p2.x); pt2.put(i*2+1, p2.y);
+            CvPoint2D32f p1 = objectKeypoints[ptpairs.get(i*2)].pt();
+            pt1.put(i*2, p1.x()); pt1.put(i*2+1, p1.y());
+            CvPoint2D32f p2 = imageKeypoints[ptpairs.get(i*2+1)].pt();
+            pt2.put(i*2, p2.x()); pt2.put(i*2+1, p2.y());
         }
 
         CvMat H = CvMat.take(3, 3, CV_64F, 1);
-        if (cvFindHomography(pt1, pt2, H, CV_RANSAC, settings.ransacReprojThreshold, null) == 0) {
+        if (cvFindHomography(pt1, pt2, H, CV_RANSAC, settings.ransacReprojThreshold, mask) == 0) {
             return null;
         }
         if (cvCountNonZero(mask) < settings.matchesMin) {
@@ -267,19 +262,19 @@ public class ObjectFinder {
         }
 
         double[] h = H.get();
-        CvPoint2D64f[] dstCorners = CvPoint2D64f.createArray(4);
+        double[] dstCorners = new double[8];
         for(int i = 0; i < 4; i++) {
-            double x = srcCorners[i].x, y = srcCorners[i].y;
+            double x = srcCorners[2*i], y = srcCorners[2*i + 1];
             double Z = 1./(h[6]*x + h[7]*y + h[8]);
             double X = (h[0]*x + h[1]*y + h[2])*Z;
             double Y = (h[3]*x + h[4]*y + h[5])*Z;
-            dstCorners[i].x = X;
-            dstCorners[i].y = Y;
+            dstCorners[2*i    ] = X;
+            dstCorners[2*i + 1] = Y;
         }
 
-        pt1.cols  = objectDescriptors.length;
-        pt2.cols  = objectDescriptors.length;
-        mask.cols = objectDescriptors.length;
+        pt1.cols (objectDescriptors.length);
+        pt2.cols (objectDescriptors.length);
+        mask.cols(objectDescriptors.length);
         pt1.pool();
         pt2.pool();
         mask.pool();

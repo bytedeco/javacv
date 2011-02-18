@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -21,11 +21,11 @@
 package com.googlecode.javacv;
 
 import java.io.File;
+import com.googlecode.javacpp.Loader;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
-import static com.googlecode.javacv.jna.highgui.*;
-import com.googlecode.javacv.jna.highgui;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
 
 /**
  *
@@ -43,7 +43,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                String s = highgui.libname;
+                Loader.load(com.googlecode.javacv.cpp.opencv_highgui.class);
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -114,13 +114,8 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (bpp > 0) {
             cvSetCaptureProperty(capture, CV_CAP_PROP_FORMAT, bpp); // ??
         }
-        if (highgui.is10or11) {
-            cvSetCaptureProperty(capture, highgui.v10or11.CV_CAP_PROP_CONVERT_RGB,
-                    colorMode == ColorMode.BGR ? 1 : 0);
-        } else {
-            cvSetCaptureProperty(capture, highgui.v20.CV_CAP_PROP_CONVERT_RGB,
-                    colorMode == ColorMode.BGR ? 1 : 0);
-        }
+        cvSetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB, colorMode == ColorMode.BGR ? 1 : 0);
+
         if (!triggerMode) {
             trigger();
         }
@@ -128,7 +123,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
     public void stop() throws Exception {
         if (capture != null) {
-            cvReleaseCapture(capture.pointerByReference());
+            cvReleaseCapture(capture);
             capture = null;
         }
     }
@@ -152,22 +147,21 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             trigger();
         }
 
-        if (colorMode == ColorMode.GRAY && image.nChannels > 1) {
+        if (colorMode == ColorMode.GRAY && image.nChannels() > 1) {
             if (return_image == null) {
-                return_image = IplImage.create(image.width, image.height, image.depth, 1);
+                return_image = IplImage.create(image.width(), image.height(), image.depth(), 1);
             }
             cvCvtColor(image, return_image, CV_BGR2GRAY);
-        } else if (colorMode == ColorMode.BGR && image.nChannels == 1) {
+        } else if (colorMode == ColorMode.BGR && image.nChannels() == 1) {
             if (return_image == null) {
-                return_image = IplImage.create(image.width, image.height, image.depth, 3);
+                return_image = IplImage.create(image.width(), image.height(), image.depth(), 3);
             }
             cvCvtColor(image, return_image, CV_GRAY2BGR);
         } else {
             return_image = image;
         }
 
-        return_image.setTimestamp(Math.round(cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC)*1000));
+        return_image.timestamp(Math.round(cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC)*1000));
         return return_image;
     }
-
 }

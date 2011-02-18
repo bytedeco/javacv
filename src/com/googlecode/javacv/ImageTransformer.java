@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,11 +20,7 @@
 
 package com.googlecode.javacv;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.DoubleBuffer;
-
-import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
@@ -39,8 +35,7 @@ public interface ImageTransformer {
             this.srcDotImg = srcDotImg;
             this.transImg  = transImg;
             this.dstImg    = dstImg;
-            this.dstDstDot = dstDstDotLength == 0 ? null : ByteBuffer.
-                allocateDirect(8*dstDstDotLength).order(ByteOrder.nativeOrder()).asDoubleBuffer();
+            this.dstDstDot = dstDstDotLength == 0 ? null : new double[dstDstDotLength];
         }
 
         // input
@@ -48,10 +43,10 @@ public interface ImageTransformer {
         public boolean  inverse = false;
 
         // output
-        public IplImage     transImg  = null, dstImg = null;
-        public int          dstCount  = 0, dstCountZero = 0;
-        public double       srcDstDot = 0.0;
-        public DoubleBuffer dstDstDot = null;
+        public IplImage transImg  = null, dstImg = null;
+        public int      dstCount  = 0, dstCountZero = 0;
+        public double   srcDstDot = 0.0;
+        public double[] dstDstDot = null;
 
         // private data
         protected Object cache = null;

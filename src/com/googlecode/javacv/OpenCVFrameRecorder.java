@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,8 +20,8 @@
 
 package com.googlecode.javacv;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.highgui.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
 
 /**
  *
@@ -58,7 +58,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
 
     public void stop() throws Exception {
         if (writer != null) {
-            cvReleaseVideoWriter(writer.pointerByReference());
+            cvReleaseVideoWriter(writer);
             writer = null;
         }
     }
@@ -72,5 +72,4 @@ public class OpenCVFrameRecorder extends FrameRecorder {
             throw new Exception("Cannot record: There is no writer");
         }
     }
-
 }

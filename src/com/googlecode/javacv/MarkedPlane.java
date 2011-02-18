@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -22,8 +22,9 @@ package com.googlecode.javacv;
 
 import java.awt.Dimension;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.v11or20.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 
 /**
  *
@@ -44,8 +45,8 @@ public class MarkedPlane {
     public MarkedPlane(int width, int height, Marker[] markers,
             boolean initPrewarp, CvScalar foregroundColor, CvScalar backgroundColor, double superScale) {
         this.markers = markers;
-        this.foregroundColor = foregroundColor.byValue();
-        this.backgroundColor = backgroundColor.byValue();
+        this.foregroundColor = foregroundColor;
+        this.backgroundColor = backgroundColor;
 
 //        this.srcPts    = CvMat.create(planeMarkers.length*4, 2);
 //        this.dstPts    = CvMat.create(planeMarkers.length*4, 2);
@@ -105,13 +106,13 @@ public class MarkedPlane {
     private CvMat prewarp;//, totalWarp, tempWarp;
 
     private IplImage planeImage = null, superPlaneImage = null;
-    private CvScalar.ByValue foregroundColor, backgroundColor;
+    private CvScalar foregroundColor, backgroundColor;
 
     public CvScalar getForegroundColor() {
         return foregroundColor;
     }
     public void setForegroundColor(CvScalar foregroundColor) {
-        this.foregroundColor = foregroundColor.byValue();
+        this.foregroundColor = foregroundColor;
         setPrewarp(prewarp);
     }
 
@@ -119,7 +120,7 @@ public class MarkedPlane {
         return backgroundColor;
     }
     public void setBackgroundColor(CvScalar backgroundColor) {
-        this.backgroundColor = backgroundColor.byValue();
+        this.backgroundColor = backgroundColor;
         setPrewarp(prewarp);
     }
 
@@ -127,8 +128,8 @@ public class MarkedPlane {
         return markers;
     }
     public void setColors(CvScalar foregroundColor, CvScalar backgroundColor) {
-        this.foregroundColor = foregroundColor.byValue();
-        this.backgroundColor = backgroundColor.byValue();
+        this.foregroundColor = foregroundColor;
+        this.backgroundColor = backgroundColor;
         setPrewarp(prewarp);
     }
 
@@ -147,7 +148,7 @@ public class MarkedPlane {
                 markers[i].draw(planeImage, foregroundColor, 1.0, prewarp);
             } else {
                 markers[i].draw(superPlaneImage, foregroundColor, (double)
-                        superPlaneImage.width/planeImage.width, prewarp);
+                        superPlaneImage.width()/planeImage.width(), prewarp);
             }
         }
         if (superPlaneImage != null) {
@@ -160,10 +161,10 @@ public class MarkedPlane {
         return planeImage;
     }
     public int getWidth() {
-        return planeImage.width;
+        return planeImage.width();
     }
     public int getHeight() {
-        return planeImage.height;
+        return planeImage.height();
     }
 
     public double getTotalWarp(Marker[] imagedMarkers, CvMat totalWarp) {
@@ -194,9 +195,9 @@ public class MarkedPlane {
             }
         }
 
-        if (numPoints > 4 || (srcPts.rows == 4 && numPoints == 4)) {
+        if (numPoints > 4 || (srcPts.rows() == 4 && numPoints == 4)) {
             // compute homography ... should we use a robust method?
-            srcPts.rows = dstPts.rows = numPoints;
+            srcPts.rows(numPoints); dstPts.rows(numPoints);
             if (numPoints == 4) {
                 JavaCV.getPerspectiveTransform(srcPts.get(), dstPts.get(), totalWarp);
             } else {
@@ -204,11 +205,11 @@ public class MarkedPlane {
             }
 
             // compute transformed source<->dest RMSE
-            srcPts.cols = 1; srcPts.setType(CV_64F, 2);
-            dstPts.cols = 1; dstPts.setType(CV_64F, 2);
+            srcPts.cols(1); srcPts.type(CV_64F, 2);
+            dstPts.cols(1); dstPts.type(CV_64F, 2);
             cvPerspectiveTransform(srcPts, srcPts, totalWarp);
-            srcPts.cols = 2; srcPts.setType(CV_64F, 1);
-            dstPts.cols = 2; dstPts.setType(CV_64F, 1);
+            srcPts.cols(2); srcPts.type(CV_64F, 1);
+            dstPts.cols(2); dstPts.type(CV_64F, 1);
 
             rmse = 0;
             for (int i = 0; i < numPoints; i++) {
@@ -228,8 +229,8 @@ public class MarkedPlane {
             }
 //            System.out.println("totalWarp:\n" + totalWarp);
         }
-        srcPts.rows = markers.length*pointsPerMarker; srcPts.pool();
-        dstPts.rows = markers.length*pointsPerMarker; dstPts.pool();
+        srcPts.rows(markers.length*pointsPerMarker); srcPts.pool();
+        dstPts.rows(markers.length*pointsPerMarker); dstPts.pool();
         return rmse;
     }
 

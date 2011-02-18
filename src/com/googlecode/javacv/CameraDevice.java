@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,15 +20,15 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.Pointer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import com.googlecode.javacpp.Pointer;
 
-import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
@@ -88,6 +88,8 @@ public class CameraDevice extends ProjectiveDevice {
         void setTimeout(int timeout);
         int getNumBuffers();
         void setNumBuffers(int numBuffers);
+        boolean isDeinterlace();
+        void setDeinterlace(boolean deinterlace);
 
         void addPropertyChangeListener(PropertyChangeListener listener);
         void removePropertyChangeListener(PropertyChangeListener listener);
@@ -112,6 +114,7 @@ public class CameraDevice extends ProjectiveDevice {
                 this.colorMode    = s.colorMode;
                 this.timeout      = s.timeout;
                 this.numBuffers   = s.numBuffers;
+                this.deinterlace  = s.deinterlace;
             }
         }
 
@@ -263,6 +266,7 @@ public class CameraDevice extends ProjectiveDevice {
         FrameGrabber.ColorMode colorMode = FrameGrabber.ColorMode.RAW;
         int timeout = 10000;
         int numBuffers = 4;
+        boolean deinterlace = false;
 
         public int getImageWidth() {
             return imageWidth;
@@ -327,6 +331,12 @@ public class CameraDevice extends ProjectiveDevice {
             this.numBuffers = numBuffers;
         }
 
+        public boolean isDeinterlace() {
+            return deinterlace;
+        }
+        public void setDeinterlace(boolean deinterlace) {
+            this.deinterlace = deinterlace;
+        }
     }
 
     // pouah.. hurray for Scala!
@@ -381,6 +391,8 @@ public class CameraDevice extends ProjectiveDevice {
         public void setTimeout(int timeout) { si.setTimeout(timeout); }
         public int getNumBuffers() { return si.getNumBuffers(); }
         public void setNumBuffers(int numBuffers) { si.setNumBuffers(numBuffers); }
+        public boolean isDeinterlace() { return si.isDeinterlace(); }
+        public void setDeinterlace(boolean deinterlace) { si.setDeinterlace(deinterlace); }
     }
 
     public static class CalibratedSettings extends ProjectiveDevice.CalibratedSettings implements Settings {
@@ -434,6 +446,8 @@ public class CameraDevice extends ProjectiveDevice {
         public void setTimeout(int timeout) { si.setTimeout(timeout); }
         public int getNumBuffers() { return si.getNumBuffers(); }
         public void setNumBuffers(int numBuffers) { si.setNumBuffers(numBuffers); }
+        public boolean isDeinterlace() { return si.isDeinterlace(); }
+        public void setDeinterlace(boolean deinterlace) { si.setDeinterlace(deinterlace); }
     }
 
     private Settings settings;
@@ -483,6 +497,7 @@ public class CameraDevice extends ProjectiveDevice {
             f.setTimeout(settings.getTimeout());
             f.setNumBuffers(settings.getNumBuffers());
             f.setGamma(settings.getResponseGamma());
+            f.setDeinterlace(settings.isDeinterlace());
             return f;
         } catch (InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
@@ -502,14 +517,12 @@ public class CameraDevice extends ProjectiveDevice {
     }
     public static CameraDevice[] read(CvFileStorage fs) throws Exception {
         CvFileNode node = cvGetFileNodeByName(fs, null, "Cameras");
-        node.data.setType(CvSeq.ByReference.class);
-        node.data.read();
-        node.data.seq.read();
-        int count = node.data.seq.total;
+        CvSeq seq = node.data_seq();
+        int count = seq.total();
 
         CameraDevice[] devices = new CameraDevice[count];
         for (int i = 0; i < count; i++) {
-            Pointer p = cvGetSeqElem(node.data.seq, i);
+            Pointer p = cvGetSeqElem(seq, i);
             if (p == null) continue;
             String name = cvReadString(new CvFileNode(p), null);
             devices[i] = new CameraDevice(name, fs);

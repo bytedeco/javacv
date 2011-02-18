@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -22,8 +22,7 @@ package com.googlecode.javacv;
 
 import java.awt.Color;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
@@ -82,13 +81,13 @@ public class ColorCalibrator {
         }
 
         // compute RMSE and R^2 coefficient ...
-        CvMat b2 = CvMat.create(b.rows, 1);
+        CvMat b2 = CvMat.create(b.rows(), 1);
         cvMatMul(A, x, b2);
-        double MSE = cvNorm(b, b2)*cvNorm(b, b2)/b.rows;
+        double MSE = cvNorm(b, b2)*cvNorm(b, b2)/b.rows();
         double RMSE = Math.sqrt(MSE);
         CvScalar mean = new CvScalar(), stddev = new CvScalar();
         cvAvgSdv(b, mean, stddev, null);
-        double R2  = 1 - MSE/(stddev.val[0]*stddev.val[0]);
+        double R2  = 1 - MSE/(stddev.val(0)*stddev.val(0));
         //System.out.println("RMSE: " + RMSE + " R2: " + R2);
         //System.out.println("b2 =\n" + b2);
 

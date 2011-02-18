@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -22,8 +22,8 @@ package com.googlecode.javacv;
 
 import java.awt.Color;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 /**
  *
@@ -123,13 +123,22 @@ public class ProCamColorCalibrator {
         }
         return projectorColors;
     }
-
     public Color getProjectorColor() {
         return getProjectorColors()[counter];
     }
 
     public Color[] getCameraColors() {
         return cameraColors;
+    }
+    public Color getCameraColor() {
+        return getCameraColors()[counter];
+    }
+
+    public void addCameraColor() {
+        counter++;
+    }
+    public void addCameraColor(Color color) {
+        cameraColors[counter++] = color;
     }
 
     public IplImage getMaskImage() {
@@ -179,19 +188,19 @@ public class ProCamColorCalibrator {
 
     public boolean processCameraImage(IplImage cameraImage) {
         if (undistImage == null ||
-                undistImage.width  != cameraImage.width  ||
-                undistImage.height != cameraImage.height ||
-                undistImage.depth  != cameraImage.depth) {
+                undistImage.width()  != cameraImage.width()  ||
+                undistImage.height() != cameraImage.height() ||
+                undistImage.depth()  != cameraImage.depth()) {
             undistImage = cameraImage.clone();
         }
 
         if (mask == null || mask2 == null ||
-                mask.width  != cameraImage.width  || mask2.width  != cameraImage.width ||
-                mask.height != cameraImage.height || mask2.height != cameraImage.width) {
-            mask = IplImage.create(cameraImage.width, cameraImage.height,
-                    IPL_DEPTH_8U, 1, cameraImage.origin);
-            mask2 = IplImage.create(cameraImage.width, cameraImage.height,
-                    IPL_DEPTH_8U, 1, cameraImage.origin);
+                mask.width()  != cameraImage.width()  || mask2.width()  != cameraImage.width() ||
+                mask.height() != cameraImage.height() || mask2.height() != cameraImage.width()) {
+            mask = IplImage.create(cameraImage.width(), cameraImage.height(),
+                    IPL_DEPTH_8U, 1, cameraImage.origin());
+            mask2 = IplImage.create(cameraImage.width(), cameraImage.height(),
+                    IPL_DEPTH_8U, 1, cameraImage.origin());
         }
 
         CvMat H = CvMat.take(3, 3);
@@ -258,11 +267,11 @@ public class ProCamColorCalibrator {
                 boardPts[j*2    ] -= (boardPts[j*2    ] - cx)*settings.trimmingFraction;
                 boardPts[j*2 + 1] -= (boardPts[j*2 + 1] - cy)*settings.trimmingFraction;
             }
-            cvFillConvexPoly(mask, CvPoint.createArray((byte)16, boardPts, 0, 8),
+            cvFillConvexPoly(mask, new CvPoint((byte)16, boardPts, 0, 8),
                     4, CvScalar.WHITE, 8, 16);
 
             for (int j = 0; j < (boardPts.length-8)/8; j++) {
-                cvFillConvexPoly(mask, CvPoint.createArray((byte)16, boardPts, 8 + j*8, 8),
+                cvFillConvexPoly(mask, new CvPoint((byte)16, boardPts, 8 + j*8, 8),
                         4, CvScalar.BLACK, 8, 16);
             }
 
@@ -277,13 +286,13 @@ public class ProCamColorCalibrator {
                 projPts[j*2    ] -= (projPts[j*2    ] - cx)*settings.trimmingFraction;
                 projPts[j*2 + 1] -= (projPts[j*2 + 1] - cy)*settings.trimmingFraction;
             }
-            cvFillConvexPoly(mask2, CvPoint.createArray((byte)16, projPts, 0, 8),
+            cvFillConvexPoly(mask2, new CvPoint((byte)16, projPts, 0, 8),
                     4, CvScalar.WHITE, 8, 16);
 
             cvAnd(mask, mask2, mask, null);
             cvErode(mask, mask, null, 1);
 
-//com.googlecode.javacv.jna.highgui.cvSaveImage("masked" + i + ".png", cameraImages[i]);
+//cvSaveImage("masked" + i + ".png", cameraImages[i]);
 //try {
 //    Thread.sleep(1000);
 //} catch (InterruptedException ex) { }
@@ -292,9 +301,9 @@ public class ProCamColorCalibrator {
             // compensate for attenuation caused by the geometry
             CvScalar c = cvAvg(undistImage, mask);
             int[] o = camera.getRGBColorOrder();
-            double s = cameraImage.getMaxIntensity();
-            cameraColors[counter] = new Color((float)(c.val[o[0]]/s),
-                    (float)(c.val[o[1]]/s), (float)(c.val[o[2]]/s));
+            double s = cameraImage.highValue();
+            cameraColors[counter] = new Color((float)(c.val(o[0])/s),
+                    (float)(c.val(o[1])/s), (float)(c.val(o[2])/s));
 
             return true;
         }
@@ -309,13 +318,6 @@ public class ProCamColorCalibrator {
         z.pool();
 
         return false;
-    }
-
-    public void addCameraColor() {
-        counter++;
-    }
-    public void addCameraColor(Color color) {
-        cameraColors[counter++] = color;
     }
 
     public double calibrate() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -24,8 +24,8 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.logging.Logger;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.v11or20.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 /**
  *
@@ -74,13 +74,13 @@ public class ReflectanceInitializer {
     }
 
     public IplImage initializeReflectance(IplImage[] cameraImages, double[] roiPts, double[] ambientLight) {
-        int w        = cameraImages[0].width;
-        int h        = cameraImages[0].height;
-        int channels = cameraImages[0].nChannels;
+        int w        = cameraImages[0].width();
+        int h        = cameraImages[0].height();
+        int channels = cameraImages[0].nChannels();
 
         IplImage roiMask = IplImage.create(w, h, IPL_DEPTH_8U, 1);
         cvSetZero(roiMask);
-        cvFillConvexPoly(roiMask, CvPoint.createArray((byte)16, roiPts), 4, CvScalar.WHITE, 8, 16);
+        cvFillConvexPoly(roiMask, new CvPoint((byte)16, roiPts), 4, CvScalar.WHITE, 8, 16);
 
         // make the images very very smooth to compensate for small movements
         IplImage float1 = cameraImages[0];
@@ -174,7 +174,7 @@ public class ReflectanceInitializer {
         parameters = (ProCamTransformer.Parameters)aligner.getParameters();
         Logger.getLogger(ReflectanceInitializer.class.getName()).info(
             "iteratingTime = " + (System.currentTimeMillis()-iterationsStartTime) +
-                " (" + iterations + " iterations)  alignerRMSE = " + (float)aligner.getRMSE());
+                "  iterations = " + iterations + "  objectiveRMSE = " + (float)aligner.getRMSE());
         return parameters.getSrcN();
     }
 

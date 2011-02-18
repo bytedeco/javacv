@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -28,8 +28,8 @@ import java.nio.ShortBuffer;
 import java.util.Arrays;
 import com.googlecode.javacv.Parallel.Looper;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 /**
  *
@@ -310,31 +310,36 @@ public class JavaCV {
     public static void adaptiveBinarization(final IplImage src, final IplImage sumimage, 
             final IplImage sqsumimage, final IplImage dst, final boolean invert,
             final int minwindow, final int maxwindow, final double varmultiplier, final double k) {
-        final int w = src.width;
-        final int h = src.height;
-        final IplImage graysrc;
-        if (src.nChannels > 1) {
-            cvCvtColor(src, dst, CV_BGR2GRAY);
-            graysrc = dst;
-        } else {
-            graysrc = src;
-        }
+        final int w = src.width();
+        final int h = src.height();
+        final int srcdepth = src.depth();
+//        final IplImage graysrc;
+//        if (src.nChannels() > 1) {
+//            cvCvtColor(src, dst, CV_BGR2GRAY);
+//            graysrc = dst;
+//        } else {
+//            graysrc = src;
+//        }
 
         // compute integral images
         cvIntegral(src, sumimage, sqsumimage, null);
         final DoubleBuffer sumbuf = sumimage.getByteBuffer().asDoubleBuffer();
         final DoubleBuffer sqsumbuf = sqsumimage.getByteBuffer().asDoubleBuffer();
+        final int sumstep = sumimage.widthStep();
+        final int sqsumstep = sqsumimage.widthStep();
         final ByteBuffer srcbuf = src.getByteBuffer();
         final ByteBuffer dstbuf = dst.getByteBuffer();
+        final int srcstep = src.widthStep();
+        final int dststep = dst.widthStep();
 
         // try to detect a reasonable maximum and minimum intensity
         // for thresholds instead of simply 0 and 255...
-        double totalmean = sumbuf.get((h-1)*sumimage.widthStep/8 + (w-1)) -
-                           sumbuf.get((h-1)*sumimage.widthStep/8) -
+        double totalmean = sumbuf.get((h-1)*sumstep/8 + (w-1)) -
+                           sumbuf.get((h-1)*sumstep/8) -
                            sumbuf.get(w-1) + sumbuf.get(0);
         totalmean /= w*h;
-        double totalsqmean = sqsumbuf.get((h-1)*sumimage.widthStep/8 + (w-1)) -
-                             sqsumbuf.get((h-1)*sumimage.widthStep/8) -
+        double totalsqmean = sqsumbuf.get((h-1)*sqsumstep/8 + (w-1)) -
+                             sqsumbuf.get((h-1)*sqsumstep/8) -
                              sqsumbuf.get(w-1) + sqsumbuf.get(0);
         totalsqmean /= w*h;
         double totalvar = totalsqmean - totalmean*totalmean;
@@ -358,15 +363,15 @@ public class JavaCV {
                         int y1 = Math.max(y-window/2, 0);
                         int y2 = Math.min(y+window/2+1, h);
 
-                        mean = sumbuf.get(y2*sumimage.widthStep/8 + x2) -
-                               sumbuf.get(y2*sumimage.widthStep/8 + x1) -
-                               sumbuf.get(y1*sumimage.widthStep/8 + x2) +
-                               sumbuf.get(y1*sumimage.widthStep/8 + x1);
+                        mean = sumbuf.get(y2*sumstep/8 + x2) -
+                               sumbuf.get(y2*sumstep/8 + x1) -
+                               sumbuf.get(y1*sumstep/8 + x2) +
+                               sumbuf.get(y1*sumstep/8 + x1);
                         mean /= window*window;
-                        sqmean = sqsumbuf.get(y2*sqsumimage.widthStep/8 + x2) -
-                                           sqsumbuf.get(y2*sqsumimage.widthStep/8 + x1) -
-                                           sqsumbuf.get(y1*sqsumimage.widthStep/8 + x2) +
-                                           sqsumbuf.get(y1*sqsumimage.widthStep/8 + x1);
+                        sqmean = sqsumbuf.get(y2*sqsumstep/8 + x2) -
+                                           sqsumbuf.get(y2*sqsumstep/8 + x1) -
+                                           sqsumbuf.get(y1*sqsumstep/8 + x2) +
+                                           sqsumbuf.get(y1*sqsumstep/8 + x1);
                         sqmean /= window*window;
                         var = sqmean - mean*mean;
 
@@ -388,12 +393,12 @@ public class JavaCV {
                     }
 
                     double value = 0;
-                    if (graysrc.depth == IPL_DEPTH_8U) {
-                        value = srcbuf.get(y*graysrc.widthStep       + x) & 0xFF;
-                    } else if (graysrc.depth == IPL_DEPTH_32F) {
-                        value = srcbuf.getFloat(y*graysrc.widthStep  + 4*x);
-                    } else if (graysrc.depth == IPL_DEPTH_64F) {
-                        value = srcbuf.getDouble(y*graysrc.widthStep + 8*x);
+                    if (srcdepth == IPL_DEPTH_8U) {
+                        value = srcbuf.get(y*srcstep       + x) & 0xFF;
+                    } else if (srcdepth == IPL_DEPTH_32F) {
+                        value = srcbuf.getFloat(y*srcstep  + 4*x);
+                    } else if (srcdepth == IPL_DEPTH_64F) {
+                        value = srcbuf.getDouble(y*srcstep + 8*x);
                     } else {
                         //cvIntegral() does not support other image types, so we
                         //should not be able to get here...
@@ -402,11 +407,11 @@ public class JavaCV {
                     if (invert) {
                         //double threshold = 255 - (255 - mean) * (1 + 0.1*(Math.sqrt(var)/128 - 1));
                         double threshold = 255 - (255 - mean) * k;
-                        dstbuf.put(y*dst.widthStep + x, (value < threshold ? (byte)0xFF : (byte)0x00));
+                        dstbuf.put(y*dststep + x, (value < threshold ? (byte)0xFF : (byte)0x00));
                     } else {
                         //double threshold = mean * (1 + k*(Math.sqrt(var)/128 - 1));
                         double threshold = mean * k;
-                        dstbuf.put(y*dst.widthStep + x, (value > threshold ? (byte)0xFF : (byte)0x00));
+                        dstbuf.put(y*dststep + x, (value > threshold ? (byte)0xFF : (byte)0x00));
                     }
                 }
             }
@@ -416,7 +421,7 @@ public class JavaCV {
     // clamps image intensities between min and max...
     public static void minMaxS(IplImage src, double min, double max, IplImage dst) {
 
-        switch (src.depth) {
+        switch (src.depth()) {
             case IPL_DEPTH_8U: {
                 ByteBuffer sb = src.getByteBuffer();
                 ByteBuffer db = dst.getByteBuffer();
@@ -518,22 +523,24 @@ public class JavaCV {
         double norm = -1;
 
         if (p == 1.0) {
-            for (int j = 0; j < A.cols; j++) {
+            int cols = A.cols(), rows = A.rows();
+            for (int j = 0; j < cols; j++) {
                 double n = 0;
-                for (int i = 0; i < A.rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     n += Math.abs(A.get(i, j));
                 }
                 norm = Math.max(n, norm);
             }
         } else if (p == 2.0) {
-            CvMat W = CvMat.take(Math.min(A.rows, A.cols), 1);
+            CvMat W = CvMat.take(Math.min(A.rows(), A.cols()), 1);
             cvSVD(A, W, null, null, 0);
             norm = W.get(0); // largest singular value
             W.pool();
         } else if (p == Double.POSITIVE_INFINITY) {
-            for (int i = 0; i < A.rows; i++) {
+            int rows = A.rows(), cols = A.cols();
+            for (int i = 0; i < rows; i++) {
                 double n = 0;
-                for (int j = 0; j < A.cols; j++) {
+                for (int j = 0; j < cols; j++) {
                     n += Math.abs(A.get(i, j));
                 }
                 norm = Math.max(n, norm);
@@ -548,14 +555,14 @@ public class JavaCV {
         double cond = -1;
 
         if (p == 2.0) {
-            CvMat W = CvMat.take(Math.min(A.rows, A.cols), 1);
+            CvMat W = CvMat.take(Math.min(A.rows(), A.cols()), 1);
             cvSVD(A, W, null, null, 0);
-            cond = W.get(0)/W.get(W.getLength()-1); // largest/smallest singular value
+            cond = W.get(0)/W.get(W.length()-1); // largest/smallest singular value
             W.pool();
         } else {
             // should put something faster here if we're really serious
             // about using something other than the 2-norm
-            CvMat Ainv = CvMat.take(A.rows, A.cols);
+            CvMat Ainv = CvMat.take(A.rows(), A.cols());
             cvInvert(A, Ainv);
             cond = norm(A, p)*norm(Ainv, p);
             Ainv.pool();
@@ -568,7 +575,7 @@ public class JavaCV {
     }
     public static double randn(CvRNG state, CvScalar sigma) {
         CvMat values = CvMat.take(1, 1);
-        cvRandArr(state, values, CV_RAND_NORMAL, CvScalar.ZERO, sigma.byValue());
+        cvRandArr(state, values, CV_RAND_NORMAL, CvScalar.ZERO, sigma);
         double res = values.get(0);
         values.pool();
         return res;
@@ -590,35 +597,48 @@ public class JavaCV {
     }
 
     public static void fractalTriangleWave(double[] line, int i, int j, double a) {
+        fractalTriangleWave(line, i, j, a, -1);
+    }
+    public static void fractalTriangleWave(double[] line, int i, int j, double a, int roughness) {
         int m = (j-i)/2+i;
         if (i == j || i == m) {
             return;
         }
         line[m] = (line[i]+line[j])/2 + a;
-        fractalTriangleWave(line, i, m,  a/SQRT2);
-        fractalTriangleWave(line, m, j, -a/SQRT2);
+        if (roughness > 0 && line.length > roughness*(j-i)) {
+            fractalTriangleWave(line, i, m, 0, roughness);
+            fractalTriangleWave(line, m, j, 0, roughness);
+        } else {
+            fractalTriangleWave(line, i, m,  a/SQRT2, roughness);
+            fractalTriangleWave(line, m, j, -a/SQRT2, roughness);
+        }
     }
 
     public static void fractalTriangleWave(IplImage image, CvMat H) {
-        assert (image.depth == IPL_DEPTH_32F);
-        double[] line = new double[image.width];
-        fractalTriangleWave(line, 0,             line.length/2,  1);
-        fractalTriangleWave(line, line.length/2, line.length-1, -1);
+        fractalTriangleWave(image, H, -1);
+    }
+    public static void fractalTriangleWave(IplImage image, CvMat H, int roughness) {
+        assert (image.depth() == IPL_DEPTH_32F);
+        double[] line = new double[image.width()];
+        fractalTriangleWave(line, 0,             line.length/2,  1, roughness);
+        fractalTriangleWave(line, line.length/2, line.length-1, -1, roughness);
 
         double[] minMax = { Double.MAX_VALUE, Double.MIN_VALUE };
-        int height = image.height;
-        int width = image.width;
+        int height   = image.height();
+        int width    = image.width();
+        int channels = image.nChannels();
+        int step     = image.widthStep();
         int start = 0;
-        if (image.roi != null) {
-            height = image.roi.height;
-            width  = image.roi.width;
-            start  = image.roi.yOffset*image.widthStep/4 + image.roi.xOffset*image.nChannels;
+        if (image.roi() != null) {
+            height = image.roi().height();
+            width  = image.roi().width();
+            start  = image.roi().yOffset()*step/4 + image.roi().xOffset()*channels;
         }
         FloatBuffer fb = image.getFloatBuffer(start);
         double[] h = H == null ? null : H.get();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                for (int z = 0; z < image.nChannels; z++) {
+                for (int z = 0; z < channels; z++) {
                     double sum = 0.0;
                     if (h == null) {
                         sum += line[x];
@@ -634,7 +654,7 @@ public class JavaCV {
                     }
                     minMax[0] = Math.min(minMax[0], sum);
                     minMax[1] = Math.max(minMax[1], sum);
-                    fb.put(y*image.widthStep/4 + x*image.nChannels + z, (float)sum);
+                    fb.put(y*step/4 + x*channels + z, (float)sum);
                 }
             }
         }
@@ -650,7 +670,7 @@ public class JavaCV {
         }
         System.out.println(
             "JavaCV build timestamp " + timestamp + "\n" +
-            "Copyright (C) 2009,2010 Samuel Audet <samuel.audet@gmail.com>\n" +
+            "Copyright (C) 2009,2010,2011 Samuel Audet <samuel.audet@gmail.com>\n" +
             "Project site: http://code.google.com/p/javacv/\n\n" +
 
             "Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.\n" +

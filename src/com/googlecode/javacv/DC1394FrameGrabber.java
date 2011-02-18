@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,19 +20,17 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.NativeLong;
-import com.sun.jna.Platform;
-import com.sun.jna.ptr.FloatByReference;
-import com.sun.jna.ptr.IntByReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.Loader;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
-import static com.googlecode.javacv.jna.dc1394.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.dc1394.*;
 
 /**
  *
@@ -46,31 +44,30 @@ public class DC1394FrameGrabber extends FrameGrabber {
         if (d == null) {
             throw new Exception("dc1394_new() Error: Failed to initialize libdc1394.");
         }
-        dc1394camera_list_t.PointerByReference list = new dc1394camera_list_t.PointerByReference();
-        int err=dc1394_camera_enumerate (d, list);
+        dc1394camera_list_t list = new dc1394camera_list_t(null);
+        int err = dc1394_camera_enumerate(d, list);
         if (err != DC1394_SUCCESS) {
             throw new Exception("dc1394_camera_enumerate() Error " + err + ": Failed to enumerate cameras.");
         }
-        dc1394camera_list_t l = list.getStructure();
-        String[] descriptions = new String[l.num];
+        int num = list.num();
+        String[] descriptions = new String[num];
 
-        if (l.num > 0) {
-            dc1394camera_id_t[] ids = (dc1394camera_id_t[])(l.ids.toArray(l.num));
-            for (int i = 0; i < l.num; i ++) {
-                dc1394camera_t camera = dc1394_camera_new_unit(d, ids[i].guid, ids[i].unit);
+        if (num > 0) {
+            dc1394camera_id_t ids = list.ids();
+            for (int i = 0; i < num; i ++) {
+                ids.position(i);
+                dc1394camera_t camera = dc1394_camera_new_unit(d, ids.guid(), ids.unit());
                 if (camera == null) {
                     throw new Exception("dc1394_camera_new_unit() Error: Failed to initialize camera with GUID 0x" +
-                            Long.toHexString(ids[i].guid)+ " / " + camera.unit + ".");
+                            Long.toHexString(ids.guid())+ " / " + camera.unit() + ".");
                 }
-                descriptions[i] = camera.vendor + " " + camera.model + " 0x" +
-                        Long.toHexString(camera.guid) + " / " + camera.unit;
-                camera.setAutoSynch(false);
+                descriptions[i] = camera.vendor().getString() + " " + camera.model().getString() + " 0x" +
+                        Long.toHexString(camera.guid()) + " / " + camera.unit();
                 dc1394_camera_free(camera);
             }
         }
 
-        l.setAutoSynch(false);
-        dc1394_camera_free_list(l);
+        dc1394_camera_free_list(list);
         dc1394_free(d);
         return descriptions;
     }
@@ -81,7 +78,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                String s = com.googlecode.javacv.jna.dc1394.libname;
+                Loader.load(com.googlecode.javacv.cpp.dc1394.class);
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -94,33 +91,29 @@ public class DC1394FrameGrabber extends FrameGrabber {
 
     public DC1394FrameGrabber(int deviceNumber) throws Exception {
         d = dc1394_new();
-        dc1394camera_list_t.PointerByReference list = new dc1394camera_list_t.PointerByReference();
-        int err=dc1394_camera_enumerate (d, list);
+        dc1394camera_list_t list = new dc1394camera_list_t(null);
+        int err = dc1394_camera_enumerate (d, list);
         if (err != DC1394_SUCCESS) {
             throw new Exception("dc1394_camera_enumerate() Error " + err + ": Failed to enumerate cameras.");
         }
-        dc1394camera_list_t l = list.getStructure();
-        if (l.num <= deviceNumber) {
+        int num = list.num();
+        if (num <= deviceNumber) {
             throw new Exception("DC1394Grabber() Error: Camera number " + deviceNumber +
-                    " not found. There are only " + l.num + " devices.");
+                    " not found. There are only " + num + " devices.");
         }
-        dc1394camera_id_t[] ids = (dc1394camera_id_t[])(l.ids.toArray(l.num));
-        camera = dc1394_camera_new_unit(d, ids[deviceNumber].guid, ids[deviceNumber].unit);
+        dc1394camera_id_t ids = list.ids().position(deviceNumber);
+        camera = dc1394_camera_new_unit(d, ids.guid(), ids.unit());
         if (camera == null) {
             throw new Exception("dc1394_camera_new_unit() Error: Failed to initialize camera with GUID 0x" +
-                    Long.toHexString(ids[deviceNumber].guid)+ " / " + camera.unit + ".");
+                    Long.toHexString(ids.guid())+ " / " + camera.unit() + ".");
         }
-        l.setAutoSynch(false);
-        dc1394_camera_free_list(l);
+        dc1394_camera_free_list(list);
 //System.out.println("Using camera with GUID 0x" + Long.toHexString(camera.guid) + " / " + camera.unit);
-
-        camera.setAutoSynch(false);
     }
 
     public void release() throws Exception {
         if (camera != null) {
             stop();
-            camera.setAutoSynch(false);
             dc1394_camera_free(camera);
             camera = null;
         }
@@ -137,22 +130,22 @@ public class DC1394FrameGrabber extends FrameGrabber {
         }
     }
 
+    private static final boolean linux = Loader.getPlatformName().startsWith("linux");
     private dc1394_t d = null;
     private dc1394camera_t camera = null;
-    private Poll.pollfd fds = new Poll.pollfd();
-    private NativeLong one = new NativeLong(1);
+    private pollfd fds = new pollfd();
     private boolean oneShotMode = false;
     private boolean resetDone   = false;
-    private dc1394video_frame_t.PointerByReference raw_image = new dc1394video_frame_t.PointerByReference();
+    private dc1394video_frame_t[] raw_image =
+        { new dc1394video_frame_t(null), new dc1394video_frame_t(null) };
     private dc1394video_frame_t conv_image = new dc1394video_frame_t();
-    private dc1394video_frame_t frame = new dc1394video_frame_t();
+    private dc1394video_frame_t frame = null;
     private dc1394video_frame_t enqueue_image = null;
     private IplImage temp_image, return_image = null;
-    private IntByReference tempInt = new IntByReference();
-    private FloatByReference gammaRef = new FloatByReference();
+    private float[] gammaOut = new float[1];
 
     @Override public double getGamma() {
-        return gammaRef.getValue();
+        return gammaOut[0];
     }
 
     public void start() throws Exception {
@@ -192,8 +185,9 @@ public class DC1394FrameGrabber extends FrameGrabber {
         
         if (c == -1) {
             // otherwise, still need to set current video mode to kick start the ISO channel...
-            dc1394_video_get_mode(camera, tempInt);
-            c = tempInt.getValue();
+            int[] out = new int[1];
+            dc1394_video_get_mode(camera, out);
+            c = out[0];
         }
 
         int f = -1;
@@ -219,20 +213,21 @@ public class DC1394FrameGrabber extends FrameGrabber {
 
         if (f == -1) {
             // otherwise, still need to set current framerate to kick start the ISO channel...
-            dc1394_video_get_framerate(camera, tempInt);
-            f = tempInt.getValue();
+            int[] out = new int[1];
+            dc1394_video_get_framerate(camera, out);
+            f = out[0];
         }
 
         try {
             oneShotMode = false;
             if (triggerMode) {
-                int err=dc1394_external_trigger_set_power(camera, DC1394_ON);
+                int err = dc1394_external_trigger_set_power(camera, DC1394_ON);
                 if (err != DC1394_SUCCESS) {
                     // no trigger support, use one-shot mode instead
                     oneShotMode = true;
                 } else {
                     dc1394_external_trigger_set_mode(camera, DC1394_TRIGGER_MODE_0);
-                    err=dc1394_external_trigger_set_source(camera, DC1394_TRIGGER_SOURCE_SOFTWARE);
+                    err = dc1394_external_trigger_set_source(camera, DC1394_TRIGGER_SOURCE_SOFTWARE);
                     if (err != DC1394_SUCCESS) {
                         // no support for software trigger, use one-shot mode instead
                         oneShotMode = true;
@@ -241,27 +236,27 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 }
             }
 
-            int err=dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_LEGACY);
+            int err = dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_LEGACY);
             if (try1394b) {
-                err=dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_1394B);
+                err = dc1394_video_set_operation_mode(camera, DC1394_OPERATION_MODE_1394B);
                 if (err == DC1394_SUCCESS) {
-                    err=dc1394_video_set_iso_speed(camera, DC1394_ISO_SPEED_800);
+                    err = dc1394_video_set_iso_speed(camera, DC1394_ISO_SPEED_800);
                 }
             }
             if (err != DC1394_SUCCESS || !try1394b) {
-                err=dc1394_video_set_iso_speed(camera, DC1394_ISO_SPEED_400);
+                err = dc1394_video_set_iso_speed(camera, DC1394_ISO_SPEED_400);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_video_set_iso_speed() Error " + err + ": Could not set maximum iso speed.");
                 }
             }
 
-            err=dc1394_video_set_mode(camera, c);
+            err = dc1394_video_set_mode(camera, c);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_video_set_mode() Error " + err + ": Could not set video mode.");
             }
 
             if (dc1394_is_video_mode_scalable(c) == DC1394_TRUE) {
-                err=dc1394_format7_set_roi(camera, c,
+                err = dc1394_format7_set_roi(camera, c,
                         DC1394_QUERY_FROM_CAMERA, DC1394_QUERY_FROM_CAMERA,
                         DC1394_QUERY_FROM_CAMERA, DC1394_QUERY_FROM_CAMERA,
                         DC1394_QUERY_FROM_CAMERA, DC1394_QUERY_FROM_CAMERA);
@@ -269,35 +264,35 @@ public class DC1394FrameGrabber extends FrameGrabber {
                     throw new Exception("dc1394_format7_set_roi() Error " + err + ": Could not set format7 mode.");
                 }
             } else {
-                err=dc1394_video_set_framerate(camera, f);
+                err = dc1394_video_set_framerate(camera, f);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_video_set_framerate() Error " + err + ": Could not set framerate.");
                 }
             }
 
-            err=dc1394_capture_setup(camera, numBuffers, DC1394_CAPTURE_FLAGS_DEFAULT);
+            err = dc1394_capture_setup(camera, numBuffers, DC1394_CAPTURE_FLAGS_DEFAULT);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_capture_setup() Error " + err + ": Could not setup camera-\n" +
                         "make sure that the video mode and framerate are\nsupported by your camera.");
             }
 
             if (gamma != 0.0) {
-                err=dc1394_feature_set_absolute_value(camera, DC1394_FEATURE_GAMMA, (float)gamma);
+                err = dc1394_feature_set_absolute_value(camera, DC1394_FEATURE_GAMMA, (float)gamma);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_feature_set_absolute_value() Error " + err + ": Could not set gamma.");
                 }
             }
-            err=dc1394_feature_get_absolute_value(camera, DC1394_FEATURE_GAMMA, gammaRef);
+            err = dc1394_feature_get_absolute_value(camera, DC1394_FEATURE_GAMMA, gammaOut);
             if (err != DC1394_SUCCESS) {
-                gammaRef.setValue(2.2f);
+                gammaOut[0] = 2.2f;
             }
 
-            if (Platform.isLinux()) {
-                fds.fd = dc1394_capture_get_fileno(camera);
+            if (linux) {
+                fds.fd(dc1394_capture_get_fileno(camera));
             }
 
             if (!oneShotMode) {
-                err=dc1394_video_set_transmission(camera, DC1394_ON);
+                err = dc1394_video_set_transmission(camera, DC1394_ON);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_video_set_transmission() Error " + err + ": Could not start camera iso transmission.");
                 }
@@ -316,12 +311,12 @@ public class DC1394FrameGrabber extends FrameGrabber {
             resetDone = false;
         }
 
-        if (Platform.isLinux() && try1394b) {
+        if (linux && try1394b) {
             if (triggerMode) {
                 trigger();
             }
-            fds.events = Poll.POLLIN;
-            if (Poll.poll(fds, one, timeout) == 0) {
+            fds.events(POLLIN);
+            if (poll(fds, 1, timeout) == 0) {
                 // we are obviously not getting anything..
                 // try again without 1394b
                 stop();
@@ -338,16 +333,16 @@ public class DC1394FrameGrabber extends FrameGrabber {
         temp_image    = null;
         return_image  = null;
 
-        int err=dc1394_video_set_transmission(camera, DC1394_OFF);
+        int err = dc1394_video_set_transmission(camera, DC1394_OFF);
         if (err != DC1394_SUCCESS) {
             throw new Exception("dc1394_video_set_transmission() Error " + err + ": Could not stop the camera?");
         }
-        err=dc1394_capture_stop(camera);
+        err = dc1394_capture_stop(camera);
         if (err != DC1394_SUCCESS && err != DC1394_CAPTURE_IS_NOT_SET) {
             throw new Exception("dc1394_capture_stop() Error " + err + ": Could not stop the camera?");
         }
         if (triggerMode && !oneShotMode) {
-            err=dc1394_external_trigger_set_power(camera, DC1394_OFF);
+            err = dc1394_external_trigger_set_power(camera, DC1394_OFF);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_external_trigger_set_power() Error " + err + ": Could not switch off external trigger.");
             }
@@ -360,8 +355,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
     }
     private void enqueue(dc1394video_frame_t image) throws Exception {
         if (image != null) {
-            image.setAutoSynch(false);
-            int err=dc1394_capture_enqueue(camera, image);
+            int err = dc1394_capture_enqueue(camera, image);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_capture_enqueue() Error " + err + ": Could not release a frame.");
             }
@@ -371,20 +365,21 @@ public class DC1394FrameGrabber extends FrameGrabber {
     public void trigger() throws Exception {
         enqueue();
         if (oneShotMode) {
-            int err=dc1394_video_set_one_shot(camera, DC1394_ON);
+            int err = dc1394_video_set_one_shot(camera, DC1394_ON);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_video_set_one_shot() Error " + err + ": Could not set camera into one-shot mode.");
             }
         } else {
             long time = System.currentTimeMillis();
+            int[] out = new int[1];
             do {
-                dc1394_software_trigger_get_power(camera, tempInt);
+                dc1394_software_trigger_get_power(camera, out);
                 if (System.currentTimeMillis() - time > timeout) {
                     break;
                     //throw new Exception("trigger() Error: Timeout occured.");
                 }
-            } while (tempInt.getValue() == DC1394_ON);
-            int err=dc1394_software_trigger_set_power(camera, DC1394_ON);
+            } while (out[0] == DC1394_ON);
+            int err = dc1394_software_trigger_set_power(camera, DC1394_ON);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_software_trigger_set_power() Error " + err + ": Could not trigger camera.");
             }
@@ -393,48 +388,52 @@ public class DC1394FrameGrabber extends FrameGrabber {
 
     public IplImage grab() throws Exception {
         enqueue();
-        if (Platform.isLinux()) {
-            fds.events = Poll.POLLIN;
-            if (Poll.poll(fds, one, timeout) == 0) {
+        if (linux) {
+            fds.events(POLLIN);
+            if (poll(fds, 1, timeout) == 0) {
                 throw new Exception("poll() Error: Timeout occured. (Has start() been called?)");
             }
         }
-        int err=dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_WAIT, raw_image);
+        int i = 0;
+        int err = dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_WAIT, raw_image[i]);
         if (err != DC1394_SUCCESS) {
             throw new Exception("dc1394_capture_dequeue(WAIT) Error " + err + ": Could not capture a frame. (Has start() been called?)");
         }
         // try to poll for more images, to get the most recent one...
-        while (raw_image.getValue() != null) {
+        while (!raw_image[i].isNull()) {
             enqueue();
-            raw_image.getStructure(frame);
-            enqueue_image = frame;
-            err=dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_POLL, raw_image);
+            enqueue_image = raw_image[i];
+            i = (i+1)%2;
+            err = dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_POLL, raw_image[i]);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_capture_dequeue(POLL) Error " + err + ": Could not capture a frame.");
             }
         }
-        int w = frame.size[0];
-        int h = frame.size[1];
-        int depth = frame.data_depth;
+        frame = raw_image[(i+1)%2];
+        int w = frame.size(0);
+        int h = frame.size(1);
+        int depth = frame.data_depth();
         int iplDepth = 0;
         switch (depth) {
             case 8:  iplDepth = IPL_DEPTH_8U;  break;
             case 16: iplDepth = IPL_DEPTH_16U; break;
             default: assert (false);
         }
-        int stride = frame.stride;
-        int size = frame.image_bytes;
+        int stride = frame.stride();
+        int size = frame.image_bytes();
         int numChannels = stride/w*8/depth;
-        ByteOrder frameEndian = frame.little_endian != 0 ?
+        ByteOrder frameEndian = frame.little_endian() != 0 ?
                 ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
         boolean alreadySwapped = false;
-        boolean colorbayer = frame.color_coding == DC1394_COLOR_CODING_RAW8 ||
-                             frame.color_coding == DC1394_COLOR_CODING_RAW16;
-        boolean colorrgb   = frame.color_coding == DC1394_COLOR_CODING_RGB8 ||
-                             frame.color_coding == DC1394_COLOR_CODING_RGB16;
-        boolean coloryuv   = frame.color_coding == DC1394_COLOR_CODING_YUV411 ||
-                             frame.color_coding == DC1394_COLOR_CODING_YUV422 ||
-                             frame.color_coding == DC1394_COLOR_CODING_YUV444;
+        int color_coding = frame.color_coding();
+        boolean colorbayer = color_coding == DC1394_COLOR_CODING_RAW8 ||
+                             color_coding == DC1394_COLOR_CODING_RAW16;
+        boolean colorrgb   = color_coding == DC1394_COLOR_CODING_RGB8 ||
+                             color_coding == DC1394_COLOR_CODING_RGB16;
+        boolean coloryuv   = color_coding == DC1394_COLOR_CODING_YUV411 ||
+                             color_coding == DC1394_COLOR_CODING_YUV422 ||
+                             color_coding == DC1394_COLOR_CODING_YUV444;
+        BytePointer imageData = frame.image();
 
         if ((depth <= 8 || frameEndian.equals(ByteOrder.nativeOrder())) && !coloryuv &&
                 (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3) ||
@@ -442,80 +441,82 @@ public class DC1394FrameGrabber extends FrameGrabber {
             if (return_image == null) {
                 return_image = IplImage.createHeader(w, h, iplDepth, numChannels);
             }
-            return_image.widthStep = stride;
-            return_image.imageSize = size;
-            return_image.imageData = frame.image;
+            return_image.widthStep(stride);
+            return_image.imageSize(size);
+            return_image.imageData(imageData);
         } else {
             // in the padding, there's sometimes timeframe information and stuff
             // that libdc1394 will copy for us, so we need to allocate it
-            int padding1 = (int)Math.ceil((double)frame.padding_bytes/(w * depth/8));
-            int padding3 = (int)Math.ceil((double)frame.padding_bytes/(w*3*depth/8));
+            int padding_bytes = frame.padding_bytes();
+            int padding1 = (int)Math.ceil((double)padding_bytes/(w * depth/8));
+            int padding3 = (int)Math.ceil((double)padding_bytes/(w*3*depth/8));
             if (return_image == null) {
                 int c       = colorMode == ColorMode.BGR ? 3 : 1;
                 int padding = colorMode == ColorMode.BGR ? padding3 : padding1;
                 return_image = IplImage.create(w, h+padding, iplDepth, c);
-                return_image.height -= padding;
+                return_image.height(return_image.height() - padding);
             }
             if (temp_image == null) {
                 if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
                     temp_image = IplImage.create(w, h+padding1, iplDepth, 1);
-                    temp_image.height -= padding1;
+                    temp_image.height(temp_image.height() - padding1);
                 } else if (colorMode == ColorMode.GRAY &&
                         (coloryuv || colorbayer || (colorrgb && depth > 8))) {
                     temp_image = IplImage.create(w, h+padding3, iplDepth, 3);
-                    temp_image.height -= padding3;
+                    temp_image.height(temp_image.height() - padding3);
                 } else if (colorMode == ColorMode.GRAY && colorrgb) {
                     temp_image = IplImage.createHeader(w, h, iplDepth, 3);
-                    temp_image.widthStep = stride;
-                    temp_image.imageSize = size;
-                    temp_image.imageData = frame.image;
+                    temp_image.widthStep(stride);
+                    temp_image.imageSize(size);
+                    temp_image.imageData(imageData);
                 } else {
                     temp_image = return_image;
                 }
             }
-            conv_image.size[0] = temp_image.width;
-            conv_image.size[1] = temp_image.height;
+            conv_image.size(0, temp_image.width());
+            conv_image.size(1, temp_image.height());
             if (depth > 8) {
-                conv_image.color_coding = colorMode == ColorMode.RAW ? DC1394_COLOR_CODING_RAW16  :
-                                          temp_image.nChannels == 1  ? DC1394_COLOR_CODING_MONO16 :
-                                                                       DC1394_COLOR_CODING_RGB16  ;
-                conv_image.data_depth = 16;
+                conv_image.color_coding(colorMode == ColorMode.RAW  ? DC1394_COLOR_CODING_RAW16  :
+                                        temp_image.nChannels() == 1 ? DC1394_COLOR_CODING_MONO16 :
+                                                                      DC1394_COLOR_CODING_RGB16);
+                conv_image.data_depth(16);
             } else {
-                conv_image.color_coding = colorMode == ColorMode.RAW ? DC1394_COLOR_CODING_RAW8   :
-                                          temp_image.nChannels == 1  ? DC1394_COLOR_CODING_MONO8  :
-                                                                       DC1394_COLOR_CODING_RGB8   ;
-                conv_image.data_depth = 8;
+                conv_image.color_coding(colorMode == ColorMode.RAW  ? DC1394_COLOR_CODING_RAW8   :
+                                        temp_image.nChannels() == 1 ? DC1394_COLOR_CODING_MONO8  :
+                                                                      DC1394_COLOR_CODING_RGB8);
+                conv_image.data_depth(8);
             }
-            conv_image.stride = temp_image.widthStep;
-            conv_image.allocated_image_bytes = conv_image.total_bytes =
-                    conv_image.image_bytes = temp_image.imageSize;
-            conv_image.image = temp_image.imageData;
+            conv_image.stride(temp_image.widthStep());
+            int temp_size = temp_image.imageSize();
+            conv_image.allocated_image_bytes(temp_size).
+                    total_bytes(temp_size).image_bytes(temp_size);
+            conv_image.image(temp_image.imageData());
 
             if (colorbayer) {
                 // from raw Bayer... invert R and B to get BGR images
                 // (like OpenCV wants them) instead of RGB
-                int c = frame.color_filter;
-                if (c                  == DC1394_COLOR_FILTER_RGGB) {
-                    frame.color_filter  = DC1394_COLOR_FILTER_BGGR;
-                } else if (c           == DC1394_COLOR_FILTER_GBRG) {
-                    frame.color_filter  = DC1394_COLOR_FILTER_GRBG;
-                } else if (c           == DC1394_COLOR_FILTER_GRBG) {
-                    frame.color_filter  = DC1394_COLOR_FILTER_GBRG;
-                } else if (c           == DC1394_COLOR_FILTER_BGGR) {
-                    frame.color_filter  = DC1394_COLOR_FILTER_RGGB;
+                int c = frame.color_filter();
+                if (c               == DC1394_COLOR_FILTER_RGGB) {
+                    frame.color_filter(DC1394_COLOR_FILTER_BGGR);
+                } else if (c        == DC1394_COLOR_FILTER_GBRG) {
+                    frame.color_filter(DC1394_COLOR_FILTER_GRBG);
+                } else if (c        == DC1394_COLOR_FILTER_GRBG) {
+                    frame.color_filter(DC1394_COLOR_FILTER_GBRG);
+                } else if (c        == DC1394_COLOR_FILTER_BGGR) {
+                    frame.color_filter(DC1394_COLOR_FILTER_RGGB);
                 } else {
                     assert(false);
                 }
-                frame.writeField("color_filter");
                 // other better methods than "simple" give garbage at 16 bits..
-                err=dc1394_debayer_frames(frame, conv_image, DC1394_BAYER_METHOD_SIMPLE);
+                err = dc1394_debayer_frames(frame, conv_image, DC1394_BAYER_METHOD_SIMPLE);
+                frame.color_filter(c);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_debayer_frames() Error " + err + ": Could not debayer frame.");
                 }
-                frame.writeField("color_filter", c);
-            } else if (frame.color_coding == conv_image.color_coding &&
-                       frame.data_depth == conv_image.data_depth && 
-                       frame.stride == conv_image.stride && depth > 8) {
+            } else if (depth > 8 &&
+                    frame.data_depth()   == conv_image.data_depth() &&
+                    frame.color_coding() == conv_image.color_coding() &&
+                    frame.stride()       == conv_image.stride()) {
                 // we just need a copy to swap bytes..
                 ShortBuffer in  = frame.getByteBuffer().order(frameEndian).asShortBuffer();
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
@@ -523,7 +524,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 alreadySwapped = true;
             } else if (!colorrgb) {
                 // from YUV, etc.
-                err=dc1394_convert_frames(frame, conv_image);
+                err = dc1394_convert_frames(frame, conv_image);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_convert_frames() Error " + err + ": Could not convert frame.");
                 }
@@ -548,9 +549,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
         }
 
         enqueue_image = frame;
-        return_image.setTimestamp(frame.timestamp);
+        return_image.timestamp(frame.timestamp());
 //System.out.println(frame.timestamp);
         return return_image;
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,12 +20,12 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.ptr.IntByReference;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
-import static com.googlecode.javacv.jna.ARToolKitPlus.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.ARToolKitPlus.*;
 
 /**
  *
@@ -100,86 +100,78 @@ public class MarkerDetector {
     }
     public void setSettings(Settings settings) {
         this.settings = settings;
-        this.subPixelSize = new CvSize(settings.subPixelWindow/2, settings.subPixelWindow/2).byValue();
-        this.subPixelZeroZone = new CvSize(-1,-1).byValue();
-        this.subPixelTermCriteria = new CvTermCriteria(CV_TERMCRIT_EPS, 100, 0.001).byValue();
+        this.subPixelSize = cvSize(settings.subPixelWindow/2, settings.subPixelWindow/2);
+        this.subPixelZeroZone = cvSize(-1,-1);
+        this.subPixelTermCriteria = cvTermCriteria(CV_TERMCRIT_EPS, 100, 0.001);
     }
 
-    private Tracker t = null;
+    private MultiTracker tracker = null;
     private int width = 0, height = 0, depth = 0, channels = 0;
     private IplImage tempsrc, tempsrc2, sumimage, sqsumimage, binarized;
     private CvMat points = CvMat.create(1, 4, CV_32F, 2);
+    private CvPoint2D32f corners = new CvPoint2D32f(4);
     private CvMemStorage memory = CvMemStorage.create();
-    private CvSize.ByValue subPixelSize = null, subPixelZeroZone = null;
-    private CvTermCriteria.ByValue subPixelTermCriteria = null;
+    private CvSize subPixelSize = null, subPixelZeroZone = null;
+    private CvTermCriteria subPixelTermCriteria = null;
+
+    private CvPoint pts = new CvPoint(4), pt1 = new CvPoint(), pt2 = new CvPoint();
     private CvFont font = new CvFont(CV_FONT_HERSHEY_PLAIN, 1, 1);
+    private CvSize text_size = new CvSize();
 
     private void init(IplImage image) {
-        if (t != null && image.width == width && image.height == height && 
-                image.depth == depth && image.nChannels == channels) {
+        if (tracker != null && image.width() == width && image.height() == height &&
+                image.depth() == depth && image.nChannels() == channels) {
             return;
         }
 
-        width = image.width;
-        height = image.height;
-        depth = image.depth;
-        channels = image.nChannels;
+        width    = image.width();
+        height   = image.height();
+        depth    = image.depth();
+        channels = image.nChannels();
 
-        if (image.depth != IPL_DEPTH_8U || image.nChannels > 1) {
-            tempsrc = IplImage.create(width, height, IPL_DEPTH_8U, 1);
+        if (depth != IPL_DEPTH_8U || channels > 1) {
+            tempsrc  = IplImage.create(width, height, IPL_DEPTH_8U, 1);
         }
-        if (image.depth != IPL_DEPTH_8U && image.nChannels > 1) {
+        if (depth != IPL_DEPTH_8U && channels > 1) {
             tempsrc2 = IplImage.create(width, height, IPL_DEPTH_8U, 3);
         }
-        sumimage = IplImage.create(width+1, height+1, IPL_DEPTH_64F, 1);
+        sumimage   = IplImage.create(width+1, height+1, IPL_DEPTH_64F, 1);
         sqsumimage = IplImage.create(width+1, height+1, IPL_DEPTH_64F, 1);
-        binarized = IplImage.create(width, height, IPL_DEPTH_8U, 1);
+        binarized  = IplImage.create(width,   height,   IPL_DEPTH_8U,  1);
 
-        if (t != null) {
-            deleteTracker(t);
-            t = null;
-        }
-
-        t = newTrackerMultiMarker(binarized.widthStep, binarized.height);
-//        String description = getDescription(t);
+        tracker = new MultiTracker(binarized.widthStep(), binarized.height());
+//        String description = tracker.getDescription();
 //        System.out.println("ARToolKitPlus compile-time information: " + description);
-        setLoggerFunc(t, new arLogFunc() {
-            public void callback(String nStr) {
-                System.err.println(nStr);
+        tracker.setLoggerFunction(new ArtLogFunction() {
+            @Override public void call(String nStr) {
+                Logger.getLogger(MarkerDetector.class.getName()).warning(nStr);
             }
         });
 
-//        if (image.depth != IPL_DEPTH_8U) {
-//            throw new RuntimeException("Unsupported format: IplImage must have depth == IPL_DEPTH_8U.");
+//        if (depth != IPL_DEPTH_8U) {
+//            throw new Exception("Unsupported format: IplImage must have depth == IPL_DEPTH_8U.");
 //        }
         int pixfmt = PIXEL_FORMAT_LUM;
-//        switch (image.nChannels) {
+//        switch (nChannels) {
 //            case 4: pixfmt = PIXEL_FORMAT_BGRA; break;
 //            case 3: pixfmt = PIXEL_FORMAT_BGR;  break;
 //            case 1: pixfmt = PIXEL_FORMAT_LUM;  break;
 //            default:
 //                throw new Exception("Unsupported format: No support for IplImage with " + channels + " channels.");
 //        }
-        setPixelFormat(t, pixfmt);
-//        if(!init(t, "data/LogitechPro4000.dat",
-//                      "data/markerboard_480-499.cfg", 1.0f, 1000.0f, null)) {
+        tracker.setPixelFormat(pixfmt);
+//        if(!tracker.init("data/LogitechPro4000.dat",
+//                   "data/markerboard_480-499.cfg", 1.0f, 1000.0f, null)) {
 //            throw new Exception("ERROR: init() failed.");
 //        }
-        setBorderWidth(t, 0.125);
-//        setThreshold(t, 128);
-//        activateAutoThreshold(t, true);
-//        setNumAutoThresholdRetries(t, 10);
-        setUndistortionMode(t, UNDIST_NONE);
-//        setPoseEstimator(t, POSE_ESTIMATOR_RPP);
-        setMarkerMode(t, MARKER_ID_BCH);
-        setImageProcessingMode(t, IMAGE_FULL_RES);
-    }
-
-    @Override protected void finalize() {
-        if (t != null) {
-            deleteTracker(t);
-            t = null;
-        }
+        tracker.setBorderWidth(0.125);
+//        tracker.setThreshold(128);
+//        tracker.activateAutoThreshold(true);
+//        tracker.setNumAutoThresholdRetries(10);
+        tracker.setUndistortionMode(UNDIST_NONE);
+//        tracker.setPoseEstimator(POSE_ESTIMATOR_RPP);
+        tracker.setMarkerMode(MARKER_ID_BCH);
+        tracker.setImageProcessingMode(IMAGE_FULL_RES);
     }
 
     public IplImage getBinarized() { return binarized; }
@@ -187,14 +179,14 @@ public class MarkerDetector {
     public Marker[] detect(IplImage image, boolean whiteMarkers) {
         init(image);
 
-        if (image.depth != IPL_DEPTH_8U && image.nChannels > 1) {
-            cvConvertScale(image, tempsrc2, 255/image.getMaxIntensity(), 0);
+        if (depth != IPL_DEPTH_8U && channels > 1) {
+            cvConvertScale(image, tempsrc2, 255/image.highValue(), 0);
             cvCvtColor(tempsrc2, tempsrc, CV_BGR2GRAY);
             image = tempsrc;
-        } else if (image.depth != IPL_DEPTH_8U) {
-            cvConvertScale(image, tempsrc, 255/image.getMaxIntensity(), 0);
+        } else if (depth != IPL_DEPTH_8U) {
+            cvConvertScale(image, tempsrc, 255/image.highValue(), 0);
             image = tempsrc;
-        } else if (image.nChannels > 1) {
+        } else if (channels > 1) {
             cvCvtColor(image, tempsrc, CV_BGR2GRAY);
             image = tempsrc;
         }
@@ -206,70 +198,75 @@ public class MarkerDetector {
 //CanvasFrame.global.waitKey();
 //long time2 = System.currentTimeMillis();
 
-        ArrayList<Marker> markers2 = new ArrayList<Marker>();
-
-        IntByReference marker_num = new IntByReference();
-        ARMarkerInfo.PointerByReference markerInfo = new ARMarkerInfo.PointerByReference();
-        arDetectMarkerLite(t, binarized.getByteBuffer(),
-                128 /* getThreshold(t) */, markerInfo, marker_num);
+        int[] n = new int[1];
+        ARMarkerInfo markers = new ARMarkerInfo(null);
+        tracker.arDetectMarkerLite(binarized.getByteBuffer(), 128 /* tracker.getThreshold() */, markers, n);
 //long time3 = System.currentTimeMillis();
-        int n = marker_num.getValue();
-        if (n > 0) {
-            ARMarkerInfo info = markerInfo.getStructure();
-            ARMarkerInfo[] markers = ((ARMarkerInfo[])info.toArray(n));
+        Marker[] markers2 = new Marker[n[0]];
+        int n2 = 0;
+        for (int i = 0; i < n[0] && !markers.isNull(); i++) {
+            markers.position(i);
+            int id = markers.id();
+            if (id < 0) {
+                // no detected ID...
+                continue;
+            }
+            int dir = markers.dir();
+            double confidence = markers.cf();
+            double[] vertex = new double[8];
+            markers.vertex().asBuffer(8).get(vertex);
 
-            for (ARMarkerInfo m : markers) {
-                if (m.id < 0)
-                    // no detected ID...
+            int w = settings.subPixelWindow/2+1;
+            if (vertex[0]-w < 0 || vertex[0]+w >= width || vertex[1]-w < 0 || vertex[1]+w >= height ||
+                vertex[2]-w < 0 || vertex[2]+w >= width || vertex[3]-w < 0 || vertex[3]+w >= height ||
+                vertex[4]-w < 0 || vertex[4]+w >= width || vertex[5]-w < 0 || vertex[5]+w >= height ||
+                vertex[6]-w < 0 || vertex[6]+w >= width || vertex[7]-w < 0 || vertex[7]+w >= height) {
+                // too tight for cvFindCornerSubPix...
                     continue;
+            }
 
-                double[] v = m.vertex;
-                int w = settings.subPixelWindow/2+1;
-                if (v[0]-w < 0 || v[0]+w >= image.width || v[1]-w < 0 || v[1]+w >= image.height ||
-                    v[2]-w < 0 || v[2]+w >= image.width || v[3]-w < 0 || v[3]+w >= image.height ||
-                    v[4]-w < 0 || v[4]+w >= image.width || v[5]-w < 0 || v[5]+w >= image.height ||
-                    v[6]-w < 0 || v[6]+w >= image.width || v[7]-w < 0 || v[7]+w >= image.height)
-                    // too tight for cvFindCornerSubPix...
-                        continue;
+            points.put(vertex);
+            CvBox2D box = cvMinAreaRect2(points, memory);
+            float bw = box.size().width();
+            float bh = box.size().height();
+            cvClearMemStorage(memory);
+            if (bw <= 0 || bh <= 0 || bw/bh < 0.1 || bw/bh > 10) {
+                // marker is too "flat" to have been IDed correctly...
+                continue;
+            }
 
-                points.put(m.vertex);
-                CvBox2D box = cvMinAreaRect2(points, memory); 
-                cvClearMemStorage(memory);
-                if (box.size.width <= 0 || box.size.height <= 0 || 
-                        box.size.width/box.size.height < 0.1 || 
-                        box.size.width/box.size.height > 10) {
-                    // marker is too "flat" to have been IDed correctly...
-                    continue;
-                }
-
-                CvPoint2D32f[] corners = CvPoint2D32f.createArray(m.vertex);
+            for (int j = 0; j < 4; j++) {
+                corners.position(j).set(vertex[2*j], vertex[2*j+1]);
+            }
 
 if (false) {
-                // move the search window a bit (max 1/4 of the window) toward the center...
-                // this allows us to cram more markers closer to one another
-                CvPoint2D32f center = new CvPoint2D32f(0,0);
-                for (CvPoint2D32f p : corners) {
-                    center.x += p.x;
-                    center.y += p.y;
-                }
-                center.x /= corners.length;
-                center.y /= corners.length;
-                for (CvPoint2D32f p : corners) {
-                    double dx = center.x - p.x;
-                    double dy = center.y - p.y;
-                    p.x += Math.signum(dx)*(settings.subPixelWindow/4);
-                    p.y += Math.signum(dy)*(settings.subPixelWindow/4);
-                }
+            // move the search window a bit (max 1/4 of the window) toward the center...
+            // this allows us to cram more markers closer to one another
+            double cx = 0, cy = 0;
+            for (int j = 0; j < 4; j++) {
+                corners.position(j);
+                cx += corners.x();
+                cy += corners.y();
+            }
+            cx /= 4;
+            cy /= 4;
+            for (int j = 0; j < 4; j++) {
+                corners.position(j);
+                float x = corners.x();
+                float y = corners.y();
+                double dx = cx - x;
+                double dy = cy - y;
+                corners.x(x + (float)Math.signum(dx)*(settings.subPixelWindow/4));
+                corners.y(y + (float)Math.signum(dy)*(settings.subPixelWindow/4));
+            }
 }
-                cvFindCornerSubPix(image, corners, 4, subPixelSize,
-                        subPixelZeroZone, subPixelTermCriteria);
-                m.vertex[0] = corners[(4-m.dir)%4].x; m.vertex[1] = corners[(4-m.dir)%4].y;
-                m.vertex[2] = corners[(5-m.dir)%4].x; m.vertex[3] = corners[(5-m.dir)%4].y;
-                m.vertex[4] = corners[(6-m.dir)%4].x; m.vertex[5] = corners[(6-m.dir)%4].y;
-                m.vertex[6] = corners[(7-m.dir)%4].x; m.vertex[7] = corners[(7-m.dir)%4].y;
+            cvFindCornerSubPix(image, corners.position(0), 4, subPixelSize, subPixelZeroZone, subPixelTermCriteria);
+            vertex[0] = corners.position((4-dir)%4).x(); vertex[1] = corners.position((4-dir)%4).y();
+            vertex[2] = corners.position((5-dir)%4).x(); vertex[3] = corners.position((5-dir)%4).y();
+            vertex[4] = corners.position((6-dir)%4).x(); vertex[5] = corners.position((6-dir)%4).y();
+            vertex[6] = corners.position((7-dir)%4).x(); vertex[7] = corners.position((7-dir)%4).y();
 
-                markers2.add(new Marker(m.id, m.vertex, m.cf));
-             }
+            markers2[n2++] = new Marker(id, vertex, confidence);
         }
 //long time4 = System.currentTimeMillis();
 //System.out.println("binarizeTime = " + (time2-time1) + "  detectTime = " + (time3-time2) + "  subPixTime = " + (time4-time3));
@@ -277,55 +274,48 @@ if (false) {
         //cvCvtColor(binarized, image, CV_GRAY2BGR);
         //cvCopy(binarized, image, null);
 
-        return markers2.toArray(new Marker[0]);
+        return Arrays.copyOf(markers2, n2);
     }
 
     public void draw(IplImage image, Marker[] markers) {
-
         for (Marker m : markers) {
-                CvPoint center = new CvPoint(0, 0);
-                CvPoint[] pts = CvPoint.createArray(4);
-                for (int i = 0; i < 4; i++) {
-                    pts[i].x = (int)Math.round(m.corners[i*2  ] * (1<<16));
-                    pts[i].y = (int)Math.round(m.corners[i*2+1] * (1<<16)); 
-                    pts[i].write();
-                    center.x += pts[i].x;
-                    center.y += pts[i].y;
+            int cx = 0, cy = 0;
+            for (int i = 0; i < 4; i++) {
+                int x = (int)Math.round(m.corners[i*2  ] * (1<<16));
+                int y = (int)Math.round(m.corners[i*2+1] * (1<<16));
+                pts.position(i).x(x);
+                pts.position(i).y(y);
+                cx += x;
+                cy += y;
 
 // draw little colored squares in corners to confirm that the corners
 // are returned in the right order...
-//                CvPoint pt2a = new CvPoint(pts[i].x+200000, pts[i].y+200000);
-//                cvRectangle(image, pts[i].byValue(), pt2a.byValue(),
-//                        i == 0? CvScalar.CV_RGB(maxIntensity, 0, 0) :
-//                            i == 1? CvScalar.CV_RGB(0, maxIntensity, 0) :
-//                                i == 2? CvScalar.CV_RGB(0, 0, maxIntensity) :
-//                                    CvScalar.CV_RGB(maxIntensity, maxIntensity, maxIntensity),
+//                CvPoint pt2a = cvPoint(pts[i].x+200000, pts[i].y+200000);
+//                cvRectangle(image, pts, pt2a,
+//                        i == 0? CV_RGB(maxIntensity, 0, 0) :
+//                            i == 1? CV_RGB(0, maxIntensity, 0) :
+//                                i == 2? CV_RGB(0, 0, maxIntensity) :
+//                                    CV_RGB(maxIntensity, maxIntensity, maxIntensity),
 //                        CV_FILLED, CV_AA, 16);
-                }
-                center.x /= 4;
-                center.y /= 4;
+            }
+            cx /= 4;
+            cy /= 4;
 
-                cvPolyLine(image, pts[0].pointerByReference(), new int[] { 4 }, 1, 1,
-                        CV_RGB(0, 0, image.getMaxIntensity()), 1, CV_AA, 16);
+            cvPolyLine(image, pts, new int[] { 4 }, 1, 1, CV_RGB(0, 0, image.highValue()), 1, CV_AA, 16);
 
-                String text = ""+m.id;
-                CvSize text_size = new CvSize();
-                IntByReference baseline = new IntByReference();
-                cvGetTextSize(text, font, text_size, baseline);
+            String text = Integer.toString(m.id);
+            int[] baseline = new int[1];
+            cvGetTextSize(text, font, text_size, baseline);
 
-                CvPoint pt1 = new CvPoint(center.x - (text_size.width *3/2 << 16)/2,
-                                          center.y + (text_size.height*3/2 << 16)/2);
-                CvPoint pt2 = new CvPoint(center.x + (text_size.width *3/2 << 16)/2,
-                                          center.y - (text_size.height*3/2 << 16)/2);
-                cvRectangle(image, pt1.byValue(), pt2.byValue(),
-                        CV_RGB(0, image.getMaxIntensity(), 0), CV_FILLED, CV_AA, 16);
+            pt1.x(cx - (text_size.width() *3/2 << 16)/2);
+            pt1.y(cy + (text_size.height()*3/2 << 16)/2);
+            pt2.x(cx + (text_size.width() *3/2 << 16)/2);
+            pt2.y(cy - (text_size.height()*3/2 << 16)/2);
+            cvRectangle(image, pt1, pt2, CV_RGB(0, image.highValue(), 0), CV_FILLED, CV_AA, 16);
 
-                CvPoint pt = new CvPoint((int)Math.round((double)center.x/(1<<16) - text_size.width/2),
-                                         (int)Math.round((double)center.y/(1<<16) + text_size.height/2 + 1));
-                cvPutText(image, text, pt.byValue(), font,
-                        CV_RGB(0, 0, 0));
+            pt1.x((int)Math.round((double)cx/(1<<16) - text_size.width()/2));
+            pt1.y((int)Math.round((double)cy/(1<<16) + text_size.height()/2 + 1));
+            cvPutText(image, text, pt1, font, CvScalar.BLACK);
         }
     }
-
-
 }

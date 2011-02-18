@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,15 +20,13 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.Pointer;
 import java.io.File;
 import java.nio.FloatBuffer;
+import com.googlecode.javacpp.Pointer;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.v11or20.*;
-import com.googlecode.javacv.jna.cv.v21;
-import com.googlecode.javacv.jna.cv.v20;
-import com.googlecode.javacv.jna.cv.v11;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 
 /**
  *
@@ -101,7 +99,8 @@ public class ProjectiveDevice {
         }
 
         double initAspectRatio = 1.0;
-        int flags = CV_CALIB_FIX_K3 | CV_CALIB_FIX_INTRINSIC;
+        int flags = CV_CALIB_FIX_K3 | CV_CALIB_FIX_K4 |
+                    CV_CALIB_FIX_K5 | CV_CALIB_FIX_K6 | CV_CALIB_FIX_INTRINSIC;
 
         public double getInitAspectRatio() {
             return initAspectRatio;
@@ -195,6 +194,50 @@ public class ProjectiveDevice {
                 flags |= CV_CALIB_FIX_K3;
             } else {
                 flags &= ~CV_CALIB_FIX_K3;
+            }
+        }
+
+        public boolean isFixK4() {
+            return (flags & CV_CALIB_FIX_K4) != 0;
+        }
+        public void setFixK4(boolean fixK4) {
+            if (fixK4) {
+                flags |= CV_CALIB_FIX_K4;
+            } else {
+                flags &= ~CV_CALIB_FIX_K4;
+            }
+        }
+
+        public boolean isFixK5() {
+            return (flags & CV_CALIB_FIX_K5) != 0;
+        }
+        public void setFixK5(boolean fixK5) {
+            if (fixK5) {
+                flags |= CV_CALIB_FIX_K5;
+            } else {
+                flags &= ~CV_CALIB_FIX_K5;
+            }
+        }
+
+        public boolean isFixK6() {
+            return (flags & CV_CALIB_FIX_K6) != 0;
+        }
+        public void setFixK6(boolean fixK6) {
+            if (fixK6) {
+                flags |= CV_CALIB_FIX_K6;
+            } else {
+                flags &= ~CV_CALIB_FIX_K6;
+            }
+        }
+
+        public boolean isRationalModel() {
+            return (flags & CV_CALIB_RATIONAL_MODEL) != 0;
+        }
+        public void setRationalModel(boolean rationalModel) {
+            if (rationalModel) {
+                flags |= CV_CALIB_RATIONAL_MODEL;
+            } else {
+                flags &= ~CV_CALIB_RATIONAL_MODEL;
             }
         }
 
@@ -326,6 +369,10 @@ public class ProjectiveDevice {
         double k1 = k[0];
         double k2 = k[1];
         double k3 = k.length > 4 ? k[4] : 0;
+        // XXX: need to use those new distortion coefficients
+        double k4 = k.length > 5 ? k[5] : 0;
+        double k5 = k.length > 6 ? k[6] : 0;
+        double k6 = k.length > 7 ? k[7] : 0;
         double p1 = k[2];
         double p2 = k[3];
 
@@ -356,6 +403,10 @@ public class ProjectiveDevice {
         double k1 = k[0];
         double k2 = k[1];
         double k3 = k.length > 4 ? k[4] : 0;
+        // XXX: need to use those new distortion coefficients
+        double k4 = k.length > 5 ? k[5] : 0;
+        double k5 = k.length > 6 ? k[6] : 0;
+        double k6 = k.length > 7 ? k[7] : 0;
         double p1 = k[2];
         double p2 = k[3];
 
@@ -408,54 +459,44 @@ public class ProjectiveDevice {
         return xu;
     }
 
-    public static final boolean is20or21;
-    static {
-        boolean b = false;
-        try {
-            b = com.googlecode.javacv.jna.cv.v20or21.libname != null;
-        } catch (Throwable t) { }
-        is20or21 = b;
-    }
-
     private IplImage undistortMap1 = null, undistortMap2 = null;
     private void initUndistortMaps(boolean useFixedPointMaps) {
         //cvUndistort2(src, dst, cameraMatrix, distortionCoeffs);
-        if (is20or21) {
-            if (undistortMap1 == null || undistortMap2 == null) {
-                if (useFixedPointMaps) {
-                    undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
-                    undistortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16U, 1);
-                } else {
-                    undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
-                    undistortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
-                }
-                cvInitUndistortMap(cameraMatrix, distortionCoeffs, undistortMap1, undistortMap2);
+        if (undistortMap1 == null || undistortMap2 == null) {
+            if (useFixedPointMaps) {
+                undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
+                undistortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16U, 1);
+            } else {
+                undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
+                undistortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
             }
-        } else {
-            if (undistortMap1 == null || undistortMap2 == null) {
-                IplImage mapx = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
-                IplImage mapy = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
-                FloatBuffer bufx = mapx.getFloatBuffer();
-                FloatBuffer bufy = mapy.getFloatBuffer();
-                for (int y = 0; y < mapx.height; y++) {
-                    for (int x = 0; x < mapx.width; x++) {
-                        double[] undistxy = undistort(x, y);
-                        bufx.put((float)undistxy[0]);
-                        bufy.put((float)undistxy[1]);
-                    }
-                }
-                if (useFixedPointMaps) {
-                    undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
-                    undistortMap2 = IplImage.create(imageWidth, imageHeight, is20or21 ? IPL_DEPTH_16U : IPL_DEPTH_16S, 1);
-                    cvConvertMaps(mapx, mapy, undistortMap1, undistortMap2);
-                    mapx.release();
-                    mapy.release();
-                } else {
-                    undistortMap1 = mapx;
-                    undistortMap2 = mapy;
-                }
-            }
+            cvInitUndistortMap(cameraMatrix, distortionCoeffs, undistortMap1, undistortMap2);
         }
+//        if (undistortMap1 == null || undistortMap2 == null) {
+//            IplImage mapx = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
+//            IplImage mapy = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
+//            FloatBuffer bufx = mapx.getFloatBuffer();
+//            FloatBuffer bufy = mapy.getFloatBuffer();
+//            int width  = mapx.width();
+//            int height = mapx.height();
+//            for (int y = 0; y < height; y++) {
+//                for (int x = 0; x < width; x++) {
+//                    double[] undistxy = undistort(x, y);
+//                    bufx.put((float)undistxy[0]);
+//                    bufy.put((float)undistxy[1]);
+//                }
+//            }
+//            if (useFixedPointMaps) {
+//                undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
+//                undistortMap2 = IplImage.create(imageWidth, imageHeight, is20or21 ? IPL_DEPTH_16U : IPL_DEPTH_16S, 1);
+//                cvConvertMaps(mapx, mapy, undistortMap1, undistortMap2);
+//                mapx.release();
+//                mapy.release();
+//            } else {
+//                undistortMap1 = mapx;
+//                undistortMap2 = mapy;
+//            }
+//        }
     }
     public IplImage getUndistortMap1(boolean useFixedPointMaps) {
         initUndistortMaps(useFixedPointMaps);
@@ -483,8 +524,10 @@ public class ProjectiveDevice {
             IplImage mapy = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
             FloatBuffer bufx = mapx.getFloatBuffer();
             FloatBuffer bufy = mapy.getFloatBuffer();
-            for (int y = 0; y < mapx.height; y++) {
-                for (int x = 0; x < mapx.width; x++) {
+            int width  = mapx.width();
+            int height = mapx.height();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
                     double[] distxy = distort(x, y);
                     bufx.put((float)distxy[0]);
                     bufy.put((float)distxy[1]);
@@ -492,7 +535,7 @@ public class ProjectiveDevice {
             }
             if (useFixedPointMaps) {
                 distortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
-                distortMap2 = IplImage.create(imageWidth, imageHeight, is20or21 ? IPL_DEPTH_16U : IPL_DEPTH_16S, 1);
+                distortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16U /* IPL_DEPTH_16S */, 1);
                 cvConvertMaps(mapx, mapy, distortMap1, distortMap2);
                 mapx.release();
                 mapy.release();
@@ -528,16 +571,16 @@ public class ProjectiveDevice {
     public CvMat getBackProjectionMatrix(CvMat n, double d, CvMat B) {
         CvMat temp = CvMat.take(3, 3);
 
-        temp.cols = 1; temp.step /= 3;
-        B.rows = 3;
+        temp.cols(1); temp.step(temp.step()/3);
+        B.rows(3);
         cvGEMM(R, T, -1,    null, 0,  temp,  CV_GEMM_A_T);
         cvGEMM(temp, n, 1,  null, 0,  B,     CV_GEMM_B_T);
         double a = cvDotProduct(n, temp) + d;
         B.put(0, B.get(0) - a);
         B.put(4, B.get(4) - a);
         B.put(8, B.get(8) - a);
-        B.rows = 4;
-        temp.cols = 3; temp.step *= 3;
+        B.rows(4);
+        temp.cols(3); temp.step(temp.step()*3);
 
         B.put(9, n.get());
 
@@ -592,27 +635,12 @@ public class ProjectiveDevice {
 
         CvMat R1 = CvMat.take(3, 3); CvMat P1 = CvMat.take(3, 4);
         CvMat R2 = CvMat.take(3, 3); CvMat P2 = CvMat.take(3, 4);
-        CvSize.ByValue imageSize = // ??
-                new CvSize((peer.imageWidth  + imageWidth )/2,
-                           (peer.imageHeight + imageHeight)/2).byValue();
-        try {
-            v21.cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
-                            peer.distortionCoeffs, distortionCoeffs,
-                            imageSize, relativeR, relativeT,
-                            R1, R2, P1, P2, null, 0, -1, CvSize.ZERO, null, null);
-        } catch (Throwable t) {
-            try {
-                v20.cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
-                                peer.distortionCoeffs, distortionCoeffs,
-                                imageSize, relativeR, relativeT,
-                                R1, R2, P1, P2, null, 0);
-            } catch (Throwable tt) {
-                v11.cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
-                                peer.distortionCoeffs, distortionCoeffs,
-                                imageSize, relativeR, relativeT,
-                                R1, R2, P1, P2, null, 0);
-            }
-        }
+        CvSize imageSize = cvSize((peer.imageWidth  + imageWidth )/2,
+                                  (peer.imageHeight + imageHeight)/2); // ?
+        cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
+                        peer.distortionCoeffs, distortionCoeffs,
+                        imageSize, relativeR, relativeT,
+                        R1, R2, P1, P2, null, 0, -1, CvSize.ZERO, null, null);
         cvMatMul(cameraMatrix, R2, R2);
         cvInvert(cameraMatrix, R1);
         cvMatMul(R2, R1, H);
@@ -655,7 +683,7 @@ public class ProjectiveDevice {
     }
     public static void write(String filename, ProjectiveDevice ... devices) {
         CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_WRITE);
-        CvAttrList.ByValue a = cvAttrList();
+        CvAttrList a = cvAttrList();
 
         cvStartWriteStruct(fs, "Cameras", CV_NODE_SEQ, null, a);
         for (ProjectiveDevice d : devices) {
@@ -683,12 +711,12 @@ public class ProjectiveDevice {
         writeParameters(file.getAbsolutePath());
     }
     public void writeParameters(String filename) {
-        CvFileStorage fs = cvOpenFileStorage(filename, null, CV_STORAGE_WRITE);
+        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_WRITE);
         writeParameters(fs);
         fs.release();
     }
     public void writeParameters(CvFileStorage fs) {
-        CvAttrList.ByValue a = cvAttrList();
+        CvAttrList a = cvAttrList();
 
         cvStartWriteStruct(fs, getSettings().getName(), CV_NODE_MAP, null, a);
 
@@ -732,7 +760,7 @@ public class ProjectiveDevice {
         readParameters(file.getAbsolutePath());
     }
     public void readParameters(String filename) throws Exception {
-        CvFileStorage fs = cvOpenFileStorage(filename, null, CV_STORAGE_READ);
+        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_READ);
         readParameters(fs);
         fs.release();
     }
@@ -741,7 +769,7 @@ public class ProjectiveDevice {
             throw new Exception("Error: CvFileStorage is null, cannot read parameters for device " + 
                     getSettings().getName() + ". Is the parametersFile correct?");
         }
-        CvAttrList.ByValue a = cvAttrList();
+        CvAttrList a = cvAttrList();
 
         CvFileNode fn = cvGetFileNodeByName(fs, null, getSettings().getName());
         if (fn == null) {

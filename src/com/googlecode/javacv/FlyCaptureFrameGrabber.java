@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,21 +20,16 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.Native;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.FloatByReference;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.NativeLongByReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.googlecode.javacpp.Loader;
 
-import static com.googlecode.javacv.jna.PGRFlyCapture.*;
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.PGRFlyCapture.*;
 
 /**
  *
@@ -44,25 +39,25 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
     public static String[] getDeviceDescriptions() throws Exception {
         tryLoad();
 
-        IntByReference count = new IntByReference();
+        int[] count = new int[1];
         int error = flycaptureBusCameraCount(count);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureBusCameraCount() Error " + error);
         }
-        int c = count.getValue();
+        int c = count[0];
         String[] descriptions = new String[c];
 
         if (c > 0) {
-            FlyCaptureInfoEx[] info = FlyCaptureInfoEx.createArray(c);
+            FlyCaptureInfoEx info = new FlyCaptureInfoEx(c);
             error = flycaptureBusEnumerateCamerasEx(info, count);
             if (error != FLYCAPTURE_OK) {
                 throw new Exception("flycaptureBusEnumerateCamerasEx() Error " + error);
             }
 
             for (int i = 0; i < descriptions.length; i++) {
-                descriptions[i] = Native.toString(info[i].pszVendorName) + " " +
-                                  Native.toString(info[i].pszModelName) + " " +
-                                  info[i].SerialNumber;
+                info.position(i);
+                descriptions[i] = info.pszVendorName() + " " +
+                        info.pszModelName() + " " + info.SerialNumber();
             }
         }
 
@@ -75,7 +70,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                String s =  com.googlecode.javacv.jna.PGRFlyCapture.libname;
+                Loader.load(com.googlecode.javacv.cpp.PGRFlyCapture.class);
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -87,14 +82,11 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
     }
 
     public FlyCaptureFrameGrabber(int deviceNumber) throws Exception {
-        FlyCaptureContext.PointerByReference c = new FlyCaptureContext.PointerByReference();
-        int error = flycaptureCreateContext(c);
+        int error = flycaptureCreateContext(context);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureCreateContext() Error " + error);
         }
-        context = c.getStructure();
-        error = flycaptureInitializePlus(context, new NativeLong(deviceNumber),
-                new NativeLong(numBuffers), (Pointer)null);
+        error = flycaptureInitializePlus(context, deviceNumber, numBuffers, null);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureInitialize() Error " + error);
         }
@@ -118,25 +110,24 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
     }
 
-    public static final NativeLong
-            INITIALIZE         = new NativeLong(0x000),
-            TRIGGER_INQ        = new NativeLong(0x530),
-            IS_CAMERA_POWER    = new NativeLong(0x400),
-            CAMERA_POWER       = new NativeLong(0x610),
-            SOFTWARE_TRIGGER   = new NativeLong(0x62C),
-            SOFT_ASYNC_TRIGGER = new NativeLong(0x102C),
-            IMAGE_DATA_FORMAT  = new NativeLong(0x1048);
+    public static final int
+            INITIALIZE         = 0x000,
+            TRIGGER_INQ        = 0x530,
+            IS_CAMERA_POWER    = 0x400,
+            CAMERA_POWER       = 0x610,
+            SOFTWARE_TRIGGER   = 0x62C,
+            SOFT_ASYNC_TRIGGER = 0x102C,
+            IMAGE_DATA_FORMAT  = 0x1048;
 
-    private FlyCaptureContext context = null;
+    private FlyCaptureContext context = new FlyCaptureContext(null);
     private FlyCaptureImage raw_image = new FlyCaptureImage();
     private FlyCaptureImage conv_image = new FlyCaptureImage();
     private IplImage temp_image, return_image = null;
-    private NativeLongByReference regVal = new NativeLongByReference();
-    private NativeLong setRegVal = new NativeLong();
-    private FloatByReference gammaRef = new FloatByReference();
+    private int[] regOut = new int[1];
+    private float[] gammaOut = new float[1];
 
     @Override public double getGamma() {
-        return gammaRef.getValue();
+        return gammaOut[0];
     }
 
     public void start() throws Exception {
@@ -193,17 +184,15 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
 
         // set or reset trigger mode
-        IntByReference iPolarity = new IntByReference();
-        IntByReference iSource   = new IntByReference();
-        IntByReference iRawValue = new IntByReference();
-        IntByReference iMode     = new IntByReference();
-        int error = flycaptureGetTrigger(context,
-                null, iPolarity, iSource, iRawValue, iMode, null);
+        int[] iPolarity = new int[1];
+        int[] iSource   = new int[1];
+        int[] iRawValue = new int[1];
+        int[] iMode     = new int[1];
+        int error = flycaptureGetTrigger(context, null, iPolarity, iSource, iRawValue, iMode, null);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureGetTrigger() Error " + error);
         }
-        error = flycaptureSetTrigger(context,
-                triggerMode, iPolarity.getValue(), 7, 0, 0);
+        error = flycaptureSetTrigger(context, triggerMode, iPolarity[0], 7, 0, 0);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureSetTrigger() Error " + error);
         }
@@ -212,24 +201,22 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
 
         // try to match the endianness to our platform
-        error = flycaptureGetCameraRegister(context,
-                IMAGE_DATA_FORMAT, regVal);
+        error = flycaptureGetCameraRegister(context, IMAGE_DATA_FORMAT, regOut);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureGetCameraRegister() Error " + error);
         }
+        int reg;
         if (ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)) {
-            setRegVal.setValue(regVal.getValue().intValue() | 0x1);
+            reg = regOut[0] | 0x1;
         } else {
-            setRegVal.setValue(regVal.getValue().intValue() & ~0x1);
+            reg = regOut[0] & ~0x1;
         }
-        error = flycaptureSetCameraRegister(context,
-                IMAGE_DATA_FORMAT, setRegVal);
+        error = flycaptureSetCameraRegister(context, IMAGE_DATA_FORMAT, reg);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureSetCameraRegister() Error " + error);
         }
 
-        error = flycaptureSetBusSpeed(context,
-                FLYCAPTURE_S_FASTEST, FLYCAPTURE_S_FASTEST);
+        error = flycaptureSetBusSpeed(context, FLYCAPTURE_S_FASTEST, FLYCAPTURE_S_FASTEST);
         if (error != FLYCAPTURE_OK) {
             error = flycaptureSetBusSpeed(context,
                     FLYCAPTURE_ANY, FLYCAPTURE_ANY);
@@ -244,16 +231,16 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                 throw new Exception("flycaptureSetCameraAbsProperty() Error " + error + ": Could not set gamma.");
             }
         }
-        error = flycaptureGetCameraAbsProperty(context, FLYCAPTURE_GAMMA, gammaRef);
+        error = flycaptureGetCameraAbsProperty(context, FLYCAPTURE_GAMMA, gammaOut);
         if (error != FLYCAPTURE_OK) {
-            gammaRef.setValue(2.2f);
+            gammaOut[0] = 2.2f;
         }
 
         error = flycaptureStart(context, c, f);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureStart() Error " + error);
         }
-        error = flycaptureSetGrabTimeoutEx(context, new NativeLong(timeout));
+        error = flycaptureSetGrabTimeoutEx(context, timeout);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureSetGrabTimeoutEx() Error " + error);
         }
@@ -263,8 +250,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         // wait for trigger to be ready...
         long time = System.currentTimeMillis();
         do {
-            int error = flycaptureGetCameraRegister(context,
-                    SOFTWARE_TRIGGER, regVal);
+            int error = flycaptureGetCameraRegister(context, SOFTWARE_TRIGGER, regOut);
             if (error != FLYCAPTURE_OK) {
                 throw new Exception("flycaptureGetCameraRegister() Error " + error);
             }
@@ -272,7 +258,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                 break;
                 //throw new Exception("waitForTriggerReady() Error: Timeout occured.");
             }
-        } while((regVal.getValue().intValue() >>> 31) != 0);
+        } while((regOut[0] >>> 31) != 0);
     }
 
     public void stop() throws Exception {
@@ -286,9 +272,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
 
     public void trigger() throws Exception {
         waitForTriggerReady();
-        setRegVal.setValue(0x80000000);
-        int error = flycaptureSetCameraRegister(context,
-                SOFT_ASYNC_TRIGGER, setRegVal);
+        int error = flycaptureSetCameraRegister(context, SOFT_ASYNC_TRIGGER, 0x80000000);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureSetCameraRegister() Error " + error);
         }
@@ -351,32 +335,32 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             throw new Exception("flycaptureGrabImage2() Error " + error + " (Has start() been called?)");
         }
 
-        int w = raw_image.iCols;
-        int h = raw_image.iRows;
-        int depth = getDepth(raw_image.pixelFormat);
-        int stride = raw_image.iRowInc;
-        int size = raw_image.iRows*raw_image.iRowInc;
-        int numChannels = getNumChannels(raw_image.pixelFormat);
-        error = flycaptureGetCameraRegister(context,
-                IMAGE_DATA_FORMAT, regVal);
+        int w = raw_image.iCols();
+        int h = raw_image.iRows();
+        int format = raw_image.pixelFormat();
+        int depth = getDepth(format);
+        int stride = raw_image.iRowInc();
+        int size = h*stride;
+        int numChannels = getNumChannels(format);
+        error = flycaptureGetCameraRegister(context, IMAGE_DATA_FORMAT, regOut);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureGetCameraRegister() Error " + error);
         }
-        ByteOrder frameEndian = (regVal.getValue().intValue() & 0x1) != 0 ?
+        ByteOrder frameEndian = (regOut[0] & 0x1) != 0 ?
                 ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
         boolean alreadySwapped = false;
-        boolean colorbayer = raw_image.bStippled;
+        boolean colorbayer = raw_image.bStippled();
 
         if ((depth == IPL_DEPTH_8U || frameEndian.equals(ByteOrder.nativeOrder())) &&
                 (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3 &&
-                                                raw_image.pixelFormat == FLYCAPTURE_BGR) ||
+                                                format    == FLYCAPTURE_BGR) ||
                 (colorMode == ColorMode.GRAY && numChannels == 1 && !colorbayer))) {
             if (return_image == null) {
                 return_image = IplImage.createHeader(w, h, depth, numChannels);
             }
-            return_image.widthStep = stride;
-            return_image.imageSize = size;
-            return_image.imageData = raw_image.pData;
+            return_image.widthStep(stride);
+            return_image.imageSize(size);
+            return_image.imageData(raw_image.pData());
         } else {
             if (return_image == null) {
                 return_image = IplImage.create(w, h, depth, colorMode == ColorMode.BGR ? 3 : 1);
@@ -388,18 +372,17 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                     temp_image = return_image;
                 }
             }
-            conv_image.iRowInc = temp_image.widthStep;
-            conv_image.pData = temp_image.imageData;
+            conv_image.iRowInc(temp_image.widthStep());
+            conv_image.pData(temp_image.imageData());
             if (depth == IPL_DEPTH_8U) {
-                conv_image.pixelFormat = colorMode == ColorMode.RAW ? FLYCAPTURE_RAW8 :
-                                         temp_image.nChannels == 1  ? FLYCAPTURE_MONO8 : FLYCAPTURE_BGR;
+                conv_image.pixelFormat(colorMode == ColorMode.RAW ? FLYCAPTURE_RAW8 :
+                                       temp_image.nChannels() == 1  ? FLYCAPTURE_MONO8 : FLYCAPTURE_BGR);
             } else {
-                conv_image.pixelFormat = colorMode == ColorMode.RAW ? FLYCAPTURE_RAW16 :
-                                         temp_image.nChannels == 1  ? FLYCAPTURE_MONO16 : FLYCAPTURE_RGB16;
+                conv_image.pixelFormat(colorMode == ColorMode.RAW ? FLYCAPTURE_RAW16 :
+                                       temp_image.nChannels() == 1  ? FLYCAPTURE_MONO16 : FLYCAPTURE_RGB16);
             }
 
-            if (raw_image.pixelFormat == conv_image.pixelFormat &&
-                    raw_image.iRowInc == conv_image.iRowInc) {
+            if (conv_image.pixelFormat() == format && conv_image.iRowInc() == stride) {
                 // we just need a copy to swap bytes..
                 ShortBuffer in  = raw_image.getByteBuffer().order(frameEndian).asShortBuffer();
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
@@ -427,8 +410,8 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
         }
 
-        return_image.setTimestamp(raw_image.timeStamp.ulSeconds.longValue()*1000000 +
-                raw_image.timeStamp.ulMicroSeconds.longValue());
+        FlyCaptureTimestamp timeStamp = raw_image.timeStamp();
+        return_image.timestamp(timeStamp.ulSeconds()*1000000 + timeStamp.ulMicroSeconds());
         return return_image;
     }
 

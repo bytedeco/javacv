@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,10 +20,12 @@
 
 package com.googlecode.javacv;
 
+import java.nio.DoubleBuffer;
 import java.util.Arrays;
+import com.googlecode.javacpp.DoublePointer;
 
-import static com.googlecode.javacv.jna.cvkernels.*;
-import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.cvkernels.*;
 
 /**
  *
@@ -68,18 +70,18 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 
         CvMat X2 = CvMat.take(4, 4);
         prepareTransform(X2, pyramidLevel, p, inverse);
-        X2.rows = 3;
+        X2.rows(3);
         // do color transformation
         if (roi == null) {
             cvResetImageROI(dstImage);
         } else {
-            cvSetImageROI(dstImage, roi.byValue());
+            cvSetImageROI(dstImage, roi);
         }
-        X2.put(0, 3, X2.get(0, 3)*dstImage.getMaxIntensity());
-        X2.put(1, 3, X2.get(1, 3)*dstImage.getMaxIntensity());
-        X2.put(2, 3, X2.get(2, 3)*dstImage.getMaxIntensity());
+        X2.put(0, 3, X2.get(0, 3)*dstImage.highValue());
+        X2.put(1, 3, X2.get(1, 3)*dstImage.highValue());
+        X2.put(2, 3, X2.get(2, 3)*dstImage.highValue());
         cvTransform(srcImage, dstImage, X2, null);
-        X2.rows = 4;
+        X2.rows(4);
         X2.pool();
     }
 
@@ -88,7 +90,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 
         cvSetIdentity(X2);
 
-        X2.rows = 3; X2.cols = 3;
+        X2.rows(3); X2.cols(3);
         if (p.fakeIdentity && !inverse) {
             X2.put(A);
         } else if (A != null && X != null) {
@@ -99,7 +101,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
             X2.put(X);
         }
 
-        X2.rows = 4; X2.cols = 4;
+        X2.rows(4); X2.cols(4);
         if (b != null) {
             X2.put(0, 3, b.get(0));
             X2.put(1, 3, b.get(1));
@@ -131,50 +133,64 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         }
         if (!allOK) {
             class Cache {
-                MultiWarpColorTransformData[] kernelData;
-                CvMat[] H, X;
+                Cache(int length) {
+                    this.length = length;
+                    kernelData = new KernelData(length);
+                    H = new CvMat[length];
+                    X = new CvMat[length];
+                    dstDstDot = new DoublePointer[length];
+                    dstDstDotBuf = new DoubleBuffer[length];
+                }
+                final int length;
+                final KernelData kernelData;
+                final CvMat[] H, X;
+                final DoublePointer[] dstDstDot;
+                final DoubleBuffer[] dstDstDotBuf;
             }
-            Cache cache = data[0].cache instanceof Cache ?
-                   (Cache)data[0].cache : new Cache();
-            if (cache.kernelData == null || cache.kernelData.length != data.length ||
-                         cache.H == null ||          cache.H.length != data.length ||
-                         cache.X == null ||          cache.X.length != data.length) {
-                data[0].cache = cache;
-                cache.kernelData = (MultiWarpColorTransformData[])
-                        new MultiWarpColorTransformData().toArray(data.length);
-                cache.H = new CvMat[data.length];
-                cache.X = new CvMat[data.length];
+            Cache c = data[0].cache instanceof Cache ? (Cache)data[0].cache : null;
+            if (c == null || c.length != data.length) {
+                data[0].cache = c = new Cache(data.length);
             }
-            MultiWarpColorTransformData[] kd = cache.kernelData;
-
-            for (int i = 0; i < kd.length; i++) {
-                Data d = data[i];
-                kd[i].srcImg    = d.srcImg    == null ? null : d.srcImg   .getPointer();
-                kd[i].srcImg2   = null;
-                kd[i].subImg    = d.subImg    == null ? null : d.subImg   .getPointer();
-                kd[i].srcDotImg = d.srcDotImg == null ? null : d.srcDotImg.getPointer();
-
-                CvMat H = cache.H[i] == null ? cache.H[i] = CvMat.create(3, 3) : cache.H[i];
-                CvMat X = cache.X[i] == null ? cache.X[i] = CvMat.create(4, 4) : cache.X[i];
-
-                prepareHomography(H, pyramidLevel, (Parameters)parameters[i], d.inverse);
-                prepareTransform (X, pyramidLevel, (Parameters)parameters[i], d.inverse);
-
-                kd[i].H1 = H.getPointer();
-                kd[i].H2 = null;
-                kd[i].X  = X.getPointer();
-
-                kd[i].transImg  = d.transImg  == null ? null : d.transImg .getPointer();
-                kd[i].dstImg    = d.dstImg    == null ? null : d.dstImg   .getPointer();
-                kd[i].dstDstDot = d.dstDstDot;
-            }
-
-            multiWarpColorTransform(kd, mask, roi, zeroThreshold, getFillColor());
 
             for (int i = 0; i < data.length; i++) {
-                data[i].dstCount     = kd[i].dstCount;
-                data[i].dstCountZero = kd[i].dstCountZero;
-                data[i].srcDstDot    = kd[i].srcDstDot;
+                c.kernelData.position(i);
+
+                c.kernelData.srcImg(data[i].srcImg);
+                c.kernelData.srcImg2(null);
+                c.kernelData.subImg(data[i].subImg);
+                c.kernelData.srcDotImg(data[i].srcDotImg);
+
+                if (c.H[i] == null) { c.H[i] = CvMat.create(3, 3); }
+                if (c.X[i] == null) { c.X[i] = CvMat.create(4, 4); }
+                if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
+                    c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
+                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
+                }
+
+                prepareHomography(c.H[i], pyramidLevel, (Parameters)parameters[i], data[i].inverse);
+                prepareTransform (c.X[i], pyramidLevel, (Parameters)parameters[i], data[i].inverse);
+
+                c.kernelData.H1(c.H[i]);
+                c.kernelData.H2(null);
+                c.kernelData.X (c.X[i]);
+
+                c.kernelData.transImg(data[i].transImg);
+                c.kernelData.dstImg(data[i].dstImg);
+                c.kernelData.dstDstDot(c.dstDstDot[i]);
+            }
+
+            multiWarpColorTransform(c.kernelData.position(0), data.length,
+                    mask, roi, zeroThreshold, getFillColor());
+
+            for (int i = 0; i < data.length; i++) {
+                c.kernelData.position(i);
+                data[i].dstCount     = c.kernelData.dstCount();
+                data[i].dstCountZero = c.kernelData.dstCountZero();
+                data[i].srcDstDot    = c.kernelData.srcDstDot();
+                if (data[i].dstDstDot != null) {
+                    c.dstDstDotBuf[i].position(0);
+                    c.dstDstDotBuf[i].get(data[i].dstDstDot);
+                }
             }
         }
 

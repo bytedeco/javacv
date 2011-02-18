@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -25,16 +25,18 @@
 
 package com.googlecode.javacv;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.IntByReference;
 import java.io.File;
+import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.Loader;
+import com.googlecode.javacpp.LongPointer;
+import com.googlecode.javacpp.PointerPointer;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.avcodec.*;
-import static com.googlecode.javacv.jna.avdevice.*;
-import static com.googlecode.javacv.jna.avformat.*;
-import static com.googlecode.javacv.jna.avutil.*;
-import static com.googlecode.javacv.jna.swscale.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.avutil.*;
+import static com.googlecode.javacv.cpp.avcodec.*;
+import static com.googlecode.javacv.cpp.avformat.*;
+import static com.googlecode.javacv.cpp.avdevice.*;
+import static com.googlecode.javacv.cpp.swscale.*;
 
 /**
  *
@@ -48,11 +50,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                String avutil   = com.googlecode.javacv.jna.avutil.libname;
-                String avcodec  = com.googlecode.javacv.jna.avcodec.libname;
-                String avformat = com.googlecode.javacv.jna.avformat.libname;
-                String avdevice = com.googlecode.javacv.jna.avdevice.libname;
-                String swscale  = com.googlecode.javacv.jna.swscale.libname;
+                Loader.load(com.googlecode.javacv.cpp.avutil.class);
+                Loader.load(com.googlecode.javacv.cpp.avcodec.class);
+                Loader.load(com.googlecode.javacv.cpp.avformat.class);
+                Loader.load(com.googlecode.javacv.cpp.avdevice.class);
+                Loader.load(com.googlecode.javacv.cpp.swscale.class);
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -89,7 +91,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     private String filename = null, inputFormatName = null;
-    private AVFormatContext pFormatCtx;
+    private AVFormatContext pFormatCtx = new AVFormatContext(null);
     private int             videoStream;
     private AVStream        pStream;
     private AVCodecContext  pCodecCtx;
@@ -98,9 +100,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVFrame         pFrameRGB;
     private SwsContext      img_convert_ctx;
     private AVPacket        packet = new AVPacket();
-    private IntByReference  frameFinished = new IntByReference();
+    private int[]           frameFinished = new int[1];
     private int             numBytes;
-    private Pointer         buffer;
+    private BytePointer     buffer;
     private IplImage return_image = null;
 
     @Override public double getGamma() {
@@ -114,7 +116,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     public void start() throws Exception {
         // Open video file
-        AVFormatContext.PointerByReference p = new AVFormatContext.PointerByReference();
         AVInputFormat f = null;
         if (inputFormatName != null) {
             f = av_find_input_format(inputFormatName);
@@ -125,17 +126,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVFormatParameters fp = null;
         if (frameRate > 0 || bpp > 0 || imageWidth > 0 || imageHeight > 0) {
             fp = new AVFormatParameters();
-            fp.time_base = av_d2q(1/frameRate, FFmpegFrameRecorder.DEFAULT_FRAME_RATE_BASE);
-            fp.sample_rate = bpp;
-            fp.channels = colorMode == ColorMode.BGR ? 3 : 1;
-            fp.width = imageWidth;
-            fp.height = imageHeight;
+            fp.time_base(av_d2q(1/frameRate, FFmpegFrameRecorder.DEFAULT_FRAME_RATE_BASE));
+            fp.sample_rate(bpp);
+            fp.channels(colorMode == ColorMode.BGR ? 3 : 1);
+            fp.width(imageWidth);
+            fp.height(imageHeight);
         }
-        if (av_open_input_file(p, filename, f, 0, fp) != 0) {
+        if (av_open_input_file(pFormatCtx, filename, f, 0, fp) != 0) {
             throw new Exception("Could not open file.");
         }
-        pFormatCtx = p.getStructure();
-        pFormatCtx.setAutoSynch(false);
 
         // Retrieve stream information
         if (av_find_stream_info(pFormatCtx) < 0) {
@@ -147,14 +146,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         // Find the first video stream
         videoStream = -1;
-        for (int i = 0; i < pFormatCtx.nb_streams; i++) {
-            pStream = pFormatCtx.streams[i];
-            pStream.setAutoSynch(false);
+        int nb_streams = pFormatCtx.nb_streams();
+        for (int i = 0; i < nb_streams; i++) {
+            pStream = pFormatCtx.streams(i);
             // Get a pointer to the codec context for the video stream
-            pCodecCtx = pStream.codec;
-            pCodecCtx.setAutoSynch(false);
-            pCodecCtx.readField("codec_type");
-            if (pCodecCtx.codec_type == CODEC_TYPE_VIDEO) {
+            pCodecCtx = pStream.codec();
+            if (pCodecCtx.codec_type() == CODEC_TYPE_VIDEO) {
                 videoStream = i;
                 break;
             }
@@ -164,12 +161,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         // Find the decoder for the video stream
-        pCodecCtx.readField("codec_id");
-        pCodec = avcodec_find_decoder(pCodecCtx.codec_id);
+        pCodec = avcodec_find_decoder(pCodecCtx.codec_id());
         if (pCodec == null) {
-            throw new Exception("Unsupported codec or codec not found: " + pCodecCtx.codec_id + ".");
+            throw new Exception("Unsupported codec or codec not found: " + pCodecCtx.codec_id() + ".");
         }
-        pCodec.setAutoSynch(false);
+
         // Open codec
         if (avcodec_open(pCodecCtx, pCodec) < 0) {
             throw new Exception("Could not open codec.");
@@ -184,17 +180,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             throw new Exception("Could not allocate frame.");
         }
 
-        pCodecCtx.readField("width");
-        pCodecCtx.readField("height");
-        pCodecCtx.readField("pix_fmt");
-        int width  = getImageWidth()  > 0 ? getImageWidth()  : pCodecCtx.width;
-        int height = getImageHeight() > 0 ? getImageHeight() : pCodecCtx.height;
+        int width  = getImageWidth()  > 0 ? getImageWidth()  : pCodecCtx.width();
+        int height = getImageHeight() > 0 ? getImageHeight() : pCodecCtx.height();
 
         switch (colorMode) {
             case BGR:
                 // Determine required buffer size and allocate buffer
                 numBytes = avpicture_get_size(PIX_FMT_BGR24, width, height);
-                buffer = av_malloc(numBytes);
+                buffer = new BytePointer(av_malloc(numBytes));
 
                 // Assign appropriate parts of buffer to image planes in pFrameRGB
                 // Note that pFrameRGB is an AVFrame, but AVFrame is a superset
@@ -202,8 +195,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 avpicture_fill(pFrameRGB, buffer, PIX_FMT_BGR24, width, height);
 
                 // Convert the image into YUV format that SDL uses
-                img_convert_ctx = sws_getContext(pCodecCtx.width, pCodecCtx.height, pCodecCtx.pix_fmt,
-                        width, height, PIX_FMT_BGR24, SWS_BILINEAR, Pointer.NULL, Pointer.NULL, Pointer.NULL);
+                img_convert_ctx = sws_getContext(
+                        pCodecCtx.width(), pCodecCtx.height(), pCodecCtx.pix_fmt(),
+                        width, height, PIX_FMT_BGR24, SWS_BILINEAR, null, null, null);
                 if (img_convert_ctx == null) {
                     throw new Exception("Cannot initialize the conversion context.");
                 }
@@ -213,10 +207,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             case GRAY:
                 numBytes = avpicture_get_size(PIX_FMT_GRAY8, width, height);
-                buffer = av_malloc(numBytes);
+                buffer = new BytePointer(av_malloc(numBytes));
                 avpicture_fill(pFrameRGB, buffer, PIX_FMT_GRAY8, width, height);
-                img_convert_ctx = sws_getContext(pCodecCtx.width, pCodecCtx.height, pCodecCtx.pix_fmt,
-                        width, height, PIX_FMT_GRAY8, SWS_BILINEAR, Pointer.NULL, Pointer.NULL, Pointer.NULL);
+                img_convert_ctx = sws_getContext(
+                        pCodecCtx.width(), pCodecCtx.height(), pCodecCtx.pix_fmt(),
+                        width, height, PIX_FMT_GRAY8, SWS_BILINEAR, null, null, null);
                 if (img_convert_ctx == null) {
                     throw new Exception("Cannot initialize the conversion context.");
                 }
@@ -227,7 +222,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 numBytes = 0;
                 buffer = null;
                 img_convert_ctx = null;
-                return_image = IplImage.createHeader(pCodecCtx.width, pCodecCtx.height, IPL_DEPTH_8U, 1);
+                return_image = IplImage.createHeader(pCodecCtx.width(), pCodecCtx.height(), IPL_DEPTH_8U, 1);
                 break;
 
             default:
@@ -242,13 +237,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             buffer = null;
         }
         if (pFrameRGB != null) {
-            av_free(pFrameRGB.getPointer());
+            av_free(pFrameRGB);
             pFrameRGB = null;
         }
 
         // Free the YUV frame
         if (pFrame != null) {
-            av_free(pFrame.getPointer());
+            av_free(pFrame);
             pFrame = null;
         }
 
@@ -259,7 +254,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         // Close the video file
-        if (pFormatCtx != null) {
+        if (pFormatCtx != null && !pFormatCtx.isNull()) {
             av_close_input_file(pFormatCtx);
             pFormatCtx = null;
         }
@@ -271,7 +266,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void trigger() throws Exception {
-        if (pFormatCtx == null) {
+        if (pFormatCtx == null || pFormatCtx.isNull()) {
             throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
         }
         for (int i = 0; i < triggerFlushSize; i++) {
@@ -283,7 +278,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public IplImage grab() throws Exception {
-        if (pFormatCtx == null) {
+        if (pFormatCtx == null || pFormatCtx.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }
         boolean done = false;
@@ -295,43 +290,47 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             // Is this a packet from the video stream?
-            if (packet.stream_index == videoStream) {
+            if (packet.stream_index() == videoStream) {
                 // Decode video frame
                 int len = avcodec_decode_video2(pCodecCtx, pFrame, frameFinished, packet);
 
-                if (packet.dts == AV_NOPTS_VALUE && pFrame.opaque != null &&
-                        pFrame.opaque.getLong(0) != AV_NOPTS_VALUE) {
-                    pts = pFrame.opaque.getLong(0);
-                } else if (packet.dts != AV_NOPTS_VALUE) {
-                    pts = packet.dts;
+                LongPointer opaque = new LongPointer(pFrame.opaque());
+                if (packet.dts() != AV_NOPTS_VALUE) {
+                    pts = packet.dts();
+                } else if (!opaque.isNull() && opaque.get() != AV_NOPTS_VALUE) {
+                    pts = opaque.get();
                 } else {
                     pts = 0;
                 }
-                pts = 1000*pts*pStream.time_base.num/pStream.time_base.den;
+                AVRational time_base = pStream.time_base();
+                pts = 1000*pts*time_base.num()/time_base.den();
 
                 // Did we get a video frame?
-                if (len > 0 && frameFinished.getValue() != 0) {
+                if (len > 0 && frameFinished[0] != 0) {
                     switch (colorMode) {
                         case BGR:
                         case GRAY:
+                            // Deinterlace Picture
+                            if (deinterlace) {
+                                avpicture_deinterlace(pFrame, pFrame, pCodecCtx.pix_fmt(), pCodecCtx.width(), pCodecCtx.height());
+                            }
+
                             // Convert the image from its native format to RGB
-                            Pointer framePtr = pFrame.getPointer();
-                            Pointer frameRGBPtr = pFrameRGB.getPointer();
-                            sws_scale(img_convert_ctx, framePtr, framePtr.share(Pointer.SIZE*4), 0,
-                                    pCodecCtx.height, frameRGBPtr, frameRGBPtr.share(Pointer.SIZE*4));
-                            return_image.imageData = pFrameRGB.data0;
-                            return_image.widthStep = pFrameRGB.linesize0;
+                            sws_scale(img_convert_ctx, new PointerPointer(pFrame), pFrame.linesize(), 0,
+                                    pCodecCtx.height(), new PointerPointer(pFrameRGB), pFrameRGB.linesize());
+                            return_image.imageData(pFrameRGB.data(0));
+                            return_image.widthStep(pFrameRGB.linesize(0));
                             break;
                         case RAW:
-                            assert (pCodecCtx.width  == return_image.width &&
-                                    pCodecCtx.height == return_image.height);
-                            return_image.imageData = pFrame.data0;
-                            return_image.widthStep = pFrame.linesize0;
+                            assert (pCodecCtx.width()  == return_image.width() &&
+                                    pCodecCtx.height() == return_image.height());
+                            return_image.imageData(pFrame.data(0));
+                            return_image.widthStep(pFrame.linesize(0));
                             break;
                         default:
                             assert (false);
                     }
-                    return_image.imageSize = return_image.height * return_image.widthStep;
+                    return_image.imageSize(return_image.height() * return_image.widthStep());
 
                     done = true;
                 }
@@ -341,7 +340,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_free_packet(packet);
         }
 
-        return_image.setTimestamp(pts);
+        return_image.timestamp(pts);
         return return_image;
     }
 }

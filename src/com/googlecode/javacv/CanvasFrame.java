@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -45,7 +45,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
 
-import static com.googlecode.javacv.jna.cxcore.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
@@ -339,7 +339,7 @@ public class CanvasFrame extends JFrame {
         releaseGraphics(g);
     }
     public void showColor(CvScalar color) {
-        showColor(new Color((int)color.getRed(), (int)color.getGreen(), (int)color.getBlue()));
+        showColor(new Color((int)color.red(), (int)color.green(), (int)color.blue()));
     }
 
     // this should not be called from the event dispatch thread, but if it is,

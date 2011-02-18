@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010 Samuel Audet
+ * Copyright (C) 2009,2010,2011 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -27,8 +27,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import com.googlecode.javacv.ProjectiveDevice.CalibrationSettings;
 
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.v11or20.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 
 /**
  *
@@ -46,8 +47,8 @@ public class GeometricCalibrator {
         cvSetIdentity(lastWarp);
 
         if (markedPlane != null) {
-            int w = markedPlane.getImage().width;
-            int h = markedPlane.getImage().height;
+            int w = markedPlane.getImage().width();
+            int h = markedPlane.getImage().height();
             warpSrcPts.put(0.0, 0.0,  w, 0.0,  w, h,  0.0, h);
         }
     }
@@ -120,17 +121,17 @@ public class GeometricCalibrator {
     }
 
     public Marker[] processImage(IplImage image) {
-        projectiveDevice.imageWidth = image.width;
-        projectiveDevice.imageHeight = image.height;
+        projectiveDevice.imageWidth = image.width();
+        projectiveDevice.imageHeight = image.height();
 
-        final boolean whiteMarkers = markedPlane.getForegroundColor().getMagnitude() >
-                                     markedPlane.getBackgroundColor().getMagnitude();
-        if (image.depth > 8) {
+        final boolean whiteMarkers = markedPlane.getForegroundColor().magnitude() >
+                                     markedPlane.getBackgroundColor().magnitude();
+        if (image.depth() > 8) {
             if (tempImage == null ||
-                    tempImage.width     != image.width  ||
-                    tempImage.height    != image.height) {
-                tempImage = (IplImage)IplImage.create(image.width, image.height,
-                        IPL_DEPTH_8U, 1, image.origin);
+                    tempImage.width()     != image.width()  ||
+                    tempImage.height()    != image.height()) {
+                tempImage = (IplImage)IplImage.create(image.width(), image.height(),
+                        IPL_DEPTH_8U, 1, image.origin());
             }
             cvConvertScale(image, tempImage, 1.0/(1<<8), 0);
             lastDetectedMarkers = markerDetector.detect(tempImage, whiteMarkers);
@@ -155,7 +156,7 @@ public class GeometricCalibrator {
         cvCopy(warp, prevWarp);
 
         // send upstream our recommendation for addition or not of these markers...
-        int size = (image.width+image.height)/2;
+        int size = (image.width()+image.height())/2;
         if (rmsePrev < settings.patternSteadyMax*size && rmseLast > settings.patternMovedMin*size) {
             return lastDetectedMarkers;
         } else {
@@ -261,10 +262,10 @@ public class GeometricCalibrator {
             CvMat image_points, CvMat point_counts, CvMat camera_matrix,
             CvMat dist_coeffs, CvMat rot_vects, CvMat trans_vects,
             CvMat per_view_errors ) {
-        CvMat image_points2 = CvMat.create(image_points.rows,
-            image_points.cols, image_points.type);
+        CvMat image_points2 = CvMat.create(image_points.rows(),
+            image_points.cols(), image_points.type());
 
-        int i, image_count = rot_vects.rows, points_so_far = 0;
+        int i, image_count = rot_vects.rows(), points_so_far = 0;
         double total_err = 0, err;
 
         for (i = 0; i < image_count; i++) {
@@ -310,7 +311,11 @@ public class GeometricCalibrator {
             }
         }
         int kn = dsettings.isFixK3() ? 4 : 5;
-        if (d.distortionCoeffs == null || d.distortionCoeffs.cols != kn) {
+        if (dsettings.isRationalModel() && !dsettings.isFixK4() &&
+                !dsettings.isFixK4() && !dsettings.isFixK5()) {
+            kn = 8;
+        }
+        if (d.distortionCoeffs == null || d.distortionCoeffs.cols() != kn) {
             d.distortionCoeffs = CvMat.create(1, kn);
             cvSetZero(d.distortionCoeffs);
         }
@@ -322,7 +327,7 @@ public class GeometricCalibrator {
 
         CvMat[] points = getPoints(useCenters);
         cvCalibrateCamera2(points[0], points[1], points[2],
-                new CvSize(d.imageWidth, d.imageHeight).byValue(),
+                cvSize(d.imageWidth, d.imageHeight),
                 d.cameraMatrix, d.distortionCoeffs,
                 rotVects, transVects, dsettings.flags);
 
@@ -350,7 +355,7 @@ public class GeometricCalibrator {
         // includes all the output information,
         // we can check the quality of calibration using the
         // epipolar geometry constraint: m2^t*F*m1=0
-        int N = imagePoints1.cols;
+        int N = imagePoints1.cols();
         CvMat L1 = CvMat.create(1, N, CV_32F, 3);
         CvMat L2 = CvMat.create(1, N, CV_32F, 3);
         //Always work in undistorted space
@@ -436,10 +441,10 @@ public class GeometricCalibrator {
                 pointCounts.put(count);
             }
         }
-        objectPointsMat.cols = objectPoints.position()/3;
-        imagePoints1Mat.cols = imagePoints1.position()/2;
-        imagePoints2Mat.cols = imagePoints2.position()/2;
-        pointCountsMat .cols = pointCounts.position();
+        objectPointsMat.cols(objectPoints.position()/3);
+        imagePoints1Mat.cols(imagePoints1.position()/2);
+        imagePoints2Mat.cols(imagePoints2.position()/2);
+        pointCountsMat .cols(pointCounts .position());
 
 
         // place our ProjectiveDevice at the origin...
@@ -455,8 +460,8 @@ public class GeometricCalibrator {
 
         cvStereoCalibrate(objectPointsMat, imagePoints1Mat, imagePoints2Mat, pointCountsMat,
                 d.cameraMatrix, d.distortionCoeffs, dp.cameraMatrix, dp.distortionCoeffs,
-                new CvSize(d.imageWidth, d.imageHeight).byValue(), dp.R, dp.T, dp.E, dp.F,
-                new CvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,100,1e-6).byValue(),
+                cvSize(d.imageWidth, d.imageHeight), dp.R, dp.T, dp.E, dp.F,
+                cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,100,1e-6),
                 dpsettings.flags);
 
         // compute and return epipolar error...

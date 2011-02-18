@@ -1,100 +1,113 @@
 =JavaCV=
 
 ==Introduction==
-JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, ARToolKitPlus, libdc1394 2.x, PGR FlyCapture, and FFmpeg. The following classes, found under the `com.googlecode.javacv.jna` package namespace, expose their complete APIs: `cxcore`, `cv`, `highgui`, `cvaux`, `ARToolKitPlus`, `dc1394`, `PGRFlyCapture`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, and `swscale`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform. 
+JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, FFmpeg, libdc1394, PGR FlyCapture, and ARToolKitPlus. The following classes, found under the `com.googlecode.javacv.cpp` package namespace, expose their complete APIs: `opencv_core`, `opencv_imgproc`, `opencv_video`, `opencv_features2d`, `opencv_calib3d`, `opencv_objdetect`, `opencv_highgui`, `opencv_legacy`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, `swscale`, `dc1394`, `PGRFlyCapture`, and `ARToolKitPlus`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform, including Android. 
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV] section below as well as the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
+To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV] section below as well as the 
+sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
 
-I will continue as I go to add all code that I am developing for my doctoral research.
+I will continue to add all code that I am developing for my doctoral research as I go.
 
 
 ==Required Software==
 To use JavaCV, you will need to download and install the following software:
  * An implementation of Java SE 6
   * OpenJDK 6  http://openjdk.java.net/install/  or
-  * Sun JDK 6  http://java.sun.com/javase/downloads/  or
+  * Sun JDK 6  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK 6  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE 6 for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 1.0, 1.1pre1, 2.0, or 2.1  http://sourceforge.net/projects/opencvlibrary/files/
- * Java Native Access 3.2.7  http://jna.dev.java.net/
+ * OpenCV 2.2  http://sourceforge.net/projects/opencvlibrary/files/
+  * Precompiled for Android  http://code.google.com/p/javacv/downloads/list
 
-Further, although not always required, some functionality of JavaCV will also rely on:
- * libdc1394 2.1.2 (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
- * PGR FlyCapture 1 or 2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
- * ARToolKitPlus 2.1.1c  http://code.google.com/p/javacv/downloads/list
+Further, although not always required, some functionality of JavaCV also relies on:
  * FFmpeg 0.6.x  http://ffmpeg.org/download.html
-  * Precompiled Windows DLLs and Mac OS X dylibs  http://ffmpeg.arrozcru.org/autobuilds/
- * Android SDK API 8  http://developer.android.com/sdk/
-  * Sample code with precompiled JNA and OpenCV  http://code.google.com/p/javacv/downloads/list
+  * Precompiled for Windows  http://ffmpeg.arrozcru.org/autobuilds/
+  * Precompiled for Android  http://code.google.com/p/javacv/downloads/list
+ * libdc1394 2.1.x (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
+ * PGR FlyCapture 1.7~2.1 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
+ * Android SDK API 9  http://developer.android.com/sdk/
 
 To modify the source code, note that the project files were created with:
  * NetBeans 6.9  http://www.netbeans.org/downloads/
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
-And feel free to ask questions on the mailing list if you encounter any problems with the software! I am sure it is far from perfect...
+And feel free to ask questions on [http://groups.google.com/group/javacv the mailing list] if you encounter any problems with the software! I am sure it is far from perfect...
 
 
 ==Quick Start for OpenCV==
-First, put `javacv.jar` and `jna.jar` somewhere in your classpath. Then, the wrappers of OpenCV can automatically access all of the C API from the `cxcore`, `cv`, `highgui`, and `cvaux` modules. OpenCV simply needs to be placed in its default installation directory and it should work. JavaCV will look it up there. It will also search the system PATH, such as the current directory under Windows. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original syntax as possible. For example, one can load an image file and smooth it with a program like this:
+First, put `javacpp.jar`, `javacv.jar`, and `javacv-*.jar` somewhere in your classpath, and make sure that the library files of OpenCV can be found either in their default installation directory or in the system PATH, which includes the current directory under Windows. Here are some more specific instructions for common cases:
+
+NetBeans (Java SE):
+ * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
+ * Locate the JAR files, select them, and click OK.
+
+Eclipse (Java SE):
+ * Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs..."
+ * Locate the JAR files, select them, and click OK.
+
+Eclipse (Android):
+ * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
+ * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
+ * Extract the *.so files from `javacv-android-arm.jar` as well as the *.so files of OpenCV in the newly created "libs/armeabi" folder.
+ * Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
+ * Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
+
+After that, the wrapper classes for OpenCV can automatically access all of its C API. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method to load an image file, smooth it, and save it back to disk:
 
 {{{
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
-import static com.googlecode.javacv.jna.highgui.*;
-import static com.googlecode.javacv.jna.cvaux.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
 
-public class Test {
-    public static void main(String[] args) {
-        IplImage image = cvLoadImage("test.png", 1);
-        if (image == null) {
-            System.err.println("Could not load image file.");
-        } else {
-            cvSmooth(image, image, CV_GAUSSIAN, 3, 0, 0, 0);
-            // ...
-        }
+public class Smoother {
+    public static void smooth(String filename) { 
+        IplImage image = cvLoadImage(filename);
+        cvSmooth(image, image, CV_GAUSSIAN, 3);
+        cvSaveImage(filename, image);
     }
 }
 }}}
 
-
-Additionally, I placed version specific functionality in separate classes. To access newer functions of OpenCV 2.1 for example, one would import the `v21` subclasses instead, e.g.:
-{{{
-import static com.googlecode.javacv.jna.cxcore.v21.*;
-import static com.googlecode.javacv.jna.cv.v21.*;
-import static com.googlecode.javacv.jna.highgui.v21.*;
-import static com.googlecode.javacv.jna.cvaux.v21.*;
-}}}
-and similarly for `v10`, `v11`, and `v20`.
-
-
-*IMPORTANT NOTE*: OpenCV might crash if it has been compiled with SSE instructions. This is known to occur on 32-bit x86 CPUs when the SSE calling conventions of the compiler used to build the Java implementation differ from the one used to compile OpenCV. The AMD64 architecture appears unaffected. A workaround may be included in a future version of JNA, but for the moment, please be advised. *Concretely, this means you should try to recompile OpenCV without SSE instructions before asking me why JavaCV crashes.*
-
-
-JavaCV also comes with helper classes and methods on top of OpenCV to facilitate its integration to the Java platform. Here is a small program demonstrating the most frequently useful parts:
+JavaCV also comes with helper classes and methods on top of OpenCV to facilitate its integration to the Java platform. Here is a small demo program demonstrating the most frequently useful parts:
 
 {{{
+import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.*;
-import static com.googlecode.javacv.jna.cxcore.*;
-import static com.googlecode.javacv.jna.cv.*;
+import com.googlecode.javacv.cpp.*
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
-public class Test2 {
+public class Demo {
     public static void main(String[] args) throws Exception {
-        String classifierName = args.length > 0 ? args[0] : "haarcascade_frontalface_alt.xml";
+        String classifierName = null;
+        if (args.length > 0) {
+            classifierName = args[0];
+        } else {
+            System.err.println("Please provide the path to \"haarcascade_frontalface_alt.xml\".");
+            System.exit(1);
+        }
 
-        // Make sure to call JavaCvErrorCallback.redirectError() to prevent your 
-        // application from simply crashing with no warning on some error of OpenCV.
-        // JavaCvErrorCallback may be subclassed for finer control of exceptions.
-        new JavaCvErrorCallback().redirectError();
+        // Preload the opencv_objdetect module to work around a known bug.
+        Loader.load(opencv_objdetect.class);
+
+        // We can "cast" Pointer objects by instantiating a new object of the desired class.
+        CvHaarClassifierCascade classifier = new CvHaarClassifierCascade(cvLoad(classifierName));
+        if (classifier.isNull()) {
+            System.err.println("Error loading classifier file \"" + classifierName + "\".");
+            System.exit(1);
+        }
 
         // CanvasFrame is a JFrame containing a Canvas component, which is hardware accelerated.  
         // It can also switch into full-screen mode when called with a screenNumber.
         CanvasFrame frame = new CanvasFrame("Some Title");
 
-        // OpenCVFrameGrabber uses highgui, but other more versatile FrameGrabbers include
-        // DC1394FrameGrabber, FlyCaptureFrameGrabber, and FFmpegFrameGrabber.
+        // OpenCVFrameGrabber uses opencv_highgui, but other more versatile FrameGrabbers 
+        // include DC1394FrameGrabber, FlyCaptureFrameGrabber, and FFmpegFrameGrabber.
         FrameGrabber grabber = new OpenCVFrameGrabber(0);
         grabber.start();
 
@@ -104,9 +117,11 @@ public class Test2 {
         // - To get a BufferedImage from an IplImage, you may call getBufferedImage().
         // - The createFrom() factory method can construct an IplImage from a BufferedImage.
         // - There are also a few copy*() methods for BufferedImage<->IplImage data transfers.
-        IplImage grabbedImage = grabber.grab(),
-                 grayImage    = IplImage.create(grabbedImage.width, grabbedImage.height, IPL_DEPTH_8U, 1),
-                 rotatedImage = grabbedImage.clone();
+        IplImage grabbedImage = grabber.grab();
+        int width  = grabbedImage.width();
+        int height = grabbedImage.height();
+        IplImage grayImage    = IplImage.create(width, height, IPL_DEPTH_8U, 1);
+        IplImage rotatedImage = grabbedImage.clone();
 
         // Let's create some random 3D rotation...
         CvMat randomR = CvMat.create(3, 3), randomAxis = CvMat.create(3, 1);
@@ -114,57 +129,55 @@ public class Test2 {
         // with the set of get() and put() methods.
         randomAxis.put((Math.random()-0.5)/4, (Math.random()-0.5)/4, (Math.random()-0.5)/4);
         cvRodrigues2(randomAxis, randomR, null);
-        double f = (grabbedImage.width + grabbedImage.height)/2.0;
+        double f = (width + height)/2.0;
                                                 randomR.put(0, 2, randomR.get(0, 2)*f); 
                                                 randomR.put(1, 2, randomR.get(1, 2)*f);
         randomR.put(2, 0, randomR.get(2, 0)/f); randomR.put(2, 1, randomR.get(2, 1)/f);
         System.out.println(randomR);
 
-        // We can "cast" Pointer objects by instantiating a new object of the desired class.
-        CvHaarClassifierCascade classifier = new CvHaarClassifierCascade(cvLoad(classifierName));
-
-        // Objects allocated with a create*() or clone() factory method are automatically 
-        // garbage collected, but may also explicitly be freed with the release() method.
+        // Objects allocated with a create*() or clone() factory method are automatically released
+        // by the garbage collector, but may still be explicitly released by calling release().
         CvMemStorage storage = CvMemStorage.create();
 
-        // Contiguous regions of native memory may be allocated using createArray() factory methods.
-        CvPoint[] hatPoints = CvPoint.createArray(3);
-        CvSeq.PointerByReference contourPointer = new CvSeq.PointerByReference(); 
-        int sizeofCvContour = com.sun.jna.Native.getNativeSize(CvContour.ByValue.class);
+        // We can allocate native arrays using constructors taking an integer as argument.
+        CvPoint hatPoints = new CvPoint(3);
 
         // Again, FFmpegFrameRecorder also exists as a more versatile alternative.
-        FrameRecorder recorder = new OpenCVFrameRecorder("output.avi", grabbedImage.width, grabbedImage.height);
+        FrameRecorder recorder = new OpenCVFrameRecorder("output.avi", width, height);
         recorder.start();
 
         while (frame.isVisible() && (grabbedImage = grabber.grab()) != null) {
-
             // Let's try to detect some faces! but we need a grayscale image...
             cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
-            CvSeq faces = cvHaarDetectObjects(grayImage, classifier, storage, 1.1, 3, 0/*CV_HAAR_DO_CANNY_PRUNING*/);
-            for (int i = 0; i < faces.total; i++) {
+            CvSeq faces = cvHaarDetectObjects(grayImage, classifier, storage, 
+                1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
+            int total = faces.total();
+            for (int i = 0; i < total; i++) {
                 CvRect r = new CvRect(cvGetSeqElem(faces, i));
-                cvRectangle(grabbedImage, cvPoint(r.x, r.y), cvPoint(r.x+r.width, r.y+r.height), CvScalar.RED, 1, CV_AA, 0);
-                hatPoints[0].x = r.x-r.width/10;    hatPoints[0].y = r.y-r.height/10;
-                hatPoints[1].x = r.x+r.width*11/10; hatPoints[1].y = r.y-r.height/10;
-                hatPoints[2].x = r.x+r.width/2;     hatPoints[2].y = r.y-r.height/2;
-                cvFillConvexPoly(grabbedImage, hatPoints, hatPoints.length, CvScalar.GREEN, CV_AA, 0);
+                int x = r.x(), y = r.y(), w = r.width(), h = r.height();
+                cvRectangle(grabbedImage, cvPoint(x, y), cvPoint(x+w, y+h), CvScalar.RED, 1, CV_AA, 0);
+
+                // To access the elements of a native array, use the `position()` method
+                hatPoints.position(0).x(x-w/10);    hatPoints.y(y-h/10);
+                hatPoints.position(1).x(x+w*11/10); hatPoints.y(y-h/10);
+                hatPoints.position(2).x(x+w/2);     hatPoints.y(y-h/2);
+                cvFillConvexPoly(grabbedImage, hatPoints.position(0), 3, CvScalar.GREEN, CV_AA, 0);
             }
 
             // Let's find some contours! but first some thresholding...
             cvThreshold(grayImage, grayImage, 64, 255, CV_THRESH_BINARY);
 
-            // To get the value of a doubly indirect output parameter, we need to use the getValue() or
-            // getStructure() method of its *PointerByReference object, which obviously has to be created
-            // prior to the call if we want to get the data after the call.
-            cvFindContours(grayImage, storage, contourPointer, sizeofCvContour, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE); 
-            CvSeq contour = contourPointer.getStructure();
-            while (contour != null) {
-                if (contour.elem_size > 0) {
-                    CvSeq points = cvApproxPoly(contour.getPointer(), sizeofCvContour,
-                            storage, CV_POLY_APPROX_DP, cvContourPerimeter(contour.getPointer())*0.02, 0);
+            // To check if an output argument is null we may call either isNull() or equals(null)
+            CvSeq contour = new CvSeq(null);
+            cvFindContours(grayImage, storage, contour, Loader.sizeof(CvContour.class),
+                    CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+            while (contour != null && !contour.isNull()) {
+                if (contour.elem_size() > 0) {
+                    CvSeq points = cvApproxPoly(contour, Loader.sizeof(CvContour.class),
+                            storage, CV_POLY_APPROX_DP, cvContourPerimeter(contour)*0.02, 0);
                     cvDrawContours(grabbedImage, points, CvScalar.BLUE, CvScalar.BLUE, -1, 1, CV_AA);
                 }
-                contour = contour.h_next;
+                contour = contour.h_next();
             }
 
             cvWarpPerspective(grabbedImage, rotatedImage, randomR);
@@ -187,6 +200,17 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===February 18, 2011===
+ * Switched from JNA to JavaCPP, which has a lower overhead and supports C++, bringing hope that future versions of JavaCV will support features of OpenCV available only through the C++ API
+ * Consequently, the syntax of various operations have changed a bit, but the transition should not be too painful
+ * As a happier consequence, this also fixes the problem with SSE instructions on 32-bit x86 (issue #36)
+ * Also, JavaCPP does not have any limitations or performance issues with large data structures (issue #10 and issue #14)
+ * Added support for OpenCV 2.2 (issue #42), but dropped support for all previous versions
+ * Added samples provided by users (issue #1, issue #45, and issue #46)
+ * Added deinterlace setting to `FFmpegFrameGrabber` having it call `avpicture_deinterlace()` (issue #38)
+ * Enhanced a few things of the image alignment algorithm
+ * Fixed and added various other things I forget
+
 ===December 2, 2010===
  * Now works on Android with the Dalvik VM (for more details, please refer to the FacePreview sample available on the download page)
  * Added more hacks to `CanvasFrame` in the hope to make it behave better outside the EDT
@@ -358,8 +382,9 @@ Initial release
 
 
 ----
-Copyright (C) 2009,2010 Samuel Audet <samuel.audet@gmail.com>
+Copyright (C) 2009,2010,2011 Samuel Audet <samuel.audet@gmail.com>
 Project site: http://code.google.com/p/javacv/
 
 Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.
 Please refer to LICENSE.txt or http://www.gnu.org/licenses/ for details.
+
