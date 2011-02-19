@@ -81,8 +81,8 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  * @author saudet
  */
 @Properties({
-    @Platform(include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>"},
-        linkpath=genericLinkpath,       link="opencv_legacy", includepath=genericIncludepath),
+    @Platform(include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>"}, includepath=genericIncludepath, 
+        linkpath=genericLinkpath,       link="opencv_legacy",    preload="opencv_flann"),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, link="opencv_legacy220", preload="opencv_flann220"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

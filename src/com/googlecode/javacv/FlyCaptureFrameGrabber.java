@@ -350,6 +350,8 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                 ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
         boolean alreadySwapped = false;
         boolean colorbayer = raw_image.bStippled();
+        boolean colorrgb = format == FLYCAPTURE_RGB8 || format == FLYCAPTURE_RGB16 ||
+                           format == FLYCAPTURE_BGR  || format == FLYCAPTURE_BGRU;
 
         if ((depth == IPL_DEPTH_8U || frameEndian.equals(ByteOrder.nativeOrder())) &&
                 (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3 &&
@@ -368,6 +370,11 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             if (temp_image == null) {
                 if (colorMode == ColorMode.GRAY && colorbayer) {
                     temp_image = IplImage.create(w, h, depth, 3);
+                } else if (colorMode == ColorMode.GRAY && colorrgb) {
+                    temp_image = IplImage.createHeader(w, h, depth, 3);
+                    temp_image.widthStep(stride);
+                    temp_image.imageSize(size);
+                    temp_image.imageData(raw_image.pData());
                 } else {
                     temp_image = return_image;
                 }
@@ -388,7 +395,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
                 out.put(in);
                 alreadySwapped = true;
-            } else {
+            } else if (!colorrgb) {
                 error = flycaptureConvertImage(context, raw_image, conv_image);
                 if (error != FLYCAPTURE_OK) {
                     throw new Exception("flycaptureConvertImage() Error " + error);
@@ -406,7 +413,9 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             out.put(in);
         }
 
-        if (colorMode == ColorMode.GRAY && colorbayer) {
+        if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
+            cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
+        } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb)) {
             cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
         }
 
@@ -414,5 +423,4 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         return_image.timestamp(timeStamp.ulSeconds()*1000000 + timeStamp.ulMicroSeconds());
         return return_image;
     }
-
 }

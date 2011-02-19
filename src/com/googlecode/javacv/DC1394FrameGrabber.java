@@ -543,8 +543,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
         // should we copy the padding as well?
         if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
             cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
-        } else if (colorMode == ColorMode.GRAY &&
-                (colorbayer || colorrgb || coloryuv)) {
+        } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb || coloryuv)) {
             cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
         }
 

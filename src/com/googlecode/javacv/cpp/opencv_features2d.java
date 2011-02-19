@@ -71,9 +71,9 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties({
     @Platform(include="<opencv2/features2d/features2d.hpp>", includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link="opencv_features2d"),
+        linkpath=genericLinkpath,       link="opencv_features2d",    preload="opencv_flann"),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link="opencv_features2d220"),
+        preloadpath=windowsPreloadpath, link="opencv_features2d220", preload="opencv_flann220"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_features2d {
     static { load(opencv_calib3d.class); load(opencv_highgui.class); load(); }

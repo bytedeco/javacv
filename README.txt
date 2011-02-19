@@ -200,7 +200,7 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
-===February 18, 2011===
+===February 19, 2011===
  * Switched from JNA to JavaCPP, which has a lower overhead and supports C++, bringing hope that future versions of JavaCV will support features of OpenCV available only through the C++ API
  * Consequently, the syntax of various operations have changed a bit, but the transition should not be too painful
  * As a happier consequence, this also fixes the problem with SSE instructions on 32-bit x86 (issue #36)
@@ -209,6 +209,7 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
  * Added samples provided by users (issue #1, issue #45, and issue #46)
  * Added deinterlace setting to `FFmpegFrameGrabber` having it call `avpicture_deinterlace()` (issue #38)
  * Enhanced a few things of the image alignment algorithm
+ * Tried to fix image format conversion inside `FlyCaptureFrameGrabber`, but this is going to require more careful debugging
  * Fixed and added various other things I forget
 
 ===December 2, 2010===
