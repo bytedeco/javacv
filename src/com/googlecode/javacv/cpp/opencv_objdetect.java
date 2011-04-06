@@ -94,6 +94,7 @@ public class opencv_objdetect {
     public static final int CV_HAAR_FEATURE_MAX = 3;
 
     public static class CvHaarFeature extends Pointer {
+        static { load(); }
         public CvHaarFeature() { allocate(); }
         public CvHaarFeature(int size) { allocateArray(size); }
         public CvHaarFeature(Pointer p) { super(p); }
@@ -113,6 +114,7 @@ public class opencv_objdetect {
     }
 
     public static class CvHaarClassifier extends Pointer {
+        static { load(); }
         public CvHaarClassifier() { allocate(); }
         public CvHaarClassifier(int size) { allocateArray(size); }
         public CvHaarClassifier(Pointer p) { super(p); }
@@ -132,6 +134,7 @@ public class opencv_objdetect {
     }
 
     public static class CvHaarStageClassifier extends Pointer {
+        static { load(); }
         public CvHaarStageClassifier() { allocate(); }
         public CvHaarStageClassifier(int size) { allocateArray(size); }
         public CvHaarStageClassifier(Pointer p) { super(p); }
@@ -151,12 +154,14 @@ public class opencv_objdetect {
         public native int parent();                  public native CvHaarStageClassifier parent(int parent);
     }
 
-    @Opaque public static class CvHidHaarClassifierCascade extends Pointer { 
+    @Opaque public static class CvHidHaarClassifierCascade extends Pointer {
+        static { load(); }
         public CvHidHaarClassifierCascade() { }
         public CvHidHaarClassifierCascade(Pointer p) { super(p); }
     }
 
     public static class CvHaarClassifierCascade extends Pointer {
+        static { com.googlecode.javacpp.Loader.load(); }
         public CvHaarClassifierCascade() { allocate(); }
         public CvHaarClassifierCascade(int size) { allocateArray(size); }
         public CvHaarClassifierCascade(Pointer p) { super(p); }
@@ -182,7 +187,7 @@ public class opencv_objdetect {
         }
         static class ReleaseDeallocator extends CvHaarClassifierCascade implements Deallocator {
             ReleaseDeallocator(CvHaarClassifierCascade p) { super(p); }
-            public void deallocate() { cvReleaseHaarClassifierCascade(this); }
+            @Override public void deallocate() { cvReleaseHaarClassifierCascade(this); }
         }
 
 
@@ -196,6 +201,7 @@ public class opencv_objdetect {
     }
 
     public static class CvAvgComp extends Pointer {
+        static { load(); }
         public CvAvgComp() { allocate(); }
         public CvAvgComp(int size) { allocateArray(size); }
         public CvAvgComp(Pointer p) { super(p); }
@@ -235,6 +241,7 @@ public class opencv_objdetect {
 
 
     public static class CvLSVMFilterPosition extends Pointer {
+        static { load(); }
         public CvLSVMFilterPosition() { allocate(); }
         public CvLSVMFilterPosition(int size) { allocateArray(size); }
         public CvLSVMFilterPosition(Pointer p) { super(p); }
@@ -251,6 +258,7 @@ public class opencv_objdetect {
     }
 
     public static class CvLSVMFilterObject extends Pointer {
+        static { load(); }
         public CvLSVMFilterObject() { allocate(); }
         public CvLSVMFilterObject(int size) { allocateArray(size); }
         public CvLSVMFilterObject(Pointer p) { super(p); }
@@ -271,6 +279,7 @@ public class opencv_objdetect {
     }
 
     public static class CvLatentSvmDetector extends Pointer {
+        static { load(); }
         public CvLatentSvmDetector() { allocate(); }
         public CvLatentSvmDetector(int size) { allocateArray(size); }
         public CvLatentSvmDetector(Pointer p) { super(p); }
@@ -291,6 +300,7 @@ public class opencv_objdetect {
     }
 
     public static class CvObjectDetection extends Pointer {
+        static { load(); }
         public CvObjectDetection() { allocate(); }
         public CvObjectDetection(int size) { allocateArray(size); }
         public CvObjectDetection(Pointer p) { super(p); }

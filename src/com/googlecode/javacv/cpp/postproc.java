@@ -92,10 +92,12 @@ public class postproc {
 //#define QP_STORE_T int8_t
 
     @Opaque public static class pp_context extends Pointer {
+        static { load(); }
         public pp_context() { }
         public pp_context(Pointer p) { super(p); }
     }
     @Opaque public static class pp_mode extends Pointer {
+        static { load(); }
         public pp_mode() { }
         public pp_mode(Pointer p) { super(p); }
     }

@@ -89,6 +89,7 @@ public class avfilter {
 
 
     public static class AVFilterPic extends Pointer {
+        static { load(); }
         public AVFilterPic() { allocate(); }
         public AVFilterPic(int size) { allocateArray(size); }
         public AVFilterPic(Pointer p) { super(p); }
@@ -110,6 +111,7 @@ public class avfilter {
         public native Pointer priv();             public native AVFilterPic priv(Pointer priv);
 
         public static class Free extends FunctionPointer {
+            static { load(); }
             public native void call(AVFilterPic pic);
         }
         public native Free free();                public native AVFilterPic free(Free free);
@@ -119,6 +121,7 @@ public class avfilter {
     }
 
     public static class AVFilterPicRef extends Pointer {
+        static { load(); }
         public AVFilterPicRef() { allocate(); }
         public AVFilterPicRef(int size) { allocateArray(size); }
         public AVFilterPicRef(Pointer p) { super(p); }
@@ -155,6 +158,7 @@ public class avfilter {
     public static native void avfilter_unref_pic(AVFilterPicRef ref);
 
     public static class AVFilterFormats extends Pointer {
+        static { load(); }
         public AVFilterFormats() { allocate(); }
         public AVFilterFormats(int size) { allocateArray(size); }
         public AVFilterFormats(Pointer p) { super(p); }
@@ -184,6 +188,7 @@ public class avfilter {
             @ByPtrPtr AVFilterFormats newref);
 
     public static class AVFilterPad extends Pointer {
+        static { load(); }
         public AVFilterPad() { allocate(); }
         public AVFilterPad(int size) { allocateArray(size); }
         public AVFilterPad(Pointer p) { super(p); }
@@ -202,6 +207,7 @@ public class avfilter {
         public native int rej_perms();      public native AVFilterPad rej_perms(int rej_perms);
 
         public static class Start_frame extends FunctionPointer {
+            static { load(); }
             public    Start_frame(Pointer p) { super(p); }
             protected Start_frame() { allocate(); }
             protected final native void allocate();
@@ -210,6 +216,7 @@ public class avfilter {
         public native Start_frame start_frame();           public native AVFilterPad start_frame(Start_frame start_frame);
 
         public static class Get_video_buffer extends FunctionPointer {
+            static { load(); }
             public    Get_video_buffer(Pointer p) { super(p); }
             protected Get_video_buffer() { allocate(); }
             protected final native void allocate();
@@ -218,6 +225,7 @@ public class avfilter {
         public native Get_video_buffer get_video_buffer(); public native AVFilterPad get_video_buffer(Get_video_buffer get_video_buffer);
 
         public static class End_frame extends FunctionPointer {
+            static { load(); }
             public    End_frame(Pointer p) { super(p); }
             protected End_frame() { allocate(); }
             protected final native void allocate();
@@ -226,6 +234,7 @@ public class avfilter {
         public native End_frame end_frame();               public native AVFilterPad end_frame(End_frame end_frame);
 
         public static class Draw_slice extends FunctionPointer {
+            static { load(); }
             public    Draw_slice(Pointer p) { super(p); }
             protected Draw_slice() { allocate(); }
             protected final native void allocate();
@@ -234,6 +243,7 @@ public class avfilter {
         public native Draw_slice draw_slice();             public native AVFilterPad draw_slice(Draw_slice draw_slice);
 
         public static class Poll_frame extends FunctionPointer {
+            static { load(); }
             public    Poll_frame(Pointer p) { super(p); }
             protected Poll_frame() { allocate(); }
             protected final native void allocate();
@@ -242,6 +252,7 @@ public class avfilter {
         public native Poll_frame poll_frame();             public native AVFilterPad poll_frame(Poll_frame poll_frame);
 
         public static class Request_frame extends FunctionPointer {
+            static { load(); }
             public    Request_frame(Pointer p) { super(p); }
             protected Request_frame() { allocate(); }
             protected final native void allocate();
@@ -250,6 +261,7 @@ public class avfilter {
         public native Request_frame request_frame();       public native AVFilterPad request_frame(Request_frame request_frame);
 
         public static class Config_props extends FunctionPointer {
+            static { load(); }
             public    Config_props(Pointer p) { super(p); }
             protected Config_props() { allocate(); }
             protected final native void allocate();
@@ -274,6 +286,7 @@ public class avfilter {
     public static native AVFilterPicRef avfilter_null_get_video_buffer(AVFilterLink link, int perms, int w, int h);
 
     public static class AVFilter extends Pointer {
+        static { load(); }
         public AVFilter() { allocate(); }
         public AVFilter(int size) { allocateArray(size); }
         public AVFilter(Pointer p) { super(p); }
@@ -289,6 +302,7 @@ public class avfilter {
         public native int priv_size();      public native AVFilter priv_size(int priv_size);
 
         public static class Init extends FunctionPointer {
+            static { load(); }
             public    Init(Pointer p) { super(p); }
             protected Init() { allocate(); }
             protected final native void allocate();
@@ -297,6 +311,7 @@ public class avfilter {
         public native Init init();          public native AVFilter init(Init init);
 
         public static class Uninit extends FunctionPointer {
+            static { load(); }
             public    Uninit(Pointer p) { super(p); }
             protected Uninit() { allocate(); }
             protected final native void allocate();
@@ -305,6 +320,7 @@ public class avfilter {
         public native Uninit uninit();      public native AVFilter uninit(Uninit uninit);
 
         public static class Query_formats extends FunctionPointer {
+            static { load(); }
             public    Query_formats(Pointer p) { super(p); }
             protected Query_formats() { allocate(); }
             protected final native void allocate();
@@ -322,6 +338,7 @@ public class avfilter {
     }
 
     public static class AVFilterContext extends Pointer {
+        static { load(); }
         public AVFilterContext() { allocate(); }
         public AVFilterContext(int size) { allocateArray(size); }
         public AVFilterContext(Pointer p) { super(p); }
@@ -354,6 +371,7 @@ public class avfilter {
     }
 
     public static class AVFilterLink extends Pointer {
+        static { load(); }
         public AVFilterLink() { allocate(); }
         public AVFilterLink(int size) { allocateArray(size); }
         public AVFilterLink(Pointer p) { super(p); }

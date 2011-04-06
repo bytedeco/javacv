@@ -66,12 +66,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public FFmpegFrameGrabber(File file) {
-        this(file.getAbsolutePath(), null);
+        this(file.getAbsolutePath());
     }
     public FFmpegFrameGrabber(String filename) {
-        this(filename, null);
-    }
-    public FFmpegFrameGrabber(String filename, String inputFormatName) {
         // Register all formats and codecs
         avcodec_init();
         avcodec_register_all();
@@ -79,7 +76,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         av_register_all();
 
         this.filename = filename;
-        this.inputFormatName = inputFormatName;
+
+        this.pFormatCtx    = new AVFormatContext(null);
+        this.packet        = new AVPacket();
+        this.frameFinished = new int[1];
+
     }
     public void release() throws Exception {
         stop();
@@ -90,8 +91,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } catch (Exception ex) { }
     }
 
-    private String filename = null, inputFormatName = null;
-    private AVFormatContext pFormatCtx = new AVFormatContext(null);
+    private String filename;
+    private AVFormatContext pFormatCtx;
     private int             videoStream;
     private AVStream        pStream;
     private AVCodecContext  pCodecCtx;
@@ -99,8 +100,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVFrame         pFrame;
     private AVFrame         pFrameRGB;
     private SwsContext      img_convert_ctx;
-    private AVPacket        packet = new AVPacket();
-    private int[]           frameFinished = new int[1];
+    private AVPacket        packet;
+    private int[]           frameFinished;
     private int             numBytes;
     private BytePointer     buffer;
     private IplImage return_image = null;
@@ -117,10 +118,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public void start() throws Exception {
         // Open video file
         AVInputFormat f = null;
-        if (inputFormatName != null) {
-            f = av_find_input_format(inputFormatName);
+        if (format != null && format.length() > 0) {
+            f = av_find_input_format(format);
             if (f == null) {
-                throw new Exception("Could not find input format.");
+                throw new Exception("Could not find input format \"" + format + "\".");
             }
         }
         AVFormatParameters fp = null;
@@ -133,7 +134,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             fp.height(imageHeight);
         }
         if (av_open_input_file(pFormatCtx, filename, f, 0, fp) != 0) {
-            throw new Exception("Could not open file.");
+            throw new Exception("Could not open file \"" + filename + "\".");
         }
 
         // Retrieve stream information

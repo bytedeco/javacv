@@ -114,8 +114,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         }
     }
 
-    @Override public void transform(Data[] data, IplImage mask, CvRect roi, double zeroThreshold,
-            int pyramidLevel, ImageTransformer.Parameters[] parameters) {
+    @Override public void transform(Data[] data, CvRect roi, ImageTransformer.Parameters[] parameters, boolean[] inverses) {
         assert (data.length == parameters.length);
         boolean allOK = true;
         for (int i = 0; i < data.length; i++) {
@@ -124,8 +123,9 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                 if ((d.transImg != null || d.dstImg != null) &&
                      d.subImg   == null && d.srcDotImg == null && d.dstDstDot == null) {
                         IplImage dstImage = d.transImg == null ? d.dstImg : d.transImg;
-                        transform(d.srcImg, dstImage, roi, pyramidLevel, parameters[i], d.inverse);
-                        transformGainBias(dstImage, dstImage, roi, pyramidLevel, parameters[i], d.inverse);
+                        boolean inverse = inverses == null ? false : inverses[i];
+                        transform(d.srcImg, dstImage, roi, d.pyramidLevel, parameters[i], inverse);
+                        transformGainBias(dstImage, dstImage, roi, d.pyramidLevel, parameters[i], inverse);
                 } else {
                     allOK = false;
                 }
@@ -159,6 +159,9 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                 c.kernelData.srcImg2(null);
                 c.kernelData.subImg(data[i].subImg);
                 c.kernelData.srcDotImg(data[i].srcDotImg);
+                c.kernelData.mask(data[i].mask);
+                c.kernelData.zeroThreshold(data[i].zeroThreshold);
+                c.kernelData.outlierThreshold(data[i].outlierThreshold);
 
                 if (c.H[i] == null) { c.H[i] = CvMat.create(3, 3); }
                 if (c.X[i] == null) { c.X[i] = CvMat.create(4, 4); }
@@ -167,8 +170,9 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                     c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
                 }
 
-                prepareHomography(c.H[i], pyramidLevel, (Parameters)parameters[i], data[i].inverse);
-                prepareTransform (c.X[i], pyramidLevel, (Parameters)parameters[i], data[i].inverse);
+                boolean inverse = inverses == null ? false : inverses[i];
+                prepareHomography(c.H[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
+                prepareTransform (c.X[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
 
                 c.kernelData.H1(c.H[i]);
                 c.kernelData.H2(null);
@@ -179,14 +183,14 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                 c.kernelData.dstDstDot(c.dstDstDot[i]);
             }
 
-            multiWarpColorTransform(c.kernelData.position(0), data.length,
-                    mask, roi, zeroThreshold, getFillColor());
+            multiWarpColorTransform(c.kernelData.position(0), data.length, roi, getFillColor());
 
             for (int i = 0; i < data.length; i++) {
                 c.kernelData.position(i);
-                data[i].dstCount     = c.kernelData.dstCount();
-                data[i].dstCountZero = c.kernelData.dstCountZero();
-                data[i].srcDstDot    = c.kernelData.srcDstDot();
+                data[i].dstCount        = c.kernelData.dstCount();
+                data[i].dstCountZero    = c.kernelData.dstCountZero();
+                data[i].dstCountOutlier = c.kernelData.dstCountOutlier();
+                data[i].srcDstDot       = c.kernelData.srcDstDot();
                 if (data[i].dstDstDot != null) {
                     c.dstDstDotBuf[i].position(0);
                     c.dstDstDotBuf[i].get(data[i].dstDstDot);

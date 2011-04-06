@@ -77,6 +77,7 @@ public class dc1394 {
             POLLNVAL       = 0x020;
 
     public static class pollfd extends Pointer {
+        static { load(); }
         public pollfd() { allocate(); }
         public pollfd(int size) { allocateArray(size); }
         public pollfd(Pointer p) { super(p); }
@@ -153,6 +154,7 @@ public class dc1394 {
             DC1394_LOG_NUM=              (DC1394_LOG_MAX - DC1394_LOG_MIN + 1);
 
     public static class Log_handler extends FunctionPointer {
+        static { load(); }
         public    Log_handler(Pointer p) { super(p); }
         protected Log_handler() { allocate(); }
         protected final native void allocate();
@@ -250,6 +252,7 @@ public class dc1394 {
             DC1394_BYTE_ORDER_NUM =     (DC1394_BYTE_ORDER_MAX - DC1394_BYTE_ORDER_MIN + 1);
 
     public static class dc1394color_codings_t extends Pointer {
+        static { load(); }
         public native int num();          public native dc1394color_codings_t num(int num);
 
         @Cast("dc1394color_coding_t") // codings[DC1394_COLOR_CODING_NUM]
@@ -257,6 +260,7 @@ public class dc1394 {
     }
 
     public static class dc1394video_modes_t extends Pointer {
+        static { load(); }
         public native int num();          public native dc1394video_modes_t num(int num);
         @Cast("dc1394video_mode_t") // modes[DC1394_VIDEO_MODE_NUM]
         public native int modes(int i);   public native dc1394video_modes_t modes(int i, int modes);
@@ -320,6 +324,7 @@ public class dc1394 {
             DC1394_PHY_DELAY_NUM=        (DC1394_PHY_DELAY_MAX - DC1394_PHY_DELAY_MIN + 1);
 
     public static class dc1394camera_t extends Pointer {
+        static { load(); }
         public dc1394camera_t() { allocate(); }
         public dc1394camera_t(int size) { allocateArray(size); }
         public dc1394camera_t(Pointer p) { super(p); }
@@ -370,6 +375,7 @@ public class dc1394 {
     }
 
     public static class dc1394camera_id_t extends Pointer {
+        static { load(); }
         public dc1394camera_id_t() { allocate(); }
         public dc1394camera_id_t(int size) { allocateArray(size); }
         public dc1394camera_id_t(Pointer p) { super(p); }
@@ -385,6 +391,7 @@ public class dc1394 {
     }
 
     public static class dc1394camera_list_t extends Pointer {
+        static { load(); }
         public dc1394camera_list_t() { allocate(); }
         public dc1394camera_list_t(int size) { allocateArray(size); }
         public dc1394camera_list_t(Pointer p) { super(p); }
@@ -400,6 +407,7 @@ public class dc1394 {
     }
 
     @Opaque public static class dc1394_t extends Pointer {
+        static { load(); }
         public dc1394_t() { }
         public dc1394_t(Pointer p) { super(p); }
     }
@@ -502,6 +510,7 @@ public class dc1394 {
             DC1394_FEATURE_MODE_NUM=    (DC1394_FEATURE_MODE_MAX - DC1394_FEATURE_MODE_MIN + 1);
 
     public static class dc1394feature_modes_t extends Pointer {
+        static { load(); }
         public dc1394feature_modes_t() { allocate(); }
         public dc1394feature_modes_t(int size) { allocateArray(size); }
         public dc1394feature_modes_t(Pointer p) { super(p); }
@@ -518,6 +527,7 @@ public class dc1394 {
     }
 
     public static class dc1394trigger_modes_t extends Pointer {
+        static { load(); }
         public dc1394trigger_modes_t() { allocate(); }
         public dc1394trigger_modes_t(int size) { allocateArray(size); }
         public dc1394trigger_modes_t(Pointer p) { super(p); }
@@ -534,6 +544,7 @@ public class dc1394 {
     }
 
     public static class dc1394trigger_sources_t extends Pointer {
+        static { load(); }
         public dc1394trigger_sources_t() { allocate(); }
         public dc1394trigger_sources_t(int size) { allocateArray(size); }
         public dc1394trigger_sources_t(Pointer p) { super(p); }
@@ -550,6 +561,7 @@ public class dc1394 {
     }
 
     public static class dc1394feature_info_t extends Pointer {
+        static { load(); }
         public dc1394feature_info_t() { allocate(); }
         public dc1394feature_info_t(int size) { allocateArray(size); }
         public dc1394feature_info_t(Pointer p) { super(p); }
@@ -606,6 +618,7 @@ public class dc1394 {
     }
 
     public static class dc1394featureset_t extends Pointer {
+        static { load(); }
         public dc1394featureset_t() { allocate(); }
         public dc1394featureset_t(int size) { allocateArray(size); }
         public dc1394featureset_t(Pointer p) { super(p); }
@@ -777,6 +790,7 @@ public class dc1394 {
             DC1394_OPERATION_MODE_NUM = (DC1394_OPERATION_MODE_MAX - DC1394_OPERATION_MODE_MIN + 1);
 
     public static class dc1394framerates_t extends Pointer {
+        static { load(); }
         public dc1394framerates_t() { allocate(); }
         public dc1394framerates_t(int size) { allocateArray(size); }
         public dc1394framerates_t(Pointer p) { super(p); }
@@ -793,6 +807,7 @@ public class dc1394 {
     }
 
     public static class dc1394video_frame_t extends Pointer {
+        static { load(); }
         public dc1394video_frame_t() { allocate(); }
         public dc1394video_frame_t(int size) { allocateArray(size); }
         public dc1394video_frame_t(Pointer p) { super(p); }
@@ -936,6 +951,7 @@ public class dc1394 {
 
 
     public static class dc1394format7mode_t extends Pointer {
+        static { load(); }
         public dc1394format7mode_t() { allocate(); }
         public dc1394format7mode_t(int size) { allocateArray(size); }
         public dc1394format7mode_t(Pointer p) { super(p); }
@@ -980,6 +996,7 @@ public class dc1394 {
     }
 
     public static class dc1394format7modeset_t extends Pointer {
+        static { load(); }
         public dc1394format7modeset_t() { allocate(); }
         public dc1394format7modeset_t(int size) { allocateArray(size); }
         public dc1394format7modeset_t(Pointer p) { super(p); }

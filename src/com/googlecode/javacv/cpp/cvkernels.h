@@ -30,12 +30,13 @@
  */
 struct KernelData {
     // input
-    IplImage *srcImg, *srcImg2, *subImg, *srcDotImg;
-    CvMat    *H1,     *H2, *X;
+    IplImage *srcImg, *srcImg2, *subImg, *srcDotImg, *mask;
+    double    zeroThreshold, outlierThreshold;
+    CvMat    *H1, *H2, *X;
 
     // output
     IplImage *transImg,  *dstImg;
-    int       dstCount,   dstCountZero;
+    int       dstCount,   dstCountZero, dstCountOutlier;
     double    srcDstDot, *dstDstDot;
 };
 
@@ -43,28 +44,19 @@ struct KernelData {
 //   dstImg  = transImg - subImg
 // srcDstDot =   dstImg · srcDotImg
 // data[i].dstDstDot[j] = dstImg[i] · dstImg[j]
-static inline void multiWarpColorTransform(struct KernelData data[], int size,
-        IplImage* mask, CvRect* roi, double zeroThreshold, CvScalar* fillColor) {
-    assert(size <= MAX_SIZE);
+static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* roi, CvScalar* fillColor) {
+    assert (size <= MAX_SIZE);
     int srcStep [MAX_SIZE], srcWidth [MAX_SIZE], srcHeight [MAX_SIZE],
         srcStep2[MAX_SIZE], srcWidth2[MAX_SIZE], srcHeight2[MAX_SIZE];
     float *srcFloats[MAX_SIZE], *srcFloats2[MAX_SIZE], *transFloats [MAX_SIZE],
           *subFloats[MAX_SIZE], *dstFloats [MAX_SIZE], *srcDotFloats[MAX_SIZE];
+    unsigned char* maskBytes[MAX_SIZE];
+    double zeroThreshold2[MAX_SIZE], outlierThreshold2[MAX_SIZE];
     float h[MAX_SIZE][9], g[MAX_SIZE][9], Xa[MAX_SIZE][16];
-    IplImage* modelImage = NULL;
+    IplImage* modelImage = NULL, *modelMask = NULL;
 
-    int i, j, allSrcDotEqual = 1;
+    int i, j, allSrcEqual = 1;
     for (i = 0; i < size; i++) {
-        srcFloats   [i] = (float*)data[i].srcImg ->imageData;
-        srcFloats2  [i] = data[i].srcImg2   == NULL ? NULL : (float*)data[i].srcImg2  ->imageData;
-        transFloats [i] = data[i].transImg  == NULL ? NULL : (float*)data[i].transImg ->imageData;
-        subFloats   [i] = data[i].subImg    == NULL ? NULL : (float*)data[i].subImg   ->imageData;
-        dstFloats   [i] = data[i].dstImg    == NULL ? NULL : (float*)data[i].dstImg   ->imageData;
-        srcDotFloats[i] = data[i].srcDotImg == NULL ? NULL : (float*)data[i].srcDotImg->imageData;
-        if (i > 0 && data[i].srcDotImg != data[i-1].srcDotImg) {
-            allSrcDotEqual = 0;
-        }
-
         srcStep  [i] = data[i].srcImg->widthStep/4;
         srcWidth [i] = data[i].srcImg->width;
         srcHeight[i] = data[i].srcImg->height;
@@ -74,23 +66,30 @@ static inline void multiWarpColorTransform(struct KernelData data[], int size,
             srcHeight2[i] = data[i].srcImg2->height;
         }
 
-        data[i].dstCount     = 0;
-        data[i].dstCountZero = 0;
-        data[i].srcDstDot    = 0;
+        srcFloats   [i] = (float*)data[i].srcImg ->imageData;
+        srcFloats2  [i] = data[i].srcImg2   == NULL ? NULL : (float*)data[i].srcImg2  ->imageData;
+        transFloats [i] = data[i].transImg  == NULL ? NULL : (float*)data[i].transImg ->imageData;
+        subFloats   [i] = data[i].subImg    == NULL ? NULL : (float*)data[i].subImg   ->imageData;
+        dstFloats   [i] = data[i].dstImg    == NULL ? NULL : (float*)data[i].dstImg   ->imageData;
+        srcDotFloats[i] = data[i].srcDotImg == NULL ? NULL : (float*)data[i].srcDotImg->imageData;
+        maskBytes   [i] = data[i].mask   == NULL ? NULL : (unsigned char*)data[i].mask->imageData;
+        zeroThreshold2   [i] = data[i].zeroThreshold   *data[i].zeroThreshold;
+        outlierThreshold2[i] = data[i].outlierThreshold*data[i].outlierThreshold;
+        if (i > 0 && (data[i].srcImg != data[i-1].srcImg || data[i].srcImg2   != data[i-1].srcImg2   ||
+                      data[i].subImg != data[i-1].subImg || data[i].srcDotImg != data[i-1].srcDotImg ||
+                      data[i].mask   != data[i-1].mask   || zeroThreshold2[i] != zeroThreshold2[i-1] ||
+                      outlierThreshold2[i] != outlierThreshold2[i-1])) {
+            allSrcEqual = 0;
+        }
+
+        data[i].dstCount        = 0;
+        data[i].dstCountZero    = 0;
+        data[i].dstCountOutlier = 0;
+        data[i].srcDstDot       = 0;
         if (data[i].dstDstDot != NULL) {
             for (j = 0; j < size; j++) {
                 data[i].dstDstDot[j] = 0;
             }
-        }
-
-        if (data[i].transImg != NULL) {
-            modelImage = data[i].transImg;
-        } else if (data[i].dstImg != NULL) {
-            modelImage = data[i].dstImg;
-        } else if (data[i].subImg != NULL) {
-            modelImage = data[i].subImg;
-        } else if (data[i].srcDotImg != NULL) {
-            modelImage = data[i].srcDotImg;
         }
 
         for (j = 0; j < 9; j++) {
@@ -106,6 +105,20 @@ static inline void multiWarpColorTransform(struct KernelData data[], int size,
                 Xa[i][j] = data[i].X->data.db[j];
             }
         }
+
+        if (data[i].transImg != NULL) {
+            modelImage = data[i].transImg;
+        } else if (data[i].dstImg != NULL) {
+            modelImage = data[i].dstImg;
+        } else if (data[i].subImg != NULL) {
+            modelImage = data[i].subImg;
+        } else if (data[i].srcDotImg != NULL) {
+            modelImage = data[i].srcDotImg;
+        }
+
+        if (data[i].mask != NULL) {
+            modelMask = data[i].mask;
+        }
     }
 
     int startx   = 0;
@@ -114,20 +127,22 @@ static inline void multiWarpColorTransform(struct KernelData data[], int size,
     int channels = modelImage->nChannels;
     int endx     = modelImage->width;
     int endy     = modelImage->height;
+    int maskStep = modelMask == NULL ? 0 : modelMask->widthStep;
     if (roi != NULL) {
         startx = roi->x;
         starty = roi->y;
         endx   = startx + roi->width;
         endy   = starty + roi->height;
     }
+    float fill[4] = { 0.0 };
+    if (fillColor != NULL) {
+        fill[0] = fillColor->val[0];
+        fill[1] = fillColor->val[1];
+        fill[2] = fillColor->val[2];
+        fill[3] = fillColor->val[3];
+    }
 
-    int maskStep             = mask == NULL ? 0    : mask->widthStep;
-    unsigned char* maskBytes = mask == NULL ? NULL : (unsigned char*)mask->imageData;
-
-    double zeroThreshold2 = zeroThreshold*zeroThreshold;
-    float fill[4] = { fillColor->val[0], fillColor->val[1],
-                      fillColor->val[2], fillColor->val[3] };
-    int x, y;
+    int x, y, z;
     int line     = starty*step;
     int maskLine = starty*maskStep;
     for (y = starty; y < endy; y++, line += step, maskLine += maskStep) {
@@ -153,48 +168,64 @@ static inline void multiWarpColorTransform(struct KernelData data[], int size,
                 }
             }
 
-            if (maskBytes != NULL && maskBytes[maskLine + x] == 0) {
-                continue;
-            }
-
-            int z;
-            if (allSrcDotEqual && srcDotFloats[0] != NULL) {
-                double d, magnitude2 = 0;
-                switch (channels) {
-                case 4: d = srcDotFloats[0][pixel+3]; magnitude2 += d*d;
-                case 3: d = srcDotFloats[0][pixel+2]; magnitude2 += d*d;
-                case 2: d = srcDotFloats[0][pixel+1]; magnitude2 += d*d;
-                case 1: d = srcDotFloats[0][pixel+0]; magnitude2 += d*d; break;
-                default: assert (0);
-                }
-                if (magnitude2 < zeroThreshold2) {
-                    for (i = 0; i < size; i++) {
-                        data[i].dstCount++;
-                        data[i].dstCountZero++;
-                    }
+            if (allSrcEqual) {
+                if (maskBytes[0] != NULL && maskBytes[0][maskLine + x] == 0) {
                     continue;
+                } else if (srcDotFloats[0] != NULL) {
+                    double d, magnitude2 = 0;
+                    switch (channels) {
+                    case 4: d = srcDotFloats[0][pixel+3]; magnitude2 += d*d;
+                    case 3: d = srcDotFloats[0][pixel+2]; magnitude2 += d*d;
+                    case 2: d = srcDotFloats[0][pixel+1]; magnitude2 += d*d;
+                    case 1: d = srcDotFloats[0][pixel+0]; magnitude2 += d*d; break;
+                    default: assert (0);
+                    }
+                    if (magnitude2 < zeroThreshold2[0]) {
+                        for (i = 0; i < size; i++) {
+                            data[i].dstCount++;
+                            data[i].dstCountZero++;
+                        }
+                        continue;
+                    } else if (outlierThreshold2[0] > 0 &&
+                            magnitude2 > outlierThreshold2[0]) {
+                        for (i = 0; i < size; i++) {
+                            data[i].dstCount++;
+                            data[i].dstCountOutlier++;
+                        }
+                        continue;
+                    }
                 }
             }
 
             float dst[MAX_SIZE][4];
             for (i = 0; i < size; i++) {
-                data[i].dstCount++;
-
-                if (!allSrcDotEqual && srcDotFloats[i] != NULL) {
-                    double d, magnitude2 = 0;
-                    switch (channels) {
-                    case 4: d = srcDotFloats[i][pixel+3]; magnitude2 += d*d;
-                    case 3: d = srcDotFloats[i][pixel+2]; magnitude2 += d*d;
-                    case 2: d = srcDotFloats[i][pixel+1]; magnitude2 += d*d;
-                    case 1: d = srcDotFloats[i][pixel+0]; magnitude2 += d*d; break;
-                    default: assert (0);
-                    }
-                    if (magnitude2 < zeroThreshold2) {
-                        dst[i][0] = dst[i][1] = dst[i][2] = dst[i][3] = 0;
-                        data[i].dstCountZero++;
+                if (!allSrcEqual) {
+                    if (maskBytes[i] != NULL && maskBytes[i][maskLine + x] == 0) {
                         continue;
+                    } else if (srcDotFloats[i] != NULL) {
+                        double d, magnitude2 = 0;
+                        switch (channels) {
+                        case 4: d = srcDotFloats[i][pixel+3]; magnitude2 += d*d;
+                        case 3: d = srcDotFloats[i][pixel+2]; magnitude2 += d*d;
+                        case 2: d = srcDotFloats[i][pixel+1]; magnitude2 += d*d;
+                        case 1: d = srcDotFloats[i][pixel+0]; magnitude2 += d*d; break;
+                        default: assert (0);
+                        }
+                        if (magnitude2 < zeroThreshold2[i]) {
+                            dst[i][0] = dst[i][1] = dst[i][2] = dst[i][3] = 0;
+                            data[i].dstCount++;
+                            data[i].dstCountZero++;
+                            continue;
+                        } else if (outlierThreshold2[i] > 0 &&
+                                magnitude2 > outlierThreshold2[i]) {
+                            dst[i][0] = dst[i][1] = dst[i][2] = dst[i][3] = 0;
+                            data[i].dstCount++;
+                            data[i].dstCountOutlier++;
+                            continue;
+                        }
                     }
                 }
+                data[i].dstCount++;
 
                 float w2 = 1/h3[i];
                 float x2 = h1[i]*w2;

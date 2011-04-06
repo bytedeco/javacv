@@ -30,19 +30,23 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 public interface ImageAligner {
 
-    public static class Settings extends BaseSettings implements Cloneable {
+    public static class Settings extends BaseChildSettings implements Cloneable {
         public Settings() { }
         public Settings(Settings s) {
             pyramidLevels = s.pyramidLevels;
             gammaTgamma   = s.gammaTgamma;
             tikhonovAlpha = s.tikhonovAlpha;
             constrained   = s.constrained;
+            zeroThresholds    = s.zeroThresholds;
+            outlierThresholds = s.outlierThresholds;
         }
 
         int pyramidLevels    = 5;
         CvMat gammaTgamma    = null;
         double tikhonovAlpha = 0;
         boolean constrained  = false;
+        double[] zeroThresholds    = { 0.04, 0.03, 0.02, 0.01, 0 };
+        double[] outlierThresholds = { 0.1 };
 
         public int getPyramidLevels() {
             return pyramidLevels;
@@ -72,6 +76,20 @@ public interface ImageAligner {
 //            this.constrained = constrained;
 //        }
 
+        public double[] getZeroThresholds() {
+            return zeroThresholds;
+        }
+        public void setZeroThresholds(double[] zeroThresholds) {
+            this.zeroThresholds = zeroThresholds;
+        }
+
+        public double[] getOutlierThresholds() {
+            return outlierThresholds;
+        }
+        public void setOutlierThresholds(double[] outlierThresholds) {
+            this.outlierThresholds = outlierThresholds;
+        }
+
         @Override public Settings clone() {
             return new Settings(this);
         }
@@ -91,11 +109,12 @@ public interface ImageAligner {
     Parameters getParameters();
     void setParameters(Parameters parameters);
 
+    double[] getTransformedRoiPts();
     IplImage getTransformedImage();
     IplImage getResidualImage();
     IplImage getRoiMaskImage();
     double getRMSE();
-    CvRect getROI();
+    CvRect getRoi();
 
     boolean iterate(double[] delta);
 }

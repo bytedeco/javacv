@@ -27,7 +27,7 @@ Further, although not always required, some functionality of JavaCV also relies 
   * Precompiled for Android  http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
  * PGR FlyCapture 1.7~2.1 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
- * Android SDK API 9  http://developer.android.com/sdk/
+ * Android SDK API 8~11  http://developer.android.com/sdk/
 
 To modify the source code, note that the project files were created with:
  * NetBeans 6.9  http://www.netbeans.org/downloads/
@@ -48,14 +48,15 @@ Eclipse (Java SE):
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs..."
  * Locate the JAR files, select them, and click OK.
 
-Eclipse (Android):
+Eclipse (Android 2.2 on ARMv7 or newer versions):
+ * Follow the instructions on this page: http://developer.android.com/guide/tutorials/hello-world.html
  * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
- * Extract the *.so files from `javacv-android-arm.jar` as well as the *.so files of OpenCV in the newly created "libs/armeabi" folder.
+ * Extract the `*.so` files from `javacv-android-arm.jar` *as well as* the `*.so` files of OpenCV in the newly created "libs/armeabi" folder.
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
  * Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
-After that, the wrapper classes for OpenCV can automatically access all of its C API. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method to load an image file, smooth it, and save it back to disk:
+After that, the wrapper classes for OpenCV can automatically access all of its C API. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -65,8 +66,10 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
 public class Smoother {
     public static void smooth(String filename) { 
         IplImage image = cvLoadImage(filename);
-        cvSmooth(image, image, CV_GAUSSIAN, 3);
-        cvSaveImage(filename, image);
+        if (image != null) {
+            cvSmooth(image, image, CV_GAUSSIAN, 3);
+            cvSaveImage(filename, image);
+        }
     }
 }
 }}}
@@ -76,7 +79,7 @@ JavaCV also comes with helper classes and methods on top of OpenCV to facilitate
 {{{
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.*;
-import com.googlecode.javacv.cpp.*
+import com.googlecode.javacv.cpp.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
@@ -129,8 +132,7 @@ public class Demo {
         // with the set of get() and put() methods.
         randomAxis.put((Math.random()-0.5)/4, (Math.random()-0.5)/4, (Math.random()-0.5)/4);
         cvRodrigues2(randomAxis, randomR, null);
-        double f = (width + height)/2.0;
-                                                randomR.put(0, 2, randomR.get(0, 2)*f); 
+        double f = (width + height)/2.0;        randomR.put(0, 2, randomR.get(0, 2)*f);
                                                 randomR.put(1, 2, randomR.get(1, 2)*f);
         randomR.put(2, 0, randomR.get(2, 0)/f); randomR.put(2, 1, randomR.get(2, 1)/f);
         System.out.println(randomR);
@@ -157,17 +159,17 @@ public class Demo {
                 int x = r.x(), y = r.y(), w = r.width(), h = r.height();
                 cvRectangle(grabbedImage, cvPoint(x, y), cvPoint(x+w, y+h), CvScalar.RED, 1, CV_AA, 0);
 
-                // To access the elements of a native array, use the `position()` method
-                hatPoints.position(0).x(x-w/10);    hatPoints.y(y-h/10);
-                hatPoints.position(1).x(x+w*11/10); hatPoints.y(y-h/10);
-                hatPoints.position(2).x(x+w/2);     hatPoints.y(y-h/2);
+                // To access the elements of a native array, use the position() method.
+                hatPoints.position(0).x(x-w/10)   .y(y-h/10);
+                hatPoints.position(1).x(x+w*11/10).y(y-h/10);
+                hatPoints.position(2).x(x+w/2)    .y(y-h/2);
                 cvFillConvexPoly(grabbedImage, hatPoints.position(0), 3, CvScalar.GREEN, CV_AA, 0);
             }
 
             // Let's find some contours! but first some thresholding...
             cvThreshold(grayImage, grayImage, 64, 255, CV_THRESH_BINARY);
 
-            // To check if an output argument is null we may call either isNull() or equals(null)
+            // To check if an output argument is null we may call either isNull() or equals(null).
             CvSeq contour = new CvSeq(null);
             cvFindContours(grayImage, storage, contour, Loader.sizeof(CvContour.class),
                     CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
@@ -200,6 +202,18 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===April 7, 2011===
+ * Added a `format` property to `CameraDevice`, `FrameGrabber`, and `FrameRecorder`, mostly useful for `FFmpegFrameGrabber`, where interesting values include "dv1394", "mjpeg", "video4linux2", "vfwcap", and "x11grab"
+ * `OpenCVFrameRecorder` now uses `CV_FOURCC_PROMPT` under Windows as default since `CV_FOURCC_DEFAULT` crashes (issue #49)
+ * Added hack to make sure the temporarily extracted library files get properly deleted under Windows
+ * JavaCPP now loads classes more lazily
+ * Fixed most occurences of `UnsatisfiedLinkError` (issue #54), but some corner cases may require a call to `Loader.load()` on the class one wishes to use
+ * Added (rudimentary) outlier detection and modified zero threshold handling in the image alignment framework
+ * New `JavaCV.hysteresisThreshold()` feature
+ * New `HandMouse` functionality, which depends on the image alignment framework
+ * Fixed `ProjectiveDevice.distort()`, which mistakenly undistorted images instead
+ * New `HoughLines` sample thanks to Jeremy Nicola
+
 ===February 19, 2011===
  * Switched from JNA to JavaCPP, which has a lower overhead and supports C++, bringing hope that future versions of JavaCV will support features of OpenCV available only through the C++ API
  * Consequently, the syntax of various operations have changed a bit, but the transition should not be too painful

@@ -57,7 +57,7 @@ public class ProjectiveDevice {
         }
     }
 
-    public static class Settings extends BaseSettings {
+    public static class Settings extends BaseChildSettings {
         public Settings() { }
         public Settings(ProjectiveDevice.Settings settings) {
             this.name            = settings.name;
@@ -528,7 +528,7 @@ public class ProjectiveDevice {
             int height = mapx.height();
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
-                    double[] distxy = distort(x, y);
+                    double[] distxy = undistort(x, y);
                     bufx.put((float)distxy[0]);
                     bufy.put((float)distxy[1]);
                 }

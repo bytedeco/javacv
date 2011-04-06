@@ -80,6 +80,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.codecID     = CODEC_ID_HUFFYUV;
         this.bitrate     = 400000;
         this.frameRate   = 30;
+
+        this.pkt         = new AVPacket();
+        this.tempPicture = new AVPicture();
     }
     public void release() throws Exception {
         stop();
@@ -90,6 +93,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         } catch (Exception ex) { }
     }
 
+    private String filename;
     private AVFrame picture;
     private BytePointer video_outbuf;
     private int video_outbuf_size;
@@ -98,15 +102,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVCodecContext c;
     private AVStream video_st;
     private SwsContext img_convert_ctx;
-    private AVPacket pkt = new AVPacket();
-    private ByteIOContext p = new ByteIOContext(null);
-    private AVPicture tempPicture = new AVPicture();
+    private AVPacket pkt;
+    private AVPicture tempPicture;
 
     public static final int DEFAULT_FRAME_RATE_BASE = 1001000;
 
     public void start() throws Exception {
         /* auto detect the output format from the name. */
-        oformat = av_guess_format(null, filename, null);
+        String formatName = format == null || format.length() == 0 ? null : format;
+        oformat = av_guess_format(formatName, filename, null);
         if (oformat == null) {
             throw new Exception("Could not find suitable output format");
         }
@@ -226,6 +230,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
         /* open the output file, if needed */
         if ((oformat.flags() & AVFMT_NOFILE) == 0) {
+            ByteIOContext p = new ByteIOContext(null);
             if (url_fopen(p, filename, URL_WRONLY) < 0) {
                 avcodec_close(c);
                 av_free(picture.data(0));

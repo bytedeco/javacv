@@ -60,7 +60,7 @@ public class ObjectFinder {
 
     }
 
-    public static class Settings extends BaseSettings {
+    public static class Settings extends BaseChildSettings {
         IplImage objectImage = null;
         CvSURFParams parameters = cvSURFParams(500, 1);
         double distanceThreshold = 0.6;

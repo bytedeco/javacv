@@ -81,6 +81,7 @@ public class opencv_calib3d {
     static { load(opencv_imgproc.class); load(); }
 
     @Opaque public static class CvPOSITObject extends Pointer {
+        static { load(); }
         public CvPOSITObject() { }
         public CvPOSITObject(Pointer p) { super(p); }
 
@@ -97,7 +98,7 @@ public class opencv_calib3d {
         }
         static class ReleaseDeallocator extends CvPOSITObject implements Deallocator {
             ReleaseDeallocator(CvPOSITObject p) { super(p); }
-            public void deallocate() { cvReleasePOSITObject(this); }
+            @Override public void deallocate() { cvReleasePOSITObject(this); }
         }
     }
     public static native CvPOSITObject cvCreatePOSITObject(CvPoint3D32f points, int point_count);
@@ -259,11 +260,12 @@ public class opencv_calib3d {
             CV_STEREO_BM_XSOBEL              = 1;
 
     public static class CvStereoBMState extends Pointer {
+        static { load(); }
         public CvStereoBMState() { allocate(); }
         public CvStereoBMState(int size) { allocateArray(size); }
         public CvStereoBMState(Pointer p) { super(p); }
-        public native void allocate();
-        public native void allocateArray(int size);
+        private native void allocate();
+        private native void allocateArray(int size);
 
         @Override public CvStereoBMState position(int position) {
             return (CvStereoBMState)super.position(position);
@@ -281,7 +283,7 @@ public class opencv_calib3d {
         }
         static class ReleaseDeallocator extends CvStereoBMState implements Deallocator {
             ReleaseDeallocator(CvStereoBMState p) { super(p); }
-            public void deallocate() { cvReleaseStereoBMState(this); }
+            @Override public void deallocate() { cvReleaseStereoBMState(this); }
         }
 
         public native int preFilterType();       public native CvStereoBMState preFilterType(int preFilterType);
@@ -330,6 +332,7 @@ public class opencv_calib3d {
     public static final int CV_STEREO_GC_OCCLUDED = Short.MAX_VALUE;
 
     public static class CvStereoGCState extends Pointer {
+        static { load(); }
         public CvStereoGCState() { allocate(); }
         public CvStereoGCState(int size) { allocateArray(size); }
         public CvStereoGCState(Pointer p) { super(p); }
@@ -352,7 +355,7 @@ public class opencv_calib3d {
         }
         static class ReleaseDeallocator extends CvStereoGCState implements Deallocator {
             ReleaseDeallocator(CvStereoGCState p) { super(p); }
-            public void deallocate() { cvReleaseStereoGCState(this); }
+            @Override public void deallocate() { cvReleaseStereoGCState(this); }
         }
 
         public native int Ithreshold();          public native CvStereoGCState Ithreshold(int Ithreshold);

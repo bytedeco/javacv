@@ -70,6 +70,8 @@ public class CameraDevice extends ProjectiveDevice {
         void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber);
         String getDescription();
 
+        String getFormat();
+        void setFormat(String format);
         int getImageWidth();
         void setImageWidth(int imageWidth);
         int getImageHeight();
@@ -105,6 +107,7 @@ public class CameraDevice extends ProjectiveDevice {
                 this.deviceFile   = s.deviceFile;
                 this.devicePath   = s.devicePath;
                 this.frameGrabber = s.frameGrabber;
+                this.format       = s.format;
                 this.imageWidth   = s.imageWidth;
                 this.imageHeight  = s.imageHeight;
                 this.frameRate    = s.frameRate;
@@ -258,6 +261,7 @@ public class CameraDevice extends ProjectiveDevice {
             }
         }
 
+        String format = "";
         int imageWidth = 0, imageHeight = 0;
         double frameRate = 0;
         boolean triggerMode = false;
@@ -267,6 +271,13 @@ public class CameraDevice extends ProjectiveDevice {
         int timeout = 10000;
         int numBuffers = 4;
         boolean deinterlace = false;
+
+        public String getFormat() {
+            return format;
+        }
+        public void setFormat(String format) {
+            this.format = format;
+        }
 
         public int getImageWidth() {
             return imageWidth;
@@ -349,7 +360,7 @@ public class CameraDevice extends ProjectiveDevice {
             }
         }
         SettingsImplementation si = new SettingsImplementation() {
-            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            @Override public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
                 CalibrationSettings.this.firePropertyChange(propertyName, oldValue, newValue);
             }
         };
@@ -373,6 +384,8 @@ public class CameraDevice extends ProjectiveDevice {
         public void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber) { si.setFrameGrabber(frameGrabber); }
         public String getDescription() { return si.getDescription(); }
 
+        public String getFormat() { return si.getFormat(); }
+        public void setFormat(String format) { si.setFormat(format); }
         public int getImageWidth() { return si.getImageWidth(); }
         public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
         public int getImageHeight() { return si.getImageHeight(); }
@@ -404,7 +417,7 @@ public class CameraDevice extends ProjectiveDevice {
             }
         }
         SettingsImplementation si = new SettingsImplementation() {
-            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            @Override public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
                 CalibratedSettings.this.firePropertyChange(propertyName, oldValue, newValue);
             }
         };
@@ -428,6 +441,8 @@ public class CameraDevice extends ProjectiveDevice {
         public void setFrameGrabber(Class<? extends FrameGrabber> frameGrabber) { si.setFrameGrabber(frameGrabber); }
         public String getDescription() { return si.getDescription(); }
 
+        public String getFormat() { return si.getFormat(); }
+        public void setFormat(String format) { si.setFormat(format); }
         public int getImageWidth() { return si.getImageWidth(); }
         public void setImageWidth(int imageWidth) { si.setImageWidth(imageWidth); }
         public int getImageHeight() { return si.getImageHeight(); }
@@ -487,6 +502,7 @@ public class CameraDevice extends ProjectiveDevice {
                     f = settings.getFrameGrabber().getConstructor(Integer.class).newInstance(number);
                 }
             }
+            f.setFormat(settings.getFormat());
             f.setImageWidth(settings.getImageWidth());
             f.setImageHeight(settings.getImageHeight());
             f.setFrameRate(settings.getFrameRate());

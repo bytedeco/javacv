@@ -163,6 +163,7 @@ public class avutil {
 
     //#include "rational.h"
     public static class AVRational extends Pointer {
+        static { load(); }
         public AVRational() { allocate(); }
         public AVRational(int size) { allocateArray(size); }
         public AVRational(Pointer p) { super(p); }
@@ -200,6 +201,7 @@ public class avutil {
 
     //#include "intfloat_readwrite.h"
     public static class AVExtFloat extends Pointer {
+        static { load(); }
         public AVExtFloat() { allocate(); }
         public AVExtFloat(int size) { allocateArray(size); }
         public AVExtFloat(Pointer p) { super(p); }
@@ -223,10 +225,12 @@ public class avutil {
 
     //#include "log.h"
     @Opaque public static class AVOption extends Pointer {
+        static { load(); }
         public AVOption() { }
         public AVOption(Pointer p) { super(p); }
     }
     public static class AVClass extends Pointer {
+        static { load(); }
         public AVClass() { allocate(); }
         public AVClass(int size) { allocateArray(size); }
         public AVClass(Pointer p) { super(p); }
@@ -240,6 +244,7 @@ public class avutil {
         @Cast("const char*")
         public native BytePointer class_name();        public native AVClass class_name(BytePointer class_name);
         public static class Item_name extends FunctionPointer {
+            static { load(); }
             public native @Cast("const char*") BytePointer call(Pointer ctx);
         }
         public native Item_name item_name();           public native AVClass item_name(Item_name item_name);
@@ -264,6 +269,7 @@ public class avutil {
     public static native int av_log_get_level();
     public static native void av_log_set_level(int l);
     public static class LogCallback extends FunctionPointer {
+        static { load(); }
         public    LogCallback(Pointer p) { super(p); }
         protected LogCallback() { allocate(); }
         protected final native void allocate();
@@ -422,6 +428,7 @@ public class avutil {
 
     //#include "fifo.h"
     public static class AVFifoBuffer extends Pointer {
+        static { load(); }
         public AVFifoBuffer() { allocate(); }
         public AVFifoBuffer(int size) { allocateArray(size); }
         public AVFifoBuffer(Pointer p) { super(p); }
@@ -450,6 +457,7 @@ public class avutil {
     public static native int av_fifo_size(AVFifoBuffer f);
     public static native int av_fifo_space(AVFifoBuffer f);
     public static class Func_read extends FunctionPointer {
+        static { load(); }
         public    Func_read(Pointer p) { super(p); }
         protected Func_read() { allocate(); }
         protected final native void allocate();
@@ -457,6 +465,7 @@ public class avutil {
     }
     public static native int av_fifo_generic_read(AVFifoBuffer f, Pointer dest, int buf_size, Func_read func);
     public static class Func_write extends FunctionPointer {
+        static { load(); }
         public    Func_write(Pointer p) { super(p); }
         protected Func_write() { allocate(); }
         protected final native void allocate();
@@ -484,6 +493,7 @@ public class avutil {
     @MemberGetter public static native int av_md5_size();
 
     @Opaque public static class AVMD5 extends BytePointer {
+        static { load(); }
         public AVMD5() { super(av_md5_size()); }
         public AVMD5(Pointer p) { super(p); }
 
@@ -508,6 +518,7 @@ public class avutil {
 
     //#include "pixdesc.h"
     @NoOffset public static class AVComponentDescriptor extends Pointer {
+        static { load(); }
         public AVComponentDescriptor() { allocate(); }
         public AVComponentDescriptor(int size) { allocateArray(size); }
         public AVComponentDescriptor(Pointer p) { super(p); }
@@ -526,6 +537,7 @@ public class avutil {
     }
 
     public static class AVPixFmtDescriptor extends Pointer {
+        static { load(); }
         public AVPixFmtDescriptor() { allocate(); }
         public AVPixFmtDescriptor(int size) { allocateArray(size); }
         public AVPixFmtDescriptor(Pointer p) { super(p); }
@@ -578,6 +590,7 @@ public class avutil {
     @MemberGetter public static native int av_sha1_size();
 
     @Opaque public static class AVSHA1 extends BytePointer {
+        static { load(); }
         public AVSHA1() { super(av_sha1_size()); }
         public AVSHA1(Pointer p) { super(p); }
 

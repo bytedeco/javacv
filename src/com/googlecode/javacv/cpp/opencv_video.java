@@ -135,6 +135,7 @@ public class opencv_video {
 
 
     public static class CvKalman extends Pointer {
+        static { load(); }
         public CvKalman() { allocate(); }
         public CvKalman(int size) { allocateArray(size); }
         public CvKalman(Pointer p) { super(p); }
@@ -159,7 +160,7 @@ public class opencv_video {
         }
         static class ReleaseDeallocator extends CvKalman implements Deallocator {
             ReleaseDeallocator(CvKalman p) { super(p); }
-            public void deallocate() { cvReleaseKalman(this); }
+            @Override public void deallocate() { cvReleaseKalman(this); }
         }
 
 
@@ -214,13 +215,16 @@ public class opencv_video {
             CV_BG_MODEL_FGD_SIMPLE = 2;
 
     public static class CvReleaseBGStatModel extends FunctionPointer {
+        static { load(); }
         public native void call(@ByPtrPtr CvBGStatModel bg_model);
     }
     public static class CvUpdateBGStatModel extends FunctionPointer {
+        static { load(); }
         public native int call(IplImage curr_frame, CvBGStatModel bg_model, double learningRate);
     }
 
     public static class CvBGStatModel extends Pointer {
+        static { load(); }
         public CvBGStatModel() { allocate(); }
         public CvBGStatModel(int size) { allocateArray(size); }
         public CvBGStatModel(Pointer p) { super(p); }
@@ -251,7 +255,7 @@ public class opencv_video {
         }
         static class ReleaseDeallocator extends CvBGStatModel implements Deallocator {
             ReleaseDeallocator(CvBGStatModel p) { super(p); }
-            public void deallocate() { cvReleaseBGStatModel(this); }
+            @Override public void deallocate() { cvReleaseBGStatModel(this); }
         }
 
 
@@ -291,6 +295,7 @@ public class opencv_video {
             CV_BGFG_FGD_BG_UPDATE_TRESH= 0.5f;
 
     public static class CvFGDStatModelParams extends Pointer {
+        static { load(); }
         public CvFGDStatModelParams() { allocate(); }
         public CvFGDStatModelParams(int size) { allocateArray(size); }
         public CvFGDStatModelParams(Pointer p) { super(p); }
@@ -322,6 +327,7 @@ public class opencv_video {
     }
 
     public static class CvBGPixelCStatTable extends Pointer {
+        static { load(); }
         public CvBGPixelCStatTable() { allocate(); }
         public CvBGPixelCStatTable(int size) { allocateArray(size); }
         public CvBGPixelCStatTable(Pointer p) { super(p); }
@@ -338,6 +344,7 @@ public class opencv_video {
     }
 
     public static class CvBGPixelCCStatTable extends Pointer {
+        static { load(); }
         public CvBGPixelCCStatTable() { allocate(); }
         public CvBGPixelCCStatTable(int size) { allocateArray(size); }
         public CvBGPixelCCStatTable(Pointer p) { super(p); }
@@ -354,6 +361,7 @@ public class opencv_video {
     }
 
     public static class CvBGPixelStat extends Pointer {
+        static { load(); }
         public CvBGPixelStat() { allocate(); }
         public CvBGPixelStat(int size) { allocateArray(size); }
         public CvBGPixelStat(Pointer p) { super(p); }
@@ -373,6 +381,7 @@ public class opencv_video {
     }
 
     public static class CvFGDStatModel extends CvBGStatModel {
+        static { load(); }
         public CvFGDStatModel() { allocate(); }
         public CvFGDStatModel(int size) { allocateArray(size); }
         public CvFGDStatModel(Pointer p) { super(p); }
@@ -411,6 +420,7 @@ public class opencv_video {
             CV_BGFG_MOG_MINAREA                 = 15.f;
 
     public static class CvGaussBGStatModelParams extends CvBGStatModel {
+        static { load(); }
         public CvGaussBGStatModelParams() { allocate(); }
         public CvGaussBGStatModelParams(int size) { allocateArray(size); }
         public CvGaussBGStatModelParams(Pointer p) { super(p); }
@@ -431,6 +441,7 @@ public class opencv_video {
     }
 
     public static class CvGaussBGValues extends Pointer {
+        static { load(); }
         public CvGaussBGValues() { allocate(); }
         public CvGaussBGValues(int size) { allocateArray(size); }
         public CvGaussBGValues(Pointer p) { super(p); }
@@ -449,6 +460,7 @@ public class opencv_video {
     }
 
     public static class CvGaussBGPoint extends Pointer {
+        static { load(); }
         public CvGaussBGPoint() { allocate(); }
         public CvGaussBGPoint(int size) { allocateArray(size); }
         public CvGaussBGPoint(Pointer p) { super(p); }
@@ -463,6 +475,7 @@ public class opencv_video {
     }
 
     public static class CvGaussBGModel extends CvBGStatModel {
+        static { load(); }
         public CvGaussBGModel() { allocate(); }
         public CvGaussBGModel(int size) { allocateArray(size); }
         public CvGaussBGModel(Pointer p) { super(p); }
@@ -484,6 +497,7 @@ public class opencv_video {
 
 
     public static class CvBGCodeBookElem extends Pointer {
+        static { load(); }
         public CvBGCodeBookElem() { allocate(); }
         public CvBGCodeBookElem(int size) { allocateArray(size); }
         public CvBGCodeBookElem(Pointer p) { super(p); }
@@ -504,6 +518,7 @@ public class opencv_video {
     }
 
     public static class CvBGCodeBookModel extends Pointer {
+        static { load(); }
         public CvBGCodeBookModel() { allocate(); }
         public CvBGCodeBookModel(int size) { allocateArray(size); }
         public CvBGCodeBookModel(Pointer p) { super(p); }
@@ -527,7 +542,7 @@ public class opencv_video {
         }
         static class ReleaseDeallocator extends CvBGCodeBookModel implements Deallocator {
             ReleaseDeallocator(CvBGCodeBookModel p) { super(p); }
-            public void deallocate() { cvReleaseBGCodeBookModel(this); }
+            @Override public void deallocate() { cvReleaseBGCodeBookModel(this); }
         }
 
 

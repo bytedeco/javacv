@@ -20,6 +20,8 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.Loader;
+
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 
@@ -34,7 +36,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         this.imageHeight = imageHeight;
 
         this.pixelFormat = 1;
-        this.codecID     = CV_FOURCC_DEFAULT;
+        this.codecID     = windows ? CV_FOURCC_PROMPT : CV_FOURCC_DEFAULT;
         this.bitrate     = 0;
         this.frameRate   = 30;
     }
@@ -47,6 +49,8 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         } catch (Exception ex) { }
     }
 
+    private static final boolean windows = Loader.getPlatformName().startsWith("windows");
+    private String filename;
     private CvVideoWriter writer = null;
 
     public void start() throws Exception {

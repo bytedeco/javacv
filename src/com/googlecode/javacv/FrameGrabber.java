@@ -104,6 +104,7 @@ public abstract class FrameGrabber {
         BGR, GRAY, RAW
     }
 
+    protected String format = null;
     protected int imageWidth = 0, imageHeight = 0;
     protected double frameRate = 0;
     protected boolean triggerMode = false;
@@ -114,6 +115,13 @@ public abstract class FrameGrabber {
     protected int numBuffers = 4;
     protected double gamma = 0.0;
     protected boolean deinterlace = false;
+
+    public String getFormat() {
+        return format;
+    }
+    public void setFormat(String format) {
+        this.format = format;
+    }
 
     public int getImageWidth() {
         return imageWidth;

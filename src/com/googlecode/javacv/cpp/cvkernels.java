@@ -57,6 +57,9 @@ public class cvkernels {
         public native IplImage srcImg2();        public native KernelData srcImg2(IplImage srcImg2);
         public native IplImage subImg();         public native KernelData subImg(IplImage subImg);
         public native IplImage srcDotImg();      public native KernelData srcDotImg(IplImage srcDotImg);
+        public native IplImage mask();           public native KernelData mask(IplImage mask);
+        public native double zeroThreshold();    public native KernelData zeroThreshold(double zeroThreshold);
+        public native double outlierThreshold(); public native KernelData outlierThreshold(double outlierThreshold);
         public native CvMat H1();                public native KernelData H1(CvMat H1);
         public native CvMat H2();                public native KernelData H2(CvMat H2);
         public native CvMat X();                 public native KernelData X (CvMat X);
@@ -66,9 +69,9 @@ public class cvkernels {
         public native IplImage dstImg();         public native KernelData dstImg(IplImage dstImg);
         public native int dstCount();            public native KernelData dstCount(int dstCount);
         public native int dstCountZero();        public native KernelData dstCountZero(int dstCountZero);
+        public native int dstCountOutlier();     public native KernelData dstCountOutlier(int dstCountOutlier);
         public native double srcDstDot();        public native KernelData srcDstDot(double srcDstDot);
         public native DoublePointer dstDstDot(); public native KernelData dstDstDot(DoublePointer dstDstDot);
     }
-    public static native void multiWarpColorTransform(KernelData data, int size,
-            IplImage inversedMask, CvRect roi, double zeroThreshold, CvScalar fillColor);
+    public static native void multiWarpColorTransform(KernelData data, int size, CvRect roi, CvScalar fillColor);
 }

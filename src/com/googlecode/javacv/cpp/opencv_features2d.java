@@ -79,6 +79,7 @@ public class opencv_features2d {
     static { load(opencv_calib3d.class); load(opencv_highgui.class); load(); }
 
     public static class CvSURFPoint extends Pointer {
+        static { load(); }
         public CvSURFPoint() { allocate(); }
         public CvSURFPoint(int size) { allocateArray(size); }
         public CvSURFPoint(Pointer p) { super(p); }
@@ -110,6 +111,7 @@ public class opencv_features2d {
     }
 
     public static class CvSURFParams extends Pointer {
+        static { load(); }
         public CvSURFParams() { allocate(); }
         public CvSURFParams(int size) { allocateArray(size); }
         public CvSURFParams(Pointer p) { super(p); }
@@ -133,6 +135,7 @@ public class opencv_features2d {
 
 
     public static class CvMSERParams extends Pointer {
+        static { load(); }
         public CvMSERParams() { allocate(); }
         public CvMSERParams(int size) { allocateArray(size); }
         public CvMSERParams(Pointer p) { super(p);  }
@@ -168,6 +171,7 @@ public class opencv_features2d {
 
 
     public static class CvStarKeypoint extends Pointer {
+        static { load(); }
         public CvStarKeypoint() { allocate(); }
         public CvStarKeypoint(int size) { allocateArray(size); }
         public CvStarKeypoint(Pointer p) { super(p); }
@@ -191,6 +195,7 @@ public class opencv_features2d {
     }
 
     public static class CvStarDetectorParams extends Pointer {
+        static { load(); }
         public CvStarDetectorParams() { allocate(); }
         public CvStarDetectorParams(int size) { allocateArray(size); }
         public CvStarDetectorParams(Pointer p) { super(p); }

@@ -87,6 +87,7 @@ public class opencv_imgproc {
     static { load(opencv_core.class); load(); }
 
     public static class CvConnectedComp extends Pointer {
+        static { load(); }
         public CvConnectedComp() { allocate(); }
         public CvConnectedComp(int size) { allocateArray(size); }
         public CvConnectedComp(Pointer p) { super(p); }
@@ -278,6 +279,7 @@ public class opencv_imgproc {
 
 
     public static class CvMoments extends Pointer {
+        static { load(); }
         public CvMoments() { allocate(); }
         public CvMoments(int size) { allocateArray(size); }
         public CvMoments(Pointer p) { super(p); }
@@ -311,6 +313,7 @@ public class opencv_imgproc {
     }
 
     public static class CvHuMoments extends Pointer {
+        static { load(); }
         public CvHuMoments() { allocate(); }
         public CvHuMoments(int size) { allocateArray(size); }
         public CvHuMoments(Pointer p) { super(p); }
@@ -340,6 +343,7 @@ public class opencv_imgproc {
             CV_TM_CCOEFF_NORMED = 5;
 
     public static class CvDistanceFunction extends FunctionPointer {
+        static { load(); }
         public    CvDistanceFunction(Pointer p) { super(p); }
         protected CvDistanceFunction() { allocate(); }
         protected final native void allocate();
@@ -361,11 +365,13 @@ public class opencv_imgproc {
             CV_LINK_RUNS               = 5;
 
     @Opaque public static class CvContourScanner extends Pointer {
+        static { load(); }
         public CvContourScanner() { }
         public CvContourScanner(Pointer p) { super(p); }
     }
 
     public static class CvChainPtReader extends CvSeqReader {
+        static { load(); }
         public CvChainPtReader() { allocate(); }
         public CvChainPtReader(int size) { allocateArray(size); }
         public CvChainPtReader(Pointer p) { super(p); }
@@ -385,6 +391,7 @@ public class opencv_imgproc {
 
 
     public static class CvSubdiv2DEdge extends SizeTPointer {
+        static { load(); }
         public CvSubdiv2DEdge() { super(1); }
         public CvSubdiv2DEdge(int size) { super(size); }
         public CvSubdiv2DEdge(Pointer p) { super(p); }
@@ -393,6 +400,7 @@ public class opencv_imgproc {
     public static final int CV_SUBDIV2D_VIRTUAL_POINT_FLAG = (1 << 30);
 
     public static class CvQuadEdge2D extends Pointer {
+        static { load(); }
         public CvQuadEdge2D() { allocate(); }
         public CvQuadEdge2D(int size) { allocateArray(size); }
         public CvQuadEdge2D(Pointer p) { super(p); }
@@ -433,6 +441,7 @@ public class opencv_imgproc {
     }
 
     public static class CvSubdiv2DPoint extends Pointer {
+        static { load(); }
         public CvSubdiv2DPoint() { allocate(); }
         public CvSubdiv2DPoint(int size) { allocateArray(size); }
         public CvSubdiv2DPoint(Pointer p) { super(p); }
@@ -450,6 +459,7 @@ public class opencv_imgproc {
     }
 
     public static class CvSubdiv2D extends CvGraph {
+        static { load(); }
         public CvSubdiv2D() { allocate(); }
         public CvSubdiv2D(int size) { allocateArray(size); }
         public CvSubdiv2D(Pointer p) { super(p); }
@@ -503,6 +513,7 @@ public class opencv_imgproc {
 
 
     public static class CvConvexityDefect extends Pointer {
+        static { load(); }
         public CvConvexityDefect() { allocate(); }
         public CvConvexityDefect(int size) { allocateArray(size); }
         public CvConvexityDefect(Pointer p) { super(p); }
@@ -567,16 +578,19 @@ public class opencv_imgproc {
             CV_HOUGH_GRADIENT = 3;
 
     @Opaque public static class CvFeatureTree extends Pointer {
+        static { load(); }
         public CvFeatureTree() { }
         public CvFeatureTree(Pointer p) { super(p); }
     }
 
     @Opaque public static class CvLSH extends Pointer {
+        static { load(); }
         public CvLSH() { }
         public CvLSH(Pointer p) { super(p); }
     }
 
     @Opaque public static class CvLSHOperations extends Pointer {
+        static { load(); }
         public CvLSHOperations() { }
         public CvLSHOperations(Pointer p) { super(p); }
     }
@@ -613,6 +627,9 @@ public class opencv_imgproc {
     public static native void cvSobel(CvArr src, CvArr dst, int xorder, int yorder, int aperture_size/*=3*/);
     public static native void cvLaplace(CvArr src, CvArr dst, int aperture_size/*=3*/);
     public static native void cvCvtColor(CvArr src, CvArr dst, int code);
+    public static void cvResize(CvArr src, CvArr dst) {
+        cvResize(src, dst, CV_INTER_LINEAR);
+    }
     public static native void cvResize(CvArr src, CvArr dst, int interpolation/*=CV_INTER_LINEAR*/);
     public static void cvWarpAffine(CvArr src, CvArr dst, CvMat map_matrix) {
         cvWarpAffine(src, dst, map_matrix, CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
@@ -653,6 +670,7 @@ public class opencv_imgproc {
             CvMat dist_coeffs, CvMat R/*=null*/, CvMat P/*=null*/);
 
     public static class IplConvKernel extends Pointer {
+        static { load(); }
         public IplConvKernel() { allocate(); }
         public IplConvKernel(int size) { allocateArray(size); }
         public IplConvKernel(Pointer p) { super(p); }
@@ -678,7 +696,7 @@ public class opencv_imgproc {
         }
         static class ReleaseDeallocator extends IplConvKernel implements Deallocator {
             ReleaseDeallocator(IplConvKernel p) { super(p); }
-            public void deallocate() { cvReleaseStructuringElement(this); }
+            @Override public void deallocate() { cvReleaseStructuringElement(this); }
         }
 
         public native int nCols();         public native IplConvKernel nCols(int nCols);
@@ -690,6 +708,7 @@ public class opencv_imgproc {
     }
 
     public static class IplConvKernelFP extends Pointer {
+        static { load(); }
         public IplConvKernelFP() { allocate(); }
         public IplConvKernelFP(int size) { allocateArray(size); }
         public IplConvKernelFP(Pointer p) { super(p); }
@@ -824,6 +843,7 @@ public class opencv_imgproc {
             CV_HIST_UNIFORM       = 1;
 
     public static class CvHistogram extends Pointer {
+        static { load(); }
         public CvHistogram() { allocate(); }
         public CvHistogram(int size) { allocateArray(size); }
         public CvHistogram(Pointer p) { super(p); }
@@ -848,7 +868,7 @@ public class opencv_imgproc {
         }
         static class ReleaseDeallocator extends CvHistogram implements Deallocator {
             ReleaseDeallocator(CvHistogram p) { super(p); }
-            public void deallocate() { cvReleaseHist(this); }
+            @Override public void deallocate() { cvReleaseHist(this); }
         }
 
         public native @Cast("CvHistType") int type();                public native CvHistogram type(int type);

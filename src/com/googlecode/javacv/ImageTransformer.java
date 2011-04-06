@@ -28,23 +28,29 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 public interface ImageTransformer {
     public static class Data {
-        public Data(IplImage srcImg, IplImage subImg, IplImage srcDotImg,
+        public Data(IplImage srcImg, IplImage subImg, IplImage srcDotImg, IplImage mask,
+                double zeroThreshold, double outlierThreshold, int pyramidLevel,
                 IplImage transImg, IplImage dstImg, int dstDstDotLength) {
             this.srcImg    = srcImg;
             this.subImg    = subImg;
             this.srcDotImg = srcDotImg;
+            this.mask      = mask;
+            this.zeroThreshold    = zeroThreshold;
+            this.outlierThreshold = outlierThreshold;
+            this.pyramidLevel     = pyramidLevel;
             this.transImg  = transImg;
             this.dstImg    = dstImg;
             this.dstDstDot = dstDstDotLength == 0 ? null : new double[dstDstDotLength];
         }
 
         // input
-        public IplImage srcImg  = null, subImg = null, srcDotImg = null;
-        public boolean  inverse = false;
+        public IplImage srcImg  = null, subImg = null, srcDotImg = null, mask = null;
+        public double   zeroThreshold = 0, outlierThreshold = 0;
+        public int      pyramidLevel = 0;
 
         // output
         public IplImage transImg  = null, dstImg = null;
-        public int      dstCount  = 0, dstCountZero = 0;
+        public int      dstCount  = 0, dstCountZero = 0, dstCountOutlier = 0;
         public double   srcDstDot = 0.0;
         public double[] dstDstDot = null;
 
@@ -69,7 +75,6 @@ public interface ImageTransformer {
     }
 
     Parameters createParameters();
-    void transform(Data[] data, IplImage mask, CvRect roi, double zeroThreshold,
-            int pyramidLevel, Parameters[] parameters);
+    void transform(Data[] data, CvRect roi, Parameters[] parameters, boolean[] inverses);
     void transform(CvMat srcPts, CvMat dstPts, Parameters parameters, boolean inverse);
 }

@@ -96,6 +96,7 @@ public class avformat {
 
     //#include "avio.h"
     public static class URLContext extends Pointer {
+        static { load(); }
         public URLContext() { allocate(); }
         public URLContext(int size) { allocateArray(size); }
         public URLContext(Pointer p) { super(p); }
@@ -120,6 +121,7 @@ public class avformat {
     }
 
     public static class URLPollEntry extends Pointer {
+        static { load(); }
         public URLPollEntry() { allocate(); }
         public URLPollEntry(int size) { allocateArray(size); }
         public URLPollEntry(Pointer p) { super(p); }
@@ -141,6 +143,7 @@ public class avformat {
             URL_RDWR   = 2;
 
     public static class URLInterruptCB extends FunctionPointer {
+        static { load(); }
         public    URLInterruptCB(Pointer p) { super(p); }
         protected URLInterruptCB() { allocate(); }
         protected final native void allocate();
@@ -181,6 +184,7 @@ public class avformat {
             AVSEEK_FORCE = 0x20000;
 
     public static class URLProtocol extends Pointer {
+        static { load(); }
         public URLProtocol() { allocate(); }
         public URLProtocol(int size) { allocateArray(size); }
         public URLProtocol(Pointer p) { super(p); }
@@ -195,6 +199,7 @@ public class avformat {
         public native BytePointer name();              public native URLProtocol name(BytePointer name);
 
         public static class Url_open extends FunctionPointer {
+            static { load(); }
             public    Url_open(Pointer p) { super(p); }
             protected Url_open() { allocate(); }
             protected final native void allocate();
@@ -203,6 +208,7 @@ public class avformat {
         public native Url_open url_open();             public native URLProtocol url_open(Url_open url_open);
 
         public static class Url_read extends FunctionPointer {
+            static { load(); }
             public    Url_read(Pointer p) { super(p); }
             protected Url_read() { allocate(); }
             protected final native void allocate();
@@ -211,6 +217,7 @@ public class avformat {
         public native Url_read url_read();             public native URLProtocol url_read(Url_read url_read);
 
         public static class Url_write extends FunctionPointer {
+            static { load(); }
             public    Url_write(Pointer p) { super(p); }
             protected Url_write() { allocate(); }
             protected final native void allocate();
@@ -219,6 +226,7 @@ public class avformat {
         public native Url_write url_write();           public native URLProtocol url_write(Url_write url_write);
 
         public static class Url_seek extends FunctionPointer {
+            static { load(); }
             public    Url_seek(Pointer p) { super(p); }
             protected Url_seek() { allocate(); }
             protected final native void allocate();
@@ -227,6 +235,7 @@ public class avformat {
         public native Url_seek url_seek();             public native URLProtocol url_seek(Url_seek url_seek);
 
         public static class Url_close extends FunctionPointer {
+            static { load(); }
             public    Url_close(Pointer p) { super(p); }
             protected Url_close() { allocate(); }
             protected final native void allocate();
@@ -237,6 +246,7 @@ public class avformat {
         public native URLProtocol next();              public native URLProtocol next(URLProtocol next);
 
         public static class Url_read_pause extends FunctionPointer {
+            static { load(); }
             public    Url_read_pause(Pointer p) { super(p); }
             protected Url_read_pause() { allocate(); }
             protected final native void allocate();
@@ -245,6 +255,7 @@ public class avformat {
         public native Url_read_pause url_read_pause(); public native URLProtocol url_read_pause(Url_read_pause url_read_pause);
 
         public static class Url_read_seek extends FunctionPointer {
+            static { load(); }
             public    Url_read_seek(Pointer p) { super(p); }
             protected Url_read_seek() { allocate(); }
             protected final native void allocate();
@@ -253,6 +264,7 @@ public class avformat {
         public native Url_read_seek url_read_seek();   public native URLProtocol url_read_seek(Url_read_seek url_read_seek);
 
         public static class Url_get_file_handle extends FunctionPointer {
+            static { load(); }
             public    Url_get_file_handle(Pointer p) { super(p); }
             protected Url_get_file_handle() { allocate(); }
             protected final native void allocate();
@@ -280,6 +292,7 @@ public class avformat {
     public static native int av_register_protocol(URLProtocol protocol);
 
     public static class ByteIOContext extends Pointer {
+        static { load(); }
         public ByteIOContext() { allocate(); }
         public ByteIOContext(int size) { allocateArray(size); }
         public ByteIOContext(Pointer p) { super(p); }
@@ -299,14 +312,17 @@ public class avformat {
         public native BytePointer buf_end();        public native ByteIOContext buf_end(BytePointer buf_end);
         public native Pointer opaque();             public native ByteIOContext opaque(Pointer opaque);
         public static class Read_packet extends FunctionPointer {
+            static { load(); }
             public native int call(Pointer opaque, @Cast("uint8_t*") BytePointer buf, int buf_size);
         }
         public native Read_packet read_packet();    public native ByteIOContext read_packet(Read_packet read_packet);
         public static class Write_packet extends FunctionPointer {
+            static { load(); }
             public native int call(Pointer opaque, @Cast("uint8_t*") BytePointer buf, int buf_size);
         }
         public native Write_packet write_packet();  public native ByteIOContext write_packet(Write_packet write_packet);
         public static class Seek extends FunctionPointer {
+            static { load(); }
             public native long call(Pointer opaque, long offset, int whence);
         }
         public native Seek seek();                  public native ByteIOContext seek(Seek seek);
@@ -321,6 +337,7 @@ public class avformat {
         @Cast("unsigned char*")
         public native BytePointer checksum_ptr();   public native ByteIOContext checksum_ptr(BytePointer checksum_ptr);
         public static class Update_checksum extends FunctionPointer {
+            static { load(); }
             public native @Cast("unsigned long") long call(@Cast("unsigned long") long checksum,
                           @Cast("const uint8_t*") BytePointer buf, @Cast("unsigned int") int size);
         }
@@ -329,10 +346,12 @@ public class avformat {
         
         public native int error();                  public native ByteIOContext error(int error);
         public static class Read_pause extends FunctionPointer {
+            static { load(); }
             public native int call(Pointer opaque, int pause);
         }
         public native Read_pause read_pause();      public native ByteIOContext read_pause(Read_pause read_pause);
         public static class Read_seek extends FunctionPointer {
+            static { load(); }
             public native long call(Pointer opaque, int stream_index, long timestamp, int flags);
         }
         public native Read_seek read_seek();        public native ByteIOContext read_seek(Read_seek read_seek);
@@ -451,6 +470,7 @@ public class avformat {
             AV_METADATA_DONT_OVERWRITE  = 16;
 
     public static class AVMetadataTag extends Pointer {
+        static { load(); }
         public AVMetadataTag() { allocate(); }
         public AVMetadataTag(int size) { allocateArray(size); }
         public AVMetadataTag(Pointer p) { super(p); }
@@ -466,10 +486,12 @@ public class avformat {
     }
 
     @Opaque public static class AVMetadata extends Pointer {
+        static { load(); }
         public AVMetadata() { }
         public AVMetadata(Pointer p) { super(p); }
     }
     @Opaque public static class AVMetadataConv extends Pointer {
+        static { load(); }
         public AVMetadataConv() { }
         public AVMetadataConv(Pointer p) { super(p); }
     }
@@ -491,6 +513,7 @@ public class avformat {
 
 
     public static class AVFrac extends Pointer {
+        static { load(); }
         public AVFrac() { allocate(); }
         public AVFrac(int size) { allocateArray(size); }
         public AVFrac(Pointer p) { super(p); }
@@ -507,11 +530,13 @@ public class avformat {
     }
 
     @Opaque public static class AVCodecTag extends Pointer {
+        static { load(); }
         public AVCodecTag() { }
         public AVCodecTag(Pointer p) { super(p); }
     }
 
     public static class AVProbeData extends Pointer {
+        static { load(); }
         public AVProbeData() { allocate(); }
         public AVProbeData(int size) { allocateArray(size); }
         public AVProbeData(Pointer p) { super(p); }
@@ -534,6 +559,7 @@ public class avformat {
             AVPROBE_PADDING_SIZE = 32;
 
     public static class AVFormatParameters extends Pointer {
+        static { load(); }
         public AVFormatParameters() { allocate(); }
         public AVFormatParameters(int size) { allocateArray(size); }
         public AVFormatParameters(Pointer p) { super(p); }
@@ -582,6 +608,7 @@ public class avformat {
             AVFMT_NODIMENSIONS  = 0x0800;
 
     public static class AVOutputFormat extends Pointer {
+        static { load(); }
         public AVOutputFormat() { allocate(); }
         public AVOutputFormat(int size) { allocateArray(size); }
         public AVOutputFormat(Pointer p) { super(p); }
@@ -607,6 +634,7 @@ public class avformat {
         public native int video_codec();              public native AVOutputFormat video_codec(int video_codec);
 
         public static class Write_header extends FunctionPointer {
+            static { load(); }
             public    Write_header(Pointer p) { super(p); }
             protected Write_header() { allocate(); }
             protected final native void allocate();
@@ -615,6 +643,7 @@ public class avformat {
         public native Write_header write_header();    public native AVOutputFormat write_header(Write_header write_header);
 
         public static class Write_packet extends FunctionPointer {
+            static { load(); }
             public    Write_packet(Pointer p) { super(p); }
             protected Write_packet() { allocate(); }
             protected final native void allocate();
@@ -623,6 +652,7 @@ public class avformat {
         public native Write_packet write_packet();    public native AVOutputFormat write_packet(Write_packet write_packet);
 
         public static class Write_trailer extends FunctionPointer {
+            static { load(); }
             public    Write_trailer(Pointer p) { super(p); }
             protected Write_trailer() { allocate(); }
             protected final native void allocate();
@@ -633,6 +663,7 @@ public class avformat {
         public native int flags();                    public native AVOutputFormat flags(int flags);
 
         public static class Set_parameters extends FunctionPointer {
+            static { load(); }
             public    Set_parameters(Pointer p) { super(p); }
             protected Set_parameters() { allocate(); }
             protected final native void allocate();
@@ -641,6 +672,7 @@ public class avformat {
         public native Set_parameters set_parameters(); public native AVOutputFormat set_parameters(Set_parameters set_parameters);
 
         public static class Interleave_packet extends FunctionPointer {
+            static { load(); }
             public    Interleave_packet(Pointer p) { super(p); }
             protected Interleave_packet() { allocate(); }
             protected final native void allocate();
@@ -661,6 +693,7 @@ public class avformat {
     }
 
     public static class AVInputFormat extends Pointer {
+        static { load(); }
         public AVInputFormat() { allocate(); }
         public AVInputFormat(int size) { allocateArray(size); }
         public AVInputFormat(Pointer p) { super(p); }
@@ -677,6 +710,7 @@ public class avformat {
         public native BytePointer long_name();        public native AVInputFormat long_name(BytePointer long_name);
         public native int priv_data_size();           public native AVInputFormat priv_data_size(int priv_data_size);
         public static class Read_probe extends FunctionPointer {
+            static { load(); }
             public    Read_probe(Pointer p) { super(p); }
             protected Read_probe() { allocate(); }
             protected final native void allocate();
@@ -685,6 +719,7 @@ public class avformat {
         public native Read_probe read_probe();        public native AVInputFormat read_probe(Read_probe read_probe);
 
         public static class Read_header extends FunctionPointer {
+            static { load(); }
             public    Read_header(Pointer p) { super(p); }
             protected Read_header() { allocate(); }
             protected final native void allocate();
@@ -693,6 +728,7 @@ public class avformat {
         public native Read_header read_header();      public native AVInputFormat read_header(Read_header read_header);
 
         public static class Read_packet extends FunctionPointer {
+            static { load(); }
             public    Read_packet(Pointer p) { super(p); }
             protected Read_packet() { allocate(); }
             protected final native void allocate();
@@ -701,6 +737,7 @@ public class avformat {
         public native Read_packet read_packet();      public native AVInputFormat read_packet(Read_packet read_packet);
 
         public static class Read_close extends FunctionPointer {
+            static { load(); }
             public    Read_close(Pointer p) { super(p); }
             protected Read_close() { allocate(); }
             protected final native void allocate();
@@ -710,6 +747,7 @@ public class avformat {
 
 //#if LIBAVFORMAT_VERSION_MAJOR < 53
         public static class Read_seek extends FunctionPointer {
+            static { load(); }
             public    Read_seek(Pointer p) { super(p); }
             protected Read_seek() { allocate(); }
             protected final native void allocate();
@@ -718,6 +756,7 @@ public class avformat {
         public native Read_seek read_seek();          public native AVInputFormat read_seek(Read_seek read_seek);
 //#endif
         public static class Read_timestamp extends FunctionPointer {
+            static { load(); }
             public    Read_timestamp(Pointer p) { super(p); }
             protected Read_timestamp() { allocate(); }
             protected final native void allocate();
@@ -731,6 +770,7 @@ public class avformat {
         public native int value();                    public native AVInputFormat value(int value);
 
         public static class Read_play extends FunctionPointer {
+            static { load(); }
             public    Read_play(Pointer p) { super(p); }
             protected Read_play() { allocate(); }
             protected final native void allocate();
@@ -739,6 +779,7 @@ public class avformat {
         public native Read_play read_play();          public native AVInputFormat read_play(Read_play read_play);
 
         public static class Read_pause extends FunctionPointer {
+            static { load(); }
             public    Read_pause(Pointer p) { super(p); }
             protected Read_pause() { allocate(); }
             protected final native void allocate();
@@ -750,6 +791,7 @@ public class avformat {
         public native PointerPointer codec_tag();     public native AVInputFormat codec_tag(PointerPointer codec_tag);
 
         public static class Read_seek2 extends FunctionPointer {
+            static { load(); }
             public    Read_seek2(Pointer p) { super(p); }
             protected Read_seek2() { allocate(); }
             protected final native void allocate();
@@ -771,6 +813,7 @@ public class avformat {
             AVSTREAM_PARSE_TIMESTAMPS = 3;
 
     public static class AVIndexEntry extends Pointer {
+        static { load(); }
         public AVIndexEntry() { allocate(); }
         public AVIndexEntry(int size) { allocateArray(size); }
         public AVIndexEntry(Pointer p) { super(p); }
@@ -800,6 +843,7 @@ public class avformat {
             AV_DISPOSITION_KARAOKE  = 0x0020;
 
     public static class AVStream extends Pointer {
+        static { load(); }
         public AVStream() { allocate(); }
         public AVStream(int size) { allocateArray(size); }
         public AVStream(Pointer p) { super(p); }
@@ -892,6 +936,7 @@ public class avformat {
     public static final int AV_PROGRAM_RUNNING = 1;
 
     public static class AVProgram extends Pointer {
+        static { load(); }
         public AVProgram() { allocate(); }
         public AVProgram(int size) { allocateArray(size); }
         public AVProgram(Pointer p) { super(p); }
@@ -921,6 +966,7 @@ public class avformat {
     public static final int AVFMTCTX_NOHEADER     = 0x0001;
 
     public static class AVChapter extends Pointer {
+        static { load(); }
         public AVChapter() { allocate(); }
         public AVChapter(int size) { allocateArray(size); }
         public AVChapter(Pointer p) { super(p); }
@@ -950,6 +996,7 @@ public class avformat {
 //#endif
 
     public static class AVFormatContext extends Pointer {
+        static { load(); }
         public AVFormatContext() { allocate(); }
         public AVFormatContext(int size) { allocateArray(size); }
         public AVFormatContext(Pointer p) { super(p); }
@@ -1075,6 +1122,7 @@ public class avformat {
     }
 
     public static class AVPacketList extends Pointer {
+        static { load(); }
         public AVPacketList() { allocate(); }
         public AVPacketList(int size) { allocateArray(size); }
         public AVPacketList(Pointer p) { super(p); }

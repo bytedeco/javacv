@@ -43,7 +43,7 @@ public class MarkerDetector {
     // (including minimum projector intensity) and the intensity level
     // used for the projector markers... this is because we use binary
     // thresholding while we actually have three levels..
-    public static class Settings extends BaseSettings {
+    public static class Settings extends BaseChildSettings {
         int binarizationWindowMin = 5;
         int binarizationWindowMax = 63;
         double binarizationVarianceMultiplier = 1;

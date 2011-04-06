@@ -44,10 +44,17 @@ public abstract class FrameRecorder {
         }
     }
 
-    protected String filename;
+    protected String format;
     protected int    imageWidth, imageHeight;
     protected int    pixelFormat, codecID, bitrate;
     protected double frameRate;
+
+    public String getFormat() {
+        return format;
+    }
+    public void setFormat(String format) {
+        this.format = format;
+    }
 
     public int getImageWidth() {
         return imageWidth;

@@ -230,20 +230,19 @@ public class ProCamTransformer implements ImageTransformer {
         surfaceTransformer.transform(srcPts, dstPts, ((Parameters)parameters).surfaceParameters, inverse);
     }
 
-    public void transform(Data[] data, IplImage mask, CvRect roi, double zeroThreshold,
-            int pyramidLevel, ImageTransformer.Parameters[] parameters) {
+    public void transform(Data[] data, CvRect roi, ImageTransformer.Parameters[] parameters, boolean[] inverses) {
         assert (data.length == parameters.length);
         boolean allOK = true;
         for (int i = 0; i < data.length; i++) {
             Data d = data[i];
-            if (d.inverse) {
+            if (inverses != null && inverses[i]) {
                 throw new UnsupportedOperationException("Inverse transform not supported.");
             }
             if (d.srcImg != null) {
                 if ((d.transImg != null || d.dstImg != null) &&
                      d.subImg   == null && d.srcDotImg == null && d.dstDstDot == null) {
                         transform(d.srcImg, d.transImg == null ? d.dstImg : d.transImg,
-                                roi, pyramidLevel, parameters[i], d.inverse);
+                                roi, d.pyramidLevel, parameters[i], inverses == null ? false : inverses[i]);
                 } else {
                     allOK = false;
                 }
@@ -275,9 +274,12 @@ public class ProCamTransformer implements ImageTransformer {
                 c.kernelData.position(i);
 
                 c.kernelData.srcImg(data[i].srcImg);
-                c.kernelData.srcImg2(projectorImage[pyramidLevel]);
+                c.kernelData.srcImg2(projectorImage[data[i].pyramidLevel]);
                 c.kernelData.subImg(data[i].subImg);
                 c.kernelData.srcDotImg(data[i].srcDotImg);
+                c.kernelData.mask(data[i].mask);
+                c.kernelData.zeroThreshold(data[i].zeroThreshold);
+                c.kernelData.outlierThreshold(data[i].outlierThreshold);
 
                 if (c.H1[i] == null) { c.H1[i] = CvMat.create(3, 3); }
                 if (c.H2[i] == null) { c.H2[i] = CvMat.create(3, 3); }
@@ -287,7 +289,7 @@ public class ProCamTransformer implements ImageTransformer {
                     c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
                 }
 
-                prepareHomographyTransform(c.H1[i], c.H2[i], c.X[i], pyramidLevel, (Parameters)parameters[i]);
+                prepareHomographyTransform(c.H1[i], c.H2[i], c.X[i], data[i].pyramidLevel, (Parameters)parameters[i]);
 
                 c.kernelData.H1(c.H1[i]);
                 c.kernelData.H2(c.H2[i]);
@@ -298,14 +300,14 @@ public class ProCamTransformer implements ImageTransformer {
                 c.kernelData.dstDstDot(c.dstDstDot[i]);
             }
 
-            multiWarpColorTransform(c.kernelData.position(0), data.length,
-                    mask, roi, zeroThreshold, getFillColor());
+            multiWarpColorTransform(c.kernelData.position(0), data.length, roi, getFillColor());
 
             for (int i = 0; i < data.length; i++) {
                 c.kernelData.position(i);
-                data[i].dstCount     = c.kernelData.dstCount();
-                data[i].dstCountZero = c.kernelData.dstCountZero();
-                data[i].srcDstDot    = c.kernelData.srcDstDot();
+                data[i].dstCount        = c.kernelData.dstCount();
+                data[i].dstCountZero    = c.kernelData.dstCountZero();
+                data[i].dstCountOutlier = c.kernelData.dstCountOutlier();
+                data[i].srcDstDot       = c.kernelData.srcDstDot();
                 if (data[i].dstDstDot != null) {
                     c.dstDstDotBuf[i].position(0);
                     c.dstDstDotBuf[i].get(data[i].dstDstDot);

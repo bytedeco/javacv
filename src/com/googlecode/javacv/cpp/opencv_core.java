@@ -127,11 +127,13 @@ public class opencv_core {
     public static final String androidLinkpath    = "../android/lib/";
 
     @Opaque public static class CvArr extends Pointer implements Cloneable {
+        static { load(); }
         public CvArr() { }
         public CvArr(Pointer p) { super(p); }
     }
 
     public static class Cv32suf extends Pointer {
+        static { load(); }
         public Cv32suf() { allocate(); }
         public Cv32suf(int size) { allocateArray(size); }
         public Cv32suf(Pointer p) { super(p); }
@@ -148,6 +150,7 @@ public class opencv_core {
     }
 
     public static class Cv64suf extends Pointer {
+        static { load(); }
         public Cv64suf() { allocate(); }
         public Cv64suf(int size) { allocateArray(size); }
         public Cv64suf(Pointer p) { super(p); }
@@ -218,6 +221,7 @@ public class opencv_core {
             CV_GpuNppCallError          = -218;
 
     public static class CvRNG extends LongPointer {
+        static { load(); }
         public CvRNG() { super(1); }
         public CvRNG(Pointer p) { super(p); }
     }
@@ -908,11 +912,13 @@ public class opencv_core {
     }
 
     @Opaque public static class IplTileInfo extends Pointer {
+        static { load(); }
         public IplTileInfo() { }
         public IplTileInfo(Pointer p) { super(p); }
     }
 
     public static class IplROI extends Pointer {
+        static { load(); }
         public IplROI() { allocate(); }
         public IplROI(int size) { allocateArray(size); }
         public IplROI(Pointer p) { super(p); }
@@ -1630,6 +1636,7 @@ public class opencv_core {
     }
 
     public static class CvSparseNode extends Pointer {
+        static { load(); }
         public CvSparseNode() { allocate(); }
         public CvSparseNode(int size) { allocateArray(size); }
         public CvSparseNode(Pointer p) { super(p); }
@@ -1645,6 +1652,7 @@ public class opencv_core {
     }
 
     public static class CvSparseMatIterator extends Pointer {
+        static { load(); }
         public CvSparseMatIterator() { allocate(); }
         public CvSparseMatIterator(int size) { allocateArray(size); }
         public CvSparseMatIterator(Pointer p) { super(p); }
@@ -1669,6 +1677,7 @@ public class opencv_core {
 
 
     public static class CvRect extends Pointer {
+        static { load(); }
         public CvRect() { allocate(); }
         public CvRect(int size) { allocateArray(size); }
         public CvRect(Pointer p) { super(p); }
@@ -1710,6 +1719,7 @@ public class opencv_core {
             CV_TERMCRIT_NUMBER = CV_TERMCRIT_ITER,
             CV_TERMCRIT_EPS    = 2;
     public static class CvTermCriteria extends Pointer {
+        static { load(); }
         public CvTermCriteria() { allocate(); }
         public CvTermCriteria(int size) { allocateArray(size); }
         public CvTermCriteria(Pointer p) { super(p); }
@@ -1805,6 +1815,7 @@ public class opencv_core {
     }
 
     public static class CvPoint2D32f extends Pointer {
+        static { load(); }
         public CvPoint2D32f() { allocate(); }
         public CvPoint2D32f(int size) { allocateArray(size); }
         public CvPoint2D32f(Pointer p) { super(p); }
@@ -1869,6 +1880,7 @@ public class opencv_core {
     }
 
     public static class CvPoint3D32f extends Pointer {
+        static { load(); }
         public CvPoint3D32f() { allocate(); }
         public CvPoint3D32f(int size) { allocateArray(size); }
         public CvPoint3D32f(Pointer p) { super(p); }
@@ -1929,6 +1941,7 @@ public class opencv_core {
     }
 
     public static class CvPoint2D64f extends Pointer {
+        static { load(); }
         public CvPoint2D64f() { allocate(); }
         public CvPoint2D64f(int size) { allocateArray(size); }
         public CvPoint2D64f(Pointer p) { super(p); }
@@ -1984,6 +1997,7 @@ public class opencv_core {
     }
 
     public static class CvPoint3D64f extends Pointer {
+        static { load(); }
         public CvPoint3D64f() { allocate(); }
         public CvPoint3D64f(int size) { allocateArray(size); }
         public CvPoint3D64f(Pointer p) { super(p); }
@@ -2067,6 +2081,7 @@ public class opencv_core {
     }
 
     public static class CvSize2D32f extends Pointer {
+        static { load(); }
         public CvSize2D32f() { allocate(); }
         public CvSize2D32f(int size) { allocateArray(size); }
         public CvSize2D32f(Pointer p) { super(p); }
@@ -2087,6 +2102,7 @@ public class opencv_core {
     }
 
     public static class CvBox2D extends Pointer {
+        static { load(); }
         public CvBox2D() { allocate(); }
         public CvBox2D(int size) { allocateArray(size); }
         public CvBox2D(Pointer p) { super(p); }
@@ -2105,6 +2121,7 @@ public class opencv_core {
     }
 
     public static class CvLineIterator extends Pointer {
+        static { load(); }
         public CvLineIterator() { allocate(); }
         public CvLineIterator(int size) { allocateArray(size); }
         public CvLineIterator(Pointer p) { super(p); }
@@ -2127,6 +2144,7 @@ public class opencv_core {
 
 
     public static class CvSlice extends Pointer {
+        static { load(); }
         public CvSlice() { allocate(); }
         public CvSlice(int size) { allocateArray(size); }
         public CvSlice(Pointer p) { super(p); }
@@ -2217,6 +2235,7 @@ public class opencv_core {
 
 
     public static class CvMemBlock extends Pointer {
+        static { load(); }
         public CvMemBlock() { allocate(); }
         public CvMemBlock(int size) { allocateArray(size); }
         public CvMemBlock(Pointer p) { super(p); }
@@ -2234,6 +2253,7 @@ public class opencv_core {
     public static final int CV_STORAGE_MAGIC_VAL = 0x42890000;
 
     public static class CvMemStorage extends Pointer {
+        static { load(); }
         public CvMemStorage() { allocate(); }
         public CvMemStorage(int size) { allocateArray(size); }
         public CvMemStorage(Pointer p) { super(p); }
@@ -2272,6 +2292,7 @@ public class opencv_core {
     }
 
     public static class CvMemStoragePos extends Pointer {
+        static { load(); }
         public CvMemStoragePos() { allocate(); }
         public CvMemStoragePos(int size) { allocateArray(size); }
         public CvMemStoragePos(Pointer p) { super(p); }
@@ -2288,6 +2309,7 @@ public class opencv_core {
 
 
     public static class CvSeqBlock extends Pointer {
+        static { load(); }
         public CvSeqBlock() { allocate(); }
         public CvSeqBlock(int size) { allocateArray(size); }
         public CvSeqBlock(Pointer p) { super(p); }
@@ -2346,6 +2368,7 @@ public class opencv_core {
 
 
     public static class CvSetElem extends Pointer {
+        static { load(); }
         public CvSetElem() { allocate(); }
         public CvSetElem(int size) { allocateArray(size); }
         public CvSetElem(Pointer p) { super(p); }
@@ -2388,6 +2411,7 @@ public class opencv_core {
 
 
     public static class CvGraphEdge extends Pointer {
+        static { load(); }
         public CvGraphEdge() { allocate(); }
         public CvGraphEdge(int size) { allocateArray(size); }
         public CvGraphEdge(Pointer p) { super(p); }
@@ -2405,6 +2429,7 @@ public class opencv_core {
     }
 
     public static class CvGraphVtx extends Pointer {
+        static { load(); }
         public CvGraphVtx() { allocate(); }
         public CvGraphVtx(int size) { allocateArray(size); }
         public CvGraphVtx(Pointer p) { super(p); }
@@ -2611,6 +2636,7 @@ public class opencv_core {
 
 
     public static class CvSeqWriter extends Pointer {
+        static { load(); }
         public CvSeqWriter() { allocate(); }
         public CvSeqWriter(int size) { allocateArray(size); }
         public CvSeqWriter(Pointer p) { super(p); }
@@ -2633,6 +2659,7 @@ public class opencv_core {
     }
 
     public static class CvSeqReader extends Pointer {
+        static { load(); }
         public CvSeqReader() { allocate(); }
         public CvSeqReader(int size) { allocateArray(size); }
         public CvSeqReader(Pointer p) { super(p); }
@@ -2680,6 +2707,7 @@ public class opencv_core {
 
 
     @Opaque public static class CvFileStorage extends Pointer {
+        static { load(); }
         public CvFileStorage() { }
         public CvFileStorage(Pointer p) { super(p); }
 
@@ -2708,6 +2736,7 @@ public class opencv_core {
             CV_STORAGE_APPEND       = 2;
 
     public static class CvAttrList extends Pointer {
+        static { load(); }
         public CvAttrList() { allocate(); }
         public CvAttrList(int size) { allocateArray(size); }
         public CvAttrList(Pointer p) { super(p); }
@@ -2762,6 +2791,7 @@ public class opencv_core {
     public static boolean CV_NODE_SEQ_IS_SIMPLE(CvSeq seq) { return (seq.flags() & CV_NODE_SEQ_SIMPLE) != 0; }
 
     public static class CvString extends Pointer {
+        static { load(); }
         public CvString() { allocate(); }
         public CvString(int size) { allocateArray(size); }
         public CvString(Pointer p) { super(p); }
@@ -2778,6 +2808,7 @@ public class opencv_core {
     }
 
     public static class CvStringHashNode extends Pointer {
+        static { load(); }
         public CvStringHashNode() { allocate(); }
         public CvStringHashNode(int size) { allocateArray(size); }
         public CvStringHashNode(Pointer p) { super(p); }
@@ -2794,11 +2825,13 @@ public class opencv_core {
     }
 
     @Opaque public static class CvFileNodeHash extends Pointer {
+        static { load(); }
         public CvFileNodeHash() { }
         public CvFileNodeHash(Pointer p) { super(p); }
     }
 
     public static class CvFileNode extends Pointer {
+        static { load(); }
         public CvFileNode() { allocate(); }
         public CvFileNode(int size) { allocateArray(size); }
         public CvFileNode(Pointer p) { super(p); }
@@ -2822,24 +2855,28 @@ public class opencv_core {
 
 
     public static class CvIsInstanceFunc extends FunctionPointer {
+        static { load(); }
         public    CvIsInstanceFunc(Pointer p) { super(p); }
         protected CvIsInstanceFunc() { allocate(); }
         protected final native void allocate();
         public native int call(@Cast("const void*") Pointer struct_ptr);
     }
     public static class CvReleaseFunc extends FunctionPointer {
+        static { load(); }
         public    CvReleaseFunc(Pointer p) { super(p); }
         protected CvReleaseFunc() { allocate(); }
         protected final native void allocate();
         public native void call(PointerPointer struct_dblptr);
     }
     public static class CvReadFunc extends FunctionPointer {
+        static { load(); }
         public    CvReadFunc(Pointer p) { super(p); }
         protected CvReadFunc() { allocate(); }
         protected final native void allocate();
         public native Pointer call(CvFileStorage storage, CvFileNode node);
     }
     public static class CvWriteFunc extends FunctionPointer {
+        static { load(); }
         public    CvWriteFunc(Pointer p) { super(p); }
         protected CvWriteFunc() { allocate(); }
         protected final native void allocate();
@@ -2847,12 +2884,14 @@ public class opencv_core {
                 @Cast("const void*") Pointer struct_ptr, @ByVal CvAttrList attributes);
     }
     public static class CvCloneFunc extends FunctionPointer {
+        static { load(); }
         public    CvCloneFunc(Pointer p) { super(p); }
         protected CvCloneFunc() { allocate(); }
         protected final native void allocate();
         public native Pointer call(@Cast("const void*") Pointer struct_ptr);
     }
     public static class CvTypeInfo extends Pointer {
+        static { load(); }
         public CvTypeInfo() { allocate(); }
         public CvTypeInfo(int size) { allocateArray(size); }
         public CvTypeInfo(Pointer p) { super(p); }
@@ -2880,6 +2919,7 @@ public class opencv_core {
 
 
     public static class CvPluginFuncInfo extends Pointer {
+        static { load(); }
         public CvPluginFuncInfo() { allocate(); }
         public CvPluginFuncInfo(int size) { allocateArray(size); }
         public CvPluginFuncInfo(Pointer p) { super(p); }
@@ -2899,6 +2939,7 @@ public class opencv_core {
     }
 
     public static class CvModuleInfo extends Pointer {
+        static { load(); }
         public CvModuleInfo() { allocate(); }
         public CvModuleInfo(int size) { allocateArray(size); }
         public CvModuleInfo(Pointer p) { super(p); }
@@ -2984,6 +3025,7 @@ public class opencv_core {
     public static final int CV_MAX_ARR = 10;
 
     public static class CvNArrayIterator extends Pointer {
+        static { load(); }
         public CvNArrayIterator() { allocate(); }
         public CvNArrayIterator(int size) { allocateArray(size); }
         public CvNArrayIterator(Pointer p) { super(p); }
@@ -3412,6 +3454,7 @@ public class opencv_core {
     public static native void cvSeqRemoveSlice(CvSeq seq, @ByVal CvSlice slice);
     public static native void cvSeqInsertSlice(CvSeq seq, int before_index, CvArr from_arr);
     public static class CvCmpFunc extends FunctionPointer {
+        static { load(); }
         public    CvCmpFunc(Pointer p) { super(p); }
         protected CvCmpFunc() { allocate(); }
         protected final native void allocate();
@@ -3512,6 +3555,7 @@ public class opencv_core {
     }
 
     public static class CvGraphScanner extends Pointer {
+        static { load(); }
         public CvGraphScanner() { allocate(); }
         public CvGraphScanner(int size) { allocateArray(size); }
         public CvGraphScanner(Pointer p) { super(p); }
@@ -3587,6 +3631,8 @@ public class opencv_core {
     }
     public static native void cvFillPoly(CvArr img, @Cast("CvPoint**") PointerPointer pts, int[] npts,
             int contours, @ByVal CvScalar color, int line_type/*=8*/, int shift/*=0*/);
+    public static native void cvFillPoly(CvArr img, @ByPtrPtr CvPoint pts, int[] npts,
+            int contours, @ByVal CvScalar color, int line_type/*=8*/, int shift/*=0*/);
     public static void cvPolyLine(CvArr img, CvPoint[] pts,
             int[] npts, int contours, int is_closed, @ByVal CvScalar color,
             int thickness/*=1*/, int line_type/*=8*/, int shift/*=0*/) {
@@ -3653,6 +3699,7 @@ public class opencv_core {
 
             CV_FONT_VECTOR0   = CV_FONT_HERSHEY_SIMPLEX;
     public static class CvFont extends Pointer {
+        static { load(); }
         public CvFont() { allocate(); }
         public CvFont(int size) { allocateArray(size); }
         public CvFont(Pointer p) { super(p); }
@@ -3719,6 +3766,7 @@ public class opencv_core {
 
 
     public static class CvTreeNodeIterator extends Pointer {
+        static { load(); }
         public CvTreeNodeIterator() { allocate(); }
         public CvTreeNodeIterator(int size) { allocateArray(size); }
         public CvTreeNodeIterator(Pointer p) { super(p); }
@@ -3754,12 +3802,14 @@ public class opencv_core {
             @Cast("const char**") @ByPtrPtr BytePointer loaded_addon_plugins);
 
     public static class CvAllocFunc extends FunctionPointer {
+        static { load(); }
         public    CvAllocFunc(Pointer p) { super(p); }
         protected CvAllocFunc() { allocate(); }
         protected final native void allocate();
         public native Pointer call(@Cast("size_t") long size, Pointer userdata);
     }
     public static class CvFreeFunc extends FunctionPointer {
+        static { load(); }
         public    CvFreeFunc(Pointer p) { super(p); }
         protected CvFreeFunc() { allocate(); }
         protected final native void allocate();
@@ -3771,6 +3821,7 @@ public class opencv_core {
 
     @Convention("CV_STDCALL")
     public static class Cv_iplCreateImageHeader extends FunctionPointer {
+        static { load(); }
         public    Cv_iplCreateImageHeader(Pointer p) { super(p); }
         protected Cv_iplCreateImageHeader() { allocate(); }
         protected final native void allocate();
@@ -3780,6 +3831,7 @@ public class opencv_core {
     }
     @Convention("CV_STDCALL")
     public static class Cv_iplAllocateImageData extends FunctionPointer {
+        static { load(); }
         public    Cv_iplAllocateImageData(Pointer p) { super(p); }
         protected Cv_iplAllocateImageData() { allocate(); }
         protected final native void allocate();
@@ -3787,6 +3839,7 @@ public class opencv_core {
     }
     @Convention("CV_STDCALL")
     public static class Cv_iplDeallocate extends FunctionPointer {
+        static { load(); }
         public    Cv_iplDeallocate(Pointer p) { super(p); }
         protected Cv_iplDeallocate() { allocate(); }
         protected final native void allocate();
@@ -3794,6 +3847,7 @@ public class opencv_core {
     }
     @Convention("CV_STDCALL")
     public static class Cv_iplCreateROI extends FunctionPointer {
+        static { load(); }
         public    Cv_iplCreateROI(Pointer p) { super(p); }
         protected Cv_iplCreateROI() { allocate(); }
         protected final native void allocate();
@@ -3801,6 +3855,7 @@ public class opencv_core {
     }
     @Convention("CV_STDCALL")
     public static class Cv_iplCloneImage extends FunctionPointer {
+        static { load(); }
         public    Cv_iplCloneImage(Pointer p) { super(p); }
         protected Cv_iplCloneImage() { allocate(); }
         protected final native void allocate();

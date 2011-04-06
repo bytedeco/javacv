@@ -20,16 +20,13 @@
 
 package com.googlecode.javacv;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.beans.beancontext.BeanContextSupport;
-import java.util.Arrays;
 
 /**
  *
  * @author Samuel Audet
  */
-public class CameraSettings extends BeanContextSupport {
+public class CameraSettings extends BaseSettings {
 
     public CameraSettings() {
         this(false);
@@ -79,30 +76,7 @@ public class CameraSettings extends BeanContextSupport {
         pcSupport.firePropertyChange("frameGrabber", this.frameGrabber, this.frameGrabber = frameGrabber);
     }
 
-    @Override public Object[] toArray() {
-        Object[] a = super.toArray();
-        Arrays.sort(a);
-        return a;
-    }
-    @Override public Object[] toArray(Object[] a) {
-        a = super.toArray(a);
-        Arrays.sort(a);
-        return a;
-    }
-    public CameraDevice.Settings[] toTypedArray() {
-        return (CameraDevice.Settings[])toArray(new CameraDevice.Settings[0]);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcSupport.addPropertyChangeListener(listener);
-        for (Object s : toArray()) {
-            ((BaseSettings)s).addPropertyChangeListener(listener);
-        }
-    }
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcSupport.removePropertyChangeListener(listener);
-        for (Object s : toArray()) {
-            ((BaseSettings)s).removePropertyChangeListener(listener);
-        }
+    @Override public CameraDevice.Settings[] toArray() {
+        return (CameraDevice.Settings[])toArray(new CameraDevice.Settings[size()]);
     }
 }

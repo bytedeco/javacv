@@ -20,8 +20,6 @@
 
 package com.googlecode.javacv;
 
-import java.awt.Dimension;
-
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
@@ -32,15 +30,8 @@ import static com.googlecode.javacv.cpp.opencv_calib3d.*;
  */
 public class MarkedPlane {
 
-    public MarkedPlane(Dimension size, Marker[] planeMarkers, double superScale) {
-        this(size.width, size.height, planeMarkers, superScale);
-    }
     public MarkedPlane(int width, int height, Marker[] planeMarkers, double superScale) {
         this(width, height, planeMarkers, false, CvScalar.BLACK, CvScalar.WHITE, superScale);
-    }
-    public MarkedPlane(Dimension size, Marker[] planeMarkers,
-            boolean initPrewarp, CvScalar foregroundColor, CvScalar backgroundColor, double superScale) {
-        this(size.width, size.height, planeMarkers, initPrewarp, foregroundColor, backgroundColor, superScale);
     }
     public MarkedPlane(int width, int height, Marker[] markers,
             boolean initPrewarp, CvScalar foregroundColor, CvScalar backgroundColor, double superScale) {

@@ -67,7 +67,7 @@ import static com.googlecode.javacpp.Loader.*;
  */
 @Properties({
     @Platform(value="windows", link="PGRFlyCapture", preload="FlyCapture2",
-        include={"windows.h", "<PGRFlyCapture.h>", "<PGRFlyCapturePlus.h>","<PGRFlyCaptureMessaging.h>"},
+        include={"<windows.h>", "<PGRFlyCapture.h>", "<PGRFlyCapturePlus.h>","<PGRFlyCaptureMessaging.h>"},
         includepath={"C:/Program Files/Point Grey Research/PGR FlyCapture/include/",
                      "C:/Program Files/Point Grey Research/FlyCapture2/include/FC1/"}),
     @Platform(value="windows-x86",
@@ -101,6 +101,7 @@ public class PGRFlyCapture {
     //   Context pointer for the PGRFlyCapture library.
     //
     @Opaque public static class FlyCaptureContext extends Pointer {
+        static { load(); }
         public FlyCaptureContext() { }
         public FlyCaptureContext(Pointer p) { super(p); }
     }
@@ -250,6 +251,7 @@ public class PGRFlyCapture {
     // See also: flycaptureModifyCallback()
     //
     public static class FlyCaptureCallback extends FunctionPointer {
+        static { load(); }
         public    FlyCaptureCallback(Pointer p) { super(p); }
         protected FlyCaptureCallback() { allocate(); }
         protected final native void allocate();
@@ -427,6 +429,7 @@ public class PGRFlyCapture {
     //  FlyCaptureInfo.
     //
     public static class FlyCaptureInfoEx extends Pointer {
+        static { load(); }
         public FlyCaptureInfoEx() { allocate(); }
         public FlyCaptureInfoEx(int size) { allocateArray(size); }
         public FlyCaptureInfoEx(Pointer p) { super(p); }
@@ -477,6 +480,7 @@ public class PGRFlyCapture {
     //  This structure stores some extra driver info not stored on FlyCaptureInfoEx
     //
 //    public static class FlyCaptureDriverInfo extends Pointer {
+//        static { load(); }
 //        public FlyCaptureDriverInfo() { allocate(); }
 //        public FlyCaptureDriverInfo(int size) { allocateArray(size); }
 //        public FlyCaptureDriverInfo(Pointer p) { super(p); }
@@ -624,6 +628,7 @@ public class PGRFlyCapture {
     //  precisely synchronized system timers.
     //
     public static class FlyCaptureTimestamp extends Pointer {
+        static { load(); }
         public FlyCaptureTimestamp() { allocate(); }
         public FlyCaptureTimestamp(int size) { allocateArray(size); }
         public FlyCaptureTimestamp(Pointer p) { super(p); }
@@ -656,6 +661,7 @@ public class PGRFlyCapture {
     //  pixel format.
     //
     public static class FlyCaptureImage extends Pointer {
+        static { load(); }
         public FlyCaptureImage() { allocate(); }
         public FlyCaptureImage(int size) { allocateArray(size); }
         public FlyCaptureImage(Pointer p) { super(p); }
@@ -2469,6 +2475,7 @@ public class PGRFlyCapture {
     //   functionality.
     //
     public static class FlyCaptureImagePlus extends Pointer {
+        static { load(); }
         public FlyCaptureImagePlus() { allocate(); }
         public FlyCaptureImagePlus(int size) { allocateArray(size); }
         public FlyCaptureImagePlus(Pointer p) { super(p); }
@@ -2529,6 +2536,7 @@ public class PGRFlyCapture {
     //   flycaptureGetPacketSize(), flycaptureGetCustomImageMaxPacketSize()
     //
     public static class FlyCaptureImageEvent extends Pointer {
+        static { load(); }
         public FlyCaptureImageEvent() { allocate(); }
         public FlyCaptureImageEvent(int size) { allocateArray(size); }
         public FlyCaptureImageEvent(Pointer p) { super(p); }
@@ -2590,6 +2598,7 @@ public class PGRFlyCapture {
     //   flycaptureGetPacketInfo()
     //
     public static class FlyCapturePacketInfo extends Pointer {
+        static { load(); }
         public FlyCapturePacketInfo() { allocate(); }
         public FlyCapturePacketInfo(int size) { allocateArray(size); }
         public FlyCapturePacketInfo(Pointer p) { super(p); }
@@ -3370,6 +3379,7 @@ public class PGRFlyCapture {
     //  an image or a bus event time.
     //
     public static class FlyCaptureSystemTime extends Pointer {
+        static { load(); }
         public FlyCaptureSystemTime() { allocate(); }
         public FlyCaptureSystemTime(int size) { allocateArray(size); }
         public FlyCaptureSystemTime(Pointer p) { super(p); }
@@ -3417,6 +3427,7 @@ public class PGRFlyCapture {
     //  bus events.  The information received is message dependent.
     //
     public static class FlyCaptureMessage extends Pointer {
+        static { load(); }
         public FlyCaptureMessage() { allocate(); }
         public FlyCaptureMessage(int size) { allocateArray(size); }
         public FlyCaptureMessage(Pointer p) { super(p); }

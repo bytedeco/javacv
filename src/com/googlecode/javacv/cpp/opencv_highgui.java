@@ -115,6 +115,7 @@ public class opencv_highgui {
 
     @Platform("linux")
     public static class CvOpenGLCallback extends FunctionPointer {
+        static { load(); }
         public    CvOpenGLCallback(Pointer p) { super(p); }
         protected CvOpenGLCallback() { allocate(); }
         protected final native void allocate();
@@ -130,6 +131,7 @@ public class opencv_highgui {
     public static native void cvLoadWindowParameters(String name);
     @Platform("linux")
     public static class Pt2Func extends FunctionPointer {
+        static { load(); }
         public    Pt2Func(Pointer p) { super(p); }
         protected Pt2Func() { allocate(); }
         protected final native void allocate();
@@ -142,6 +144,7 @@ public class opencv_highgui {
 
     @Platform("linux")
     public static class CvButtonCallback extends FunctionPointer {
+        static { load(); }
         public    CvButtonCallback(Pointer p) { super(p); }
         protected CvButtonCallback() { allocate(); }
         protected final native void allocate();
@@ -190,6 +193,7 @@ public class opencv_highgui {
 
 
     public static class CvTrackbarCallback extends FunctionPointer {
+        static { load(); }
         public    CvTrackbarCallback(Pointer p) { super(p); }
         protected CvTrackbarCallback() { allocate(); }
         protected final native void allocate();
@@ -199,6 +203,7 @@ public class opencv_highgui {
             int[] value, int count, CvTrackbarCallback on_change/*=null*/);
 
     public static class CvTrackbarCallback2 extends FunctionPointer {
+        static { load(); }
         public    CvTrackbarCallback2(Pointer p) { super(p); }
         protected CvTrackbarCallback2() { allocate(); }
         protected final native void allocate();
@@ -231,6 +236,7 @@ public class opencv_highgui {
             CV_EVENT_FLAG_ALTKEY   = 32;
 
     public static class CvMouseCallback extends FunctionPointer {
+        static { load(); }
         public    CvMouseCallback(Pointer p) { super(p); }
         protected CvMouseCallback() { allocate(); }
         protected final native void allocate();
@@ -278,6 +284,7 @@ public class opencv_highgui {
 
 
     @Opaque public static class CvCapture extends Pointer {
+        static { load(); }
         public CvCapture() { }
         public CvCapture(Pointer p) { super(p); }
     }
@@ -348,6 +355,7 @@ public class opencv_highgui {
 
 
     @Opaque public static class CvVideoWriter extends Pointer {
+        static { load(); }
         public CvVideoWriter() { }
         public CvVideoWriter(Pointer p) { super(p); }
     }

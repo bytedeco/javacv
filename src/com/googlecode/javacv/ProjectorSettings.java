@@ -21,14 +21,12 @@
 package com.googlecode.javacv;
 
 import java.beans.PropertyChangeListener;
-import java.beans.beancontext.BeanContextSupport;
-import java.util.Arrays;
 
 /**
  *
  * @author Samuel Audet
  */
-public class ProjectorSettings extends BeanContextSupport {
+public class ProjectorSettings extends BaseSettings {
 
     public ProjectorSettings() {
         this(false);
@@ -56,37 +54,14 @@ public class ProjectorSettings extends BeanContextSupport {
             c.setScreenNumber(c.getScreenNumber()+i);
             add(c);
             for (PropertyChangeListener l : pcSupport.getPropertyChangeListeners()) {
-                ((BaseSettings)c).addPropertyChangeListener(l);
+                ((BaseChildSettings)c).addPropertyChangeListener(l);
             }
             i++;
         }
         pcSupport.firePropertyChange("quantity", a.length, quantity);
     }
 
-    @Override public Object[] toArray() {
-        Object[] a = super.toArray();
-        Arrays.sort(a);
-        return a;
-    }
-    @Override public Object[] toArray(Object[] a) {
-        a = super.toArray(a);
-        Arrays.sort(a);
-        return a;
-    }
-    public ProjectorDevice.Settings[] toTypedArray() {
-        return (ProjectorDevice.Settings[])toArray(new ProjectorDevice.Settings[0]);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcSupport.addPropertyChangeListener(listener);
-        for (Object s : toArray()) {
-            ((BaseSettings)s).addPropertyChangeListener(listener);
-        }
-    }
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcSupport.removePropertyChangeListener(listener);
-        for (Object s : toArray()) {
-            ((BaseSettings)s).removePropertyChangeListener(listener);
-        }
+    @Override public ProjectorDevice.Settings[] toArray() {
+        return (ProjectorDevice.Settings[])toArray(new ProjectorDevice.Settings[size()]);
     }
 }

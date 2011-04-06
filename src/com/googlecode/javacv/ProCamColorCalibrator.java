@@ -61,7 +61,7 @@ public class ProCamColorCalibrator {
 //        cvInvert(projector.cameraMatrix, projKinv);
     }
 
-    public static class Settings extends BaseSettings {
+    public static class Settings extends BaseChildSettings {
         int samplesPerChannel = 4;
         double trimmingFraction = 0.01;
         double detectedBoardMin = 0.5;

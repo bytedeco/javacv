@@ -20,38 +20,29 @@
 
 package com.googlecode.javacv;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.beancontext.BeanContextSupport;
-import java.util.Arrays;
+import java.beans.PropertyVetoException;
+import java.beans.beancontext.BeanContextChildSupport;
+import java.util.ListResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  *
  * @author Samuel Audet
  */
-public class BaseSettings extends BeanContextSupport implements Comparable<BaseSettings> {
+public class BaseChildSettings extends BeanContextChildSupport implements Comparable<BaseChildSettings> {
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcSupport.addPropertyChangeListener(listener);
-        for (Object s : toArray()) {
-            if (s instanceof BaseChildSettings) {
-                ((BaseChildSettings)s).addPropertyChangeListener(listener);
-            } else if (s instanceof BaseSettings) {
-                ((BaseSettings)s).addPropertyChangeListener(listener);
-            }
-        }
     }
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcSupport.removePropertyChangeListener(listener);
-        for (Object s : toArray()) {
-            if (s instanceof BaseChildSettings) {
-                ((BaseChildSettings)s).removePropertyChangeListener(listener);
-            } else if (s instanceof BaseSettings) {
-                ((BaseSettings)s).addPropertyChangeListener(listener);
-            }
-        }
     }
 
-    public int compareTo(BaseSettings o) {
+    public int compareTo(BaseChildSettings o) {
         return getName().compareTo(o.getName());
     }
 
@@ -59,14 +50,18 @@ public class BaseSettings extends BeanContextSupport implements Comparable<BaseS
         return "";
     }
 
-    @Override public Object[] toArray() {
-        Object[] a = super.toArray();
-        Arrays.sort(a);
-        return a;
-    }
-    @Override public Object[] toArray(Object[] a) {
-        a = super.toArray(a);
-        Arrays.sort(a);
-        return a;
+    public static class PropertyVetoExceptionThatNetBeansLikes extends PropertyVetoException implements Callable {
+        public PropertyVetoExceptionThatNetBeansLikes(String mess, PropertyChangeEvent evt)  {
+            super(mess, evt);
+        }
+        public Object call() throws Exception {
+            LogRecord lg = new LogRecord(Level.ALL, getMessage());
+            lg.setResourceBundle(new ListResourceBundle() {
+                protected Object[][] getContents() {
+                    return new Object[][] { {getMessage(), getMessage()} };
+                }
+            });
+            return new LogRecord[] { lg };
+        }
     }
 }

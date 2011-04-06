@@ -418,6 +418,215 @@ public class JavaCV {
         }});
     }
 
+    public static void hysteresisThreshold(IplImage srcImage, IplImage dstImage,
+            double highThresh, double lowThresh, double maxValue) {
+        int highThreshold = (int)Math.round(highThresh);
+        int lowThreshold  = (int)Math.round(lowThresh);
+        byte lowValue  = 0;
+        byte medValue  = (byte)Math.round(maxValue/2);
+        byte highValue = (byte)Math.round(maxValue);
+
+        int height = srcImage.height();
+        int width  = srcImage.width();
+
+        ByteBuffer srcData = srcImage.getByteBuffer();
+        ByteBuffer dstData = dstImage.getByteBuffer();
+        int srcStep = srcImage.widthStep();
+        int dstStep = dstImage.widthStep();
+        int srcIndex = 0;
+        int dstIndex = 0;
+
+        //
+        // first pass forward
+        //
+
+        // first line
+        int i = 0;
+        int in = srcData.get(srcIndex+i)&0xFF;
+        if (in >= highThreshold) {
+            dstData.put(dstIndex+i, highValue);
+        } else if (in < lowThreshold) {
+            dstData.put(dstIndex+i, lowValue);
+        } else {
+            dstData.put(dstIndex+i, medValue);
+        }
+
+        for (i = 1; i < width-1; i++) {
+            in = srcData.get(srcIndex+i)&0xFF;
+            if (in >= highThreshold) {
+                dstData.put(dstIndex+i, highValue);
+            } else if (in < lowThreshold) {
+                dstData.put(dstIndex+i, lowValue);
+            } else {
+                byte prev = dstData.get(dstIndex+i-1);
+                if (prev == highValue) {
+                    dstData.put(dstIndex+i, highValue);
+                } else {
+                    dstData.put(dstIndex+i, medValue);
+                }
+            }
+        }
+
+        i = width-1;
+        in = srcData.get(srcIndex+i)&0xFF;
+        if (in >= highThreshold) {
+            dstData.put(dstIndex+i, highValue);
+        } else if (in < lowThreshold) {
+            dstData.put(dstIndex+i, lowValue);
+        } else {
+            byte prev = dstData.get(dstIndex+i-1);
+            if (prev == highValue) {
+                dstData.put(dstIndex+i, highValue);
+            } else {
+                dstData.put(dstIndex+i, medValue);
+            }
+        }
+
+        height--;
+
+        // other lines
+        while (height-- > 0) {
+            srcIndex += srcStep;
+            dstIndex += dstStep;
+
+            // first column
+            i = 0;
+            in = srcData.get(srcIndex+i)&0xFF;
+            if (in >= highThreshold) {
+                dstData.put(dstIndex+i, highValue);
+            } else if (in < lowThreshold) {
+                dstData.put(dstIndex+i, lowValue);
+            } else {
+                byte prev1 = dstData.get(dstIndex+i-dstStep);
+                byte prev2 = dstData.get(dstIndex+i-dstStep+1);
+                if (prev1 == highValue || prev2 == highValue) {
+                    dstData.put(dstIndex+i, highValue);
+                } else {
+                    dstData.put(dstIndex+i, medValue);
+                }
+            }
+
+            // other columns
+            for (i = 1; i < width-1; i++) {
+                in = srcData.get(srcIndex+i)&0xFF;
+                if (in >= highThreshold) {
+                    dstData.put(dstIndex+i, highValue);
+                } else if (in < lowThreshold) {
+                    dstData.put(dstIndex+i, lowValue);
+                } else {
+                    byte prev1 = dstData.get(dstIndex+i-1);
+                    byte prev2 = dstData.get(dstIndex+i-dstStep-1);
+                    byte prev3 = dstData.get(dstIndex+i-dstStep);
+                    byte prev4 = dstData.get(dstIndex+i-dstStep+1);
+
+                    if (prev1 == highValue || prev2 == highValue ||
+                        prev3 == highValue || prev4 == highValue) {
+                        dstData.put(dstIndex+i, highValue);
+                    } else {
+                        dstData.put(dstIndex+i, medValue);
+                    }
+                }
+            }
+
+            // last column
+            i = width-1;
+            in = srcData.get(srcIndex+i)&0xFF;
+            if (in >= highThreshold) {
+                dstData.put(dstIndex+i, highValue);
+            } else if (in < lowThreshold) {
+                dstData.put(dstIndex+i, lowValue);
+            } else {
+                byte prev1 = dstData.get(dstIndex+i-1);
+                byte prev2 = dstData.get(dstIndex+i-dstStep-1);
+                byte prev3 = dstData.get(dstIndex+i-dstStep);
+
+                if (prev1 == highValue || prev2 == highValue ||
+                    prev3 == highValue) {
+                    dstData.put(dstIndex+i, highValue);
+                } else {
+                    dstData.put(dstIndex+i, medValue);
+                }
+            }
+        }
+
+        height = srcImage.height();
+        width  = srcImage.width();
+        dstIndex = (height-1)*dstStep;
+
+        //
+        // second pass backward
+        //
+
+        // first (actually last) line
+        i = width-1;
+        if (dstData.get(dstIndex+i) == medValue) {
+            dstData.put(dstIndex+i, lowValue);
+        }
+
+        for (i = width-2; i > 0 ; i--) {
+            if (dstData.get(dstIndex+i) == medValue) {
+                if (dstData.get(dstIndex+i+1) == highValue) {
+                    dstData.put(dstIndex+i, highValue);
+                } else {
+                    dstData.put(dstIndex+i, lowValue);
+                }
+            }
+        }
+
+        i = 0;
+        if (dstData.get(dstIndex+i) == medValue) {
+            if (dstData.get(dstIndex+i+1) == highValue) {
+                dstData.put(dstIndex+i, highValue);
+            } else {
+                dstData.put(dstIndex+i, lowValue);
+            }
+        }
+
+        height--;
+
+        // other lines
+        while (height-- > 0) {
+            dstIndex -= dstStep;
+
+            // first column
+            i = width-1;
+            if (dstData.get(dstIndex+i) == medValue) {
+                if (dstData.get(dstIndex+i+dstStep)   == highValue ||
+                    dstData.get(dstIndex+i+dstStep-1) == highValue) {
+                    dstData.put(dstIndex+i, highValue);
+                } else {
+                    dstData.put(dstIndex+i, lowValue);
+                }
+            }
+
+            // other columns
+            for (i = width-2; i > 0 ; i--) {
+                if (dstData.get(dstIndex+i) == medValue) {
+                    if (dstData.get(dstIndex+i+1)         == highValue ||
+                        dstData.get(dstIndex+i+dstStep+1) == highValue ||
+                        dstData.get(dstIndex+i+dstStep)   == highValue ||
+                        dstData.get(dstIndex+i+dstStep-1) == highValue) {
+                        dstData.put(dstIndex+i, highValue);
+                    } else {
+                        dstData.put(dstIndex+i, lowValue);
+                    }
+                }
+            }
+
+            // last column
+            i = 0;
+            if (dstData.get(dstIndex+i) == medValue) {
+                if (dstData.get(dstIndex+i+1)         == highValue ||
+                    dstData.get(dstIndex+i+dstStep+1) == highValue ||
+                    dstData.get(dstIndex+i+dstStep)   == highValue) {
+                    dstData.put(dstIndex+i, highValue);
+                } else {
+                    dstData.put(dstIndex+i, lowValue);
+                }
+            }
+        }
+    }
+
     // clamps image intensities between min and max...
     public static void minMaxS(IplImage src, double min, double max, IplImage dst) {
 

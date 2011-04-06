@@ -1,6 +1,9 @@
 /*
  * Copyright (C) 2010,2011 Samuel Audet
  *
+ * FacePreview - A fusion of OpenCV's facedetect and Android's CameraPreview samples,
+ *               with JavaCV + JavaCPP as the glue in between.
+ *
  * This file was based on CameraPreview.java that came with the Samples for 
  * Android SDK API 8, revision 1 and contained the following copyright notice:
  *
@@ -105,19 +108,20 @@ class FaceView extends View implements Camera.PreviewCallback {
 
     public FaceView(FacePreview context) throws IOException {
         super(context);
-        this.processingExecutor = Executors.newSingleThreadExecutor();
+        processingExecutor = Executors.newSingleThreadExecutor();
 
+        // Load the classifier file from Java resources.
         File classifierFile = Loader.extractResource(getClass(),
             "/com/googlecode/javacv/facepreview/haarcascade_frontalface_alt.xml",
             context.getCacheDir(), "classifier", ".xml");
         if (classifierFile == null || classifierFile.length() <= 0) {
             throw new IOException("Could not extract the classifier file.");
         }
-        classifierFile.deleteOnExit();
 
         // Preload the opencv_objdetect module to work around a known bug.
         Loader.load(opencv_objdetect.class);
         classifier = new CvHaarClassifierCascade(cvLoad(classifierFile.getAbsolutePath()));
+        classifierFile.delete();
         if (classifier.isNull()) {
             throw new IOException("Could not load the classifier file.");
         }

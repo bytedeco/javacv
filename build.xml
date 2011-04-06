@@ -23,7 +23,7 @@
             <attribute name="Specification-Version" value="${TIMESTAMP}"/>
         </section>
     </manifest>
-    <target name="-pre-jar">
+    <target name="-post-compile">
         <property name="javacpp.options" value=""/>
         <java jar="${reference.javacpp.jar}" fork="true"> 
             <arg line="${javacpp.options}"/>
@@ -49,9 +49,18 @@
             <arg value="com.googlecode.javacv.cpp.ARToolKitPlus"/>
             <arg value="com.googlecode.javacv.cpp.cvkernels"/>
         </java>
-        <delete file="${build.classes.dir}/com/googlecode/javacv/cpp/avformat.h"/>
-        <delete file="${build.classes.dir}/com/googlecode/javacv/cpp/avutil.h"/>
-        <delete file="${build.classes.dir}/com/googlecode/javacv/cpp/cvkernels.h"/>
+    </target>
+    <target name="-pre-jar">
+        <delete>
+            <fileset dir="${build.classes.dir}/com/googlecode/javacv/cpp/" includes="*.h"/>
+        </delete>
+        <delete dir="${build.classes.dir}/com/googlecode/javacv/cpp/android-arm/"/>
+        <delete dir="${build.classes.dir}/com/googlecode/javacv/cpp/linux-x86/"/>
+        <delete dir="${build.classes.dir}/com/googlecode/javacv/cpp/linux-x86_64/"/>
+        <delete dir="${build.classes.dir}/com/googlecode/javacv/cpp/macosx-x86/"/>
+        <delete dir="${build.classes.dir}/com/googlecode/javacv/cpp/macosx-x86_64/"/>
+        <delete dir="${build.classes.dir}/com/googlecode/javacv/cpp/windows-x86/"/>
+        <delete dir="${build.classes.dir}/com/googlecode/javacv/cpp/windows-x86_64/"/>
     </target>
     <target name="-post-jar">
         <delete file="${dist.dir}/README.TXT"/>
@@ -78,7 +87,7 @@
                 <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
                     <fileset dir="${build.classes.dir}"/>
                     <manifest>
-                        <attribute name="Class-Path" value="${jar.classpath} javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar"/>
+                        <attribute name="Class-Path" value="${jar.classpath} javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar"/>
                         <customize/>
                     </manifest>
                 </copylibs>

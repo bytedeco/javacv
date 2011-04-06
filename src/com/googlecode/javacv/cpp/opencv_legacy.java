@@ -122,6 +122,7 @@ public class opencv_legacy {
 
 
     public static class CvCallback extends FunctionPointer {
+        static { load(); }
         public    CvCallback(Pointer p) { super(p); }
         protected CvCallback() { allocate(); }
         protected final native void allocate();
@@ -155,6 +156,7 @@ public class opencv_legacy {
 
 
     public static class CvImgObsInfo extends Pointer {
+        static { load(); }
         public CvImgObsInfo() { allocate(); }
         public CvImgObsInfo(int size) { allocateArray(size); }
         public CvImgObsInfo(Pointer p) { super(p); }
@@ -178,7 +180,7 @@ public class opencv_legacy {
         }
         static class ReleaseDeallocator extends CvImgObsInfo implements Deallocator {
             ReleaseDeallocator(CvImgObsInfo p) { super(p); }
-            public void deallocate() { cvReleaseObsInfo(this); }
+            @Override public void deallocate() { cvReleaseObsInfo(this); }
         }
 
         public native int obs_x();        public native CvImgObsInfo obs_x(int obs_x);
@@ -191,11 +193,13 @@ public class opencv_legacy {
     }
 
     @Opaque public static class Cv1DObsInfo extends CvImgObsInfo {
+        static { load(); }
         public Cv1DObsInfo() { }
         public Cv1DObsInfo(Pointer p) { super(p); }
     }
 
     public static class CvEHMMState extends Pointer {
+        static { load(); }
         public CvEHMMState() { allocate(); }
         public CvEHMMState(int size) { allocateArray(size); }
         public CvEHMMState(Pointer p) { super(p); }
@@ -214,6 +218,7 @@ public class opencv_legacy {
     }
 
     public static class CvEHMM extends Pointer {
+        static { load(); }
         public CvEHMM() { allocate(); }
         public CvEHMM(int size) { allocateArray(size); }
         public CvEHMM(Pointer p) { super(p); }
@@ -237,7 +242,7 @@ public class opencv_legacy {
         }
         static class ReleaseDeallocator extends CvEHMM implements Deallocator {
             ReleaseDeallocator(CvEHMM p) { super(p); }
-            public void deallocate() { cvRelease2DHMM(this); }
+            @Override public void deallocate() { cvRelease2DHMM(this); }
         }
 
         public native int level();              public native CvEHMM level(int level);
@@ -327,6 +332,7 @@ public class opencv_legacy {
     public static int CV_PREV_INT(CvSeqReader reader) { return new IntPointer(reader.prev_elem()).get(); }
 
     public static class CvGraphWeightedVtx extends CvGraphVtx {
+        static { load(); }
         public CvGraphWeightedVtx() { allocate(); }
         public CvGraphWeightedVtx(int size) { allocateArray(size); }
         public CvGraphWeightedVtx(Pointer p) { super(p); }
@@ -360,6 +366,7 @@ public class opencv_legacy {
 
 
     public static class CvCliqueFinder extends Pointer {
+        static { load(); }
         public CvCliqueFinder() { allocate(); }
         public CvCliqueFinder(int size) { allocateArray(size); }
         public CvCliqueFinder(Pointer p) { super(p); }
@@ -435,6 +442,7 @@ public class opencv_legacy {
 
 
     public static class CvStereoLineCoeff extends Pointer {
+        static { load(); }
         public CvStereoLineCoeff() { allocate(); }
         public CvStereoLineCoeff(int size) { allocateArray(size); }
         public CvStereoLineCoeff(Pointer p) { super(p); }
@@ -462,6 +470,7 @@ public class opencv_legacy {
     }
 
     public static class CvCamera extends Pointer {
+        static { load(); }
         public CvCamera() { allocate(); }
         public CvCamera(int size) { allocateArray(size); }
         public CvCamera(Pointer p) { super(p); }
@@ -480,6 +489,7 @@ public class opencv_legacy {
     }
 
     public static class CvStereoCamera extends Pointer {
+        static { load(); }
         public CvStereoCamera() { allocate(); }
         public CvStereoCamera(int size) { allocateArray(size); }
         public CvStereoCamera(Pointer p) { super(p); }
@@ -513,6 +523,7 @@ public class opencv_legacy {
     }
 
     public static class CvContourOrientation extends Pointer {
+        static { load(); }
         public CvContourOrientation() { allocate(); }
         public CvContourOrientation(int size) { allocateArray(size); }
         public CvContourOrientation(Pointer p) { super(p); }
@@ -687,6 +698,7 @@ public class opencv_legacy {
 
 
     public static class CvContourTree extends CvSeq {
+        static { load(); }
         public CvContourTree() { allocate(); }
         public CvContourTree(int size) { allocateArray(size); }
         public CvContourTree(Pointer p) { super(p); }
@@ -749,6 +761,7 @@ public class opencv_legacy {
             CV_GLCM_DESC                               = 2;
 
     @Opaque public static class CvGLCM extends Pointer {
+        static { load(); }
         public CvGLCM() { }
         public CvGLCM(Pointer p) { super(p); }
 
@@ -771,7 +784,7 @@ public class opencv_legacy {
         }
         static class ReleaseDeallocator extends CvGLCM implements Deallocator {
             ReleaseDeallocator(CvGLCM p) { super(p); }
-            public void deallocate() { cvReleaseGLCM(this, CV_GLCM_ALL); }
+            @Override public void deallocate() { cvReleaseGLCM(this, CV_GLCM_ALL); }
         }
     }
 
@@ -788,6 +801,7 @@ public class opencv_legacy {
 
 
     @Opaque public static class CvFaceTracker extends Pointer {
+        static { load(); }
         public CvFaceTracker() { }
         public CvFaceTracker(Pointer p) { super(p); }
 
@@ -805,7 +819,7 @@ public class opencv_legacy {
         }
         static class ReleaseDeallocator extends CvFaceTracker implements Deallocator {
             ReleaseDeallocator(CvFaceTracker p) { super(p); }
-            public void deallocate() { cvReleaseFaceTracker(this); }
+            @Override public void deallocate() { cvReleaseFaceTracker(this); }
         }
     }
 
@@ -823,6 +837,7 @@ public class opencv_legacy {
     public static native void cvReleaseFaceTracker(@ByPtrPtr CvFaceTracker ppFaceTracker);
 
     public static class CvFace extends Pointer {
+        static { load(); }
         public CvFace() { allocate(); }
         public CvFace(int size) { allocateArray(size); }
         public CvFace(Pointer p) { super(p); }
@@ -845,6 +860,7 @@ public class opencv_legacy {
     // typedef unsigned char CvBool;
 
     public static class Cv3dTracker2dTrackedObject extends Pointer {
+        static { load(); }
         public Cv3dTracker2dTrackedObject() { allocate(); }
         public Cv3dTracker2dTrackedObject(int size) { allocateArray(size); }
         public Cv3dTracker2dTrackedObject(Pointer p) { super(p); }
@@ -867,6 +883,7 @@ public class opencv_legacy {
     }
 
     public static class Cv3dTrackerTrackedObject extends Pointer {
+        static { load(); }
         public Cv3dTrackerTrackedObject() { allocate(); }
         public Cv3dTrackerTrackedObject(int size) { allocateArray(size); }
         public Cv3dTrackerTrackedObject(Pointer p) { super(p); }
@@ -889,6 +906,7 @@ public class opencv_legacy {
     }
 
     public static class Cv3dTrackerCameraInfo extends Pointer {
+        static { load(); }
         public Cv3dTrackerCameraInfo() { allocate(); }
         public Cv3dTrackerCameraInfo(int size) { allocateArray(size); }
         public Cv3dTrackerCameraInfo(Pointer p) { super(p); }
@@ -908,6 +926,7 @@ public class opencv_legacy {
     }
 
     public static class Cv3dTrackerCameraIntrinsics extends Pointer {
+        static { load(); }
         public Cv3dTrackerCameraIntrinsics() { allocate(); }
         public Cv3dTrackerCameraIntrinsics(int size) { allocateArray(size); }
         public Cv3dTrackerCameraIntrinsics(Pointer p) { super(p); }
@@ -971,6 +990,7 @@ public class opencv_legacy {
     }
 
     public static class CvVoronoiSite2D extends Pointer {
+        static { load(); }
         public CvVoronoiSite2D() { allocate(); }
         public CvVoronoiSite2D(int size) { allocateArray(size); }
         public CvVoronoiSite2D(Pointer p) { super(p); }
@@ -988,6 +1008,7 @@ public class opencv_legacy {
     }
 
     public static class CvVoronoiEdge2D extends Pointer {
+        static { load(); }
         public CvVoronoiEdge2D() { allocate(); }
         public CvVoronoiEdge2D(int size) { allocateArray(size); }
         public CvVoronoiEdge2D(Pointer p) { super(p); }
@@ -1004,6 +1025,7 @@ public class opencv_legacy {
     }
 
     public static class CvVoronoiNode2D extends CvSetElem {
+        static { load(); }
         public CvVoronoiNode2D() { allocate(); }
         public CvVoronoiNode2D(int size) { allocateArray(size); }
         public CvVoronoiNode2D(Pointer p) { super(p); }
@@ -1020,6 +1042,7 @@ public class opencv_legacy {
     }
 
     public static class CvVoronoiDiagram2D extends CvGraph {
+        static { load(); }
         public CvVoronoiDiagram2D() { allocate(); }
         public CvVoronoiDiagram2D(int size) { allocateArray(size); }
         public CvVoronoiDiagram2D(Pointer p) { super(p); }
@@ -1046,6 +1069,7 @@ public class opencv_legacy {
 
 
     public static class CvLCMEdge extends CvGraphEdge {
+        static { load(); }
         public CvLCMEdge() { allocate(); }
         public CvLCMEdge(int size) { allocateArray(size); }
         public CvLCMEdge(Pointer p) { super(p); }
@@ -1063,6 +1087,7 @@ public class opencv_legacy {
     }
 
     public static class CvLCMNode extends CvGraphVtx {
+        static { load(); }
         public CvLCMNode() { allocate(); }
         public CvLCMNode(int size) { allocateArray(size); }
         public CvLCMNode(Pointer p) { super(p); }
@@ -1115,6 +1140,7 @@ public class opencv_legacy {
 
 
     public static class CvRandState extends Pointer {
+        static { load(); }
         public CvRandState() { allocate(); }
         public CvRandState(int size) { allocateArray(size); }
         public CvRandState(Pointer p) { super(p); }
@@ -1132,6 +1158,7 @@ public class opencv_legacy {
     }
 
     public static class CvConDensation extends Pointer {
+        static { load(); }
         public CvConDensation() { allocate(); }
         public CvConDensation(int size) { allocateArray(size); }
         public CvConDensation(Pointer p) { super(p); }
@@ -1156,7 +1183,7 @@ public class opencv_legacy {
         }
         static class ReleaseDeallocator extends CvConDensation implements Deallocator {
             ReleaseDeallocator(CvConDensation p) { super(p); }
-            public void deallocate() { cvReleaseConDensation(this); }
+            @Override public void deallocate() { cvReleaseConDensation(this); }
         }
 
         public native int MP();                      public native CvConDensation MP(int MP);

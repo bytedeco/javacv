@@ -534,6 +534,7 @@ public class avcodec {
             AVCHROMA_LOC_NB          = 7;
 
     public static class RcOverride extends Pointer {
+        static { load(); }
         public RcOverride() { allocate(); }
         public RcOverride(int size) { allocateArray(size); }
         public RcOverride(Pointer p) { super(p); }
@@ -649,6 +650,7 @@ public class avcodec {
             MB_TYPE_CBP        = 0x00020000;
 
     public static class AVPanScan extends Pointer {
+        static { load(); }
         public AVPanScan() { allocate(); }
         public AVPanScan(int size) { allocateArray(size); }
         public AVPanScan(Pointer p) { super(p); }
@@ -669,6 +671,7 @@ public class avcodec {
     }
 
     public static class AVFrame extends AVPicture {
+        static { load(); }
         public AVFrame() { allocate(); }
         public AVFrame(int size) { allocateArray(size); }
         public AVFrame(Pointer p) { super(p); }
@@ -744,6 +747,7 @@ public class avcodec {
             FF_BUFFER_HINTS_REUSABLE = 0x08;
 
     public static class AVPacket extends Pointer {
+        static { load(); }
         public AVPacket() { allocate(); }
         public AVPacket(int size) { allocateArray(size); }
         public AVPacket(Pointer p) { super(p); }
@@ -765,6 +769,7 @@ public class avcodec {
 
         public native int   duration();            public native AVPacket duration(int duration);
         public static class Destruct extends FunctionPointer {
+            static { load(); }
             public native void call(AVPacket p);
         }
         public native Destruct destruct();         public native AVPacket destruct(Destruct destruct);
@@ -782,6 +787,7 @@ public class avcodec {
 
 
     public static class AVCodecContext extends Pointer {
+        static { load(); }
         public AVCodecContext() { allocate(); }
         public AVCodecContext(int size) { allocateArray(size); }
         public AVCodecContext(Pointer p) { super(p); }
@@ -817,6 +823,7 @@ public class avcodec {
         public native int rate_emu();           public native AVCodecContext rate_emu(int rate_emu);
 
         public static class Draw_horiz_band extends FunctionPointer {
+            static { load(); }
             public    Draw_horiz_band(Pointer p) { super(p); }
             protected Draw_horiz_band() { allocate(); }
             protected final native void allocate();
@@ -858,6 +865,7 @@ public class avcodec {
         public native int rtp_payload_size();   public native AVCodecContext rtp_payload_size(int rtp_payload_size);
 
         public static class Rtp_callback extends FunctionPointer {
+            static { load(); }
             public    Rtp_callback(Pointer p) { super(p); }
             protected Rtp_callback() { allocate(); }
             protected final native void allocate();
@@ -929,6 +937,7 @@ public class avcodec {
             FF_ER_VERY_AGGRESSIVE = 4;
 
         public static class Get_buffer extends FunctionPointer {
+            static { load(); }
             public    Get_buffer(Pointer p) { super(p); }
             protected Get_buffer() { allocate(); }
             protected final native void allocate();
@@ -938,6 +947,7 @@ public class avcodec {
         public native AVCodecContext get_buffer(Get_buffer get_buffer);
 
         public static class Release_buffer extends FunctionPointer {
+            static { load(); }
             public    Release_buffer(Pointer p) { super(p); }
             protected Release_buffer() { allocate(); }
             protected final native void allocate();
@@ -1119,6 +1129,7 @@ public class avcodec {
         public native int me_subpel_quality();    public native AVCodecContext me_subpel_quality(int me_subpel_quality);
 
         public static class Get_format extends FunctionPointer {
+            static { load(); }
             public    Get_format(Pointer p) { super(p); }
             protected Get_format() { allocate(); }
             protected final native void allocate();
@@ -1200,6 +1211,7 @@ public class avcodec {
         public native int noise_reduction();        public native AVCodecContext noise_reduction(int noise_reduction);
 
         public static class Reget_buffer extends FunctionPointer {
+            static { load(); }
             public    Reget_buffer(Pointer p) { super(p); }
             protected Reget_buffer() { allocate(); }
             protected final native void allocate();
@@ -1224,7 +1236,9 @@ public class avcodec {
         public native int thread_count();                public native AVCodecContext thread_count(int thread_count);
 
         public static class Execute extends FunctionPointer {
+            static { load(); }
             public static class Func extends FunctionPointer {
+                static { load(); }
                 public    Func(Pointer p) { super(p); }
                 protected Func() { allocate(); }
                 protected final native void allocate();
@@ -1353,7 +1367,9 @@ public class avcodec {
         public native int chroma_sample_location();     public native AVCodecContext chroma_sample_location(int chroma_sample_location);
 
         public static class Execute2 extends FunctionPointer {
+            static { load(); }
             public static class Func2 extends FunctionPointer {
+                static { load(); }
                 public    Func2(Pointer p) { super(p); }
                 protected Func2() { allocate(); }
                 protected final native void allocate();
@@ -1375,6 +1391,7 @@ public class avcodec {
     }
 
     public static class AVCodec extends Pointer {
+        static { load(); }
         public AVCodec() { allocate(); }
         public AVCodec(int size) { allocateArray(size); }
         public AVCodec(Pointer p) { super(p); }
@@ -1394,18 +1411,22 @@ public class avcodec {
 
         public native int priv_data_size(); public native AVCodec priv_data_size(int priv_data_size);
         public static class Init extends FunctionPointer {
+            static { load(); }
             public native int call(AVCodecContext c);
         }
         public native Init init();          public native AVCodec init(Init init);
         public static class Encode extends FunctionPointer {
+            static { load(); }
             public native int call(AVCodecContext c, @Cast("uint8_t*") BytePointer buf, int buf_size, Pointer data);
         }
         public native Encode encode();      public native AVCodec encode(Encode encode);
         public static class Close extends FunctionPointer {
+            static { load(); }
             public native int call(AVCodecContext c);
         }
         public native Close close();        public native AVCodec close(Close close);
         public static class Decode extends FunctionPointer {
+            static { load(); }
             public native int call(AVCodecContext c, Pointer outdata, IntPointer outdata_size, AVPacket avpkt);
         }
         public native Decode decode();      public native AVCodec decode(Decode decode);
@@ -1414,6 +1435,7 @@ public class avcodec {
         public native AVCodec next();       public native AVCodec next(AVCodec next);
 
         public static class Flush extends FunctionPointer {
+            static { load(); }
             public native void call(AVCodecContext c);
         }
         public native Flush flush();        public native AVCodec flush(Flush flush);
@@ -1433,6 +1455,7 @@ public class avcodec {
     }
 
     public static class AVHWAccel extends Pointer {
+        static { load(); }
         public AVHWAccel() { allocate(); }
         public AVHWAccel(int size) { allocateArray(size); }
         public AVHWAccel(Pointer p) { super(p); }
@@ -1456,6 +1479,7 @@ public class avcodec {
         public native AVHWAccel next();     public native AVHWAccel next(AVHWAccel next);
 
         public static class Start_frame extends FunctionPointer {
+            static { load(); }
             public    Start_frame(Pointer p) { super(p); }
             protected Start_frame() { allocate(); }
             protected final native void allocate();
@@ -1465,6 +1489,7 @@ public class avcodec {
         public native AVHWAccel start_frame(Start_frame start_frame);
 
         public static class Decode_slice extends FunctionPointer {
+            static { load(); }
             public    Decode_slice(Pointer p) { super(p); }
             protected Decode_slice() { allocate(); }
             protected final native void allocate();
@@ -1474,6 +1499,7 @@ public class avcodec {
         public native AVHWAccel decode_slice(Decode_slice decode_slice);
 
         public static class End_frame extends FunctionPointer {
+            static { load(); }
             public    End_frame(Pointer p) { super(p); }
             protected End_frame() { allocate(); }
             protected final native void allocate();
@@ -1486,6 +1512,7 @@ public class avcodec {
     }
 
     public static class AVPicture extends Pointer {
+        static { load(); }
         public AVPicture() { allocate(); }
         public AVPicture(int size) { allocateArray(size); }
         public AVPicture(Pointer p) { super(p); }
@@ -1507,6 +1534,7 @@ public class avcodec {
 //            AVPALETTE_SIZE = 1024,
 //            AVPALETTE_COUNT = 256;
 //    @Deprecated public static class AVPaletteControl extends Pointer {
+//        static { load(); }
 //        public AVPaletteControl() { allocate(); }
 //        public AVPaletteControl(int size) { allocateArray(size); }
 //        public AVPaletteControl(Pointer p) { super(p); }
@@ -1531,6 +1559,7 @@ public class avcodec {
             SUBTITLE_ASS = 3;
 
     public static class AVSubtitleRect extends Pointer {
+        static { load(); }
         public AVSubtitleRect() { allocate(); }
         public AVSubtitleRect(int size) { allocateArray(size); }
         public AVSubtitleRect(Pointer p) { super(p); }
@@ -1559,6 +1588,7 @@ public class avcodec {
     }
 
     public static class AVSubtitle extends Pointer {
+        static { load(); }
         public AVSubtitle() { allocate(); }
         public AVSubtitle(int size) { allocateArray(size); }
         public AVSubtitle(Pointer p) { super(p); }
@@ -1589,10 +1619,12 @@ public class avcodec {
 
 
     @Opaque public static class ReSampleContext extends Pointer {
+        static { load(); }
         public ReSampleContext() { }
         public ReSampleContext(Pointer p) { super(p); }
     }
     @Opaque public static class AVResampleContext extends Pointer {
+        static { load(); }
         public AVResampleContext() { }
         public AVResampleContext(Pointer p) { super(p); }
     }
@@ -1701,6 +1733,7 @@ public class avcodec {
     public static native int avcodec_thread_init(AVCodecContext s, int thread_count);
     public static native void avcodec_thread_free(AVCodecContext s);
     public static class Func extends FunctionPointer {
+        static { load(); }
         public    Func(Pointer p) { super(p); }
         protected Func() { allocate(); }
         protected final native void allocate();
@@ -1708,6 +1741,7 @@ public class avcodec {
     }
     public static native int avcodec_default_execute(AVCodecContext c, Func func, Pointer arg, int[] ret, int count, int size);
     public static class Func2 extends FunctionPointer {
+        static { load(); }
         public    Func2(Pointer p) { super(p); }
         protected Func2() { allocate(); }
         protected final native void allocate();
@@ -1773,6 +1807,7 @@ public class avcodec {
 
 
     public static class AVCodecParserContext extends Pointer {
+        static { load(); }
         public AVCodecParserContext() { allocate(); }
         public AVCodecParserContext(int size) { allocateArray(size); }
         public AVCodecParserContext(Pointer p) { super(p); }
@@ -1823,6 +1858,7 @@ public class avcodec {
     }
 
     public static class AVCodecParser extends Pointer {
+        static { load(); }
         public AVCodecParser() { allocate(); }
         public AVCodecParser(int size) { allocateArray(size); }
         public AVCodecParser(Pointer p) { super(p); }
@@ -1837,6 +1873,7 @@ public class avcodec {
         public native int priv_data_size();        public native AVCodecParser priv_data_size(int priv_data_size);
 
         public static class Parser_init extends FunctionPointer {
+            static { load(); }
             public    Parser_init(Pointer p) { super(p); }
             protected Parser_init() { allocate(); }
             protected final native void allocate();
@@ -1845,6 +1882,7 @@ public class avcodec {
         public native Parser_init parser_init();   public native AVCodecParser parser_init(Parser_init parser_init);
 
         public static class Parser_parse extends FunctionPointer {
+            static { load(); }
             public    Parser_parse(Pointer p) { super(p); }
             protected Parser_parse() { allocate(); }
             protected final native void allocate();
@@ -1855,6 +1893,7 @@ public class avcodec {
         public native Parser_parse parser_parse(); public native AVCodecParser parser_parse(Parser_parse parser_parse);
 
         public static class Parser_close extends FunctionPointer {
+            static { load(); }
             public    Parser_close(Pointer p) { super(p); }
             protected Parser_close() { allocate(); }
             protected final native void allocate();
@@ -1863,6 +1902,7 @@ public class avcodec {
         public native Parser_close parser_close(); public native AVCodecParser parser_close(Parser_close parser_close);
 
         public static class Split extends FunctionPointer {
+            static { load(); }
             public    Split(Pointer p) { super(p); }
             protected Split() { allocate(); }
             protected final native void allocate();
@@ -1895,6 +1935,7 @@ public class avcodec {
 
 
     public static class AVBitStreamFilterContext extends Pointer {
+        static { load(); }
         public AVBitStreamFilterContext() { allocate(); }
         public AVBitStreamFilterContext(int size) { allocateArray(size); }
         public AVBitStreamFilterContext(Pointer p) { super(p); }
@@ -1913,6 +1954,7 @@ public class avcodec {
 
 
     public static class AVBitStreamFilter extends Pointer {
+        static { load(); }
         public AVBitStreamFilter() { allocate(); }
         public AVBitStreamFilter(int size) { allocateArray(size); }
         public AVBitStreamFilter(Pointer p) { super(p); }
@@ -1928,6 +1970,7 @@ public class avcodec {
         public native int priv_data_size(); public native AVBitStreamFilter priv_data_size(int priv_data_size);
 
         public static class Filter extends FunctionPointer {
+            static { load(); }
             public    Filter(Pointer p) { super(p); }
             protected Filter() { allocate(); }
             protected final native void allocate();
@@ -1938,6 +1981,7 @@ public class avcodec {
         public native Filter filter();      public native AVBitStreamFilter filter(Filter filter);
 
         public static class Close extends FunctionPointer {
+            static { load(); }
             public    Close(Pointer p) { super(p); }
             protected Close() { allocate(); }
             protected final native void allocate();
@@ -1986,6 +2030,7 @@ public class avcodec {
             AV_LOCK_RELEASE = 2,
             AV_LOCK_DESTROY = 3;
     public static class Cb extends FunctionPointer {
+        static { load(); }
         public    Cb(Pointer p) { super(p); }
         protected Cb() { allocate(); }
         protected final native void allocate();
@@ -2009,6 +2054,7 @@ public class avcodec {
             FF_OPT_TYPE_CONST    = 128;
 
     public static class AVOption extends Pointer {
+        static { load(); }
         public AVOption() { allocate(); }
         public AVOption(int size) { allocateArray(size); }
         public AVOption(Pointer p) { super(p); }
@@ -2044,6 +2090,7 @@ public class avcodec {
     }
 
     public static class AVOption2 extends Pointer {
+        static { load(); }
         public AVOption2() { allocate(); }
         public AVOption2(int size) { allocateArray(size); }
         public AVOption2(Pointer p) { super(p); }
@@ -2101,6 +2148,7 @@ public class avcodec {
     //typedef float FFTSample;
 
     public static class FFTComplex extends Pointer {
+        static { load(); }
         public FFTComplex() { allocate(); }
         public FFTComplex(int size) { allocateArray(size); }
         public FFTComplex(Pointer p) { super(p); }
@@ -2117,6 +2165,7 @@ public class avcodec {
     }
 
     @Opaque public static class FFTContext extends Pointer {
+        static { load(); }
         public FFTContext() { }
         public FFTContext(Pointer p) { super(p); }
     }
@@ -2147,6 +2196,7 @@ public class avcodec {
             DFT_C2R  = 3;
 
     @Opaque public static class RDFTContext extends Pointer {
+        static { load(); }
         public RDFTContext() { }
         public RDFTContext(Pointer p) { super(p); }
     }
@@ -2159,6 +2209,7 @@ public class avcodec {
 
 
     @Opaque public static class DCTContext extends Pointer {
+        static { load(); }
         public DCTContext() { }
         public DCTContext(Pointer p) { super(p); }
     }
@@ -2179,19 +2230,23 @@ public class avcodec {
 
     //#include "dxva2.h"
     @Platform("windows") @Opaque public static class IDirectXVideoDecoder extends Pointer {
+        static { load(); }
         public IDirectXVideoDecoder() { }
         public IDirectXVideoDecoder(Pointer p) { super(p); }
     }
     @Platform("windows") @Opaque public static class DXVA2_ConfigPictureDecode extends Pointer {
+        static { load(); }
         public DXVA2_ConfigPictureDecode() { }
         public DXVA2_ConfigPictureDecode(Pointer p) { super(p); }
     }
     @Platform("windows") @Opaque public static class LPDIRECT3DSURFACE9 extends Pointer {
+        static { load(); }
         public LPDIRECT3DSURFACE9() { }
         public LPDIRECT3DSURFACE9(Pointer p) { super(p); }
     }
 
     @Platform("windows") public static class dxva_context extends Pointer {
+        static { load(); }
         public dxva_context() { allocate(); }
         public dxva_context(int size) { allocateArray(size); }
         public dxva_context(Pointer p) { super(p); }
@@ -2214,6 +2269,7 @@ public class avcodec {
     //#include "vaapi.h"
     @Platform({"linux", "freebsd", "solaris", "sunos"})
     public static class vaapi_context extends Pointer {
+        static { load(); }
         public vaapi_context() { allocate(); }
         public vaapi_context(int size) { allocateArray(size); }
         public vaapi_context(Pointer p) { super(p); }
@@ -2250,11 +2306,13 @@ public class avcodec {
 
     @Platform({"linux", "freebsd", "solaris", "sunos"})
     @Opaque public static class VdpBitstreamBuffer extends Pointer {
+        static { load(); }
         public VdpBitstreamBuffer() { }
         public VdpBitstreamBuffer(Pointer p) { super(p); }
     }
     @Platform({"linux", "freebsd", "solaris", "sunos"})
     public static class vdpau_render_state extends Pointer {
+        static { load(); }
         public vdpau_render_state() { allocate(); }
         public vdpau_render_state(int size) { allocateArray(size); }
         public vdpau_render_state(Pointer p) { super(p); }
@@ -2270,6 +2328,7 @@ public class avcodec {
         public native int state();           public native vdpau_render_state state(int state);
 
         @Opaque public static class VdpPictureInfo extends Pointer {
+            static { load(); }
             public VdpPictureInfo() { }
             public VdpPictureInfo(Pointer p) { super(p); }
         }
@@ -2292,17 +2351,20 @@ public class avcodec {
 
     @Platform({"linux", "freebsd", "solaris", "sunos"})
     @Opaque public static class XvMCMacroBlock extends Pointer {
+        static { load(); }
         public XvMCMacroBlock() { }
         public XvMCMacroBlock(Pointer p) { super(p); }
     }
     @Platform({"linux", "freebsd", "solaris", "sunos"})
     @Opaque public static class XvMCSurface extends Pointer {
+        static { load(); }
         public XvMCSurface() { }
         public XvMCSurface(Pointer p) { super(p); }
     }
 
     @Platform({"linux", "freebsd", "solaris", "sunos"})
     public static class xvmc_pix_fmt extends Pointer {
+        static { load(); }
         public xvmc_pix_fmt() { allocate(); }
         public xvmc_pix_fmt(int size) { allocateArray(size); }
         public xvmc_pix_fmt(Pointer p) { super(p); }

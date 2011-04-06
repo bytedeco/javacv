@@ -53,7 +53,7 @@ public class GeometricCalibrator {
         }
     }
 
-    public static class Settings extends BaseSettings {
+    public static class Settings extends BaseChildSettings {
         double detectedBoardMin = 0.5;
         double patternSteadyMax = 0.005;
         double patternMovedMin  = 0.05;

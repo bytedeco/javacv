@@ -42,8 +42,6 @@
 
 package com.googlecode.javacv.cpp;
 
-import java.nio.ByteBuffer;
-import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
@@ -135,6 +133,7 @@ public class swscale {
     public static native @Cast("const int*") IntPointer sws_getCoefficients(int colorspace);
 
     public static class SwsVector extends Pointer {
+        static { load(); }
         public SwsVector() { allocate(); }
         public SwsVector(int size) { allocateArray(size); }
         public SwsVector(Pointer p) { super(p); }
@@ -150,6 +149,7 @@ public class swscale {
     }
 
     public static class SwsFilter extends Pointer {
+        static { load(); }
         public SwsFilter() { allocate(); }
         public SwsFilter(int size) { allocateArray(size); }
         public SwsFilter(Pointer p) { super(p); }
@@ -167,6 +167,7 @@ public class swscale {
     }
 
     @Opaque public static class SwsContext extends Pointer {
+        static { load(); }
         public SwsContext() { }
         public SwsContext(Pointer p) { super(p); }
     }

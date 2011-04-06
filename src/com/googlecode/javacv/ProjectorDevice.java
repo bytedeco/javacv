@@ -170,7 +170,7 @@ public class ProjectorDevice extends ProjectiveDevice {
             }
         }
         SettingsImplementation si = new SettingsImplementation() {
-            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            @Override public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
                 CalibrationSettings.this.firePropertyChange(propertyName, oldValue, newValue);
             }
         };
@@ -225,7 +225,7 @@ public class ProjectorDevice extends ProjectiveDevice {
             }
         }
         SettingsImplementation si = new SettingsImplementation() {
-            @Override protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            @Override public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
                 CalibratedSettings.this.firePropertyChange(propertyName, oldValue, newValue);
             }
         };

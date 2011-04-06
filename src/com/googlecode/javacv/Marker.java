@@ -156,7 +156,7 @@ if (false) {
         H     .pool();
     }
 
-    public static class ArraySettings extends BaseSettings {
+    public static class ArraySettings extends BaseChildSettings {
         int rows = 8, columns = 12;
         double sizeX = 200, sizeY = 200, spacingX = 300, spacingY = 300;
         boolean checkered = true;
