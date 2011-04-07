@@ -53,8 +53,6 @@ import android.widget.FrameLayout;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
 import java.util.List;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.cpp.opencv_objdetect;
@@ -100,7 +98,6 @@ public class FacePreview extends Activity {
 class FaceView extends View implements Camera.PreviewCallback {
     public static final int SUBSAMPLING_FACTOR = 4;
 
-    private ExecutorService processingExecutor;
     private IplImage grayImage;
     private CvHaarClassifierCascade classifier;
     private CvMemStorage storage;
@@ -108,7 +105,6 @@ class FaceView extends View implements Camera.PreviewCallback {
 
     public FaceView(FacePreview context) throws IOException {
         super(context);
-        processingExecutor = Executors.newSingleThreadExecutor();
 
         // Load the classifier file from Java resources.
         File classifierFile = Loader.extractResource(getClass(),
@@ -129,17 +125,13 @@ class FaceView extends View implements Camera.PreviewCallback {
     }
 
     public void onPreviewFrame(final byte[] data, final Camera camera) {
-        final Camera.Size size = camera.getParameters().getPreviewSize();
-        processingExecutor.execute(new Runnable() {
-            public void run() {
-                processImage(data, size.width, size.height);
-                try {
-                    camera.addCallbackBuffer(data);
-                } catch (RuntimeException e) {
-                    // The camera has probably just been released, ignore.
-                }
-            }
-        });
+        try {
+            Camera.Size size = camera.getParameters().getPreviewSize();
+            processImage(data, size.width, size.height);
+            camera.addCallbackBuffer(data);
+        } catch (RuntimeException e) {
+            // The camera has probably just been released, ignore.
+        }
     }
 
     protected void processImage(byte[] data, int width, int height) {
