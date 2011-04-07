@@ -77,8 +77,8 @@ public class avutil {
     public static final String windowsIncludepath = "C:/MinGW/local/include/ffmpeg/;C:/MinGW/include/ffmpeg/;C:/MinGW/local/include/";
     public static final String windowsLinkpath    = "C:/MinGW/local/lib/;C:/MinGW/lib/";
     public static final String windowsPreloadpath = "C:/MinGW/local/bin/;C:/MinGW/bin/";
-    public static final String androidIncludepath = "../android/include/";
-    public static final String androidLinkpath    = "../android/lib/";
+    public static final String androidIncludepath = "../include/";
+    public static final String androidLinkpath    = "../lib/";
 
     //#define AV_STRINGIFY(s)         AV_TOSTRING(s)
     //#define AV_TOSTRING(s) #s

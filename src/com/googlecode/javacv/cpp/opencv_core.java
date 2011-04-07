@@ -123,8 +123,8 @@ public class opencv_core {
     public static final String windowsIncludepath = "C:/OpenCV2.2/include/";
     public static final String windowsLinkpath    = "C:/OpenCV2.2/lib/";
     public static final String windowsPreloadpath = "C:/OpenCV2.2/bin/Release/;C:/OpenCV2.2/bin/";
-    public static final String androidIncludepath = "../android/include/";
-    public static final String androidLinkpath    = "../android/lib/";
+    public static final String androidIncludepath = "../include/";
+    public static final String androidLinkpath    = "../lib/";
 
     @Opaque public static class CvArr extends Pointer implements Cloneable {
         static { load(); }
