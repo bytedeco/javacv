@@ -416,7 +416,7 @@ public class avformat {
     public static native int get_be32(ByteIOContext s);
     public static native long get_be64(ByteIOContext s);
 
-    public static native long ff_get_v(ByteIOContext bc);
+//    public static native long ff_get_v(ByteIOContext bc);
 
     public static boolean url_is_streamed(ByteIOContext s) {
         return s.is_streamed() != 0;
@@ -428,9 +428,9 @@ public class avformat {
 //#if LIBAVFORMAT_VERSION_MAJOR < 53
     public static native int url_resetbuf(ByteIOContext s, int flags);
 //#endif
-    public static native int ff_rewind_with_probe_data(ByteIOContext s, @Cast("unsigned char*") byte[]      buf, int buf_size);
-    public static native int ff_rewind_with_probe_data(ByteIOContext s, @Cast("unsigned char*") ByteBuffer  buf, int buf_size);
-    public static native int ff_rewind_with_probe_data(ByteIOContext s, @Cast("unsigned char*") BytePointer buf, int buf_size);
+//    public static native int ff_rewind_with_probe_data(ByteIOContext s, @Cast("unsigned char*") byte[]      buf, int buf_size);
+//    public static native int ff_rewind_with_probe_data(ByteIOContext s, @Cast("unsigned char*") ByteBuffer  buf, int buf_size);
+//    public static native int ff_rewind_with_probe_data(ByteIOContext s, @Cast("unsigned char*") BytePointer buf, int buf_size);
 
     public static native int url_fopen(@ByPtrPtr ByteIOContext s, String url, int flags);
 
@@ -449,14 +449,14 @@ public class avformat {
     public static native int url_open_dyn_packet_buf(@ByPtrPtr ByteIOContext s, int max_packet_size);
     public static native int url_close_dyn_buf(ByteIOContext s, @Cast("uint8_t**") PointerPointer pbuffer);
 
-    public static native @Cast("unsigned long") long ff_crc04C11DB7_update(
-            @Cast("unsigned long") long checksum, @Cast("uint8_t*") BytePointer buf, int len);
+//    public static native @Cast("unsigned long") long ff_crc04C11DB7_update(
+//            @Cast("unsigned long") long checksum, @Cast("uint8_t*") BytePointer buf, int len);
     public static native @Cast("unsigned long") long get_checksum(ByteIOContext s);
     public static native void init_checksum(ByteIOContext s,
             ByteIOContext.Update_checksum update_checksum, @Cast("unsigned long") long checksum);
 
-    public static native int udp_set_remote_url(URLContext h, String uri);
-    public static native int udp_get_local_port(URLContext h);
+//    public static native int udp_set_remote_url(URLContext h, String uri);
+//    public static native int udp_get_local_port(URLContext h);
 //#if (LIBAVFORMAT_VERSION_MAJOR <= 52)
     public static native int udp_get_file_handle(URLContext h);
 //#endif
@@ -1203,8 +1203,8 @@ public class avformat {
     public static native AVStream av_new_stream(AVFormatContext s, int id);
     public static native AVProgram av_new_program(AVFormatContext s, int id);
 
-    public static native AVChapter ff_new_chapter(AVFormatContext s, int id, 
-            @ByVal AVRational time_base, long start, long end, String title);
+//    public static native AVChapter ff_new_chapter(AVFormatContext s, int id, 
+//            @ByVal AVRational time_base, long start, long end, String title);
 
     public static native void av_set_pts_info(AVStream s, int pts_wrap_bits, int pts_num, int pts_den);
 
@@ -1216,7 +1216,7 @@ public class avformat {
 
     public static native int av_find_default_stream_index(AVFormatContext s);
     public static native int av_index_search_timestamp(AVStream st, long timestamp, int flags);
-    public static native void ff_reduce_index(AVFormatContext s, int stream_index);
+//    public static native void ff_reduce_index(AVFormatContext s, int stream_index);
     public static native int av_add_index_entry(AVStream st, long pos, long timestamp,
             int size, int distance, int flags);
     public static native int av_seek_frame_binary(AVFormatContext s, int stream_index,

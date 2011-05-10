@@ -44,12 +44,16 @@ public class JavaCV {
 
     // this is basically cvGetPerspectiveTransform() using CV_LU instead of
     // CV_SVD, because the latter gives inaccurate results...
+    private static ThreadLocal<CvMat>
+            A8x8 = CvMat.createThreadLocal(8, 8),
+            b8x1 = CvMat.createThreadLocal(8, 1),
+            x8x1 = CvMat.createThreadLocal(8, 1);
     public static CvMat getPerspectiveTransform(double[] src, double[] dst, CvMat map_matrix) {
-        // creating and releasing matrices via NIO here in this function...
-        // this can easily become a bottleneck
-        CvMat A = CvMat.take(8, 8);
-        CvMat b = CvMat.take(8, 1);
-        CvMat x = CvMat.take(8, 1);
+        // creating and releasing matrices via NIO here in this function
+        // can easily become a bottleneck, so we use ThreadLocal references
+        CvMat A = A8x8.get();
+        CvMat b = b8x1.get();
+        CvMat x = x8x1.get();
 
         for(int i = 0; i < 4; ++i ) {
             A.put(i*8+0, src[i*2]);   A.put((i+4)*8+3, src[i*2]);
@@ -70,10 +74,6 @@ public class JavaCV {
         map_matrix.put(x.get());
         map_matrix.put(8, 1);
 
-        A.pool();
-        b.pool();
-        x.pool();
-
         return map_matrix;
     }
 
@@ -93,9 +93,11 @@ public class JavaCV {
         }
     }
 
+    private static ThreadLocal<CvMat>
+            A3x3 = CvMat.createThreadLocal(3, 3), b3x1 = CvMat.createThreadLocal(3, 1);
     public static CvMat getPlaneParameters(double[] src, double[] dst,
             CvMat invSrcK, CvMat dstK, CvMat R, CvMat t, CvMat n) {
-        CvMat A = CvMat.take(3, 3), b = CvMat.take(3, 1);
+        CvMat A = A3x3.get(), b = b3x1.get();
 
         double[] x = new double[6], y = new double[6];
         perspectiveTransform(src, x, invSrcK);
@@ -112,14 +114,14 @@ public class JavaCV {
         }
         cvSolve(A, b, n, CV_LU);
 
-        A.pool(); b.pool();
-
         return n;
     }
 
+    private static ThreadLocal<CvMat>
+            n3x1 = CvMat.createThreadLocal(3, 1);
     public static CvMat getPerspectiveTransform(double[] src, double[] dst, 
             CvMat invSrcK, CvMat dstK, CvMat R, CvMat t, CvMat H) {
-        CvMat n = CvMat.take(3, 1);
+        CvMat n = n3x1.get();
         getPlaneParameters(src, dst, invSrcK, dstK, R, t, n);
 
         // H = R - t*n^T
@@ -128,14 +130,14 @@ public class JavaCV {
         cvMatMul(dstK, H, H);
         cvMatMul(H, invSrcK, H);
 
-        n.pool();
-
         return H;
     }
 
+    private static ThreadLocal<CvMat>
+            H3x3 = CvMat.createThreadLocal(3, 3);
     public static void perspectiveTransform(double[] src, double[] dst,
             CvMat invSrcK, CvMat dstK, CvMat R, CvMat t, CvMat n, boolean invert) {
-        CvMat H = CvMat.take(3, 3);
+        CvMat H = H3x3.get();
 
         // H = R - t*n^T
         cvGEMM(t, n, -1,  R, 1,  H, CV_GEMM_B_T);
@@ -151,9 +153,12 @@ public class JavaCV {
 
     // Algorithms for Plane-Based Pose Estimation, Peter Sturm
     // This assumes plane parameters n == z axis.
+    private static ThreadLocal<CvMat>
+            M3x2 = CvMat.createThreadLocal(3, 2), S2x2 = CvMat.createThreadLocal(2, 2),
+            U3x2 = CvMat.createThreadLocal(3, 2), V2x2 = CvMat.createThreadLocal(2, 2);
     public static void HtoRt(CvMat H, CvMat R, CvMat t) {
-        CvMat M = CvMat.take(3, 2), S = CvMat.take(2, 2),
-              U = CvMat.take(3, 2), V = CvMat.take(2, 2);
+        CvMat M = M3x2.get(), S = S2x2.get(),
+              U = U3x2.get(), V = V2x2.get();
         M.put(H.get(0), H.get(1),
               H.get(3), H.get(4),
               H.get(6), H.get(7));
@@ -166,18 +171,21 @@ public class JavaCV {
         R.put(M.get(0), M.get(1), M.get(2)*M.get(5) - M.get(3)*M.get(4),
               M.get(2), M.get(3), M.get(1)*M.get(4) - M.get(0)*M.get(5),
               M.get(4), M.get(5), M.get(0)*M.get(3) - M.get(1)*M.get(2));
-
-        V.pool(); U.pool();
-        S.pool(); M.pool();
     }
 
+    private static ThreadLocal<CvMat>
+            R13x3 = CvMat.createThreadLocal(3, 3), R23x3 = CvMat.createThreadLocal(3, 3),
+            t13x1 = CvMat.createThreadLocal(3, 1), t23x1 = CvMat.createThreadLocal(3, 1),
+            n13x1 = CvMat.createThreadLocal(3, 1), n23x1 = CvMat.createThreadLocal(3, 1),
+            H13x3 = CvMat.createThreadLocal(3, 3), H23x3 = CvMat.createThreadLocal(3, 3);
     public static double HnToRt(CvMat H, CvMat n, CvMat R, CvMat t) {
-        CvMat R1 = CvMat.take(3, 3),  R2 = CvMat.take(3, 3),
-              t1 = CvMat.take(3, 1),  t2 = CvMat.take(3, 1),
-              n1 = CvMat.take(3, 1),  n2 = CvMat.take(3, 1),
-              H1 = CvMat.take(3, 3),  H2 = CvMat.take(3, 3);
-        CvMat S = CvMat.take(3, 3), U = CvMat.take(3, 3), V = CvMat.take(3, 3);
+        CvMat S = S3x3.get(), U = U3x3.get(), V = V3x3.get();
         cvSVD(H, S, U, V, 0);
+
+        CvMat R1 = R13x3.get(),  R2 = R23x3.get(),
+              t1 = t13x1.get(),  t2 = t23x1.get(),
+              n1 = n13x1.get(),  n2 = n23x1.get(),
+              H1 = H13x3.get(),  H2 = H23x3.get();
         double zeta = homogToRt(S, U, V, R1, t1, n1, R2, t2, n2);
 
         // H = (R^-1 * H)/s2
@@ -231,26 +239,22 @@ public class JavaCV {
             err = err2;
         }
 
-        V.pool(); U.pool(); S.pool();
-
-        H2.pool(); H1.pool();
-        n2.pool(); n1.pool();
-        t2.pool(); t1.pool();
-        R2.pool(); R1.pool();
-
         return err;
     }
 
     // Ported to Java/OpenCV from
     // Bill Triggs. Autocalibration from Planar Scenes. In 5th European Conference
     // on Computer Vision (ECCV ’98), volume I, pages 89–105. Springer-Verlag, 1998.
+    private static ThreadLocal<CvMat>
+            S3x3 = CvMat.createThreadLocal(3, 3),
+            U3x3 = CvMat.createThreadLocal(3, 3),
+            V3x3 = CvMat.createThreadLocal(3, 3);
     public static double homogToRt(CvMat H,
             CvMat R1, CvMat t1, CvMat n1,
             CvMat R2, CvMat t2, CvMat n2) {
-        CvMat S = CvMat.take(3, 3), U = CvMat.take(3, 3), V = CvMat.take(3, 3);
+        CvMat S = S3x3.get(), U = U3x3.get(), V = V3x3.get();
         cvSVD(H, S, U, V, 0);
         double zeta = homogToRt(S, U, V, R1, t1, n1, R2, t2, n2);
-        V.pool(); U.pool(); S.pool();
         return zeta;
     }
     public static double homogToRt(CvMat S, CvMat U, CvMat V,
@@ -729,6 +733,9 @@ public class JavaCV {
         return norm(A, 2.0);
     }
     public static double norm(CvMat A, double p) {
+        return norm(A, p, null);
+    }
+    public static double norm(CvMat A, double p, CvMat W) {
         double norm = -1;
 
         if (p == 1.0) {
@@ -741,10 +748,12 @@ public class JavaCV {
                 norm = Math.max(n, norm);
             }
         } else if (p == 2.0) {
-            CvMat W = CvMat.take(Math.min(A.rows(), A.cols()), 1);
+            int size = Math.min(A.rows(), A.cols());
+            if (W == null || W.rows() != size || W.cols() != 1) {
+                W = CvMat.create(size, 1);
+            }
             cvSVD(A, W, null, null, 0);
             norm = W.get(0); // largest singular value
-            W.pool();
         } else if (p == Double.POSITIVE_INFINITY) {
             int rows = A.rows(), cols = A.cols();
             for (int i = 0; i < rows; i++) {
@@ -760,21 +769,32 @@ public class JavaCV {
         return norm;
     }
 
+    public static double cond(CvMat A) {
+        return cond(A, 2.0);
+    }
     public static double cond(CvMat A, double p) {
+        return cond(A, p, null);
+    }
+    public static double cond(CvMat A, double p, CvMat W) {
         double cond = -1;
 
         if (p == 2.0) {
-            CvMat W = CvMat.take(Math.min(A.rows(), A.cols()), 1);
+            int size = Math.min(A.rows(), A.cols());
+            if (W == null || W.rows() != size || W.cols() != 1) {
+                W = CvMat.create(size, 1);
+            }
             cvSVD(A, W, null, null, 0);
             cond = W.get(0)/W.get(W.length()-1); // largest/smallest singular value
-            W.pool();
         } else {
             // should put something faster here if we're really serious
             // about using something other than the 2-norm
-            CvMat Ainv = CvMat.take(A.rows(), A.cols());
+            int rows = A.rows(), cols = A.cols();
+            if (W == null || W.rows() != rows || W.cols() != cols) {
+                W = CvMat.create(rows, cols);
+            }
+            CvMat Ainv = W;
             cvInvert(A, Ainv);
             cond = norm(A, p)*norm(Ainv, p);
-            Ainv.pool();
         }
         return cond;
     }
@@ -782,11 +802,12 @@ public class JavaCV {
     public static double randn(CvRNG state, double sigma) {
         return randn(state, cvRealScalar(sigma));
     }
+    private static ThreadLocal<CvMat>
+            values1x1 = CvMat.createThreadLocal(1, 1);
     public static double randn(CvRNG state, CvScalar sigma) {
-        CvMat values = CvMat.take(1, 1);
+        CvMat values = values1x1.get();
         cvRandArr(state, values, CV_RAND_NORMAL, CvScalar.ZERO, sigma);
         double res = values.get(0);
-        values.pool();
         return res;
     }
 

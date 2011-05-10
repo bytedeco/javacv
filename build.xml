@@ -23,11 +23,14 @@
             <attribute name="Specification-Version" value="${TIMESTAMP}"/>
         </section>
     </manifest>
+    <property environment="env"/>
     <target name="-post-compile">
         <property name="javacpp.options" value=""/>
-        <java jar="${reference.javacpp.jar}" fork="true"> 
+        <java jar="${reference.javacpp.jar}" fork="true">
+            <!-- Hack required for Microsoft SDK and videoInputLib -->
+            <env key="CL" value="&quot;/I${env.MSSdk}/Include/&quot;"/>
             <arg line="${javacpp.options}"/>
-            <arg value="-classpath"/> <arg value="${build.classes.dir}"/> 
+            <arg value="-classpath"/> <arg value="${build.classes.dir}"/>
             <arg value="-jarprefix"/> <arg value="${dist.dir}/javacv"/>
             <arg value="com.googlecode.javacv.cpp.opencv_core"/>
             <arg value="com.googlecode.javacv.cpp.opencv_imgproc"/>
@@ -46,6 +49,7 @@
             <arg value="com.googlecode.javacv.cpp.swscale"/>
             <arg value="com.googlecode.javacv.cpp.dc1394"/>
             <arg value="com.googlecode.javacv.cpp.PGRFlyCapture"/>
+            <arg value="com.googlecode.javacv.cpp.videoInputLib"/>
             <arg value="com.googlecode.javacv.cpp.ARToolKitPlus"/>
             <arg value="com.googlecode.javacv.cpp.cvkernels"/>
         </java>

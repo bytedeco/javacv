@@ -89,6 +89,9 @@ public class MarkedPlane {
             }
             setPrewarp(prewarp);
         }
+
+        localSrcPts = CvMat.createThreadLocal(markers.length*4, 2);
+        localDstPts = CvMat.createThreadLocal(markers.length*4, 2);
     }
 
     private Marker[] markers = null;
@@ -98,6 +101,8 @@ public class MarkedPlane {
 
     private IplImage planeImage = null, superPlaneImage = null;
     private CvScalar foregroundColor, backgroundColor;
+
+    private ThreadLocal<CvMat> localSrcPts, localDstPts;
 
     public CvScalar getForegroundColor() {
         return foregroundColor;
@@ -161,18 +166,19 @@ public class MarkedPlane {
     public double getTotalWarp(Marker[] imagedMarkers, CvMat totalWarp) {
         return getTotalWarp(imagedMarkers, totalWarp, false);
     }
+    private static ThreadLocal<CvMat>
+            tempWarp3x3 = CvMat.createThreadLocal(3, 3);
     public double getTotalWarp(Marker[] imagedMarkers, CvMat totalWarp, boolean useCenters) {
         double rmse = Double.POSITIVE_INFINITY;
         int pointsPerMarker = useCenters ? 1 : 4;
 
-        CvMat srcPts    = CvMat.take(markers.length*pointsPerMarker, 2);
-        CvMat dstPts    = CvMat.take(markers.length*pointsPerMarker, 2);
+        CvMat srcPts = localSrcPts.get(); srcPts.rows(markers.length*pointsPerMarker);
+        CvMat dstPts = localDstPts.get(); dstPts.rows(markers.length*pointsPerMarker);
 
         int numPoints = 0;
         for (Marker m1 : markers) {
             for (Marker m2 : imagedMarkers) {
                 if (m1.id == m2.id) {
-                    // I got a SIGSEGV here.. why??
                     if (useCenters) {
                         srcPts.put(numPoints*2, m1.getCenter());
                         dstPts.put(numPoints*2, m2.getCenter());
@@ -213,16 +219,12 @@ public class MarkedPlane {
 
             if (prewarp != null) {
                 // remove pre-warp from total warp
-                CvMat tempWarp  = CvMat.take(3, 3);
+                CvMat tempWarp = tempWarp3x3.get();
                 cvInvert(prewarp, tempWarp);
                 cvMatMul(totalWarp, tempWarp, totalWarp);
-                tempWarp.pool();
             }
 //            System.out.println("totalWarp:\n" + totalWarp);
         }
-        srcPts.rows(markers.length*pointsPerMarker); srcPts.pool();
-        dstPts.rows(markers.length*pointsPerMarker); dstPts.pool();
         return rmse;
     }
-
 }

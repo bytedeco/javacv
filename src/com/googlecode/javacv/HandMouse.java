@@ -21,8 +21,8 @@
 package com.googlecode.javacv;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -135,6 +135,9 @@ public class HandMouse {
     private CvPoint pt1 = new CvPoint(), pt2 = new CvPoint();
 
     public void update() {
+        update(null);
+    }
+    public void update(IplImage[] intermediate) {
         if (aligner.getPyramidLevel() != settings.pyramidLevel) {
             aligner.setPyramidLevel(settings.pyramidLevel);
         }
@@ -150,6 +153,7 @@ public class HandMouse {
         int height   = residual.height();
         int channels = residual.nChannels();
         thresholdedImage = IplImage.createIfNotCompatible(thresholdedImage, roiMask);
+        cvResetImageROI(thresholdedImage);
 
         ByteBuffer roiMaskBuf = roiMask.getByteBuffer();
         FloatBuffer residualBuf = residual.getFloatBuffer();
@@ -209,8 +213,17 @@ public class HandMouse {
             }
         }
 
+        if (intermediate != null && intermediate[0] != null) {
+            cvCopy(thresholdedImage, intermediate[0]);
+        }
+
         JavaCV.hysteresisThreshold(thresholdedImage, thresholdedImage, 
                 255, 255*settings.thresholdLow/settings.thresholdHigh, 255);
+
+        if (intermediate != null && intermediate[1] != null) {
+            cvResetImageROI(intermediate[1]);
+            cvCopy(thresholdedImage, intermediate[1]);
+        }
 
         CvRect roi = aligner.getRoi();
         int roiX = roi.x(), roiY = roi.y();
@@ -339,23 +352,24 @@ public class HandMouse {
                 }
             }
 
-            cvSetZero(thresholdedImage);
-            cvFillPoly(thresholdedImage, contourPoints, new int[] { total }, 1, CvScalar.WHITE, 8, 0);
+            if (intermediate != null && intermediate[1] != null) {
+                cvSetImageROI(intermediate[1], roi);
+                cvCopy(intermediate[1], thresholdedImage);
+            } else {
+                cvSetZero(thresholdedImage);
+                cvFillPoly(thresholdedImage, contourPoints, new int[] { total }, 1, CvScalar.WHITE, 8, 0);
+            }
 
-            pt1.fill((byte)16, edgeX-10, edgeY-10); pt2.fill((byte)16, edgeX+10, edgeY+10);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.RED, 1, CV_AA, 16);
-            pt1.fill((byte)16, edgeX-10, edgeY+10); pt2.fill((byte)16, edgeX+10, edgeY-10);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.RED, 1, CV_AA, 16);
+            pt1.fill((byte)16, edgeX, edgeY);
+            cvCircle(thresholdedImage, pt1, 5<<16, CvScalar.GRAY, 2, 8, 16);
 
-            pt1.fill((byte)16, centerX-10, centerY-10); pt2.fill((byte)16, centerX+10, centerY+10);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.GREEN, 1, CV_AA, 16);
-            pt1.fill((byte)16, centerX-10, centerY+10); pt2.fill((byte)16, centerX+10, centerY-10);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.GREEN, 1, CV_AA, 16);
+            pt1.fill((byte)16, centerX-5, centerY-5); pt2.fill((byte)16, centerX+5, centerY+5);
+            cvRectangle(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
 
-            pt1.fill((byte)16, tipX-10, tipY-10); pt2.fill((byte)16, tipX+10, tipY+10);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.BLUE, 1, CV_AA, 16);
-            pt1.fill((byte)16, tipX-10, tipY+10); pt2.fill((byte)16, tipX+10, tipY-10);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.BLUE, 1, CV_AA, 16);
+            pt1.fill((byte)16, tipX-5, tipY-5); pt2.fill((byte)16, tipX+5, tipY+5);
+            cvLine(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
+            pt1.fill((byte)16, tipX-5, tipY+5); pt2.fill((byte)16, tipX+5, tipY-5);
+            cvLine(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
 
             tipX = (tipX+roiX)*(1<<settings.pyramidLevel);
             tipY = (tipY+roiY)*(1<<settings.pyramidLevel);

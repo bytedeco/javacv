@@ -258,7 +258,7 @@ public class GeometricCalibrator {
         return new CvMat[] { objectPoints, imagePoints, pointCounts };
     }
 
-    public static double computeReprojectionError(CvMat object_points,
+    public static double[] computeReprojectionError(CvMat object_points,
             CvMat image_points, CvMat point_counts, CvMat camera_matrix,
             CvMat dist_coeffs, CvMat rot_vects, CvMat trans_vects,
             CvMat per_view_errors ) {
@@ -266,14 +266,19 @@ public class GeometricCalibrator {
             image_points.cols(), image_points.type());
 
         int i, image_count = rot_vects.rows(), points_so_far = 0;
-        double total_err = 0, err;
+        double total_err = 0, max_err = 0, err;
+
+        CvMat object_points_i = new CvMat(),
+              image_points_i  = new CvMat(),
+              image_points2_i = new CvMat();
+        IntBuffer point_counts_buf = point_counts.getIntBuffer();
+        CvMat rot_vect = new CvMat(), trans_vect = new CvMat();
 
         for (i = 0; i < image_count; i++) {
-            CvMat object_points_i = new CvMat(), 
-                  image_points_i  = new CvMat(),
-                  image_points2_i = new CvMat();
-            int point_count = point_counts.getIntBuffer().get(i);
-            CvMat rot_vect = new CvMat(), trans_vect = new CvMat();
+            object_points_i.reset();
+            image_points_i .reset();
+            image_points2_i.reset();
+            int point_count = point_counts_buf.get(i);
 
             cvGetCols(object_points, object_points_i,
                     points_so_far, points_so_far + point_count);
@@ -293,12 +298,25 @@ public class GeometricCalibrator {
             if (per_view_errors != null)
                 per_view_errors.put(i, Math.sqrt(err/point_count));
             total_err += err;
+
+            for (int j = 0; j < point_count; j++) {
+                double x1 = image_points_i .get(0, j, 0);
+                double y1 = image_points_i .get(0, j, 1);
+                double x2 = image_points2_i.get(0, j, 0);
+                double y2 = image_points2_i.get(0, j, 1);
+                double dx = x1-x2;
+                double dy = y1-y2;
+                err = Math.sqrt(dx*dx + dy*dy);
+                if (err > max_err) {
+                    max_err = err;
+                }
+            }
         }
 
-        return Math.sqrt(total_err/points_so_far);
+        return new double[] { Math.sqrt(total_err/points_so_far), max_err };
     }
 
-    public double calibrate(boolean useCenters) {
+    public double[] calibrate(boolean useCenters) {
         ProjectiveDevice d = projectiveDevice;
         CalibrationSettings dsettings = (CalibrationSettings)d.getSettings();
 
@@ -336,19 +354,21 @@ public class GeometricCalibrator {
             cvCheckArr(d.extrParams,       CV_CHECK_QUIET, 0, 0) != 0) {
 
             d.reprojErrs = CvMat.create(1, allImageMarkers.size());
-            d.avgReprojErr = computeReprojectionError(points[0], points[1], points[2],
+            double[] err = computeReprojectionError(points[0], points[1], points[2],
                     d.cameraMatrix, d.distortionCoeffs, rotVects, transVects, d.reprojErrs);
-
+            d.avgReprojErr = err[0];
+            d.maxReprojErr = err[1];
 //            d.nominalDistance = d.getNominalDistance(markedPlane);
+            return err;
         } else {
-            d.avgReprojErr = -1;
             d.cameraMatrix = null;
+            d.avgReprojErr = -1;
+            d.maxReprojErr = -1;
+            return null;
         }
-
-        return d.avgReprojErr;
     }
 
-    public static double computeStereoError(CvMat imagePoints1, CvMat imagePoints2,
+    public static double[] computeStereoError(CvMat imagePoints1, CvMat imagePoints2,
             CvMat M1, CvMat D1, CvMat M2, CvMat D2, CvMat F) {
         // CALIBRATION QUALITY CHECK
         // because the output fundamental matrix implicitly
@@ -365,19 +385,25 @@ public class GeometricCalibrator {
         //imagePoints2.put(d2.undistort(imagePoints2.get()));
         cvComputeCorrespondEpilines(imagePoints1, 1, F, L1);
         cvComputeCorrespondEpilines(imagePoints2, 2, F, L2);
-        double avgErr = 0;
+        double avgErr = 0, maxErr = 0;
         CvMat p1 = imagePoints1, p2 = imagePoints2;
         for(int i = 0; i < N; i++ ) {
             double e1 = p1.get(0, i, 0)*L2.get(0, i, 0) +
                         p1.get(0, i, 1)*L2.get(0, i, 1) + L2.get(0, i, 2);
             double e2 = p2.get(0, i, 0)*L1.get(0, i, 0) +
                         p2.get(0, i, 1)*L1.get(0, i, 1) + L1.get(0, i, 2);
-            avgErr += e1*e1 + e2*e2;
+            double err = e1*e1 + e2*e2;
+            avgErr += err;
+
+            err = Math.sqrt(err);
+            if (err > maxErr) {
+                maxErr = err;
+            }
        }
-       return Math.sqrt(avgErr/N);
+       return new double[] { Math.sqrt(avgErr/N), maxErr };
     }
 
-    public double calibrateStereo(boolean useCenters, GeometricCalibrator peer) {
+    public double[] calibrateStereo(boolean useCenters, GeometricCalibrator peer) {
         ProjectiveDevice d = projectiveDevice;
         ProjectiveDevice dp = peer.projectiveDevice;
         CalibrationSettings dsettings = (CalibrationSettings)d.getSettings();
@@ -466,10 +492,13 @@ public class GeometricCalibrator {
 
         // compute and return epipolar error...
         d.avgEpipolarErr = 0.0;
-        return dp.avgEpipolarErr =
-                computeStereoError(imagePoints1Mat, imagePoints2Mat,
-                     d.cameraMatrix,  d.distortionCoeffs,
-                    dp.cameraMatrix, dp.distortionCoeffs, dp.F);
-    }
+        d.maxEpipolarErr = 0.0;
+        double err[] = computeStereoError(imagePoints1Mat, imagePoints2Mat,
+                 d.cameraMatrix,  d.distortionCoeffs,
+                dp.cameraMatrix, dp.distortionCoeffs, dp.F);
+        dp.avgEpipolarErr = err[0];
+        dp.maxEpipolarErr = err[1];
 
+        return err;
+    }
 }

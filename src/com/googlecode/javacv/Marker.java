@@ -62,9 +62,11 @@ public class Marker implements Cloneable {
 
     public double[] getCenter() {
         double x = 0, y = 0;
-if (false) {
+if (true) {
 // the centroid is not what we want as it does not remain at
 // the same physical point under projective transformations..
+// But it has the advantage of averaging noise better, and does
+// give better results
         for (int i = 0; i < 4; i++) {
             x += corners[2*i  ];
             y += corners[2*i+1];
@@ -105,16 +107,20 @@ if (false) {
     public void draw(IplImage image, CvScalar color, double scale, CvMat prewarp) {
         draw(image, color, scale, scale, prewarp);
     }
+    private static ThreadLocal<CvMat>
+            H3x3      = CvMat.createThreadLocal(3, 3),
+            srcPts4x1 = CvMat.createThreadLocal(4, 1, CV_64F, 2),
+            dstPts4x1 = CvMat.createThreadLocal(4, 1, CV_64F, 2);
     public void draw(IplImage image, CvScalar color, double scaleX, double scaleY, CvMat prewarp) {
-        CvMat H = CvMat.take(3, 3);
+        CvMat H = H3x3.get();
         JavaCV.getPerspectiveTransform(src, corners, H);
         if (prewarp != null) {
             cvGEMM(prewarp, H, 1, null, 0, H, 0);
         }
         IplImage  marker = getImage();
         ByteBuffer  mbuf = marker.getByteBuffer();
-        CvMat     srcPts = CvMat.take(4, 1, CV_64F, 2);
-        CvMat     dstPts = CvMat.take(4, 1, CV_64F, 2);
+        CvMat     srcPts = srcPts4x1.get();
+        CvMat     dstPts = dstPts4x1.get();
         CvPoint  tempPts = new CvPoint(4);
 
         int h = marker.height();
@@ -151,9 +157,6 @@ if (false) {
                 }
             }
         }
-        dstPts.pool();
-        srcPts.pool();
-        H     .pool();
     }
 
     public static class ArraySettings extends BaseChildSettings {
@@ -253,14 +256,13 @@ if (false) {
     }
 
     public static void applyWarp(Marker[] markers, CvMat warp) {
-        CvMat pts = CvMat.take(4, 1, CV_64F, 2);
+        CvMat pts = srcPts4x1.get();
 
         for (Marker m : markers) {
             pts.put(m.corners);
             cvPerspectiveTransform(pts, pts, warp);
             pts.get(m.corners);
         }
-        pts.pool();
     }
 
     @Override public String toString() {

@@ -143,6 +143,9 @@ public class ObjectFinder {
             objectKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
             objectDescriptors[i] = cvGetSeqElem(descriptors, i).asByteBuffer(elem_size).asFloatBuffer();
         }
+        localpt1  = CvMat.createThreadLocal(1, objectDescriptors.length, CV_32F, 2);
+        localpt2  = CvMat.createThreadLocal(1, objectDescriptors.length, CV_32F, 2);
+        localmask = CvMat.createThreadLocal(1, objectDescriptors.length, CV_8U,  1);
         logger.info(total + " object descriptors");
     }
 
@@ -152,6 +155,7 @@ public class ObjectFinder {
     private CvMemStorage tempStorage = CvMemStorage.create();
     private CvSURFPoint[] objectKeypoints   = null;
     private FloatBuffer[] objectDescriptors = null;
+    private ThreadLocal<CvMat> localpt1 = null, localpt2 = null, localmask = null;
 
     public double[] find(IplImage image) {
         CvSeq keypoints = new CvSeq(null), descriptors = new CvSeq(null);
@@ -231,6 +235,8 @@ public class ObjectFinder {
     }
 
     /* a rough implementation for object location */
+    private static ThreadLocal<CvMat>
+            H3x3 = CvMat.createThreadLocal(3, 3);
     private double[] locatePlanarObject(CvSURFPoint[] objectKeypoints, FloatBuffer[] objectDescriptors,
             CvSURFPoint[] imageKeypoints, FloatBuffer[] imageDescriptors, double[] srcCorners) {
         ArrayList<Integer> ptpairs = findPairs(objectKeypoints, objectDescriptors, imageKeypoints, imageDescriptors);
@@ -240,12 +246,9 @@ public class ObjectFinder {
             return null;
         }
 
-        CvMat pt1  = CvMat.take(1, objectDescriptors.length, CV_32F, 2);
-        CvMat pt2  = CvMat.take(1, objectDescriptors.length, CV_32F, 2);
-        CvMat mask = CvMat.take(1, objectDescriptors.length, CV_8U,  1);
-        pt1.cols (n);
-        pt2.cols (n);
-        mask.cols(n);
+        CvMat pt1  = localpt1 .get(); pt1 .cols(n);
+        CvMat pt2  = localpt2 .get(); pt2 .cols(n);
+        CvMat mask = localmask.get(); mask.cols(n);
         for (int i = 0; i < n; i++) {
             CvPoint2D32f p1 = objectKeypoints[ptpairs.get(i*2)].pt();
             pt1.put(i*2, p1.x()); pt1.put(i*2+1, p1.y());
@@ -253,7 +256,7 @@ public class ObjectFinder {
             pt2.put(i*2, p2.x()); pt2.put(i*2+1, p2.y());
         }
 
-        CvMat H = CvMat.take(3, 3, CV_64F, 1);
+        CvMat H = H3x3.get();
         if (cvFindHomography(pt1, pt2, H, CV_RANSAC, settings.ransacReprojThreshold, mask) == 0) {
             return null;
         }
@@ -275,11 +278,6 @@ public class ObjectFinder {
         pt1.cols (objectDescriptors.length);
         pt2.cols (objectDescriptors.length);
         mask.cols(objectDescriptors.length);
-        pt1.pool();
-        pt2.pool();
-        mask.pool();
-        H.pool();
         return dstCorners;
     }
-
 }

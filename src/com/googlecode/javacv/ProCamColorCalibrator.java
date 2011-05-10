@@ -186,6 +186,12 @@ public class ProCamColorCalibrator {
 //
 //    }
 
+    private static ThreadLocal<CvMat>
+            H3x3 = CvMat.createThreadLocal(3, 3),
+            R3x3 = CvMat.createThreadLocal(3, 3),
+            t3x1 = CvMat.createThreadLocal(3, 1),
+            n3x1 = CvMat.createThreadLocal(3, 1),
+            z3x1 = CvMat.createThreadLocal(3, 1);
     public boolean processCameraImage(IplImage cameraImage) {
         if (undistImage == null ||
                 undistImage.width()  != cameraImage.width()  ||
@@ -203,14 +209,11 @@ public class ProCamColorCalibrator {
                     IPL_DEPTH_8U, 1, cameraImage.origin());
         }
 
-        CvMat H = CvMat.take(3, 3);
-//        CvMat r1 = CvMat.take(3, 1);
-//        CvMat r2 = CvMat.take(3, 1);
-//        CvMat r3 = CvMat.take(3, 1);
-        CvMat R = CvMat.take(3, 3);
-        CvMat t = CvMat.take(3, 1);
-        CvMat n = CvMat.take(3, 1);
-        CvMat z = CvMat.take(3, 1);
+        CvMat H = H3x3.get();
+        CvMat R = R3x3.get();
+        CvMat t = t3x1.get();
+        CvMat n = n3x1.get();
+        CvMat z = z3x1.get();
         z.put(0.0, 0.0, 1.0);
 
         // detect the markers in the camera image, to
@@ -308,15 +311,6 @@ public class ProCamColorCalibrator {
             return true;
         }
 
-        H.pool();
-//        r1.pool();
-//        r2.pool();
-//        r3.pool();
-        R.pool();
-        t.pool();
-        n.pool();
-        z.pool();
-
         return false;
     }
 
@@ -334,5 +328,4 @@ public class ProCamColorCalibrator {
         counter = 0;
         return projector.avgColorErr;
     }
-
 }

@@ -81,8 +81,6 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayDeque;
-import java.util.HashMap;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.FloatPointer;
@@ -1081,6 +1079,30 @@ public class opencv_core {
             return createHeader(rows, cols, CV_64F, 1);
         }
 
+        public static ThreadLocal<CvMat> createThreadLocal(final int rows, final int cols, final int type) {
+            return new ThreadLocal<CvMat>() { @Override protected CvMat initialValue() {
+                return CvMat.create(rows, cols, type);
+            }};
+        }
+        public static ThreadLocal<CvMat> createThreadLocal(int rows, int cols, int depth, int channels) {
+            return createThreadLocal(rows, cols, CV_MAKETYPE(depth, channels));
+        }
+        public static ThreadLocal<CvMat> createThreadLocal(int rows, int cols) {
+            return createThreadLocal(rows, cols, CV_64F, 1);
+        }
+
+        public static ThreadLocal<CvMat> createHeaderThreadLocal(final int rows, final int cols, final int type) {
+            return new ThreadLocal<CvMat>() { @Override protected CvMat initialValue() {
+                return CvMat.createHeader(rows, cols, type);
+            }};
+        }
+        public static ThreadLocal<CvMat> createHeaderThreadLocal(int rows, int cols, int depth, int channels) {
+            return createHeaderThreadLocal(rows, cols, CV_MAKETYPE(depth, channels));
+        }
+        public static ThreadLocal<CvMat> createHeaderThreadLocal(int rows, int cols) {
+            return createHeaderThreadLocal(rows, cols, CV_64F, 1);
+        }
+
         @Override public CvMat clone() {
             CvMat m = cvCloneMat(this);
             if (m != null) {
@@ -1153,6 +1175,15 @@ public class opencv_core {
         }
 
         public CvSize cvSize() { return opencv_core.cvSize(cols(), rows()); }
+
+        public void reset() {
+            fullSize = 0;
+            byteBuffer = null;
+            shortBuffer = null;
+            intBuffer = null;
+            floatBuffer = null;
+            doubleBuffer = null;
+        }
 
         private int fullSize = 0;
         private int fullSize() { return fullSize > 0 ? fullSize : (fullSize = size()); }
@@ -1366,42 +1397,6 @@ public class opencv_core {
                 }
             }
         }
-
-
-        public static CvMat take(int rows, int cols, int type) {
-            synchronized (pool) {
-                ArrayDeque<CvMat> deque = getDeque(rows, cols, type);
-                if (deque.isEmpty()) {
-                    return create(rows, cols, type);
-                } else {
-                    return deque.pop();
-                }
-            }
-        }
-        public static CvMat take(int rows, int cols, int depth, int channels) {
-            return take(rows, cols, CV_MAKETYPE(depth, channels));
-        }
-        public static CvMat take(int rows, int cols) {
-            return take(rows, cols, CV_64F, 1);
-        }
-        public void pool() {
-            synchronized (pool) {
-                ArrayDeque<CvMat> deque = getDeque(rows(), cols(), maskedType());
-                deque.push(this);
-            }
-        }
-        private static final HashMap<Long, ArrayDeque<CvMat>> pool =
-                new HashMap<Long, ArrayDeque<CvMat>>();
-        private static ArrayDeque<CvMat> getDeque(int rows, int cols, int type) {
-            long key = (rows<<36) | (cols<<9) | (type);
-            ArrayDeque<CvMat> deque = pool.get(key);
-            if (deque == null) {
-                deque = new ArrayDeque<CvMat>();
-                pool.put(key, deque);
-            }
-            return deque;
-        }
-
 
         @Override public String toString() {
             return toString(0);

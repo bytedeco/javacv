@@ -38,6 +38,7 @@ public abstract class FrameGrabber {
     static {
         list.add(DC1394FrameGrabber.class);
         list.add(FlyCaptureFrameGrabber.class);
+        list.add(VideoInputFrameGrabber.class);
         list.add(OpenCVFrameGrabber.class);
         list.add(FFmpegFrameGrabber.class);
     }

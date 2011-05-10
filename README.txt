@@ -1,7 +1,7 @@
 =JavaCV=
 
 ==Introduction==
-JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: OpenCV, FFmpeg, libdc1394, PGR FlyCapture, and ARToolKitPlus. The following classes, found under the `com.googlecode.javacv.cpp` package namespace, expose their complete APIs: `opencv_core`, `opencv_imgproc`, `opencv_video`, `opencv_features2d`, `opencv_calib3d`, `opencv_objdetect`, `opencv_highgui`, `opencv_legacy`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, `swscale`, `dc1394`, `PGRFlyCapture`, and `ARToolKitPlus`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform, including Android. 
+JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: [http://opencv.willowgarage.com/ OpenCV], [http://www.ffmpeg.org/ FFmpeg], [http://damien.douxchamps.net/ieee1394/libdc1394/ libdc1394], [http://www.ptgrey.com/products/pgrflycapture/ PGR FlyCapture], [http://muonics.net/school/spring05/videoInput/ videoInput], and [http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php ARToolKitPlus]. The following classes, found under the `com.googlecode.javacv.cpp` package namespace, expose their complete APIs: `opencv_core`, `opencv_imgproc`, `opencv_video`, `opencv_features2d`, `opencv_calib3d`, `opencv_objdetect`, `opencv_highgui`, `opencv_legacy`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, `swscale`, `dc1394`, `PGRFlyCapture`, `videoInputLib`, and `ARToolKitPlus`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform, including Android. 
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
 
@@ -19,12 +19,13 @@ To use JavaCV, you will need to download and install the following software:
   * IBM JDK 6  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE 6 for Mac OS X  http://developer.apple.com/java/  etc.
  * OpenCV 2.2  http://sourceforge.net/projects/opencvlibrary/files/
-  * Precompiled for Android  http://code.google.com/p/javacv/downloads/list
+  * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 Further, although not always required, some functionality of JavaCV also relies on:
  * FFmpeg 0.6.x  http://ffmpeg.org/download.html
-  * Precompiled for Windows  http://ffmpeg.arrozcru.org/autobuilds/
-  * Precompiled for Android  http://code.google.com/p/javacv/downloads/list
+  * Precompiled for Windows x86     http://hawkeye.arrozcru.org/builds/win32/shared/ (last build compatible with FFmpeg 0.6: 18-Apr-2011)
+  * Precompiled for Windows x86-64  http://hawkeye.arrozcru.org/builds/win64/shared/ (last build compatible with FFmpeg 0.6: 18-Apr-2011)
+  * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
  * PGR FlyCapture 1.7~2.1 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * Android SDK API 8~11  http://developer.android.com/sdk/
@@ -40,15 +41,15 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 ==Quick Start for OpenCV==
 First, put `javacpp.jar`, `javacv.jar`, and `javacv-*.jar` somewhere in your classpath, and make sure that the library files of OpenCV can be found either in their default installation directory or in the system PATH, which includes the current directory under Windows. Here are some more specific instructions for common cases:
 
-NetBeans (Java SE):
+NetBeans (Java SE 6):
  * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
  * Locate the JAR files, select them, and click OK.
 
-Eclipse (Java SE):
+Eclipse (Java SE 6):
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs..."
  * Locate the JAR files, select them, and click OK.
 
-Eclipse (Android 2.2 on ARMv7 or newer versions):
+Eclipse (Android 2.2 or newer):
  * Follow the instructions on this page: http://developer.android.com/guide/tutorials/hello-world.html
  * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
@@ -110,7 +111,8 @@ public class Demo {
         CanvasFrame frame = new CanvasFrame("Some Title");
 
         // OpenCVFrameGrabber uses opencv_highgui, but other more versatile FrameGrabbers 
-        // include DC1394FrameGrabber, FlyCaptureFrameGrabber, and FFmpegFrameGrabber.
+        // include DC1394FrameGrabber, FlyCaptureFrameGrabber, VideoInputFrameGrabber and 
+        // FFmpegFrameGrabber.
         FrameGrabber grabber = new OpenCVFrameGrabber(0);
         grabber.start();
 
@@ -202,6 +204,14 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===May 11, 2011===
+ * Removed `CvMat` object pooling in favor of more efficient `ThreadLocal` objects created by `CvMat.createThreadLocal()`
+ * Changed `Marker.getCenter()` back to the centroid, because it has better noise averaging properties and gives in practice more accurate results than the actual center
+ * Added hack to `OpenCVFrameGrabber.start()` to wait for `cvRetrieveFrame()` to return something else than `null` under Mac OS X
+ * FFmpeg now works properly on Windows and Android (issue #63) with newer binaries
+ * New `videoInputLib` wrapper and corresponding `VideoInputFrameGrabber` to capture using DirectShow, useful under Windows 7 where OpenCV and FFmpeg can fail to capture using Video for Windows (issue #58)
+ * `GeometricCalibrator` now reports the maximum errors in addition to the average (RMS) errors
+
 ===April 7, 2011===
  * Added a `format` property to `CameraDevice`, `FrameGrabber`, and `FrameRecorder`, mostly useful for `FFmpegFrameGrabber`, where interesting values include "dv1394", "mjpeg", "video4linux2", "vfwcap", and "x11grab"
  * `OpenCVFrameRecorder` now uses `CV_FOURCC_PROMPT` under Windows as default since `CV_FOURCC_DEFAULT` crashes (issue #49)

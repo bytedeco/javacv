@@ -64,6 +64,10 @@ public class ProjectiveTransformer implements ImageTransformer {
         this(null, null, null, null, null, referencePoints, null);
     }
 
+    private static ThreadLocal<CvMat>
+            H3x3   = CvMat.createThreadLocal(3, 3),
+            pts4x1 = CvMat.createThreadLocal(4, 1, CV_64F, 2);
+
     private CvMat K1 = null, K2 = null, invK1 = null, invK2 = null, R = null, t = null, n = null;
     private double[] referencePoints1 = null, referencePoints2 = null;
     private CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
@@ -139,7 +143,7 @@ public class ProjectiveTransformer implements ImageTransformer {
             return;
         }
 
-        final CvMat H = CvMat.take(3, 3);
+        CvMat H = H3x3.get();
         prepareHomography(H, pyramidLevel, p, true);
 
         // use ROI not as a sub-image, but as the region we want to fill in
@@ -171,23 +175,18 @@ public class ProjectiveTransformer implements ImageTransformer {
         cvWarpPerspective(srcImage, dstImage, H, CV_INTER_LINEAR |
                 CV_WARP_FILL_OUTLIERS | (inverse ? CV_WARP_INVERSE_MAP : 0),
                 getFillColor());
-
-        H.pool();
     }
 
     public void transform(CvMat srcPts, CvMat dstPts, ImageTransformer.Parameters parameters, boolean inverse) {
         Parameters p = ((Parameters)parameters);
         CvMat H;
         if (inverse) {
-            H = CvMat.take(3, 3);
+            H = H3x3.get();
             cvInvert(p.getH(), H);
         } else {
             H = p.getH();
         }
         cvPerspectiveTransform(srcPts, dstPts, H);
-        if (inverse) {
-            H.pool();
-        }
     }
 
     public void transform(Data[] data, CvRect roi, ImageTransformer.Parameters[] parameters, boolean[] inverses) {
@@ -412,11 +411,10 @@ public class ProjectiveTransformer implements ImageTransformer {
                     }
                 } else {
                     // 4 point parametrization
-                    CvMat pts = CvMat.take(4, 1, CV_64F, 2);
+                    CvMat pts = pts4x1.get();
                     pts.put(referencePoints1);
                     cvPerspectiveTransform(pts, pts, H);
                     pts.get(projectiveParameters);
-                    pts.pool();
                 }
                 setUpdateNeeded(true);
             } else {

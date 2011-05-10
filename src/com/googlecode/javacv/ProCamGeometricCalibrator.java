@@ -305,9 +305,11 @@ public class ProCamGeometricCalibrator {
     public void addMarkers(Marker[] imagedBoardMarkers, Marker[] imagedProjectorMarkers) {
         addMarkers(imagedBoardMarkers, imagedProjectorMarkers, 0);
     }
+    private static ThreadLocal<CvMat>
+            tempWarp3x3 = CvMat.createThreadLocal(3, 3);
     public void addMarkers(Marker[] imagedBoardMarkers, 
             Marker[] imagedProjectorMarkers, int cameraNumber) {
-        CvMat tempWarp = CvMat.take(3, 3);
+        CvMat tempWarp = tempWarp3x3.get();
 
         if (!settings.addIntersectionOnly) {
             cameraCalibrators[cameraNumber].addMarkers(boardPlane.getMarkers(),
@@ -367,8 +369,6 @@ public class ProCamGeometricCalibrator {
 
         // we added the detected markers, so save last computed warp too...
         cvCopy(boardWarp[cameraNumber], lastBoardWarp[cameraNumber]);
-
-        tempWarp.pool();
     }
 
     public IplImage getProjectorImage() {
@@ -472,7 +472,7 @@ public class ProCamGeometricCalibrator {
 
         // calibrate projector
         projectorCalibrator.setAllObjectMarkers(allUndistortedProjectorMarkers);
-        double avgProjReprojErr = projectorCalibrator.calibrate(useCenters);
+        double[] reprojErr = projectorCalibrator.calibrate(useCenters);
 //        projectorCalibrator.getProjectiveDevice().nominalDistance =
 //                projectorCalibrator.getProjectiveDevice().getNominalDistance(boardPlane);
 
@@ -482,7 +482,7 @@ public class ProCamGeometricCalibrator {
                              im = calibratorAtOrigin.getAllImageMarkers();
         calibratorAtOrigin.setAllObjectMarkers(undistortedProjectorMarkersAtOrigin);
         calibratorAtOrigin.setAllImageMarkers(distortedProjectorMarkersAtOrigin);
-        double avgStereoReprojErr = calibratorAtOrigin.calibrateStereo(useCenters, projectorCalibrator);
+        double[] epipolarErr = calibratorAtOrigin.calibrateStereo(useCenters, projectorCalibrator);
 
         // reset everything as it was before we started, so we get the same
         // result if called a second time..
@@ -490,7 +490,7 @@ public class ProCamGeometricCalibrator {
         calibratorAtOrigin.setAllObjectMarkers(om);
         calibratorAtOrigin.setAllImageMarkers(im);
 
-        return new double[] { avgProjReprojErr, avgStereoReprojErr };
+        return new double[] { reprojErr[0], reprojErr[1], epipolarErr[0], epipolarErr[1] };
     }
 
 }

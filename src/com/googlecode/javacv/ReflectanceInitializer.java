@@ -56,11 +56,14 @@ public class ReflectanceInitializer {
         // capture "white" image (projector illumination + ambient light)
         cvSet(projectorImages[1], CvScalar.ONE);
         // capture image with some texture easy to register... ugh...
-        CvMat H = CvMat.take(3, 3);
+        CvMat H = mat3x3.get();
         projectorDevice.getRectifyingHomography(cameraDevice, H);
         JavaCV.fractalTriangleWave(projectorImages[2], H);
-        H.pool();
     }
+
+    private static ThreadLocal<CvMat>
+            mat3x1 = CvMat.createThreadLocal(3, 1),
+            mat3x3 = CvMat.createThreadLocal(3, 3);
 
     private GNImageAligner.Settings alignerSettings;
     private int smoothingSize;
@@ -94,8 +97,8 @@ public class ReflectanceInitializer {
 
         // remove distortion caused by the mixing matrix of the projector light
         // and recover (very very smooth) reflectance map
-        CvMat p    = CvMat.take(3, 1);
-        CvMat invp = CvMat.take(3, 3);
+        CvMat p    = mat3x1.get();
+        CvMat invp = mat3x3.get();
         p.put(1.0, 1.0, 1.0); // white
         cvMatMul(projectorDevice.colorMixingMatrix, p, p);
         invp.put(1/p.get(0), 0, 0,
@@ -142,8 +145,6 @@ public class ReflectanceInitializer {
         cvErode(roiMask, roiMask, null, 15);
         cvSet(reflectance, CvScalar.ZERO, roiMask);
 
-        invp.pool();
-        p.pool();
         return reflectance;
     }
 

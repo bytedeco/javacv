@@ -299,11 +299,11 @@ public class ProjectiveDevice {
 
     public CvMat cameraMatrix = null, distortionCoeffs = null,
                  extrParams = null, reprojErrs = null;
-    public double avgReprojErr;
+    public double avgReprojErr, maxReprojErr;
 //    public double nominalDistance = 0;
 
     public CvMat R = null, T = null, E = null, F = null;
-    public double avgEpipolarErr;
+    public double avgEpipolarErr, maxEpipolarErr;
 
     public String colorOrder = "BGR";
     public CvMat colorMixingMatrix = null, additiveLight = null;
@@ -568,8 +568,10 @@ public class ProjectiveDevice {
     //                                               [  0  0  0  ]
     // where plane = [ n | d ]
     // B is a 4x3 matrix
+    private static ThreadLocal<CvMat>
+            temp3x3 = CvMat.createThreadLocal(3, 3);
     public CvMat getBackProjectionMatrix(CvMat n, double d, CvMat B) {
-        CvMat temp = CvMat.take(3, 3);
+        CvMat temp = temp3x3.get();
 
         temp.cols(1); temp.step(temp.step()/3);
         B.rows(3);
@@ -590,16 +592,19 @@ public class ProjectiveDevice {
         cvMatMul(B, temp, B);
         cvConvertScale(B, B, 1/B.get(11), 0);
 
-        temp.pool();
         return B;
     }
 
+    private static ThreadLocal<CvMat>
+            B4x3 = CvMat.createThreadLocal(4, 3),
+            a4x1 = CvMat.createThreadLocal(4, 1),
+            t3x1 = CvMat.createThreadLocal(3, 1);
     public CvMat getFrontoParallelH(double[] pts, CvMat n, CvMat H) {
-        CvMat B = CvMat.take(4, 3), a = CvMat.take(4, 1), t = CvMat.take(3, 1);
+        CvMat B = B4x3.get(), a = a4x1.get(), t = t3x1.get();
 
         // compute rotation from n to z-axis
         double[] dir = JavaCV.unitize(-n.get(1), n.get(0));
-        double theta = Math.acos(n.get(2)/JavaCV.norm(n));
+        double theta = Math.acos(n.get(2)/JavaCV.norm(n.get()));
         t.put(theta*dir[0], theta*dir[1], 0.0);
         cvRodrigues2(t, H, null);
 
@@ -623,18 +628,22 @@ public class ProjectiveDevice {
         H.put(5, a.get(1)/a.get(3));
         H.put(8, a.get(2)/a.get(3));
 
-        t.pool(); a.pool(); B.pool();
         return H;
     }
 
     // returns a homography that can be applied to pixel coordinates
+    private static ThreadLocal<CvMat>
+            relativeR3x3 = CvMat.createThreadLocal(3, 3),
+            relativeT3x1 = CvMat.createThreadLocal(3, 1),
+            R13x3 = CvMat.createThreadLocal(3, 3), P13x4 = CvMat.createThreadLocal(3, 4),
+            R23x3 = CvMat.createThreadLocal(3, 3), P23x4 = CvMat.createThreadLocal(3, 4);
     public CvMat getRectifyingHomography(ProjectiveDevice peer, CvMat H) {
-        CvMat relativeR = CvMat.take(3, 3), relativeT = CvMat.take(3, 1);
+        CvMat relativeR = relativeR3x3.get(), relativeT = relativeT3x1.get();
         cvGEMM(R,         peer.R,  1,  null, 0,  relativeR, CV_GEMM_B_T);
         cvGEMM(relativeR, peer.T, -1,  T,    1,  relativeT, 0);
 
-        CvMat R1 = CvMat.take(3, 3); CvMat P1 = CvMat.take(3, 4);
-        CvMat R2 = CvMat.take(3, 3); CvMat P2 = CvMat.take(3, 4);
+        CvMat R1 = R13x3.get(); CvMat P1 = P13x4.get();
+        CvMat R2 = R23x3.get(); CvMat P2 = P23x4.get();
         CvSize imageSize = cvSize((peer.imageWidth  + imageWidth )/2,
                                   (peer.imageHeight + imageHeight)/2); // ?
         cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
@@ -645,9 +654,6 @@ public class ProjectiveDevice {
         cvInvert(cameraMatrix, R1);
         cvMatMul(R2, R1, H);
 
-        R1.pool(); P1.pool();
-        R2.pool(); P2.pool();
-        relativeR.pool(); relativeT.pool();
         return H;
     }
 
@@ -734,6 +740,7 @@ public class ProjectiveDevice {
         if (reprojErrs != null)
             cvWrite(fs, "reprojErrs", reprojErrs, a);
         cvWriteReal(fs, "avgReprojErr", avgReprojErr);
+        cvWriteReal(fs, "maxReprojErr", maxReprojErr);
 //        cvWriteReal(fs, "nominalDistance", nominalDistance);
         if (R != null)
             cvWrite(fs, "R", R, a);
@@ -744,6 +751,7 @@ public class ProjectiveDevice {
         if (F != null)
             cvWrite(fs, "F", F, a);
         cvWriteReal(fs, "avgEpipolarErr", avgEpipolarErr);
+        cvWriteReal(fs, "maxEpipolarErr", maxEpipolarErr);
 
         cvWriteString(fs, "colorOrder", colorOrder, 0);
         if (colorMixingMatrix != null)
@@ -791,6 +799,7 @@ public class ProjectiveDevice {
         p = cvReadByName(fs, fn, "reprojErrs", a);
         reprojErrs = p == null ? null : new CvMat(p);
         avgReprojErr = cvReadRealByName(fs, fn, "avgReprojErr", avgReprojErr);
+        maxReprojErr = cvReadRealByName(fs, fn, "maxReprojErr", maxReprojErr);
 //        nominalDistance = cvReadRealByName(fs, fn, "nominalDistance", nominalDistance);
         p = cvReadByName(fs, fn, "R", a);
         R = p == null ? null : new CvMat(p);
@@ -801,6 +810,7 @@ public class ProjectiveDevice {
         p = cvReadByName(fs, fn, "F", a);
         F = p == null ? null : new CvMat(p);
         avgEpipolarErr = cvReadRealByName(fs, fn, "avgEpipolarErr", avgEpipolarErr);
+        maxEpipolarErr = cvReadRealByName(fs, fn, "maxEpipolarErr", maxEpipolarErr);
 
         colorOrder = cvReadStringByName(fs, fn, "colorOrder", colorOrder);
         p = cvReadByName(fs, fn, "colorMixingMatrix", a);
@@ -822,13 +832,13 @@ public class ProjectiveDevice {
         "----------\n" +
         "camera matrix = " + (cameraMatrix == null ? "null" : cameraMatrix.toString(16)) + "\n" +
         "distortion coefficients = " + (distortionCoeffs == null ? "null" : distortionCoeffs) + "\n" +
-        "reprojection RMSE (pixels) = " + (float)avgReprojErr + "\n\n" +
+        "reprojection RMS/max error (pixels) = " + (float)avgReprojErr + " / " + (float)maxReprojErr + "\n\n" +
 
         "Extrinsics\n" +
         "----------\n" +
         "rotation = " + (R == null ? "null" : R.toString(11)) + "\n" +
         "translation = " + (T == null ? "null" : T.toString(14)) + "\n" +
-        "epipolar RMSE (pixels) = " + (float)avgEpipolarErr + "\n\n" +
+        "epipolar RMS/max error (pixels) = " + (float)avgEpipolarErr + " / " + (float)maxEpipolarErr + "\n\n" +
 
         "Color\n" +
         "-----\n" +

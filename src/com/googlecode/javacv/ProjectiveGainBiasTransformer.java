@@ -43,6 +43,10 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         this.numBiases = numBiases;
     }
 
+    private static ThreadLocal<CvMat>
+            X24x4   = CvMat.createThreadLocal(4, 4),
+            temp3x1 = CvMat.createThreadLocal(3, 1);
+
     private CvMat X = null;
     private int numGains = 0, numBiases = 0;
 
@@ -68,7 +72,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
             return;
         }
 
-        CvMat X2 = CvMat.take(4, 4);
+        CvMat X2 = X24x4.get();
         prepareTransform(X2, pyramidLevel, p, inverse);
         X2.rows(3);
         // do color transformation
@@ -82,7 +86,6 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         X2.put(2, 3, X2.get(2, 3)*dstImage.highValue());
         cvTransform(srcImage, dstImage, X2, null);
         X2.rows(4);
-        X2.pool();
     }
 
     protected void prepareTransform(CvMat X2, int pyramidLevel, Parameters p, boolean inverse) {
@@ -312,9 +315,8 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
             CvMat A2 = pp2.getA(), b2 = pp2.getB();
 
             if (b != null) {
-                CvMat temp = null;
                 if (pp1.fakeIdentity && X != null) {
-                    temp = CvMat.take(3, 1);
+                    CvMat temp = temp3x1.get();
                     cvMatMul(X, b1, temp);
                     b1 = temp;
                 }
@@ -327,10 +329,6 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                     cvMatMul(A2, b1, b);
                 } else {
                     cvGEMM(A2, b1, 1.0,  b2, 1.0,  b, 0);
-                }
-
-                if (temp != null) {
-                    temp.pool();
                 }
             }
 

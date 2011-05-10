@@ -291,10 +291,14 @@ public class ProjectorDevice extends ProjectiveDevice {
         return c;
     }
 
+    private static ThreadLocal<CvMat>
+            B4x3  = CvMat.createThreadLocal(4, 3),
+            x23x1 = CvMat.createThreadLocal(3, 1),
+            x34x1 = CvMat.createThreadLocal(4, 1);
     public double getAttenuation(double x, double y, CvMat n, double d) {
-        CvMat B  = CvMat.take(4, 3);
-        CvMat x2 = CvMat.take(3, 1);
-        CvMat x3 = CvMat.take(4, 1);
+        CvMat B  = B4x3.get();
+        CvMat x2 = x23x1.get();
+        CvMat x3 = x34x1.get();
 
         getBackProjectionMatrix(n, d, B);
         x2.put(x, y, 1);
@@ -315,10 +319,6 @@ public class ProjectorDevice extends ProjectiveDevice {
         double attenuation = cosangle/distance2;
 //        System.out.println(distance + " " + cosangle + " " + attenuation);
         x3.rows(4);
-
-        x3.pool();
-        x2.pool();
-        B .pool();
 
         return attenuation;
     }

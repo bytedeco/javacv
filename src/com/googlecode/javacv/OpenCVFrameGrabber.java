@@ -72,6 +72,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         } catch (Exception ex) { }
     }
 
+    private static final boolean macosx = Loader.getPlatformName().startsWith("macosx");
     private int deviceNumber = 0;
     private String filename = null;
     private CvCapture capture = null;
@@ -115,6 +116,15 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             cvSetCaptureProperty(capture, CV_CAP_PROP_FORMAT, bpp); // ??
         }
         cvSetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB, colorMode == ColorMode.BGR ? 1 : 0);
+
+        if (macosx) {
+            // Before cvRetrieveFrame() starts returning something else then null
+            // QTKit sometimes requires some "warm-up" time for some reason...
+            int count = 0;
+            while (count++ < 100 && cvGrabFrame(capture) != 0 && cvRetrieveFrame(capture) == null) {
+                Thread.sleep(100);
+            }
+        }
 
         if (!triggerMode) {
             trigger();
