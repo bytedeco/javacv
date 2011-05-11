@@ -74,10 +74,9 @@ import static com.googlecode.javacpp.Loader.*;
  *
  * @author Samuel Audet
  */
-@Platform(value="windows", include="<videoInput.cpp>", link={"dxguid", "ole32", "oleaut32", "strmiids", "uuid"},
+@Platform(value="windows", include="<videoInput.cpp>", link={"ole32", "oleaut32", "amstrmid", "strmiids", "uuid"},
     includepath={"../videoInput0.1995/videoInputSrcAndDemos/libs/videoInput/",
-                 "../videoInput0.1995/videoInputSrcAndDemos/libs/DShow/Include/"}, 
-       linkpath= "../videoInput0.1995/videoInputSrcAndDemos/libs/DShow/lib/")
+                 "../videoInput0.1995/videoInputSrcAndDemos/libs/DShow/Include/"})
 public class videoInputLib {
     static { load(); }
 
