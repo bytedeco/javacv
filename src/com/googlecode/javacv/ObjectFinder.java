@@ -141,7 +141,7 @@ public class ObjectFinder {
         objectDescriptors = new FloatBuffer[total];
         for (int i = 0; i < total; i++ ) {
             objectKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
-            objectDescriptors[i] = cvGetSeqElem(descriptors, i).asByteBuffer(elem_size).asFloatBuffer();
+            objectDescriptors[i] = cvGetSeqElem(descriptors, i).capacity(elem_size).asByteBuffer().asFloatBuffer();
         }
         localpt1  = CvMat.createThreadLocal(1, objectDescriptors.length, CV_32F, 2);
         localpt2  = CvMat.createThreadLocal(1, objectDescriptors.length, CV_32F, 2);
@@ -167,7 +167,7 @@ public class ObjectFinder {
         FloatBuffer[] imageDescriptors = new FloatBuffer[total];
         for (int i = 0; i < total; i++ ) {
             imageKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
-            imageDescriptors[i] = cvGetSeqElem(descriptors, i).asByteBuffer(elem_size).asFloatBuffer();
+            imageDescriptors[i] = cvGetSeqElem(descriptors, i).capacity(elem_size).asByteBuffer().asFloatBuffer();
         }
         logger.info(total + " image descriptors");
 

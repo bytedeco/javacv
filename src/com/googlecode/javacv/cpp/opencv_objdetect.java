@@ -58,12 +58,17 @@ package com.googlecode.javacv.cpp;
 
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.IntPointer;
+import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
+import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Name;
+import com.googlecode.javacpp.annotation.NoOffset;
+import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
@@ -76,10 +81,10 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include="<opencv2/objdetect/objdetect.hpp>", includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link="opencv_objdetect"),
+    @Platform(include={"<opencv2/objdetect/objdetect.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
+        linkpath=genericLinkpath,       link={"opencv_objdetect", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link="opencv_objdetect220"),
+        preloadpath=windowsPreloadpath, link={"opencv_objdetect220", "opencv_highgui220", "opencv_imgproc220", "opencv_core220"}),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_objdetect {
     static { load(opencv_highgui.class); load(); }
@@ -107,10 +112,10 @@ public class opencv_objdetect {
 
         public native int tilted(); public native CvHaarFeature tilted(int tilted);
         // struct { } rect[CV_HAAR_FEATURE_MAX]
-        @Name(value="rect", suffix=".r")
-        public native @ByVal CvRect rect_r(int i); public native CvHaarFeature rect_r(int i, CvRect r);
-        @Name(value="rect", suffix=".weight")
-        public native float    rect_weight(int i); public native CvHaarFeature rect_weight(int i, float weight);
+        @Name({"rect", ".r"})
+        public native @ByRef CvRect rect_r(int i); public native CvHaarFeature rect_r(int i, CvRect r);
+        @Name({"rect", ".weight"})
+        public native float rect_weight(int i); public native CvHaarFeature rect_weight(int i, float weight);
     }
 
     public static class CvHaarClassifier extends Pointer {
@@ -193,8 +198,8 @@ public class opencv_objdetect {
 
         public native int flags();                              public native CvHaarClassifierCascade flags(int flags);
         public native int count();                              public native CvHaarClassifierCascade count(int count);
-        public native @ByVal CvSize orig_window_size();         public native CvHaarClassifierCascade orig_window_size(CvSize orig_window_size);
-        public native @ByVal CvSize real_window_size();         public native CvHaarClassifierCascade real_window_size(CvSize real_window_size);
+        public native @ByRef CvSize orig_window_size();         public native CvHaarClassifierCascade orig_window_size(CvSize orig_window_size);
+        public native @ByRef CvSize real_window_size();         public native CvHaarClassifierCascade real_window_size(CvSize real_window_size);
         public native double scale();                           public native CvHaarClassifierCascade scale(double scale);
         public native CvHaarStageClassifier stage_classifier(); public native CvHaarClassifierCascade stage_classifier(CvHaarStageClassifier stage_classifier);
         public native CvHidHaarClassifierCascade hid_cascade(); public native CvHaarClassifierCascade hid_cascade(CvHidHaarClassifierCascade hid_cascade);
@@ -212,7 +217,7 @@ public class opencv_objdetect {
             return (CvAvgComp)super.position(position);
         }
 
-        public native @ByVal CvRect rect(); public native CvAvgComp rect(CvRect rect);
+        public native @ByRef CvRect rect(); public native CvAvgComp rect(CvRect rect);
         public native int neighbors();      public native CvAvgComp neighbors(int neighbors);
     }
 
@@ -269,7 +274,7 @@ public class opencv_objdetect {
             return (CvLSVMFilterObject)super.position(position);
         }
 
-        public native @ByVal CvLSVMFilterPosition V();  public native CvLSVMFilterObject V(CvLSVMFilterPosition V);
+        public native @ByRef CvLSVMFilterPosition V();  public native CvLSVMFilterObject V(CvLSVMFilterPosition V);
         public native float/*[4]*/ fineFunction(int i); public native CvLSVMFilterObject fineFunction(int i, float fineFunction);
         public native int sizeX();                      public native CvLSVMFilterObject sizeX(int sizeX);
         public native int sizeY();                      public native CvLSVMFilterObject sizeY(int sizeY);
@@ -311,7 +316,7 @@ public class opencv_objdetect {
             return (CvObjectDetection)super.position(position);
         }
 
-        public native @ByVal CvRect rect(); public native CvObjectDetection rect(CvRect rect);
+        public native @ByRef CvRect rect(); public native CvObjectDetection rect(CvRect rect);
 	public native float score();        public native CvObjectDetection score(float score);
     }
 
@@ -319,4 +324,197 @@ public class opencv_objdetect {
     public static native void cvReleaseLatentSvmDetector(@ByPtrPtr CvLatentSvmDetector detector);
     public static native CvSeq cvLatentSvmDetectObjects(IplImage image,
             CvLatentSvmDetector detector, CvMemStorage storage,	float overlap_threshold/*=0.5*/);
+
+
+    @Namespace("cv") public static native void groupRectangles(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
+            CvRect rectList, int groupThreshold, double eps/*=0.2*/);
+    @Namespace("cv") public static native void groupRectangles(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
+            CvRect rectList, @Adapter(value="VectorAdapter<int>", out=true) IntPointer weights, int groupThreshold, double eps/*=0.2*/);
+
+    @Namespace("cv") public static class FeatureEvaluator extends Pointer {
+        static { load(); }
+        public FeatureEvaluator() { allocate(); }
+        public FeatureEvaluator(int size) { allocateArray(size); }
+        public FeatureEvaluator(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public static final int HAAR = 0, LBP = 1;
+
+        public native boolean read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
+        public native @ByVal FeatureEvaluatorPtr clone();
+        public native int getFeatureType();
+
+        public native boolean setImage(IplImage image, @ByVal CvSize origWinSize);
+        public native boolean setWindow(@ByVal CvPoint p);
+
+        public native double calcOrd(int featureIdx);
+        public native int calcCat(int featureIdx);
+
+        public static native @ByVal FeatureEvaluatorPtr create(int type);
+    }
+
+    @Name("cv::Ptr<cv::FeatureEvaluator>")
+    public static class FeatureEvaluatorPtr extends Pointer {
+        static { load(); }
+        public FeatureEvaluatorPtr()       { allocate();  }
+        public FeatureEvaluatorPtr(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native FeatureEvaluator get();
+        public native FeatureEvaluatorPtr put(FeatureEvaluator value);
+    }
+
+    @NoOffset @Namespace("cv") public static class CascadeClassifier extends Pointer {
+        static { Loader.load(); }
+        public static class DTreeNode extends Pointer {
+            static { Loader.load(); }
+            public DTreeNode() { allocate(); }
+            public DTreeNode(int size) { allocateArray(size); }
+            public DTreeNode(Pointer p) { super(p); }
+            private native void allocate();
+            private native void allocateArray(int size);
+
+            public native int featureIdx();  public native DTreeNode featureIdx(int featureIdx);
+            public native float threshold(); public native DTreeNode threshold(float threshold);
+            public native int left();        public native DTreeNode left(int left);
+            public native int right();       public native DTreeNode right(int right);
+        }
+
+        public static class DTree extends Pointer {
+            static { Loader.load(); }
+            public DTree() { allocate(); }
+            public DTree(int size) { allocateArray(size); }
+            public DTree(Pointer p) { super(p); }
+            private native void allocate();
+            private native void allocateArray(int size);
+
+            public native int nodeCount(); public native DTree nodeCount(int nodeCount);
+        }
+
+        public static class Stage extends Pointer {
+            static { Loader.load(); }
+            public Stage() { allocate(); }
+            public Stage(int size) { allocateArray(size); }
+            public Stage(Pointer p) { super(p); }
+            private native void allocate();
+            private native void allocateArray(int size);
+
+            public native int first();       public native Stage first(int first);
+            public native int ntrees();      public native Stage ntrees(int ntrees);
+            public native float threshold(); public native Stage threshold(float threshold);
+        }
+
+        public static final int BOOST = 0,
+                DO_CANNY_PRUNING = 1, SCALE_IMAGE = 2,
+                FIND_BIGGEST_OBJECT = 4, DO_ROUGH_SEARCH = 8;
+
+        public CascadeClassifier() { allocate(); }
+        public CascadeClassifier(String filename) { allocate(filename); }
+        public CascadeClassifier(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(String filename);
+
+        public native boolean empty();
+        public native boolean load(String filename);
+        public native boolean read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
+        public native void detectMultiScale(IplImage image, @Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
+                CvRect objects, double scaleFactor/*=1.1*/, int minNeighbors/*=3*/, int flags/*=0*/,
+                @ByVal CvSize minSize/*=Size()*/, @ByVal CvSize maxSize/*=Size()*/);
+
+        public native boolean setImage(@ByRef FeatureEvaluatorPtr feval, IplImage image);
+        public native int runAt(@ByRef FeatureEvaluatorPtr feval, @ByVal CvPoint p);
+
+        public native boolean is_stump_based(); public native CascadeClassifier is_stump_based(boolean is_stump_based);
+
+        public native int stageType();       public native CascadeClassifier stageType(int stageType);
+        public native int featureType();     public native CascadeClassifier featureType(int featureType);
+        public native int ncategories();     public native CascadeClassifier ncategories(int ncategories);
+        @ByVal
+        public native CvSize origWinSize();  public native CascadeClassifier origWinSize(CvSize origWinSize);
+
+        @Adapter("VectorAdapter<cv::CascadeClassifier::Stage>")
+        public native Stage stages();        public native CascadeClassifier stages(Stage stages);
+        @Adapter("VectorAdapter<cv::CascadeClassifier::DTree>")
+        public native DTree classifiers();   public native CascadeClassifier classifiers(DTree classifiers);
+        @Adapter("VectorAdapter<cv::CascadeClassifier::DTreeNode>")
+        public native DTreeNode nodes();     public native CascadeClassifier nodes(DTreeNode nodes);
+        @Adapter("VectorAdapter<float>")
+        public native FloatPointer leaves(); public native CascadeClassifier leaves(FloatPointer leaves);
+        @Adapter("VectorAdapter<int>")
+        public native IntPointer subsets();  public native CascadeClassifier subsets(IntPointer subsets);
+
+        @ByRef
+        public native FeatureEvaluatorPtr feval(); public native CascadeClassifier feval(FeatureEvaluatorPtr feval);
+        public native CvHaarClassifierCascade oldCascade(); public native CascadeClassifier oldCascade(CvHaarClassifierCascade oldCascade);
+    }
+
+    @NoOffset @Namespace("cv") public static class HOGDescriptor extends Pointer {
+        static { Loader.load(); }
+        public HOGDescriptor() { allocate(); }
+        public HOGDescriptor(@ByVal CvSize _winSize, @ByVal CvSize _blockSize, @ByVal CvSize _blockStride,
+                @ByVal CvSize _cellSize, int _nbins, int _derivAperture/*=1*/, double _winSigma/*=-1*/,
+                int _histogramNormType/*=HOGDescriptor::L2Hys*/,
+                double _L2HysThreshold/*=0.2*/, boolean _gammaCorrection/*=false*/,
+                int _nlevels/*=HOGDescriptor::DEFAULT_NLEVELS*/) { 
+            allocate(_winSize, _blockSize, _blockStride, _cellSize, _nbins, _derivAperture,
+                    _winSigma, _histogramNormType, _L2HysThreshold, _gammaCorrection, _nlevels);
+        }
+        public HOGDescriptor(String filename) { allocate(filename); }
+        public HOGDescriptor(@ByRef HOGDescriptor d) { allocate(d); }
+        public HOGDescriptor(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(@ByVal CvSize _winSize, @ByVal CvSize _blockSize, @ByVal CvSize _blockStride,
+                @ByVal CvSize _cellSize, int _nbins, int _derivAperture/*=1*/, double _winSigma/*=-1*/,
+                int _histogramNormType/*=HOGDescriptor::L2Hys*/,
+                double _L2HysThreshold/*=0.2*/, boolean _gammaCorrection/*=false*/,
+                int _nlevels/*=HOGDescriptor::DEFAULT_NLEVELS*/);
+        private native void allocate(String filename);
+        private native void allocate(@ByRef HOGDescriptor d);
+
+        public static final int
+                L2Hys=0,
+                DEFAULT_NLEVELS=64;
+
+        public native long getDescriptorSize();
+        public native boolean checkDetectorSize();
+        public native double getWinSigma();
+
+        public native void setSVMDetector(@Adapter("VectorAdapter<float>") float[] _svmdetector);
+
+        public native boolean read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
+        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs, String objname);
+
+        public native boolean load(String filename, String objname/*=""*/);
+        public native void save(String filename, String objname/*=""*/);
+        public native void copyTo(@ByRef HOGDescriptor c);
+
+        public native void compute(IplImage img, @Adapter(value="VectorAdapter<float>", out=true) FloatPointer descriptors,
+                @ByVal CvSize winStride/*=Size()*/, @ByVal CvSize padding/*=Size()*/,
+                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint locations/*=vector<Point>()*/);
+        public native void detect(IplImage img, @Adapter(value="VectorAdapter<CvPoint,cv::Point>", out=true) CvPoint foundLocations,
+                double hitThreshold/*=0*/, @ByVal CvSize winStride/*=Size()*/, @ByVal CvSize padding/*=Size()*/,
+                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint searchLocations/*=vector<Point>()*/);
+        public native void detectMultiScale(IplImage img, @Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true) CvRect foundLocations,
+                double hitThreshold/*=0*/, @ByVal CvSize winStride/*=Size()*/, @ByVal CvSize padding/*=Size()*/,
+                double scale/*=1.05*/, int groupThreshold/*=2*/);
+        public native void computeGradient(IplImage img, @Adapter("MatAdapter") IplImage grad,
+                @Adapter("MatAdapter") IplImage angleOfs, @ByVal CvSize paddingTL/*=Size()*/, @ByVal CvSize paddingBR/*=Size()*/);
+
+        public static native @Adapter("VectorAdapter<float>") FloatPointer getDefaultPeopleDetector();
+
+        public native @ByVal CvSize winSize();     public native HOGDescriptor winSize(CvSize winSize);
+        public native @ByVal CvSize blockSize();   public native HOGDescriptor blockSize(CvSize blockSize);
+        public native @ByVal CvSize blockStride(); public native HOGDescriptor blockStride(CvSize blockStride);
+        public native @ByVal CvSize cellSize();    public native HOGDescriptor cellSize(CvSize cellSize);
+        public native int nbins();                 public native HOGDescriptor nbins(int nbins);
+        public native int derivAperture();         public native HOGDescriptor derivAperture(int derivAperture);
+        public native double winSigma();           public native HOGDescriptor winSigma(double winSigma);
+        public native int histogramNormType();     public native HOGDescriptor histogramNormType(int histogramNormType);
+        public native double L2HysThreshold();     public native HOGDescriptor L2HysThreshold(double L2HysThreshold);
+        public native boolean gammaCorrection();   public native HOGDescriptor gammaCorrection(boolean gammaCorrection);
+        @Adapter("VectorAdapter<float>")
+        public native FloatPointer svmDetector();  public native HOGDescriptor svmDetector(FloatPointer svmDetector);
+        public native int nlevels();               public native HOGDescriptor nlevels(int nlevels);
+    }
 }

@@ -18,10 +18,10 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in compat.hpp and legacy.hpp
- * of OpenCV 2.2, which are covered by the following copyright notice:
+ * This file is based on information found in compat.hpp, legacy.hpp, and
+ * blobtrack.hpp of OpenCV 2.2, which are covered by the following copyright notice:
  *
- *                          License Agreement
+ *                        Intel License Agreement
  *                For Open Source Computer Vision Library
  *
  * Copyright (C) 2000, Intel Corporation, all rights reserved.
@@ -37,7 +37,7 @@
  *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
  *
- *   * The name of the copyright holders may not be used to endorse or promote products
+ *   * The name of Intel Corporation may not be used to endorse or promote products
  *     derived from this software without specific prior written permission.
  *
  * This software is provided by the copyright holders and contributors "as is" and
@@ -55,19 +55,21 @@
 
 package com.googlecode.javacv.cpp;
 
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
 import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.Name;
+import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
@@ -78,17 +80,16 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 /**
  *
- * @author saudet
+ * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>"}, includepath=genericIncludepath, 
-        linkpath=genericLinkpath,       link="opencv_legacy",    preload="opencv_flann"),
+    @Platform(include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>", "<opencv2/legacy/blobtrack.hpp>"}, includepath=genericIncludepath,
+        linkpath=genericLinkpath,       link={"opencv_legacy", "opencv_video", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link="opencv_legacy220", preload="opencv_flann220"),
+        preloadpath=windowsPreloadpath, link={"opencv_legacy220", "opencv_video220", "opencv_features2d220", "opencv_flann220", "opencv_calib3d220", "opencv_highgui220", "opencv_imgproc220", "opencv_core220"}),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_legacy {
     static { load(opencv_features2d.class); load(opencv_video.class); load(); }
-
 
     public static float cvQueryHistValue_1D(CvHistogram hist, int idx0) {
         return (float)cvGetReal1D(hist.bins(), idx0);
@@ -146,13 +147,13 @@ public class opencv_legacy {
             Pointer userData, float[] coeffs, IplImage avg, IplImage proj);
 
     public static native void cvCalcCovarMatrixEx(int nObjects, Pointer input, int ioFlags, int ioBufSize,
-            @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, FloatBuffer covarMatrix);
+            @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, FloatPointer covarMatrix);
     public static native void cvCalcEigenObjects(int nObjects, Pointer input, Pointer output, int ioFlags,
-            int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, FloatBuffer eigVals);
+            int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, FloatPointer eigVals);
     public static native void cvEigenDecomposite(IplImage obj, int nEigObjs, Pointer eigInput,
-            int ioFlags, Pointer userData, IplImage avg, FloatBuffer coeffs);
+            int ioFlags, Pointer userData, IplImage avg, FloatPointer coeffs);
     public static native void cvEigenProjection(Pointer eigInput, int nEigObjs, int ioFlags,
-            Pointer userData, FloatBuffer coeffs, IplImage avg, IplImage proj);
+            Pointer userData, FloatPointer coeffs, IplImage avg, IplImage proj);
 
 
     public static class CvImgObsInfo extends Pointer {
@@ -282,7 +283,7 @@ public class opencv_legacy {
     public static native void cvReleaseObsInfo(@ByPtrPtr CvImgObsInfo obs_info);
     public static native void cvImgToObs_DCT(CvArr arr, float[] obs, @ByVal CvSize dctSize,
             @ByVal CvSize obsSize, @ByVal CvSize delta);
-    public static native void cvImgToObs_DCT(CvArr arr, FloatBuffer obs, @ByVal CvSize dctSize,
+    public static native void cvImgToObs_DCT(CvArr arr, FloatPointer obs, @ByVal CvSize dctSize,
             @ByVal CvSize obsSize, @ByVal CvSize delta);
     public static native void cvUniformImgSegm(CvImgObsInfo obs_info, CvEHMM ehmm);
     public static native void cvInitMixSegm(@Cast("CvImgObsInfo**") PointerPointer obs_info_array,
@@ -306,16 +307,16 @@ public class opencv_legacy {
             CvMemStorage storage, @ByPtrPtr CvSeq numbers);
 
     public static native void cvFindHandRegion(CvPoint3D32f points, int count, CvSeq indexs,
-            FloatBuffer line, @ByVal CvSize2D32f size, int flag, CvPoint3D32f center,
+            FloatPointer line, @ByVal CvSize2D32f size, int flag, CvPoint3D32f center,
             CvMemStorage storage, @ByPtrPtr CvSeq numbers);
     public static native void cvFindHandRegionA(CvPoint3D32f points, int count, CvSeq indexs,
-            FloatBuffer line, @ByVal CvSize2D32f size, int jc, CvPoint3D32f center,
+            FloatPointer line, @ByVal CvSize2D32f size, int jc, CvPoint3D32f center,
             CvMemStorage storage, @ByPtrPtr CvSeq numbers);
 
     public static native void cvCalcImageHomography(float[] line,
             CvPoint3D32f center, float[] intrinsic, float[] homography);
-    public static native void cvCalcImageHomography(FloatBuffer line,
-            CvPoint3D32f center, FloatBuffer intrinsic, FloatBuffer homography);
+    public static native void cvCalcImageHomography(FloatPointer line,
+            CvPoint3D32f center, FloatPointer intrinsic, FloatPointer homography);
 
 
     public static native void icvDrawMosaic(CvSubdiv2D subdiv, IplImage src, IplImage dst);
@@ -504,15 +505,15 @@ public class opencv_legacy {
         public native CvStereoCamera camera(int i, CvCamera camera);
         @MemberGetter public native FloatPointer fundMatr(); // float[9];
 
-        @ByVal public native CvPoint3D32f/*[2]*/ epipole(int i);
+        @ByRef public native CvPoint3D32f/*[2]*/ epipole(int i);
                public native CvStereoCamera epipole(int i, CvPoint3D32f epipole);
-        @ByVal public native CvPoint2D32f/*[2][4]*/ quad(int i, int j);
+        @ByRef public native CvPoint2D32f/*[2][4]*/ quad(int i, int j);
                public native CvStereoCamera quad(int i, int j, CvPoint2D32f quad);
         public native double/*[2][3][3]*/ coeffs(int i, int j, int k);
                public native CvStereoCamera coeffs(int i, int j, int k, double coeffs);
-        @ByVal public native CvPoint2D32f/*[2][4]*/ border(int i, int j);
+        @ByRef public native CvPoint2D32f/*[2][4]*/ border(int i, int j);
                public native CvStereoCamera border(int i, int j, CvPoint2D32f epipole);
-        @ByVal public native CvSize warpSize();
+        @ByRef public native CvSize warpSize();
                public native CvStereoCamera warpSize(CvSize warpSize);
         public native CvStereoLineCoeff lineCoeffs();
                public native CvStereoCamera lineCoeffs(CvStereoLineCoeff lineCoeffs);
@@ -549,7 +550,7 @@ public class opencv_legacy {
 
     public static native int icvConvertWarpCoordinates(@Cast("double(*)[3]") double[] coeffs/*[3][3]*/,
             CvPoint2D32f cameraPoint, CvPoint2D32f warpPoint, int direction);
-    public static native int icvConvertWarpCoordinates(@Cast("double(*)[3]") DoubleBuffer coeffs/*[3][3]*/,
+    public static native int icvConvertWarpCoordinates(@Cast("double(*)[3]") DoublePointer coeffs/*[3][3]*/,
             CvPoint2D32f cameraPoint, CvPoint2D32f warpPoint, int direction);
     public static native int icvGetSymPoint3D(@ByVal CvPoint3D64f pointCorner,
             @ByVal CvPoint3D64f point1, @ByVal CvPoint3D64f point2, CvPoint3D64f pointSym2);
@@ -562,11 +563,11 @@ public class opencv_legacy {
             double[] convRotMatr, double[] convTransVect);
     public static native int icvConvertPointSystem(@ByVal CvPoint3D64f M2,
             CvPoint3D64f M1, double[] rotMatr, double[] transVect);
-    public static native int icvCreateConvertMatrVect(DoubleBuffer rotMatr1,
-            DoubleBuffer transVect1,  DoubleBuffer rotMatr2,  DoubleBuffer transVect2,
-            DoubleBuffer convRotMatr, DoubleBuffer convTransVect);
+    public static native int icvCreateConvertMatrVect(DoublePointer rotMatr1,
+            DoublePointer transVect1,  DoublePointer rotMatr2,  DoublePointer transVect2,
+            DoublePointer convRotMatr, DoublePointer convTransVect);
     public static native int icvConvertPointSystem(@ByVal CvPoint3D64f M2,
-            CvPoint3D64f M1, DoubleBuffer rotMatr, DoubleBuffer transVect);
+            CvPoint3D64f M1, DoublePointer rotMatr, DoublePointer transVect);
     public static native int icvComputeCoeffForStereo(CvStereoCamera stereoCamera);
 
     public static native int icvGetCrossPieceVector(@ByVal CvPoint2D32f p1_start,
@@ -584,7 +585,7 @@ public class opencv_legacy {
 
     public static native void cvComputePerspectiveMap(@Cast("double(*)[3]") double[] coeffs/*[3][3]*/,
             CvArr rectMapX, CvArr rectMapY);
-    public static native void cvComputePerspectiveMap(@Cast("double(*)[3]") DoubleBuffer coeffs/*[3][3]*/,
+    public static native void cvComputePerspectiveMap(@Cast("double(*)[3]") DoublePointer coeffs/*[3][3]*/,
             CvArr rectMapX, CvArr rectMapY);
 
     public static native int icvComCoeffForLine(@ByVal CvPoint2D64f point1,
@@ -593,12 +594,12 @@ public class opencv_legacy {
             double[] rotMatr2, double[] transVect2, CvStereoLineCoeff coeffs, int[] needSwapCameras);
     public static native int icvComCoeffForLine(@ByVal CvPoint2D64f point1,
             @ByVal CvPoint2D64f point2, @ByVal CvPoint2D64f point3, @ByVal CvPoint2D64f point4,
-            DoubleBuffer camMatr1, DoubleBuffer rotMatr1, DoubleBuffer transVect1, DoubleBuffer camMatr2,
-            DoubleBuffer rotMatr2, DoubleBuffer transVect2, CvStereoLineCoeff coeffs, int[] needSwapCameras);
+            DoublePointer camMatr1, DoublePointer rotMatr1, DoublePointer transVect1, DoublePointer camMatr2,
+            DoublePointer rotMatr2, DoublePointer transVect2, CvStereoLineCoeff coeffs, int[] needSwapCameras);
     public static native int icvGetDirectionForPoint(@ByVal CvPoint2D64f point,
             double[] camMatr, CvPoint3D64f direct);
     public static native int icvGetDirectionForPoint(@ByVal CvPoint2D64f point,
-            DoubleBuffer camMatr, CvPoint3D64f direct);
+            DoublePointer camMatr, CvPoint3D64f direct);
     public static native int icvGetCrossLines(@ByVal CvPoint3D64f point11, @ByVal CvPoint3D64f point12,
             @ByVal CvPoint3D64f point21, @ByVal CvPoint3D64f point22, CvPoint3D64f midPoint);
     public static native int icvComputeStereoLineCoeffs(@ByVal CvPoint3D64f pointA, 
@@ -613,21 +614,21 @@ public class opencv_legacy {
             @ByVal CvPoint2D64f p_end, double[] a, double[] b, double[] c, int[] result);
 //    public static native void icvGetCommonArea(@ByVal CvSize imageSize, @ByVal CvPoint2D64f epipole1,
 //            @ByVal CvPoint2D64f epipole2, double[] fundMatr, double[] coeff11, double[] coeff12,
-//            double[] coeff21, double[] coeff22, IntByReference result);
+//            double[] coeff21, double[] coeff22, int[] result);
 
     public static native void icvComputeeInfiniteProject1(double[] rotMatr, double[] camMatr1,
             double[] camMatr2, @ByVal CvPoint2D32f point1, CvPoint2D32f point2);
-    public static native void icvComputeeInfiniteProject1(DoubleBuffer rotMatr, DoubleBuffer camMatr1,
-            DoubleBuffer camMatr2, @ByVal CvPoint2D32f point1, CvPoint2D32f point2);
+    public static native void icvComputeeInfiniteProject1(DoublePointer rotMatr, DoublePointer camMatr1,
+            DoublePointer camMatr2, @ByVal CvPoint2D32f point1, CvPoint2D32f point2);
     public static native void icvComputeeInfiniteProject2(double[] rotMatr, double[] camMatr1,
             double[] camMatr2, CvPoint2D32f point1, @ByVal CvPoint2D32f point2);
-    public static native void icvComputeeInfiniteProject2(DoubleBuffer rotMatr, DoubleBuffer camMatr1,
-            DoubleBuffer camMatr2, CvPoint2D32f point1, @ByVal CvPoint2D32f point2);
+    public static native void icvComputeeInfiniteProject2(DoublePointer rotMatr, DoublePointer camMatr1,
+            DoublePointer camMatr2, CvPoint2D32f point1, @ByVal CvPoint2D32f point2);
 
     public static native void icvGetCrossDirectDirect(double[] direct1,
             double[] direct2, CvPoint2D64f cross, int[] result);
-    public static native void icvGetCrossDirectDirect(DoubleBuffer direct1,
-            DoubleBuffer direct2, CvPoint2D64f cross, int[] result);
+    public static native void icvGetCrossDirectDirect(DoublePointer direct1,
+            DoublePointer direct2, CvPoint2D64f cross, int[] result);
     public static native void icvGetCrossPieceDirect(@ByVal CvPoint2D64f p_start,
             @ByVal CvPoint2D64f p_end, double a, double b, double c,
             CvPoint2D64f cross, int[] result);
@@ -643,7 +644,7 @@ public class opencv_legacy {
     public static native void icvProjectPointToImage(@ByVal CvPoint3D64f point,
             double[] camMatr, double[] rotMatr, double[] transVect, CvPoint2D64f projPoint);
     public static native void icvProjectPointToImage(@ByVal CvPoint3D64f point,
-            DoubleBuffer camMatr, DoubleBuffer rotMatr, DoubleBuffer transVect, CvPoint2D64f projPoint);
+            DoublePointer camMatr, DoublePointer rotMatr, DoublePointer transVect, CvPoint2D64f projPoint);
     public static native void icvGetQuadsTransform(@ByVal CvSize imageSize,
             double[] camMatr1, double[] rotMatr1, double[] transVect1,
             double[] camMatr2, double[] rotMatr2, double[] transVect2,
@@ -651,11 +652,11 @@ public class opencv_legacy {
             @Cast("double(*)[2]") double[] quad2/*[4][2]*/,
             double[] fundMatr, CvPoint3D64f epipole1, CvPoint3D64f epipole2);
     public static native void icvGetQuadsTransform(@ByVal CvSize imageSize,
-            DoubleBuffer camMatr1, DoubleBuffer rotMatr1, DoubleBuffer transVect1,
-            DoubleBuffer camMatr2, DoubleBuffer rotMatr2, DoubleBuffer transVect2,
-            CvSize warpSize, @Cast("double(*)[2]") DoubleBuffer quad1/*[4][2]*/,
-            @Cast("double(*)[2]") DoubleBuffer quad2/*[4][2]*/,
-            DoubleBuffer fundMatr, CvPoint3D64f epipole1, CvPoint3D64f epipole2);
+            DoublePointer camMatr1, DoublePointer rotMatr1, DoublePointer transVect1,
+            DoublePointer camMatr2, DoublePointer rotMatr2, DoublePointer transVect2,
+            CvSize warpSize, @Cast("double(*)[2]") DoublePointer quad1/*[4][2]*/,
+            @Cast("double(*)[2]") DoublePointer quad2/*[4][2]*/,
+            DoublePointer fundMatr, CvPoint3D64f epipole1, CvPoint3D64f epipole2);
 
     public static native void icvGetQuadsTransformStruct(CvStereoCamera stereoCamera);
     public static native void icvComputeStereoParamsForCameras(CvStereoCamera stereoCamera);
@@ -664,26 +665,26 @@ public class opencv_legacy {
             double[] areaLineCoef2, @ByVal CvPoint2D64f epipole, @ByVal CvSize imageSize,
             CvPoint2D64f point11, CvPoint2D64f point12,
             CvPoint2D64f point21, CvPoint2D64f point22, int[] result);
-    public static native void icvGetCutPiece(DoubleBuffer areaLineCoef1,
-            DoubleBuffer areaLineCoef2, @ByVal CvPoint2D64f epipole, @ByVal CvSize imageSize,
+    public static native void icvGetCutPiece(DoublePointer areaLineCoef1,
+            DoublePointer areaLineCoef2, @ByVal CvPoint2D64f epipole, @ByVal CvSize imageSize,
             CvPoint2D64f point11, CvPoint2D64f point12,
             CvPoint2D64f point21, CvPoint2D64f point22, int[] result);
     public static native void icvGetMiddleAnglePoint(@ByVal CvPoint2D64f basePoint,
             @ByVal CvPoint2D64f point1, @ByVal CvPoint2D64f point2, CvPoint2D64f midPoint);
     public static native void icvGetNormalDirect(double[] direct,
             @ByVal CvPoint2D64f point, double[] normDirect);
-    public static native void icvGetNormalDirect(DoubleBuffer direct,
-            @ByVal CvPoint2D64f point, DoubleBuffer normDirect);
+    public static native void icvGetNormalDirect(DoublePointer direct,
+            @ByVal CvPoint2D64f point, DoublePointer normDirect);
     public static native double icvGetVect(@ByVal CvPoint2D64f basePoint,
             @ByVal CvPoint2D64f point1, @ByVal CvPoint2D64f point2);
     public static native void icvProjectPointToDirect(@ByVal CvPoint2D64f point,
             double[] lineCoeff, CvPoint2D64f projectPoint);
     public static native void icvProjectPointToDirect(@ByVal CvPoint2D64f point,
-            DoubleBuffer lineCoeff, CvPoint2D64f projectPoint);
+            DoublePointer lineCoeff, CvPoint2D64f projectPoint);
     public static native void icvGetDistanceFromPointToDirect(@ByVal CvPoint2D64f point,
             double[] lineCoef, double[] dist);
     public static native void icvGetDistanceFromPointToDirect(@ByVal CvPoint2D64f point,
-            DoubleBuffer lineCoef, double[] dist);
+            DoublePointer lineCoef, double[] dist);
 
     public static native IplImage icvCreateIsometricImage(IplImage src, IplImage dst,
             int desired_depth, int desired_num_channels);
@@ -709,8 +710,8 @@ public class opencv_legacy {
             return (CvContourTree)super.position(position);
         }
 
-        @ByVal public native CvPoint p1(); public native CvContourTree p1(CvPoint p1);
-        @ByVal public native CvPoint p2(); public native CvContourTree p2(CvPoint p2);
+        @ByRef public native CvPoint p1(); public native CvContourTree p1(CvPoint p1);
+        @ByRef public native CvPoint p2(); public native CvContourTree p2(CvPoint p2);
     }
 
     public static native CvContourTree cvCreateContourTree(CvSeq contour, CvMemStorage storage, double threshold);
@@ -732,7 +733,7 @@ public class opencv_legacy {
             float[] alpha, float[] beta, float[] gamma, int coeff_usage,
             @ByVal CvSize win, @ByVal CvTermCriteria criteria, int calc_gradient/*=1*/);
     public static native void cvSnakeImage(IplImage image, CvPoint points, int length,
-            FloatBuffer alpha, FloatBuffer beta, FloatBuffer gamma, int coeff_usage,
+            FloatPointer alpha, FloatPointer beta, FloatPointer gamma, int coeff_usage,
             @ByVal CvSize win, @ByVal CvTermCriteria criteria, int calc_gradient/*=1*/);
 
 
@@ -848,9 +849,9 @@ public class opencv_legacy {
             return (CvFace)super.position(position);
         }
 
-        @ByVal public native CvRect MouthRect();    public native CvFace MouthRect(CvRect MouthRect);
-        @ByVal public native CvRect LeftEyeRect();  public native CvFace LeftEyeRect(CvRect LeftEyeRect);
-        @ByVal public native CvRect RightEyeRect(); public native CvFace RightEyeRect(CvRect RightEyeRect);
+        @ByRef public native CvRect MouthRect();    public native CvFace MouthRect(CvRect MouthRect);
+        @ByRef public native CvRect LeftEyeRect();  public native CvFace LeftEyeRect(CvRect LeftEyeRect);
+        @ByRef public native CvRect RightEyeRect(); public native CvFace RightEyeRect(CvRect RightEyeRect);
     }
 
 //    public static native CvSeq cvFindFace(IplImage Image, CvMemStorage storage);
@@ -872,7 +873,7 @@ public class opencv_legacy {
         }
 
         public native int id();         public native Cv3dTracker2dTrackedObject id(int id);
-        @ByVal
+        @ByRef
         public native CvPoint2D32f p(); public native Cv3dTracker2dTrackedObject p(CvPoint2D32f p);
     }
     public static Cv3dTracker2dTrackedObject cv3dTracker2dTrackedObject(int id, CvPoint2D32f p) {
@@ -895,7 +896,7 @@ public class opencv_legacy {
         }
 
         public native int id();         public native Cv3dTrackerTrackedObject id(int id);
-        @ByVal
+        @ByRef
         public native CvPoint3D32f p(); public native Cv3dTrackerTrackedObject p(CvPoint3D32f p);
     }
     public static Cv3dTrackerTrackedObject cv3dTrackerTrackedObject(int id, CvPoint3D32f p) {
@@ -921,7 +922,7 @@ public class opencv_legacy {
                public native Cv3dTrackerCameraInfo valid(boolean valid);
         // float mat[4][4]
         @MemberGetter public native @Cast("float(*)[4]") FloatPointer mat(); 
-        @ByVal public native CvPoint2D32f principal_point();
+        @ByRef public native CvPoint2D32f principal_point();
                public native Cv3dTrackerCameraInfo principal_point(CvPoint2D32f principal_point);
     }
 
@@ -937,7 +938,7 @@ public class opencv_legacy {
             return (Cv3dTrackerCameraIntrinsics)super.position(position);
         }
 
-        @ByVal public native CvPoint2D32f principal_point();
+        @ByRef public native CvPoint2D32f principal_point();
                public native Cv3dTrackerCameraIntrinsics principal_point(CvPoint2D32f principal_point);
         @MemberGetter public native FloatPointer focal_length(); // float[2]
         @MemberGetter public native FloatPointer distortion();   // float[4];
@@ -945,7 +946,7 @@ public class opencv_legacy {
 
     public static native boolean/*CvBool*/ cv3dTrackerCalibrateCameras(int num_cameras,
             Cv3dTrackerCameraIntrinsics camera_intrinsics, @ByVal CvSize etalon_size,
-            float square_size, @Cast("IplImage**") PointerPointer samples, Cv3dTrackerCameraInfo camera_info);
+            float square_size, IplImageArray samples, Cv3dTrackerCameraInfo camera_info);
     public static native int cv3dTrackerLocateObjects(int num_cameras, int num_objects,
             Cv3dTrackerCameraInfo camera_info, Cv3dTracker2dTrackedObject tracking_info,
             Cv3dTrackerTrackedObject tracked_objects);
@@ -1036,7 +1037,7 @@ public class opencv_legacy {
             return (CvVoronoiNode2D)super.position(position);
         }
 
-        @ByVal
+        @ByRef
         public native CvPoint2D32f pt(); public native CvVoronoiNode2D pt(CvPoint2D32f pt);
         public native float radius();    public native CvVoronoiNode2D radius(float radius);
     }
@@ -1109,7 +1110,7 @@ public class opencv_legacy {
     public static native void cvInitPerspectiveTransform(@ByVal CvSize size,
             CvPoint2D32f vertex/*[4]*/, @Cast("double(*)[3]") double[] matrix/*[3][3]*/, CvArr rectMap);
     public static native void cvInitPerspectiveTransform(@ByVal CvSize size,
-            CvPoint2D32f vertex/*[4]*/, @Cast("double(*)[3]") DoubleBuffer matrix/*[3][3]*/, CvArr rectMap);
+            CvPoint2D32f vertex/*[4]*/, @Cast("double(*)[3]") DoublePointer matrix/*[3][3]*/, CvArr rectMap);
 
 //    public static native void cvInitStereoRectification(CvStereoCamera params,
 //            CvArr rectMap1, CvArr rectMap2, int do_undistortion);
@@ -1117,7 +1118,7 @@ public class opencv_legacy {
 
     public static native void cvMakeScanlines(@Cast("CvMatrix3*") float[] matrix/*[3][3]*/, @ByVal CvSize img_size,
             int[] scanlines1, int[] scanlines2, int[] lengths1, int[] lengths2, int[] line_count);
-    public static native void cvMakeScanlines(@Cast("CvMatrix3*") FloatBuffer matrix/*[3][3]*/, @ByVal CvSize img_size,
+    public static native void cvMakeScanlines(@Cast("CvMatrix3*") FloatPointer matrix/*[3][3]*/, @ByVal CvSize img_size,
             int[] scanlines1, int[] scanlines2, int[] lengths1, int[] lengths2, int[] line_count);
     public static native void cvPreWarpImage(int line_count, IplImage img,
             @Cast("uchar*") BytePointer dst, int[] dst_nums, int[] scanlines);
@@ -1153,7 +1154,7 @@ public class opencv_legacy {
 
         public native long /* CvRNG */ state();     public native CvRandState state(long state);
         public native int disttype();               public native CvRandState disttype(int disttype);
-        @ByVal
+        @ByRef
         public native CvScalar/*[2]*/ param(int i); public native CvRandState param(int i, CvScalar param);
     }
 
@@ -1214,4 +1215,728 @@ public class opencv_legacy {
     public static int iplHeight(IplImage img) {
         return img == null ? 0 : img.roi() == null ? img.height() : img.roi().height();
     }
+
+
+    public static final int
+    // enum CvCalibEtalonType
+        CV_CALIB_ETALON_USER = -1,
+        CV_CALIB_ETALON_CHESSBOARD = 0,
+        CV_CALIB_ETALON_CHECKERBOARD = CV_CALIB_ETALON_CHESSBOARD;
+
+    public static class CvCalibFilter extends Pointer {
+        static { load(); }
+        public CvCalibFilter() { allocate(); }
+        public CvCalibFilter(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native boolean SetEtalon(@Cast("CvCalibEtalonType") int etalonType,
+                double[] etalonParams, int pointCount/*=0*/, CvPoint2D32f points/*=null*/);
+        public native @Cast("CvCalibEtalonType") int GetEtalon(int[] paramCount/*=0*/,
+                @Cast("const double**") PointerPointer etalonParams/*=0*/, int[] pointCount/*=0*/,
+                @Cast("const CvPoint2D32f**") PointerPointer etalonPoints/*=null*/);
+        public native void SetCameraCount(int cameraCount);
+        public native int GetCameraCount();
+        public native boolean SetFrames(int totalFrames);
+        public native void Stop(boolean calibrate/*=false*/);
+        public native boolean IsCalibrated();
+        public native boolean FindEtalon(IplImageArray imgs);
+        public native boolean FindEtalon(CvMatArray imgs);
+        public native boolean Push(@Cast("const CvPoint2D32f**") PointerPointer points/*=0*/);
+        public native int GetFrameCount(int[] framesTotal/*=null*/);
+        public native @Const CvCamera GetCameraParams(int idx/*=0*/);
+        public native @Const CvStereoCamera GetStereoParams();
+        public native boolean SetCameraParams(CvCamera params);
+        public native boolean SaveCameraParams(String filename );
+        public native boolean LoadCameraParams(String filename );
+        public native boolean Undistort(IplImageArray src, IplImageArray dst);
+        public native boolean Undistort(CvMatArray src, CvMatArray dst );
+        public native boolean GetLatestPoints(int idx, @Cast("CvPoint2D32f**")
+                PointerPointer pts, int[] count, @Cast("bool*") boolean[] found);
+        public native void DrawPoints(IplImageArray dst);
+        public native void DrawPoints(CvMatArray dst);
+        public native boolean Rectify( IplImageArray srcarr, IplImageArray dstarr );
+        public native boolean Rectify( CvMatArray srcarr, CvMatArray dstarr );
+
+//        protected static final int MAX_CAMERAS = 3;
+//
+//        /* etalon data */
+//        protected native @Cast("CvCalibEtalonType") int etalonType();
+//        protected native int etalonParamCount();
+//        protected native DoublePointer etalonParams();
+//        protected native int etalonPointCount();
+//        protected native CvPoint2D32f etalonPoints();
+//        protected native @ByRef CvSize imgSize();
+//        protected native CvMat grayImg();
+//        protected native CvMat tempImg();
+//        protected native CvMemStorage storage();
+//
+//        /* camera data */
+//        protected native int cameraCount();
+//        protected native @ByRef CvCamera/*[MAX_CAMERAS]*/ cameraParams(int i);
+//        protected native @ByRef CvStereoCamera stereo();
+//        protected native CvPoint2D32f/*[MAX_CAMERAS]*/ points(int i);
+//        protected native CvMat/*[MAX_CAMERAS][2]*/ undistMap(int i, int j);
+//        protected native CvMat undistImg();
+//        protected native int/*[MAX_CAMERAS]*/ latestCounts(int i);
+//        protected native CvPoint2D32f/*[MAX_CAMERAS]*/ latestPoints(int i);
+//        protected native CvMat/*[MAX_CAMERAS][2]*/ rectMap(int i, int j);
+//
+//        /* Added by Valery */
+//        //protected native @ByRef CvStereoCamera stereoParams();
+//
+//        protected native int maxPoints();
+//        protected native int framesTotal();
+//        protected native int framesAccepted();
+//        protected native boolean isCalibrated();
+    }
+
+    public static class CvCamShiftTracker extends Pointer {
+        static { load(); }
+        public CvCamShiftTracker() { allocate(); }
+        public CvCamShiftTracker(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native float get_orientation();
+        public native float get_length();
+        public native float get_width();
+        public native @ByVal CvPoint2D32f get_center();
+        public native @ByVal CvRect get_window();
+
+        public native int get_threshold();
+        public native int get_hist_dims(int[] dims/*=null*/);
+        public native int get_min_ch_val(int channel);
+        public native int get_max_ch_val(int channel);
+
+        public native boolean set_window(@ByVal CvRect window);
+        public native boolean set_threshold(int threshold);
+        public native boolean set_hist_bin_range(int dim, int min_val, int max_val);
+        public native boolean set_hist_dims(int c_dims, int[] dims);
+        public native boolean set_min_ch_val(int channel, int val);
+        public native boolean set_max_ch_val(int channel, int val);
+
+        public native boolean track_object(IplImage cur_frame);
+        public native boolean update_histogram(IplImage cur_frame);
+        public native void reset_histogram();
+        public native IplImage get_back_project();
+
+        public native float query(int[] bin);
+
+//        protected native void color_transform(IplImage img);
+//
+//        protected native CvHistogram m_hist();
+//
+//        protected native @ByRef CvBox2D    m_box();
+//        protected native @ByRef CvConnectedComp m_comp();
+//
+//        protected native float/*[CV_MAX_DIM][2]*/     m_hist_ranges_data(int i, int j);
+//        protected native FloatPointer/*[CV_MAX_DIM]*/ m_hist_ranges(int i);
+//
+//        protected native int/*[CV_MAX_DIM]*/ m_min_ch_val(int i);
+//        protected native int/*[CV_MAX_DIM]*/ m_max_ch_val(int i);
+//        protected native int                 m_threshold();
+//
+//        protected native IplImage/*[CV_MAX_DIM]*/ m_color_planes(int i);
+//        protected native IplImage  m_back_project();
+//        protected native IplImage  m_temp();
+//        protected native IplImage  m_mask();
+    }
+
+
+    // #include <blobtrack.hpp>
+    public static class CvDefParam extends Pointer {
+        static { load(); }
+        public CvDefParam() { allocate(); }
+        public CvDefParam(int size) { allocateArray(size); }
+        public CvDefParam(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native CvDefParam     next();     public native CvDefParam next(CvDefParam next);
+        @Cast("char*")
+        public native BytePointer    pName();    public native CvDefParam pName(BytePointer pName);
+        @Cast("char*")
+        public native BytePointer    pComment(); public native CvDefParam pComment(BytePointer pComment);
+        public native DoublePointer  pDouble();  public native CvDefParam pDouble(DoublePointer pDouble);
+        public native double         Double();   public native CvDefParam Double(double Double);
+        public native FloatPointer   pFloat();   public native CvDefParam pFloat(FloatPointer pFloat);
+        public native float          Float();    public native CvDefParam Float(float Float);
+        public native IntPointer     pInt();     public native CvDefParam pInt(IntPointer pInt);
+        public native int            Int();      public native CvDefParam Int(int Int);
+        @Cast("char**")
+        public native PointerPointer pStr();     public native CvDefParam pStr(PointerPointer pStr);
+        @Cast("char*")
+        public native BytePointer    Str();      public native CvDefParam Str(BytePointer Str);
+    }
+
+    public static class CvVSModule extends Pointer {
+        static { load(); }
+        public CvVSModule() { }
+        public CvVSModule(Pointer p) { super(p); }
+
+        public native String GetParamName(int index);
+        public native String GetParamComment(String name);
+        public native double GetParam(String name);
+        public native String GetParamStr(String name);
+        public native void SetParam(String name, double val);
+        public native void SetParamStr(String name, String str);
+        public native void TransferParamsFromChild(CvVSModule pM, String prefix/*=null*/);
+        public native void TransferParamsToChild(CvVSModule pM, @Cast("char*") String prefix/*=null*/);
+        public native void ParamUpdate();
+        public native String GetTypeName();
+        public native int IsModuleTypeName(String name);
+        public native String GetModuleName();
+        public native int IsModuleName(String name);
+        public native void SetNickName(String pStr);
+        public native String GetNickName();
+        public native void SaveState(CvFileStorage fs);
+        public native void LoadState(CvFileStorage fs, CvFileNode fn);
+
+        public /*abstract*/ native void Release();
+
+//        protected native int m_Wnd();
+//
+//        protected native int IsParam(String name);
+//        protected native void AddParam(String name, double[] pAddr);
+//        protected native void AddParam(String name, float[] pAddr);
+//        protected native void AddParam(String name, int[] pAddr);
+//        protected native void AddParam(String name, @Cast("const char**") PointerPointer pAddr);
+//        protected native void AddParam(String name);
+//        protected native void CommentParam(String name, String pComment);
+//        protected native void SetTypeName(String name);
+//        protected native void SetModuleName(String name);
+//        protected native void DelParam(String name);
+    }
+
+    public static native void cvWriteStruct(CvFileStorage fs, String name, Pointer addr, String desc, int num/*=1*/);
+    public static native void cvReadStructByName(CvFileStorage fs, CvFileNode node, String name, Pointer addr, String desc);
+
+    public static class CvFGDetector extends CvVSModule {
+        static { load(); }
+        public CvFGDetector() { }
+        public CvFGDetector(Pointer p) { super(p); }
+
+        public /*abstract*/ native IplImage GetMask();
+        public /*abstract*/ native void Process(IplImage pImg);
+    }
+
+    public static native void cvReleaseFGDetector(@ByPtrPtr CvFGDetector ppT);
+    public static native CvFGDetector cvCreateFGDetectorBase(int type, Pointer param);
+
+
+    public static class CvBlob extends Pointer {
+        static { load(); }
+        public CvBlob() { allocate(); }
+        public CvBlob(int size) { allocateArray(size); }
+        public CvBlob(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native float x(); public native CvBlob x(float x);
+        public native float y(); public native CvBlob y(float y);
+        public native float w(); public native CvBlob w(float w);
+        public native float h(); public native CvBlob h(float h);
+        public native int  ID(); public native CvBlob ID(int ID);
+    }
+
+    public static CvBlob cvBlob(float x, float y, float w, float h) {
+        return new CvBlob().x(x).y(y).w(w).h(h).ID(0);
+    }
+
+    public static final int
+            CV_BLOB_MINW = 5,
+            CV_BLOB_MINH = 5;
+    public static int CV_BLOB_ID(CvBlob pB) { return pB.ID(); }
+    public static CvPoint2D32f CV_BLOB_CENTER(CvBlob pB) { return cvPoint2D32f(pB.x(), pB.y()); }
+    public static float CV_BLOB_X(CvBlob pB) { return pB.x(); }
+    public static float CV_BLOB_Y(CvBlob pB) { return pB.y(); }
+    public static float CV_BLOB_WX(CvBlob pB) { return pB.w(); }
+    public static float CV_BLOB_WY(CvBlob pB) { return pB.h(); }
+    public static float CV_BLOB_RX(CvBlob pB) { return 0.5f*CV_BLOB_WX(pB); }
+    public static float CV_BLOB_RY(CvBlob pB) { return 0.5f*CV_BLOB_WY(pB); }
+    public static CvRect CV_BLOB_RECT(CvBlob pB) { return cvRect(Math.round(pB.x()-CV_BLOB_RX(pB)), Math.round(pB.y()-CV_BLOB_RY(pB)),Math.round(CV_BLOB_WX(pB)),Math.round(CV_BLOB_WY(pB))); }
+
+    public static class CvBlobSeq extends Pointer {
+        static { load(); }
+        public CvBlobSeq() { allocate(); }
+        public CvBlobSeq(int BlobSize/*=sizeof(CvBlob)*/) { allocate(BlobSize); }
+        public CvBlobSeq(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int BlobSize/*=sizeof(CvBlob)*/);
+
+        public native CvBlob GetBlob(int BlobIndex);
+        public native CvBlob GetBlobByID(int BlobID);
+        public native void DelBlob(int BlobIndex);
+        public native void DelBlobByID(int BlobID);
+        public native void Clear();
+        public native void AddBlob(CvBlob pB);
+        public native int GetBlobNum();
+        public native void Write(CvFileStorage fs, String name);
+        public native void Load(CvFileStorage fs, CvFileNode node);
+        public native void AddFormat(String str);
+
+//        protected native CvMemStorage   m_pMem();
+//        protected native CvSeq          m_pSeq();
+//        protected native String/*char[1024]*/ m_pElemFormat();
+    }
+
+    public static class CvBlobTrack extends Pointer {
+        static { load(); }
+        public CvBlobTrack() { allocate(); }
+        public CvBlobTrack(int size) { allocateArray(size); }
+        public CvBlobTrack(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native int        TrackID();    public native CvBlobTrack TrackID(int TrackID);
+        public native int        StartFrame(); public native CvBlobTrack StartFrame(int StartFrame);
+        public native CvBlobSeq  pBlobSeq();   public native CvBlobTrack pBlobSeq(CvBlobSeq pBlobSeq);
+    }
+
+    public static class CvBlobTrackSeq extends Pointer {
+        static { load(); }
+        public CvBlobTrackSeq() { allocate(); }
+        public CvBlobTrackSeq(int TrackSize/*=sizeof(CvBlobTrack)*/) { allocate(TrackSize); }
+        public CvBlobTrackSeq(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int TrackSize/*=sizeof(CvBlobTrack)*/);
+
+        public native CvBlobTrack GetBlobTrack(int TrackIndex);
+        public native CvBlobTrack GetBlobTrackByID(int TrackID);
+        public native void DelBlobTrack(int TrackIndex);
+        public native void DelBlobTrackByID(int TrackID);
+        public native void Clear();
+        public native void AddBlobTrack(int TrackID, int StartFrame/*=0*/);
+        public native int GetBlobTrackNum();
+
+//        protected native CvMemStorage   m_pMem();
+//        protected native CvSeq          m_pSeq();
+    }
+
+    public static class CvBlobDetector extends CvVSModule {
+        static { load(); }
+        public CvBlobDetector() { }
+        public CvBlobDetector(Pointer p) { super(p); }
+
+        public /*abstract*/ native int DetectNewBlob(IplImage pImg, IplImage pImgFG, CvBlobSeq pNewBlobList, CvBlobSeq pOldBlobList);
+    }
+
+    public static native void cvReleaseBlobDetector(@ByPtrPtr CvBlobDetector ppBD);
+
+    public static native CvBlobDetector cvCreateBlobDetectorSimple();
+    public static native CvBlobDetector cvCreateBlobDetectorCC();
+
+    @NoOffset public static class CvDetectedBlob extends CvBlob {
+        static { load(); }
+        public CvDetectedBlob() { allocate(); }
+        public CvDetectedBlob(int size) { allocateArray(size); }
+        public CvDetectedBlob(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native float response(); public native CvDetectedBlob response(float response);
+    }
+
+    public static CvDetectedBlob cvDetectedBlob(float x, float y, float w, float h, int ID/*=0*/, float response/*=0.0F*/) {
+        CvDetectedBlob b = new CvDetectedBlob();
+        b.x(x).y(y).w(w).h(h).ID(ID); b.response(response);
+        return b;
+    }
+
+    public static class CvObjectDetector extends Pointer {
+        static { load(); }
+        public CvObjectDetector() { allocate(); }
+        public CvObjectDetector(String detector_file_name/*=null*/) { allocate(detector_file_name); }
+        public CvObjectDetector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(String detector_file_name/*=null*/);
+
+        public native boolean Load(String detector_file_name/*=null*/);
+        public native @ByVal CvSize GetMinWindowSize();
+        public native int GetMaxBorderSize();
+        public native void Detect(CvArr img, CvBlobSeq detected_blob_seq/*=null*/);
+
+//        protected native CvObjectDetectorImpl impl();
+    }
+
+    public static native @ByVal CvRect cvRectIntersection(@ByVal CvRect r1, @ByVal CvRect r2);
+
+
+    public static class CvDrawShape extends Pointer {
+        static { load(); }
+        public CvDrawShape() { allocate(); }
+        public CvDrawShape(int size) { allocateArray(size); }
+        public CvDrawShape(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public static final int RECT=0, ELLIPSE=1; // enum shape;
+        public native @ByRef CvScalar color(); public native CvDrawShape color(CvScalar color);
+    }
+
+    public static class CvImageDrawer extends Pointer {
+        static { load(); }
+        public CvImageDrawer() { allocate(); }
+        public CvImageDrawer(Pointer p) { super(p); }
+        private native void allocate();
+
+//        public native void SetShapes(CvDrawShape shapes, int num);
+//        public native IplImage Draw(CvArr src, CvBlobSeq blob_seq/*=null*/, CvSeq roi_seq/*=null*/);
+        public native IplImage GetImage();
+
+//        protected native IplImage m_image();
+//        protected native CvDrawShape/*[16]*/ m_shape(int i);
+    }
+
+
+    public static class CvBlobTrackGen extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackGen() { }
+        public CvBlobTrackGen(Pointer p) { super(p); }
+
+        public /*abstract*/ native void SetFileName(@Cast("char*") String pFileName);
+        public /*abstract*/ native void AddBlob(CvBlob pBlob);
+        public /*abstract*/ native void Process(IplImage pImg/*=null*/, IplImage pFG/*=null*/);
+    }
+
+    public static native void cvReleaseBlobTrackGen(@ByPtrPtr CvBlobTrackGen pBTGen);
+
+    public static native CvBlobTrackGen cvCreateModuleBlobTrackGen1();
+    public static native CvBlobTrackGen cvCreateModuleBlobTrackGenYML();
+
+
+    public static class CvBlobTracker extends CvVSModule {
+        static { load(); }
+        public CvBlobTracker() { }
+        public CvBlobTracker(Pointer p) { super(p); }
+
+        public /*abstract*/ native CvBlob AddBlob(CvBlob pBlob, IplImage pImg, IplImage pImgFG/*=null*/);
+        public /*abstract*/ native int    GetBlobNum();
+        public /*abstract*/ native CvBlob GetBlob(int BlobIndex);
+        public /*abstract*/ native void   DelBlob(int BlobIndex);
+        public /*abstract*/ native void   Process(IplImage pImg, IplImage pImgFG/*=null*/);
+
+        public native void ProcessBlob(int BlobIndex, CvBlob pBlob, IplImage pImg, IplImage pImgFG/*=null*/);
+        public native double  GetConfidence(int BlobIndex, CvBlob pBlob, IplImage pImg, IplImage pImgFG/*=null*/);
+        public native double GetConfidenceList(CvBlobSeq pBlobList, IplImage pImg, IplImage pImgFG/*=null*/);
+        public native void UpdateBlob(int BlobIndex, CvBlob pBlob, IplImage pImg, IplImage pImgFG/*=null*/);
+        public native void Update(IplImage pImg, IplImage pImgFG/*=null*/);
+        public native int    GetBlobIndexByID(int BlobID);
+        public native CvBlob GetBlobByID(int BlobID);
+        public native void   DelBlobByID(int BlobID);
+        public native void   SetBlob(int BlobIndex, CvBlob pBlob);
+        public native void   SetBlobByID(int BlobID, CvBlob pBlob);
+
+        public native int    GetBlobHypNum(int BlobIdx);
+        public native CvBlob GetBlobHyp(int BlobIndex, int hypothesis);
+        public native void   SetBlobHyp(int BlobIndex, CvBlob pBlob);
+    }
+
+    public static native void cvReleaseBlobTracker(@ByPtrPtr CvBlobTracker ppT);
+
+    public static class CvBlobTrackerOne extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackerOne() { }
+        public CvBlobTrackerOne(Pointer p) { super(p); }
+
+        public /*abstract*/ native void Init(CvBlob pBlobInit, IplImage pImg, IplImage pImgFG/*=null*/);
+        public /*abstract*/ native CvBlob Process(CvBlob pBlobPrev, IplImage pImg, IplImage pImgFG/*=null*/);
+
+        public native void SkipProcess(CvBlob pBlobPrev, IplImage pImg, IplImage pImgFG/*=null*/);
+        public native void Update(CvBlob pBlob, IplImage pImg, IplImage pImgFG/*=null*/);
+        public native void SetCollision(int CollisionFlag);
+        public native double GetConfidence(CvBlob pBlob, IplImage pImg,
+                IplImage pImgFG/*=null*/, IplImage pImgUnusedReg/*=null*/);
+    }
+    
+    public static native void cvReleaseBlobTrackerOne(@ByPtrPtr CvBlobTrackerOne ppT);
+    public static class CreateCvBlobTrackerOne extends FunctionPointer {
+        static { load(); }
+        public CreateCvBlobTrackerOne(Pointer p) { super(p); }
+        public native CvBlobTrackerOne call();
+    }
+    public static native CvBlobTracker cvCreateBlobTrackerList(CreateCvBlobTrackerOne create);
+
+
+    public static final int 
+            PROFILE_EPANECHNIKOV   = 0,
+            PROFILE_DOG            = 1;
+    public static class CvBlobTrackerParamMS extends Pointer {
+        static { load(); }
+        public CvBlobTrackerParamMS() { allocate(); }
+        public CvBlobTrackerParamMS(int size) { allocateArray(size); }
+        public CvBlobTrackerParamMS(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native int   noOfSigBits();        public native CvBlobTrackerParamMS noOfSigBits(int noOfSigBits);
+        public native int   appearance_profile(); public native CvBlobTrackerParamMS appearance_profile(int appearance_profile);
+        public native int   meanshift_profile();  public native CvBlobTrackerParamMS meanshift_profile(int meanshift_profile);
+        public native float sigma();              public native CvBlobTrackerParamMS sigma(float sigma);
+    }
+
+//    public static native CvBlobTracker cvCreateBlobTrackerMS1(CvBlobTrackerParamMS param);
+//    public static native CvBlobTracker cvCreateBlobTrackerMS2(CvBlobTrackerParamMS param);
+//    public static native CvBlobTracker cvCreateBlobTrackerMS1ByList();
+
+    public static class CvBlobTrackerParamLH extends Pointer {
+        static { load(); }
+        public CvBlobTrackerParamLH() { allocate(); }
+        public CvBlobTrackerParamLH(int size) { allocateArray(size); }
+        public CvBlobTrackerParamLH(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native int HistType();   public native CvBlobTrackerParamLH HistType(int HistType);
+        public native int ScaleAfter(); public native CvBlobTrackerParamLH ScaleAfter(int ScaleAfter);
+    }
+
+//    public static native CvBlobTracker cvCreateBlobTrackerLHR(CvBlobTrackerParamLH param/*=null*/);
+//    public static native CvBlobTracker cvCreateBlobTrackerLHRS(CvBlobTrackerParamLH param/*=null*/);
+    public static native CvBlobTracker cvCreateBlobTrackerCC();
+    public static native CvBlobTracker cvCreateBlobTrackerCCMSPF();
+    public static native CvBlobTracker cvCreateBlobTrackerMSFG();
+    public static native CvBlobTracker cvCreateBlobTrackerMSFGS();
+    public static native CvBlobTracker cvCreateBlobTrackerMS();
+    public static native CvBlobTracker cvCreateBlobTrackerMSPF();
+//    public static native  CvBlobTracker cvCreateBlobTrackerIPF();
+//    public static native  CvBlobTracker cvCreateBlobTrackerIRB();
+//    public static native  CvBlobTracker cvCreateBlobTrackerIPFDF();
+
+    public static class CvBlobTrackPostProc extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackPostProc() { }
+        public CvBlobTrackPostProc(Pointer p) { super(p); }
+
+        public /*abstract*/ native void   AddBlob(CvBlob pBlob);
+        public /*abstract*/ native void   Process();
+        public /*abstract*/ native int    GetBlobNum();
+        public /*abstract*/ native CvBlob GetBlob(int index);
+
+        public native CvBlob GetBlobByID(int BlobID);
+    }
+
+    public static native void cvReleaseBlobTrackPostProc(@ByPtrPtr CvBlobTrackPostProc pBTPP);
+
+    public static class CvBlobTrackPostProcOne extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackPostProcOne() { }
+        public CvBlobTrackPostProcOne(Pointer p) { super(p); }
+
+        public /*abstract*/ native CvBlob Process(CvBlob pBlob);
+    }
+
+    public static class CreateCvBlobTrackPostProcOne extends FunctionPointer {
+        static { load(); }
+        public CreateCvBlobTrackPostProcOne(Pointer p) { super(p); }
+        public native CvBlobTrackPostProcOne call();
+    }
+    public static native CvBlobTrackPostProc cvCreateBlobTrackPostProcList(CreateCvBlobTrackPostProcOne create);
+    public static native CvBlobTrackPostProc cvCreateModuleBlobTrackPostProcKalman();
+    public static native CvBlobTrackPostProc cvCreateModuleBlobTrackPostProcTimeAverRect();
+    public static native CvBlobTrackPostProc cvCreateModuleBlobTrackPostProcTimeAverExp();
+
+
+    public static class CvBlobTrackPredictor extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackPredictor() { }
+        public CvBlobTrackPredictor(Pointer p) { super(p); }
+
+        public /*abstract*/ native CvBlob Predict();
+        public /*abstract*/ native void   Update(CvBlob pBlob);
+    }
+    public static native CvBlobTrackPredictor cvCreateModuleBlobTrackPredictKalman();
+
+
+    public static class CvBlobTrackAnalysis extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackAnalysis() { }
+        public CvBlobTrackAnalysis(Pointer p) { super(p); }
+
+        public /*abstract*/ native void    AddBlob(CvBlob pBlob);
+        public /*abstract*/ native void    Process(IplImage pImg, IplImage pFG);
+        public /*abstract*/ native float   GetState(int BlobID);
+
+        public native String  GetStateDesc(int BlobID);
+        public native void    SetFileName(@Cast("char*") String DataBaseName);
+    }
+
+    public static native void cvReleaseBlobTrackAnalysis(@ByPtrPtr CvBlobTrackAnalysis pBTPP);
+
+
+    public static class CvBlobTrackFVGen extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackFVGen() { }
+        public CvBlobTrackFVGen(Pointer p) { super(p); }
+
+        public /*abstract*/ native void    AddBlob(CvBlob pBlob);
+        public /*abstract*/ native void    Process(IplImage pImg, IplImage pFG);
+        public /*abstract*/ native int     GetFVSize();
+        public /*abstract*/ native int     GetFVNum();
+        public /*abstract*/ native FloatPointer  GetFV(int index, int[] pFVID);
+        public native FloatPointer  GetFVVar();
+        public /*abstract*/ native FloatPointer  GetFVMin();
+        public /*abstract*/ native FloatPointer  GetFVMax();
+    }
+
+
+    public static class CvBlobTrackAnalysisOne extends Pointer {
+        static { load(); }
+        public CvBlobTrackAnalysisOne() { }
+        public CvBlobTrackAnalysisOne(Pointer p) { super(p); }
+
+        public /*abstract*/ native int  Process(CvBlob pBlob, IplImage pImg, IplImage pFG);
+        public /*abstract*/ native void Release();
+    }
+
+    public static class CreateCvBlobTrackAnalysisOne extends FunctionPointer {
+        static { load(); }
+        public CreateCvBlobTrackAnalysisOne(Pointer p) { super(p); }
+        public native CvBlobTrackAnalysisOne call();
+    }
+    public static native CvBlobTrackAnalysis cvCreateBlobTrackAnalysisList(CreateCvBlobTrackAnalysisOne create);
+    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisHistP();
+    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisHistPV();
+    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisHistPVS();
+    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisHistSS();
+//    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisSVMP();
+//    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisSVMPV();
+//    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisSVMPVS();
+//    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisSVMSS();
+    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisTrackDist();
+//    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysis3DRoadMap();
+    public static native CvBlobTrackAnalysis cvCreateModuleBlobTrackAnalysisIOR();
+
+
+    public static class CvBlobTrackAnalysisHeight extends CvBlobTrackAnalysis {
+        static { load(); }
+        public CvBlobTrackAnalysisHeight() { }
+        public CvBlobTrackAnalysisHeight(Pointer p) { super(p); }
+
+        public /*abstract*/ native double GetHeight(CvBlob pB);
+    }
+//    public static native CvBlobTrackAnalysisHeight cvCreateModuleBlobTrackAnalysisHeightScale();
+
+
+    public static class CvBlobTrackerAuto extends CvVSModule {
+        static { load(); }
+        public CvBlobTrackerAuto() { }
+        public CvBlobTrackerAuto(Pointer p) { super(p); }
+
+        public /*abstract*/ native void       Process(IplImage pImg, IplImage pMask/*=null*/);
+        public /*abstract*/ native CvBlob     GetBlob(int index);
+        public /*abstract*/ native CvBlob     GetBlobByID(int ID);
+        public /*abstract*/ native int        GetBlobNum();
+        public native IplImage   GetFGMask();
+        public /*abstract*/ native float      GetState(int BlobID);
+        public /*abstract*/ native String     GetStateDesc(int BlobID);
+    }
+    public static native void cvReleaseBlobTrackerAuto(@ByPtrPtr CvBlobTrackerAuto ppT);
+
+
+    public static class CvBlobTrackerAutoParam1 extends Pointer {
+        static { load(); }
+        public CvBlobTrackerAutoParam1() { allocate(); }
+        public CvBlobTrackerAutoParam1(int size) { allocateArray(size); }
+        public CvBlobTrackerAutoParam1(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native int                 FGTrainFrames(); public native CvBlobTrackerAutoParam1 FGTrainFrames(int FGTrainFrames);
+        public native CvFGDetector        pFG();           public native CvBlobTrackerAutoParam1 pFG(CvFGDetector pFG);
+        public native CvBlobDetector      pBD();           public native CvBlobTrackerAutoParam1 pBD(CvBlobDetector pBD);
+        public native CvBlobTracker       pBT();           public native CvBlobTrackerAutoParam1 pBT(CvBlobTracker pBT);
+        public native CvBlobTrackGen      pBTGen();        public native CvBlobTrackerAutoParam1 pBTGen(CvBlobTrackGen pBTGen);
+        public native CvBlobTrackPostProc pBTPP();         public native CvBlobTrackerAutoParam1 pBTPP(CvBlobTrackPostProc pBTPP);
+        public native int                 UsePPData();     public native CvBlobTrackerAutoParam1 UsePPData(int UsePPData);
+        public native CvBlobTrackAnalysis pBTA();          public native CvBlobTrackerAutoParam1 pBTA(CvBlobTrackAnalysis pBTA);
+    }
+
+    public static native CvBlobTrackerAuto cvCreateBlobTrackerAuto1(CvBlobTrackerAutoParam1 param/*=null*/);
+    public static native CvBlobTrackerAuto cvCreateBlobTrackerAuto(int type, Pointer param);
+
+
+    public static class CvTracksTimePos extends Pointer {
+        static { load(); }
+        public CvTracksTimePos() { allocate(); }
+        public CvTracksTimePos(int size) { allocateArray(size); }
+        public CvTracksTimePos(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native int len1();   public native CvTracksTimePos len1(int len1);
+        public native int len2();   public native CvTracksTimePos len2(int len2);
+        public native int beg1();   public native CvTracksTimePos beg1(int beg1);
+        public native int beg2();   public native CvTracksTimePos beg2(int beg2);
+        public native int end1();   public native CvTracksTimePos end1(int end1);
+        public native int end2();   public native CvTracksTimePos end2(int end2);
+        public native int comLen(); public native CvTracksTimePos comLen(int comLen);
+        public native int shift1(); public native CvTracksTimePos shift1(int shift1);
+        public native int shift2(); public native CvTracksTimePos shift2(int shift2);
+    }
+
+//    public static native int cvCompareTracks(CvBlobTrackSeq groundTruth, CvBlobTrackSeq result, @Cast("FILE*") Pointer file);
+//
+//    public static native void cvCreateTracks_One(CvBlobTrackSeq TS);
+//    public static native void cvCreateTracks_Same(CvBlobTrackSeq TS1, CvBlobTrackSeq TS2);
+//    public static native void cvCreateTracks_AreaErr(CvBlobTrackSeq TS1, CvBlobTrackSeq TS2, int addW, int addH);
+
+
+    public static class CvProb extends Pointer {
+        static { load(); }
+        public CvProb() { }
+        public CvProb(Pointer p) { super(p); }
+
+        public native double Value(int[] comp, int x/*=0*/, int y/*=0*/);
+
+        public /*abstract*/ native void AddFeature(float W, int[] comps, int x/*=0*/, int y/*=0*/);
+        public /*abstract*/ native void Scale(float factor/*=0*/, int x/*=-1*/, int y/*=-1*/);
+        public /*abstract*/ native void Release();
+    }
+    public static native void cvReleaseProb(@ByPtrPtr CvProb ppProb);
+
+//    public static native CvProb cvCreateProbS(int dim, @ByVal CvSize size, int sample_num);
+//    public static native CvProb cvCreateProbMG(int dim, @ByVal CvSize size, int sample_num);
+//    public static native CvProb cvCreateProbMG2(int dim, @ByVal CvSize size, int sample_num);
+//    public static native CvProb cvCreateProbHist(int dim, @ByVal CvSize size);
+//
+//    public static final int
+//            CV_BT_HIST_TYPE_S    = 0,
+//            CV_BT_HIST_TYPE_MG   = 1,
+//            CV_BT_HIST_TYPE_MG2  = 2,
+//            CV_BT_HIST_TYPE_H    = 3;
+//    public static native CvProb cvCreateProb(int type, int dim, @ByVal CvSize size/*=cvSize(1,1)*/, Pointer param/*=null*/);
+
+
+    public static final int
+        CV_NOISE_NONE              = 0,
+        CV_NOISE_GAUSSIAN          = 1,
+        CV_NOISE_UNIFORM           = 2,
+        CV_NOISE_SPECKLE           = 3,
+        CV_NOISE_SALT_AND_PEPPER   = 4;
+//    public static native void cvAddNoise(IplImage pImg, int noise_type, double Ampl, CvRNG rnd_state/*=null*/);
+
+    @Opaque public static class CvTestSeq extends Pointer {
+        static { load(); }
+        public CvTestSeq() { }
+        public CvTestSeq(Pointer p) { super(p); }
+    }
+
+    public static native CvTestSeq cvCreateTestSeq(@Cast("char*") String pConfigfile, @Cast("char**") PointerPointer videos, 
+            int numvideo, float Scale/*=1*/, int noise_type/*=CV_NOISE_NONE*/, double noise_ampl/*=0*/);
+    public static native void cvReleaseTestSeq(@ByPtrPtr CvTestSeq ppTestSeq);
+
+    public static native IplImage cvTestSeqQueryFrame(CvTestSeq pTestSeq);
+    public static native IplImage cvTestSeqGetFGMask(CvTestSeq pTestSeq);
+    public static native IplImage cvTestSeqGetImage(CvTestSeq pTestSeq);
+    public static native @ByVal CvSize cvTestSeqGetImageSize(CvTestSeq pTestSeq);
+    public static native int cvTestSeqFrameNum(CvTestSeq pTestSeq);
+    public static native int cvTestSeqGetObjectNum(CvTestSeq pTestSeq);
+
+    public static native int cvTestSeqGetObjectPos(CvTestSeq pTestSeq, int ObjIndex, CvPoint2D32f pPos);
+    public static native int cvTestSeqGetObjectSize(CvTestSeq pTestSeq, int ObjIndex, CvPoint2D32f pSize);
+
+    public static native void cvTestSeqAddNoise(CvTestSeq pTestSeq, int noise_type/*=CV_NOISE_NONE*/, double noise_ampl/*=0*/);
+
+    public static native void cvTestSeqAddIntensityVariation(CvTestSeq pTestSeq, float DI_per_frame, float MinI, float MaxI);
+    public static native void cvTestSeqSetFrame(CvTestSeq pTestSeq, int n);
 }

@@ -56,10 +56,18 @@
 
 package com.googlecode.javacv.cpp;
 
-import java.nio.FloatBuffer;
+import com.googlecode.javacpp.DoublePointer;
+import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.Pointer;
+import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByPtrRef;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
+import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Name;
+import com.googlecode.javacpp.annotation.Namespace;
+import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
@@ -72,10 +80,10 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include="<opencv2/calib3d/calib3d.hpp>", includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link="opencv_calib3d"),
+    @Platform(include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
+        linkpath=genericLinkpath,       link={"opencv_calib3d", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link="opencv_calib3d220"),
+        preloadpath=windowsPreloadpath, link={"opencv_calib3d220", "opencv_imgproc220", "opencv_core220"}),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_calib3d {
     static { load(opencv_imgproc.class); load(); }
@@ -107,7 +115,7 @@ public class opencv_calib3d {
             float[] /*CvMatr32f*/ rotation_matrix, float[] /*CvVect32f*/ translation_vector);
     public static native void cvPOSIT(CvPOSITObject posit_object, CvPoint2D32f image_points,
             double focal_length, @ByVal CvTermCriteria criteria,
-            FloatBuffer /*CvMatr32f*/ rotation_matrix, FloatBuffer /*CvVect32f*/ translation_vector);
+            FloatPointer /*CvMatr32f*/ rotation_matrix, FloatPointer /*CvVect32f*/ translation_vector);
     public static native void cvReleasePOSITObject(@ByPtrPtr CvPOSITObject posit_object);
 
     public static native int cvRANSACUpdateNumIters(double p, double err_prob, int model_points, int max_iters);
@@ -301,8 +309,8 @@ public class opencv_calib3d {
 
         public native int trySmallerWindows();   public native CvStereoBMState trySmallerWindows(int trySmallerWindows);
 
-        public native @ByVal CvRect roi1();      public native CvStereoBMState roi1(CvRect roi1);
-        public native @ByVal CvRect roi2();      public native CvStereoBMState roi2(CvRect roi2);
+        public native @ByRef CvRect roi1();      public native CvStereoBMState roi1(CvRect roi1);
+        public native @ByRef CvRect roi2();      public native CvStereoBMState roi2(CvRect roi2);
         public native int disp12MaxDiff();       public native CvStereoBMState disp12MaxDiff(int disp12MaxDiff);
 
         public native CvMat preFilteredImg0();   public native CvStereoBMState preFilteredImg0(CvMat preFilteredImg0);
@@ -390,4 +398,94 @@ public class opencv_calib3d {
     }
     public static native void cvReprojectImageTo3D(CvArr disparityImage, CvArr _3dImage,
             CvMat Q, int handleMissingValues/*=0*/);
+
+
+    @NoOffset public static class CvLevMarq extends Pointer {
+        static { load(); }
+        public CvLevMarq() { allocate(); }
+        public CvLevMarq(int nparams, int nerrs,
+                @ByVal CvTermCriteria criteria/*=cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER,30,DBL_EPSILON)*/,
+                boolean completeSymmFlag/*=false*/) {
+            allocate(nparams, nerrs, criteria, completeSymmFlag);
+        }
+        public CvLevMarq(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int nparams, int nerrs,
+                @ByVal CvTermCriteria criteria/*=cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER,30,DBL_EPSILON)*/,
+                boolean completeSymmFlag/*=false*/);
+
+        public native void init(int nparams, int nerrs,
+                @ByVal CvTermCriteria criteria/*=cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER,30,DBL_EPSILON)*/,
+                boolean completeSymmFlag/*=false*/);
+        public native boolean update(@Cast("const CvMat*&") CvMat param, @ByPtrRef CvMat J, @ByPtrRef CvMat err);
+        public native boolean updateAlt(@Cast("const CvMat*&") CvMat param, @ByPtrRef CvMat JtJ, @ByPtrRef CvMat JtErr, @ByPtrRef DoublePointer errNorm);
+
+        public native void clear();
+        public native void step();
+        public static final int DONE=0, STARTED=1, CALC_J=2, CHECK_ERR=3;
+
+        public native CvMat mask();               public native CvLevMarq mask(CvMat mask);
+        public native CvMat prevParam();          public native CvLevMarq prevParam(CvMat prevParam);
+        public native CvMat param();              public native CvLevMarq param(CvMat param);
+        public native CvMat J();                  public native CvLevMarq J(CvMat J);
+        public native CvMat err();                public native CvLevMarq err(CvMat err);
+        public native CvMat JtJ();                public native CvLevMarq JtJ(CvMat JtJ);
+        public native CvMat JtJN();               public native CvLevMarq JtJN(CvMat JtJN);
+        public native CvMat JtErr();              public native CvLevMarq JtErr(CvMat JtErr);
+        public native CvMat JtJV();               public native CvLevMarq JtJV(CvMat JtJV);
+        public native CvMat JtJW();               public native CvLevMarq JtJW(CvMat JtJW);
+        public native double prevErrNorm();       public native CvLevMarq prevErrNorm(double prevErrNorm);
+        public native double errNorm();           public native CvLevMarq errNorm(double errNorm);
+        public native int lambdaLg10();           public native CvLevMarq lambdaLg10(int lambdaLg10);
+        @ByRef
+        public native CvTermCriteria criteria();  public native CvLevMarq criteria(CvTermCriteria criteria);
+        public native int state();                public native CvLevMarq state(int state);
+        public native int iters();                public native CvLevMarq iters(int iters);
+        public native boolean completeSymmFlag(); public native CvLevMarq completeSymmFlag(boolean completeSymmFlag);
+    }
+
+    @Namespace("cv") public static native float rectify3Collinear(CvMat cameraMatrix1, CvMat distCoeffs1, CvMat cameraMatrix2, CvMat distCoeffs2,
+            CvMat cameraMatrix3, CvMat distCoeffs3, @ByRef Point2fVectorVector imgpt1, @ByRef Point2fVectorVector imgpt3,
+            @ByVal CvSize imageSize, CvMat R12, CvMat T12, CvMat R13, CvMat T13,
+            @Adapter("MatAdapter") CvMat R1, @Adapter("MatAdapter") CvMat R2, @Adapter("MatAdapter") CvMat R3,
+            @Adapter("MatAdapter") CvMat P1, @Adapter("MatAdapter") CvMat P2, @Adapter("MatAdapter") CvMat P3,
+            @Adapter("MatAdapter") CvMat Q,  double alpha, @ByVal CvSize newImgSize,
+            @Adapter("RectAdapter") CvRect roi1, @Adapter("RectAdapter") CvRect roi2, int flags);
+
+    @NoOffset @Namespace("cv") public static class StereoSGBM extends Pointer {
+        static { load(); }
+        public StereoSGBM() { allocate(); }
+        public StereoSGBM(int minDisparity, int numDisparities, int SADWindowSize,
+               int P1/*=0*/, int P2/*=0*/, int disp12MaxDiff/*=0*/, int preFilterCap/*=0*/, int uniquenessRatio/*=0*/,
+               int speckleWindowSize/*=0*/, int speckleRange/*=0*/, boolean fullDP/*=false*/) {
+            allocate(minDisparity, numDisparities, SADWindowSize, P1, P2, disp12MaxDiff, preFilterCap,
+                    uniquenessRatio, speckleWindowSize, speckleRange, fullDP);
+        }
+        public StereoSGBM(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int minDisparity, int numDisparities, int SADWindowSize,
+               int P1/*=0*/, int P2/*=0*/, int disp12MaxDiff/*=0*/, int preFilterCap/*=0*/, int uniquenessRatio/*=0*/,
+               int speckleWindowSize/*=0*/, int speckleRange/*=0*/, boolean fullDP/*=false*/);
+
+        public static final int DISP_SHIFT=4, DISP_SCALE = (1<<DISP_SHIFT);
+
+        public native @Name("operator()") void compute(IplImage left, IplImage right, @Adapter("MatAdapter") IplImage disp);
+
+        public native int minDisparity();        public native StereoSGBM minDisparity(int minDisparity);
+        public native int numberOfDisparities(); public native StereoSGBM numberOfDisparities(int numberOfDisparities);
+        public native int SADWindowSize();       public native StereoSGBM SADWindowSize(int SADWindowSize);
+        public native int preFilterCap();        public native StereoSGBM preFilterCap(int preFilterCap);
+        public native int uniquenessRatio();     public native StereoSGBM uniquenessRatio(int uniquenessRatio);
+        public native int P1();                  public native StereoSGBM P1(int P1);
+        public native int P2();                  public native StereoSGBM P2(int P2);
+        public native int speckleWindowSize();   public native StereoSGBM speckleWindowSize(int speckleWindowSize);
+        public native int speckleRange();        public native StereoSGBM speckleRange(int speckleRange);
+        public native int disp12MaxDiff();       public native StereoSGBM disp12MaxDiff(int disp12MaxDiff);
+        public native boolean fullDP();          public native StereoSGBM fullDP(boolean fullDP);
+
+//        protected native @Adapter("MatAdapter") CvMat buffer();
+    }
+
+    @Namespace("cv") public static native void filterSpeckles(@Adapter("MatAdapter") IplImage img, double newVal,
+            int maxSpeckleSize, double maxDiff, @Adapter("MatAdapter") IplImage buf);
 }

@@ -34,6 +34,7 @@ import com.googlecode.javacpp.annotation.ByPtrPtr;
 import com.googlecode.javacpp.annotation.ByPtrRef;
 import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.Opaque;
@@ -237,8 +238,8 @@ public class ARToolKitPlus {
         public native void setNumAutoThresholdRetries(int nNumRetries);
 
         public native void setImageProcessingMode(@Cast("ARToolKitPlus::IMAGE_PROC_MODE") int nMode);
-        public native @Cast("const ARFloat*") DoublePointer getModelViewMatrix();
-        public native @Cast("const ARFloat*") DoublePointer getProjectionMatrix();
+        public native @Const DoublePointer getModelViewMatrix();
+        public native @Const DoublePointer getProjectionMatrix();
         public native String getDescription();
         public native @Cast("ARToolKitPlus::PIXEL_FORMAT") int getPixelFormat();
         public native int getBitsPerPixel();
@@ -296,8 +297,8 @@ public class ARToolKitPlus {
         public native int getNumDetectedMarkers();
         public native void setUseDetectLite(boolean nEnable);
         public native void getDetectedMarkers(@ByPtrRef IntPointer nMarkerIDs);
-        public native @Cast("const ARToolKitPlus::ARMarkerInfo*") @ByRef ARMarkerInfo getDetectedMarker(int nWhich);
-        public native @Cast("const ARToolKitPlus::ARMultiMarkerInfoT*") ARMultiMarkerInfoT getMultiMarkerConfig();
+        public native @Const @ByRef ARMarkerInfo getDetectedMarker(int nWhich);
+        public native @Const ARMultiMarkerInfoT getMultiMarkerConfig();
         public native void getARMatrix(@Cast("ARFloat(*)[4]") double nMatrix[/*3][4*/]);
     }
 }

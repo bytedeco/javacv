@@ -37,13 +37,9 @@ public class VideoInputFrameGrabber extends FrameGrabber {
 
         int count = videoInput.listDevices();
         String[] descriptions = new String[count];
-
-        if (count > 0) {
-            for (int i = 0; i < descriptions.length; i++) {
-                descriptions[i] = videoInput.getDeviceName(i);
-            }
+        for (int i = 0; i < descriptions.length; i++) {
+            descriptions[i] = videoInput.getDeviceName(i);
         }
-
         return descriptions;
     }
 

@@ -111,7 +111,7 @@ class FaceView extends View implements Camera.PreviewCallback {
             "/com/googlecode/javacv/facepreview/haarcascade_frontalface_alt.xml",
             context.getCacheDir(), "classifier", ".xml");
         if (classifierFile == null || classifierFile.length() <= 0) {
-            throw new IOException("Could not extract the classifier file.");
+            throw new IOException("Could not extract the classifier file from Java resource.");
         }
 
         // Preload the opencv_objdetect module to work around a known bug.

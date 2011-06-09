@@ -1,12 +1,11 @@
 =JavaCV=
 
 ==Introduction==
-JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: [http://opencv.willowgarage.com/ OpenCV], [http://www.ffmpeg.org/ FFmpeg], [http://damien.douxchamps.net/ieee1394/libdc1394/ libdc1394], [http://www.ptgrey.com/products/pgrflycapture/ PGR FlyCapture], [http://muonics.net/school/spring05/videoInput/ videoInput], and [http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php ARToolKitPlus]. The following classes, found under the `com.googlecode.javacv.cpp` package namespace, expose their complete APIs: `opencv_core`, `opencv_imgproc`, `opencv_video`, `opencv_features2d`, `opencv_calib3d`, `opencv_objdetect`, `opencv_highgui`, `opencv_legacy`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postprocess`, `swscale`, `dc1394`, `PGRFlyCapture`, `videoInputLib`, and `ARToolKitPlus`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform, including Android. 
+JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: [http://opencv.willowgarage.com/ OpenCV], [http://www.ffmpeg.org/ FFmpeg], [http://damien.douxchamps.net/ieee1394/libdc1394/ libdc1394], [http://www.ptgrey.com/products/pgrflycapture/ PGR FlyCapture], [http://openkinect.org/ OpenKinect], [http://muonics.net/school/spring05/videoInput/ videoInput], and [http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php ARToolKitPlus]. The following classes, found under the `com.googlecode.javacv.cpp` package namespace, expose their complete APIs: `opencv_core`, `opencv_imgproc`, `opencv_video`, `opencv_flann`, `opencv_features2d`, `opencv_calib3d`, `opencv_objdetect`, `opencv_highgui`, `opencv_legacy`, `opencv_ml`, `opencv_contrib`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postproc`, `swscale`, `dc1394`, `PGRFlyCapture`, `freenect`, `videoInputLib`, and `ARToolKitPlus`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform, including Android.
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV] section below as well as the 
-sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
+To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV] section below as well as the sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
 
 I will continue to add all code that I am developing for my doctoral research as I go.
 
@@ -18,20 +17,22 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK 6  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK 6  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE 6 for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.2  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.2.0  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
 
-Further, although not always required, some functionality of JavaCV also relies on:
+And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
  * FFmpeg 0.6.x  http://ffmpeg.org/download.html
   * Precompiled for Windows x86     http://hawkeye.arrozcru.org/builds/win32/shared/ (last build compatible with FFmpeg 0.6: 18-Apr-2011)
   * Precompiled for Windows x86-64  http://hawkeye.arrozcru.org/builds/win64/shared/ (last build compatible with FFmpeg 0.6: 18-Apr-2011)
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
  * PGR FlyCapture 1.7~2.1 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
- * Android SDK API 8~11  http://developer.android.com/sdk/
+ * OpenKinect  http://openkinect.org/
+ * Android SDK API 8~12  http://developer.android.com/sdk/
 
-To modify the source code, note that the project files were created with:
- * NetBeans 6.9  http://www.netbeans.org/downloads/
+To modify the source code, please note that the project files were created for:
+ * NetBeans 6.9  http://netbeans.org/downloads/
+ * JavaCPP  http://code.google.com/p/javacpp/
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
@@ -53,11 +54,11 @@ Eclipse (Android 2.2 or newer):
  * Follow the instructions on this page: http://developer.android.com/guide/tutorials/hello-world.html
  * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
- * Extract the `*.so` files from `javacv-android-arm.jar` *as well as* the `*.so` files of OpenCV in the newly created "libs/armeabi" folder.
+ * Extract the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.2.0-android-arm.zip` in the newly created "libs/armeabi" folder.
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
  * Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
-After that, the wrapper classes for OpenCV can automatically access all of its C API. The class definitions are basically ports to Java of the original include files in C, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
+After that, the wrapper classes for OpenCV can automatically access all of its C/C++ API. The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -70,6 +71,7 @@ public class Smoother {
         if (image != null) {
             cvSmooth(image, image, CV_GAUSSIAN, 3);
             cvSaveImage(filename, image);
+            cvReleaseImage(image);
         }
     }
 }
@@ -111,8 +113,8 @@ public class Demo {
         CanvasFrame frame = new CanvasFrame("Some Title");
 
         // OpenCVFrameGrabber uses opencv_highgui, but other more versatile FrameGrabbers 
-        // include DC1394FrameGrabber, FlyCaptureFrameGrabber, VideoInputFrameGrabber and 
-        // FFmpegFrameGrabber.
+        // include DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber, 
+        // VideoInputFrameGrabber, and FFmpegFrameGrabber.
         FrameGrabber grabber = new OpenCVFrameGrabber(0);
         grabber.start();
 
@@ -204,6 +206,11 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===June 10, 2011===
+ * New `freenect` wrapper and corresponding `OpenKinectFrameGrabber` to capture from Microsoft's Kinect stereo camera using OpenKinect
+ * JavaCV now exposes all C++ functions and classes of OpenCV not covered by the C API
+ * Fixed various erroneous declarations and calls, including those due to changes in JavaCPP
+
 ===May 11, 2011===
  * Removed `CvMat` object pooling in favor of more efficient `ThreadLocal` objects created by `CvMat.createThreadLocal()`
  * Changed `Marker.getCenter()` back to the centroid, because it has better noise averaging properties and gives in practice more accurate results than the actual center

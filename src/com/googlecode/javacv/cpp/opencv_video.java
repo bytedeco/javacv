@@ -56,14 +56,15 @@
 
 package com.googlecode.javacv.cpp;
 
-import java.nio.FloatBuffer;
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 
@@ -77,9 +78,9 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  */
 @Properties({
     @Platform(include={"<opencv2/video/tracking.hpp>", "<opencv2/video/background_segm.hpp>"},
-        linkpath=genericLinkpath,       link="opencv_video", includepath=genericIncludepath),
+        linkpath=genericLinkpath,       link={"opencv_video", "opencv_imgproc", "opencv_core"}, includepath=genericIncludepath),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link="opencv_video220"),
+        preloadpath=windowsPreloadpath, link={"opencv_video220", "opencv_imgproc220", "opencv_core220"}),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_video {
     static { load(opencv_imgproc.class); load(); }
@@ -105,15 +106,15 @@ public class opencv_video {
     public static native void cvCalcOpticalFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
             CvArr curr_pyr, CvPoint2D32f prev_features, CvPoint2D32f curr_features,
             int count, @ByVal CvSize win_size, int level, @Cast("char*") byte[] status,
-            FloatBuffer track_error, @ByVal CvTermCriteria criteria, int flags);
+            FloatPointer track_error, @ByVal CvTermCriteria criteria, int flags);
     public static native void cvCalcAffineFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
             CvArr curr_pyr, CvPoint2D32f prev_features, CvPoint2D32f curr_features,
             float[] matrices, int count, @ByVal CvSize win_size, int level,
             @Cast("char*") byte[] status, float[] track_error, @ByVal CvTermCriteria criteria, int flags);
     public static native void cvCalcAffineFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
             CvArr curr_pyr, CvPoint2D32f prev_features, CvPoint2D32f curr_features,
-            FloatBuffer matrices, int count, @ByVal CvSize win_size, int level,
-            @Cast("char*") byte[] status, FloatBuffer track_error, @ByVal CvTermCriteria criteria, int flags);
+            FloatPointer matrices, int count, @ByVal CvSize win_size, int level,
+            @Cast("char*") byte[] status, FloatPointer track_error, @ByVal CvTermCriteria criteria, int flags);
     public static native int cvEstimateRigidTransform(CvArr A, CvArr B, CvMat M, int full_affine);
     public static native void cvCalcOpticalFlowFarneback(CvArr prev, CvArr next,
             CvArr flow, double pyr_scale, int levels, int winsize,
@@ -199,8 +200,8 @@ public class opencv_video {
     }
     public static native CvKalman cvCreateKalman(int dynam_params, int measure_params, int control_params/*=0*/);
     public static native void cvReleaseKalman(@ByPtrPtr CvKalman kalman);
-    public static native @Cast("const CvMat*") CvMat cvKalmanPredict(CvKalman kalman, CvMat control/*=null*/);
-    public static native @Cast("const CvMat*") CvMat cvKalmanCorrect(CvKalman kalman, CvMat measurement);
+    public static native @Const CvMat cvKalmanPredict(CvKalman kalman, CvMat control/*=null*/);
+    public static native @Const CvMat cvKalmanCorrect(CvKalman kalman, CvMat measurement);
     public static CvMat cvKalmanUpdateByTime(CvKalman kalman, CvMat control/*=null*/) {
         return cvKalmanPredict(kalman, control);
     }
@@ -264,8 +265,7 @@ public class opencv_video {
         public native CvUpdateBGStatModel update();   public native CvBGStatModel update(CvUpdateBGStatModel update);
         public native IplImage background();          public native CvBGStatModel background(IplImage background);
         public native IplImage foreground();          public native CvBGStatModel foreground(IplImage foreground);
-        @Cast("IplImage**")
-        public native PointerPointer layers();        public native CvBGStatModel layers(PointerPointer layers);
+        public native IplImageArray layers();         public native CvBGStatModel layers(IplImageArray layers);
         public native int layer_count();              public native CvBGStatModel layer_count(int layer_count);
         public native CvMemStorage storage();         public native CvBGStatModel storage(CvMemStorage storage);
         public native CvSeq foreground_regions();     public native CvBGStatModel foreground_regions(CvSeq foreground_regions);
@@ -396,7 +396,7 @@ public class opencv_video {
         public native IplImage Ftd();                public native CvFGDStatModel Ftd(IplImage Ftd);
         public native IplImage Fbd();                public native CvFGDStatModel Fbd(IplImage Fbd);
         public native IplImage prev_frame();         public native CvFGDStatModel prev_frame(IplImage prev_frame);
-        @ByVal
+        @ByRef
         public native CvFGDStatModelParams params(); public native CvFGDStatModel params(CvFGDStatModelParams params);
     }
 
@@ -486,7 +486,7 @@ public class opencv_video {
             return (CvGaussBGModel)super.position(position);
         }
 
-        @ByVal
+        @ByRef
         public native CvGaussBGStatModelParams params(); public native CvGaussBGModel params(CvGaussBGStatModelParams params);
         public native CvGaussBGPoint g_point();          public native CvGaussBGModel g_point(CvGaussBGPoint g_point);
         public native int countFrames();                 public native CvGaussBGModel countFrames(int countFrames);
@@ -546,7 +546,7 @@ public class opencv_video {
         }
 
 
-        @ByVal
+        @ByRef
         public native CvSize size();               public native CvBGCodeBookModel size(CvSize size);
         public native int t();                     public native CvBGCodeBookModel t(int t);
         public native byte/*[3]*/ cbBounds(int i); public native CvBGCodeBookModel cbBounds(int i, byte cbBounds);

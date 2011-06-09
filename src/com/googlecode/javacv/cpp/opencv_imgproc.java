@@ -18,8 +18,8 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in imgproc/types_c.h and imgproc_c.h
- * of OpenCV 2.2, which are covered by the following copyright notice:
+ * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
+ * imgproc.hpp of OpenCV 2.2, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -56,16 +56,22 @@
 
 package com.googlecode.javacv.cpp;
 
-import java.nio.FloatBuffer;
+import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.SizeTPointer;
+import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
+import com.googlecode.javacpp.annotation.Name;
+import com.googlecode.javacpp.annotation.Namespace;
+import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
@@ -78,10 +84,10 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include="<opencv2/imgproc/imgproc_c.h>", includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link="opencv_imgproc"),
+    @Platform(include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
+        linkpath=genericLinkpath,       link={"opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link="opencv_imgproc220"),
+        preloadpath=windowsPreloadpath, link={"opencv_imgproc220", "opencv_core220"}),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_imgproc {
     static { load(opencv_core.class); load(); }
@@ -99,8 +105,8 @@ public class opencv_imgproc {
         }
 
         public native double area();           public native CvConnectedComp area(double area);
-        public native @ByVal CvScalar value(); public native CvConnectedComp value(CvScalar value);
-        public native @ByVal CvRect rect();    public native CvConnectedComp rect(CvRect rect);
+        public native @ByRef CvScalar value(); public native CvConnectedComp value(CvScalar value);
+        public native @ByRef CvRect rect();    public native CvConnectedComp rect(CvRect rect);
         public native CvSeq contour();         public native CvConnectedComp contour(CvSeq contour);
     }
 
@@ -347,8 +353,7 @@ public class opencv_imgproc {
         public    CvDistanceFunction(Pointer p) { super(p); }
         protected CvDistanceFunction() { allocate(); }
         protected final native void allocate();
-        public native float call(@Cast("const float*") FloatPointer a,
-                @Cast("const float*") FloatPointer b, Pointer user_param);
+        public native float call(@Const FloatPointer a, @Const FloatPointer b, Pointer user_param);
     }
 
     public static final int
@@ -383,7 +388,7 @@ public class opencv_imgproc {
         }
 
         public native byte           code();               public native CvChainPtReader code(byte code);
-        public native @ByVal CvPoint pt();                 public native CvChainPtReader pt(CvPoint pt);
+        public native @ByRef CvPoint pt();                 public native CvChainPtReader pt(CvPoint pt);
         public native byte/*[8][2]*/ deltas(int i, int j); public native CvChainPtReader deltas(int i, int j, byte deltas);
     }
 
@@ -454,7 +459,7 @@ public class opencv_imgproc {
 
         public native int                     flags(); public native CvSubdiv2DPoint flags(int first);
         public native long /*CvSubdiv2DEdge*/ first(); public native CvSubdiv2DPoint first(long first);
-        public native @ByVal CvPoint2D32f     pt();    public native CvSubdiv2DPoint pt(CvPoint2D32f pt);
+        public native @ByRef CvPoint2D32f     pt();    public native CvSubdiv2DPoint pt(CvPoint2D32f pt);
         public native int                     id();    public native CvSubdiv2DPoint id(int id);
     }
 
@@ -473,8 +478,8 @@ public class opencv_imgproc {
         public native int quad_edges();                      public native CvSubdiv2D quad_edges(int quad_edges);
         public native int is_geometry_valid();               public native CvSubdiv2D is_geometry_valid(int is_geometry_valid);
         public native long /*CvSubdiv2DEdge*/ recent_edge(); public native CvSubdiv2D recent_edge(long recent_edge);
-        public native @ByVal CvPoint2D32f topleft();         public native CvSubdiv2D topleft(CvPoint2D32f topleft);
-        public native @ByVal CvPoint2D32f bottomright();     public native CvSubdiv2D bottomright(CvPoint2D32f bottomright);
+        public native @ByRef CvPoint2D32f topleft();         public native CvSubdiv2D topleft(CvPoint2D32f topleft);
+        public native @ByRef CvPoint2D32f bottomright();     public native CvSubdiv2D bottomright(CvPoint2D32f bottomright);
     }
 
     // enum CvSubdiv2DPointLocation
@@ -615,9 +620,9 @@ public class opencv_imgproc {
             CvArr sqsum/*=null*/, CvArr tilted_sum/*=null*/);
     public static native void cvPyrDown(CvArr src, CvArr dst, int filter/*=CV_GAUSSIAN_5x5*/);
     public static native void cvPyrUp(CvArr src, CvArr dst, int filter/*=CV_GAUSSIAN_5x5*/);
-    public static native @Cast("CvMat**") PointerPointer cvCreatePyramid(CvArr img, int extra_layers, double rate,
+    public static native CvMatArray cvCreatePyramid(CvArr img, int extra_layers, double rate,
             CvSize layer_sizes/*=null*/, CvArr bufarr/*=null*/, int calc/*=1*/, int filter/*=CV_GAUSSIAN_5x5*/);
-    public static native void cvReleasePyramid(@Cast("CvMat***") @ByPtrPtr PointerPointer pyramid, int extra_layers);
+    public static native void cvReleasePyramid(@ByPtrPtr CvMatArray pyramid, int extra_layers);
     public static native void cvPyrSegmentation(IplImage src, IplImage dst, CvMemStorage storage,
             @ByPtrPtr CvSeq comp, int level, double threshold1, double threshold2);
     public static native void cvPyrMeanShiftFiltering(CvArr src, CvArr dst, double sp, double sr, int max_level/*=1*/,
@@ -719,11 +724,11 @@ public class opencv_imgproc {
             return (IplConvKernelFP)super.position(position);
         }
 
-        public native int nCols();         public native IplConvKernel nCols(int nCols);
-        public native int nRows();         public native IplConvKernel nRows(int nRows);
-        public native int anchorX();       public native IplConvKernel anchorX(int anchorX);
-        public native int anchorY();       public native IplConvKernel anchorY(int anchorY);
-        public native FloatPointer values(); public native IplConvKernel values(FloatPointer values);
+        public native int nCols();           public native IplConvKernelFP nCols(int nCols);
+        public native int nRows();           public native IplConvKernelFP nRows(int nRows);
+        public native int anchorX();         public native IplConvKernelFP anchorX(int anchorX);
+        public native int anchorY();         public native IplConvKernelFP anchorY(int anchorY);
+        public native FloatPointer values(); public native IplConvKernelFP values(FloatPointer values);
     }
 
     public static native IplConvKernel cvCreateStructuringElementEx(int cols, int rows,
@@ -875,7 +880,7 @@ public class opencv_imgproc {
         public native CvArr bins();                                  public native CvHistogram bins(CvArr bins);
         public native float/*[CV_MAX_DIM][2]*/ thresh(int i, int j); public native CvHistogram thresh(int i, int j, float thresh);
         public native @Cast("float**") PointerPointer thresh2();     public native CvHistogram thresh2(PointerPointer thresh2);
-        public native @ByVal CvMatND mat();                          public native CvHistogram mat(CvMatND mat);
+        public native @ByRef CvMatND mat();                          public native CvHistogram mat(CvMatND mat);
     }
 
     public static boolean CV_IS_HIST(CvArr hist) {
@@ -912,11 +917,11 @@ public class opencv_imgproc {
     public static native CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
             float[] data, @Cast("float**") PointerPointer ranges/*=null*/, int uniform/*=1*/);
     public static CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
-            FloatBuffer data, float[][] ranges/*=null*/, int uniform/*=1*/) {
+            FloatPointer data, float[][] ranges/*=null*/, int uniform/*=1*/) {
         return cvMakeHistHeaderForArray(dims, sizes, hist, data, new PointerPointer(ranges), uniform);
     }
     public static native CvHistogram cvMakeHistHeaderForArray(int dims, int[] sizes, CvHistogram hist,
-            FloatBuffer data, @Cast("float**") PointerPointer ranges/*=null*/, int uniform/*=1*/);
+            FloatPointer data, @Cast("float**") PointerPointer ranges/*=null*/, int uniform/*=1*/);
 
     public static native void cvReleaseHist(@ByPtrPtr CvHistogram hist);
     public static native void cvClearHist(CvHistogram hist);
@@ -929,42 +934,42 @@ public class opencv_imgproc {
     public static native void cvCalcBayesianProb(@ByPtrPtr CvHistogram src, int number, @ByPtrPtr CvHistogram dst);
 
     public static void cvCalcArrHist(CvArr[] arr, CvHistogram hist, int accumulate/*=0*/, CvArr mask/*=null*/) {
-        cvCalcArrHist(new PointerPointer(arr), hist, accumulate, mask);
+        cvCalcArrHist(new CvArrArray(arr), hist, accumulate, mask);
     }
-    public static native void cvCalcArrHist(@Cast("CvArr**") PointerPointer arr, CvHistogram hist,
+    public static native void cvCalcArrHist(CvArrArray arr, CvHistogram hist,
             int accumulate/*=0*/, CvArr mask/*=null*/);
     public static void cvCalcHist(IplImage[] arr, CvHistogram hist, int accumulate/*=0*/, CvArr mask/*=null*/) {
-        cvCalcHist(new PointerPointer(arr), hist, accumulate, mask);
+        cvCalcHist(new IplImageArray(arr), hist, accumulate, mask);
     }
-    public static void cvCalcHist(@Cast("IplImage**") PointerPointer arr, CvHistogram hist,
+    public static void cvCalcHist(IplImageArray arr, CvHistogram hist,
             int accumulate/*=0*/, CvArr mask/*=null*/) {
         cvCalcArrHist(arr, hist, accumulate, mask);
     }
 
     public static void cvCalcArrBackProject(CvArr[] image, CvArr dst, CvHistogram hist) {
-        cvCalcArrBackProject(new PointerPointer(image), dst, hist);
+        cvCalcArrBackProject(new CvArrArray(image), dst, hist);
     }
-    public static native void cvCalcArrBackProject(@Cast("CvArr**") PointerPointer image,
+    public static native void cvCalcArrBackProject(CvArrArray image,
             CvArr dst, CvHistogram hist);
     public static void cvCalcBackProject(IplImage[] image, CvArr dst, CvHistogram hist) {
-        cvCalcBackProject(new PointerPointer(image), dst, hist);
+        cvCalcBackProject(new IplImageArray(image), dst, hist);
     }
-    public static void cvCalcBackProject(@Cast("IplImage**") PointerPointer image,
+    public static void cvCalcBackProject(IplImageArray image,
             CvArr dst, CvHistogram hist) {
         cvCalcArrBackProject(image, dst, hist);
     }
 
     public static void cvCalcArrBackProjectPatch(CvArr[] image,
             CvArr dst, @ByVal CvSize range, CvHistogram hist, int method, double factor) {
-        cvCalcArrBackProjectPatch(new PointerPointer(image), dst, range, hist, method, factor);
+        cvCalcArrBackProjectPatch(new CvArrArray(image), dst, range, hist, method, factor);
     }
-    public static native void cvCalcArrBackProjectPatch(@Cast("CvArr**") PointerPointer image,
+    public static native void cvCalcArrBackProjectPatch(CvArrArray image,
             CvArr dst, @ByVal CvSize range, CvHistogram hist, int method, double factor);
     public static void cvCalcBackProjectPatch(IplImage[] image,
             CvArr dst, @ByVal CvSize range, CvHistogram hist, int method, double factor) {
-        cvCalcBackProjectPatch(new PointerPointer(image), dst, range, hist, method, factor);
+        cvCalcBackProjectPatch(new IplImageArray(image), dst, range, hist, method, factor);
     }
-    public static void cvCalcBackProjectPatch(@Cast("IplImage**") PointerPointer image,
+    public static void cvCalcBackProjectPatch(IplImageArray image,
             CvArr dst, CvSize range, CvHistogram hist, int method, double factor) {
         cvCalcArrBackProjectPatch(image, dst, range, hist, method, factor);
     }
@@ -1009,7 +1014,7 @@ public class opencv_imgproc {
     public static native void cvFitLine(CvArr points, int dist_type, double param,
             double reps, double aeps, float[] line);
     public static native void cvFitLine(CvArr points, int dist_type, double param,
-            double reps, double aeps, FloatBuffer line);
+            double reps, double aeps, FloatPointer line);
 
     public static native CvFeatureTree cvCreateKDTree(CvMat desc);
     public static native CvFeatureTree cvCreateSpillTree(CvMat raw_data,
@@ -1030,4 +1035,258 @@ public class opencv_imgproc {
     public static native void cvLSHRemove(CvLSH lsh, CvMat indices);
     public static native void cvLSHQuery(CvLSH lsh, CvMat query_points,
             CvMat indices, CvMat dist, int k, int emax);
+
+
+    public static final int
+            BORDER_REPLICATE=IPL_BORDER_REPLICATE,BORDER_CONSTANT=IPL_BORDER_CONSTANT,
+            BORDER_REFLECT=IPL_BORDER_REFLECT, BORDER_WRAP=IPL_BORDER_WRAP,
+            BORDER_REFLECT_101=IPL_BORDER_REFLECT_101, BORDER_REFLECT101=BORDER_REFLECT_101,
+            BORDER_TRANSPARENT=IPL_BORDER_TRANSPARENT,
+            BORDER_DEFAULT=BORDER_REFLECT_101, BORDER_ISOLATED=16;
+
+    @Namespace("cv") public static native int borderInterpolate(int p, int len, int borderType);
+
+    @NoOffset @Namespace("cv") public static class BaseRowFilter extends Pointer {
+        static { load(); }
+        public BaseRowFilter() { }
+        public BaseRowFilter(Pointer p) { super(p); }
+
+        public /*abstract*/ native @Name("operator()") void filter(@Cast("uchar*") BytePointer src,
+                @Cast("uchar*") BytePointer dst, int width, int cn);
+
+        public native int ksize();  public native BaseRowFilter ksize(int ksize);
+        public native int anchor(); public native BaseRowFilter anchor(int anchor);
+    }
+
+    @NoOffset @Namespace("cv") public static class BaseColumnFilter extends Pointer {
+        static { load(); }
+        public BaseColumnFilter() { }
+        public BaseColumnFilter(Pointer p) { super(p); }
+
+        public /*abstract*/ native @Name("operator()") void filter(@Cast("const uchar**") PointerPointer src,
+                @Cast("uchar*") BytePointer dst, int dststep, int dstcount, int width);
+        public native void reset();
+
+        public native int ksize();  public native BaseColumnFilter ksize(int ksize);
+        public native int anchor(); public native BaseColumnFilter anchor(int anchor);
+    }
+
+    @NoOffset @Namespace("cv") public static class BaseFilter extends Pointer {
+        static { load(); }
+        public BaseFilter() { }
+        public BaseFilter(Pointer p) { super(p); }
+
+        public /*abstract*/ native @Name("operator()") void filter(@Cast("const uchar**") PointerPointer src,
+                @Cast("uchar*") BytePointer dst, int dststep, int dstcount, int width, int cn);
+        public native void reset();
+
+        public native @ByVal CvSize ksize();   public native BaseFilter ksize(CvSize ksize);
+        public native @ByVal CvPoint anchor(); public native BaseFilter anchor(CvPoint anchor);
+    }
+
+    @NoOffset @Namespace("cv") public static class FilterEngine extends Pointer {
+        static { load(); }
+        public FilterEngine() { allocate(); }
+        public FilterEngine(@ByRef BaseFilterPtr _filter2D, @ByRef BaseRowFilterPtr _rowFilter,
+                @ByRef BaseColumnFilterPtr _columnFilter, int srcType, int dstType, int bufType,
+                int _rowBorderType/*=BORDER_REPLICATE*/, int _columnBorderType/*=-1*/,
+                @ByVal CvScalar _borderValue/*=Scalar()*/) {
+            allocate(_filter2D, _rowFilter, _columnFilter, srcType, dstType, bufType,
+                    _rowBorderType, _columnBorderType, _borderValue);
+        }
+        public FilterEngine(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(@ByRef BaseFilterPtr _filter2D, @ByRef BaseRowFilterPtr _rowFilter,
+                @ByRef BaseColumnFilterPtr _columnFilter, int srcType, int dstType, int bufType,
+                int _rowBorderType/*=BORDER_REPLICATE*/, int _columnBorderType/*=-1*/,
+                @ByVal CvScalar _borderValue/*=Scalar()*/);
+
+        public native void init(@ByRef BaseFilterPtr _filter2D, @ByRef BaseRowFilterPtr _rowFilter,
+                @ByRef BaseColumnFilterPtr _columnFilter, int srcType, int dstType, int bufType,
+                int _rowBorderType/*=BORDER_REPLICATE*/, int _columnBorderType/*=-1*/,
+                @ByVal CvScalar _borderValue/*=Scalar()*/);
+
+        public native int start(@ByVal CvSize wholeSize, @ByVal CvRect roi, int maxBufRows/*=-1*/);
+        public native int start(IplImage src, @ByVal CvRect srcRoi/*=Rect(0,0,-1,-1)*/,
+                boolean isolated/*=false*/, int maxBufRows/*=-1*/);
+        public native int proceed(@Cast("uchar*") BytePointer src, int srcStep, int srcCount,
+                @Cast("uchar*") BytePointer dst, int dstStep);
+        public native void apply(IplImage src, @Adapter("MatAdapter") IplImage dst, 
+                @ByVal CvRect srcRoi/*=Rect(0,0,-1,-1)*/, @ByVal CvPoint dstOfs/*=Point(0,0)*/,
+                boolean isolated/*=false*/);
+        public native boolean isSeparable();
+        public native int remainingInputRows();
+        public native int remainingOutputRows();
+
+        public native int srcType();                  public native FilterEngine srcType(int srcType);
+        public native int dstType();                  public native FilterEngine dstType(int dstType);
+        public native int bufType();                  public native FilterEngine bufType(int bufType);
+        public native @ByVal CvSize ksize();          public native FilterEngine ksize(CvSize ksize);
+        public native @ByVal CvPoint anchor();        public native FilterEngine anchor(CvPoint anchor);
+        public native int maxWidth();                 public native FilterEngine maxWidth(int maxWidth);
+        public native @ByVal CvSize wholeSize();      public native FilterEngine wholeSize(CvSize wholeSize);
+        public native @ByVal CvRect roi();            public native FilterEngine roi(CvRect roi);
+        public native int dx1();                      public native FilterEngine dx1(int dx1);
+        public native int dx2();                      public native FilterEngine dx2(int dx2);
+        public native int rowBorderType();            public native FilterEngine rowBorderType(int rowBorderType);
+        public native int columnBorderType();         public native FilterEngine columnBorderType(int columnBorderType);
+        @Adapter("VectorAdapter<int>")
+        public native IntPointer borderTab();         public native FilterEngine borderTab(IntPointer borderTab);
+        public native int borderElemSize();           public native FilterEngine borderElemSize(int borderElemSize);
+        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        public native BytePointer ringBuf();          public native FilterEngine ringBuf(BytePointer ringBuf);
+        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        public native BytePointer srcRow();           public native FilterEngine srcRow(BytePointer srcRow);
+        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        public native BytePointer constBorderValue(); public native FilterEngine constBorderValue(BytePointer constBorderValue);
+        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        public native BytePointer constBorderRow();   public native FilterEngine constBorderRow(BytePointer constBorderRow);
+        public native int bufStep();                  public native FilterEngine bufStep(int bufStep);
+        public native int startY();                   public native FilterEngine startY(int startY);
+        public native int startY0();                  public native FilterEngine startY0(int startY0);
+        public native int endY();                     public native FilterEngine endY(int endY);
+        public native int rowCount();                 public native FilterEngine rowCount(int rowCount);
+        public native int dstY();                     public native FilterEngine dstY(int dstY);
+        @Adapter("VectorAdapter<uchar*>") @Cast("uchar**")
+        public native PointerPointer rows();          public native FilterEngine rows(PointerPointer rows);
+
+        public native @ByRef BaseFilterPtr filter2D();           public native FilterEngine filter2D(BaseFilterPtr filter2D);
+        public native @ByRef BaseRowFilterPtr rowFilter();       public native FilterEngine rowFilter(BaseRowFilterPtr rowFilter);
+        public native @ByRef BaseColumnFilterPtr columnFilter(); public native FilterEngine columnFilter(BaseColumnFilterPtr columnFilter);
+    }
+
+    @Name("cv::Ptr<cv::BaseFilter>")
+    public static class BaseFilterPtr extends Pointer {
+        static { load(); }
+        public BaseFilterPtr()       { allocate();  }
+        public BaseFilterPtr(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native BaseFilter get();
+        public native BaseFilterPtr put(BaseFilter value);
+    }
+
+    @Name("cv::Ptr<cv::BaseRowFilter>")
+    public static class BaseRowFilterPtr extends Pointer {
+        static { load(); }
+        public BaseRowFilterPtr()       { allocate();  }
+        public BaseRowFilterPtr(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native BaseRowFilter get();
+        public native BaseRowFilterPtr put(BaseRowFilter value);
+    }
+
+    @Name("cv::Ptr<cv::BaseColumnFilter>")
+    public static class BaseColumnFilterPtr extends Pointer {
+        static { load(); }
+        public BaseColumnFilterPtr()       { allocate();  }
+        public BaseColumnFilterPtr(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native BaseColumnFilter get();
+        public native BaseColumnFilterPtr put(BaseColumnFilter value);
+    }
+
+    @Name("cv::Ptr<cv::FilterEngine>")
+    public static class FilterEnginePtr extends Pointer {
+        static { load(); }
+        public FilterEnginePtr()       { allocate();  }
+        public FilterEnginePtr(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native FilterEngine get();
+        public native FilterEnginePtr put(FilterEngine value);
+    }
+
+    public static final int
+            KERNEL_GENERAL=0, KERNEL_SYMMETRICAL=1, KERNEL_ASYMMETRICAL=2,
+            KERNEL_SMOOTH=4, KERNEL_INTEGER=8;
+
+    @Namespace("cv") public static native int getKernelType(CvMat kernel, @ByVal CvPoint anchor);
+
+    @Namespace("cv") public static native @ByVal BaseRowFilterPtr getLinearRowFilter(int srcType, int bufType,
+            CvMat kernel, int anchor, int symmetryType);
+    @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getLinearColumnFilter(int bufType, int dstType,
+            CvMat kernel, int anchor, int symmetryType, double delta/*=0*/, int bits/*=0*/);
+    @Namespace("cv") public static native @ByVal BaseFilterPtr getLinearFilter(int srcType, int dstType,
+            CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int bits/*=0*/);
+
+    @Namespace("cv") public static native @ByVal FilterEnginePtr createSeparableLinearFilter(int srcType, int dstType,
+            CvMat rowKernel, CvMat columnKernel, @ByVal CvPoint _anchor/*=Point(-1,-1)*/, double delta/*=0*/,
+            int _rowBorderType/*=BORDER_DEFAULT*/, int _columnBorderType/*=-1*/, @ByVal CvScalar _borderValue/*=Scalar()*/);
+    @Namespace("cv") public static native @ByVal FilterEnginePtr createLinearFilter(int srcType, int dstType,
+            CvMat kernel, @ByVal CvPoint _anchor/*=Point(-1,-1)*/, double delta/*=0*/,
+            int _rowBorderType/*=BORDER_DEFAULT*/, int _columnBorderType/*=-1*/, @ByVal CvScalar _borderValue/*=Scalar()*/);
+
+    @Namespace("cv") public static native @Adapter("MatAdapter") CvMat getGaussianKernel(int ksize, double sigma, int ktype/*=CV_64F*/);
+    @Namespace("cv") public static native @ByVal FilterEnginePtr createGaussianFilter(int type, @ByVal CvSize ksize,
+            double sigma1, double sigma2/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+
+    @Namespace("cv") public static native void getDerivKernels(@Adapter(value="MatAdapter", out=true) CvMat kx,
+            @Adapter(value="MatAdapter", out=true) CvMat ky, int dx, int dy, int ksize,
+            boolean normalize/*=false*/, int ktype/*=CV_32F*/);
+    @Namespace("cv") public static native @ByVal FilterEnginePtr createDerivFilter(int srcType, int dstType,
+            int dx, int dy, int ksize, int borderType/*=BORDER_DEFAULT*/);
+    
+    @Namespace("cv") public static native @ByVal BaseRowFilterPtr getRowSumFilter(int srcType, int sumType,
+            int ksize, int anchor/*=-1*/);
+    @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getColumnSumFilter( int sumType, int dstType,
+            int ksize, int anchor/*=-1*/, double scale/*=1*/);
+    @Namespace("cv") public static native @ByVal FilterEnginePtr createBoxFilter(int srcType, int dstType, @ByVal CvSize ksize,
+            @ByVal CvPoint anchor/*=Point(-1,-1)*/, boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
+
+    public static final int
+            MORPH_ERODE=0, MORPH_DILATE=1, MORPH_OPEN=2, MORPH_CLOSE=3,
+            MORPH_GRADIENT=4, MORPH_TOPHAT=5, MORPH_BLACKHAT=6;
+
+    @Namespace("cv") public static native @ByVal BaseRowFilterPtr getMorphologyRowFilter(
+            int op, int type, int ksize, int anchor/*=-1*/);
+    @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getMorphologyColumnFilter(
+            int op, int type, int ksize, int anchor/*=-1*/);
+    @Namespace("cv") public static native @ByVal BaseFilterPtr getMorphologyFilter(
+            int op, int type, CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/);
+    
+    @Namespace("cv") public static native @ByVal CvScalar morphologyDefaultBorderValue();
+
+    @Namespace("cv") public static native @ByVal FilterEnginePtr createMorphologyFilter(int op, int type, CvMat kernel,
+            @ByVal CvPoint anchor/*=Point(-1,-1)*/, int _rowBorderType/*=BORDER_CONSTANT*/, int _columnBorderType/*=-1*/,
+            @ByVal CvScalar _borderValue/*=morphologyDefaultBorderValue()*/);
+
+    @Namespace("cv") public static native void medianBlur(IplImage src, @Adapter("MatAdapter") IplImage dst, int ksize);
+    @Namespace("cv") public static native void GaussianBlur(IplImage src, @Adapter("MatAdapter") IplImage dst,
+            @ByVal CvSize ksize, double sigma1, double sigma2/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void bilateralFilter(IplImage src, @Adapter("MatAdapter") IplImage dst, int d,
+            double sigmaColor, double sigmaSpace, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void boxFilter(IplImage src, @Adapter("MatAdapter") IplImage dst, int ddepth,
+            @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void blur(IplImage src, @Adapter("MatAdapter") IplImage dst,
+            @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void filter2D(IplImage src, @Adapter("MatAdapter") IplImage dst, int ddepth,
+            IplImage kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void sepFilter2D(IplImage src, @Adapter("MatAdapter") IplImage dst, int ddepth,
+            IplImage kernelX, IplImage kernelY, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+
+    public static final int
+            PROJ_SPHERICAL_ORTHO = 0,
+            PROJ_SPHERICAL_EQRECT = 1;
+
+    @Namespace("cv") public static native float initWideAngleProjMap(CvMat cameraMatrix, CvMat distCoeffs,
+            @ByVal CvSize imageSize, int destImageWidth, int m1type,
+            @Adapter(value="MatAdapter", out=true) IplImage map1,
+            @Adapter(value="MatAdapter", out=true) IplImage map2,
+            int projType/*=PROJ_SPHERICAL_EQRECT*/, double alpha/*=0*/);
+
+    public static final int
+            GC_BGD    = 0,
+            GC_FGD    = 1,
+            GC_PR_BGD = 2,
+            GC_PR_FGD = 3,
+
+            GC_INIT_WITH_RECT  = 0,
+            GC_INIT_WITH_MASK  = 1,
+            GC_EVAL            = 2;
+
+    @Namespace("cv") public static native void grabCut(IplImage img, @Adapter("MatAdapter") IplImage mask, @ByVal CvRect rect,
+            @Adapter("MatAdapter") IplImage bgdModel, @Adapter("MatAdapter") IplImage fgdModel, int iterCount, int mode/*=GC_EVAL*/);
 }

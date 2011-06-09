@@ -42,11 +42,14 @@
 
 package com.googlecode.javacv.cpp;
 
+import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
+import com.googlecode.javacpp.annotation.ByPtrPtr;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
@@ -60,7 +63,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libswscale/swscale.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link="swscale"),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swscale", "avutil"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="swscale-0"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -130,7 +133,7 @@ public class swscale {
             SWS_CS_SMPTE240M    = 7,
             SWS_CS_DEFAULT      = 5;
 
-    public static native @Cast("const int*") IntPointer sws_getCoefficients(int colorspace);
+    public static native @Const IntPointer sws_getCoefficients(int colorspace);
 
     public static class SwsVector extends Pointer {
         static { load(); }
@@ -187,6 +190,14 @@ public class swscale {
             @Cast("const uint8_t**") PointerPointer srcSlice,
             IntPointer srcStride, int srcSliceY, int srcSliceH,
             @Cast(      "uint8_t**") PointerPointer dst, IntPointer dstStride);
+    public static native int sws_scale(SwsContext context,
+            @Cast("const uint8_t**") @ByPtrPtr BytePointer srcSlice,
+            int srcStride[], int srcSliceY, int srcSliceH,
+            @Cast(      "uint8_t**") @ByPtrPtr BytePointer dst, int dstStride[]);
+    public static native int sws_scale(SwsContext context,
+            @Cast("const uint8_t**") @ByPtrPtr BytePointer srcSlice,
+            IntPointer srcStride, int srcSliceY, int srcSliceH,
+            @Cast(      "uint8_t**") @ByPtrPtr BytePointer dst, IntPointer dstStride);
 //#if LIBSWSCALE_VERSION_MAJOR < 1
 //    @Deprecated public static native int sws_scale_ordered(SwsContext context,
 //            @Cast("const uint8_t**") PointerPointer src,
@@ -196,6 +207,14 @@ public class swscale {
 //            @Cast("const uint8_t**") PointerPointer src,
 //            IntPointer srcStride, int srcSliceY, int srcSliceH,
 //            @Cast(      "uint8_t**") PointerPointer dst, IntPointer dstStride);
+//    @Deprecated public static native int sws_scale_ordered(SwsContext context,
+//            @Cast("const uint8_t**") @ByPtrPtr BytePointer src,
+//            int srcStride[], int srcSliceY, int srcSliceH,
+//            @Cast(      "uint8_t**") @ByPtrPtr BytePointer dst, int dstStride[]);
+//    @Deprecated public static native int sws_scale_ordered(SwsContext context,
+//            @Cast("const uint8_t**") @ByPtrPtr BytePointer src,
+//            IntPointer srcStride, int srcSliceY, int srcSliceH,
+//            @Cast(      "uint8_t**") @ByPtrPtr BytePointer dst, IntPointer dstStride);
 //#endif
 
     public static native int sws_setColorspaceDetails(SwsContext c, int inv_table[/*4*/],
@@ -220,7 +239,7 @@ public class swscale {
     public static native SwsVector sws_cloneVec(SwsVector a);
 //#if LIBSWSCALE_VERSION_MAJOR < 1
 //    @Deprecated public static native void sws_printVec(SwsVector a);
-//
+//#endif
     public static native void sws_printVec2(SwsVector a, AVClass log_ctx, int log_level);
     public static native void sws_freeVec(SwsVector a);
 

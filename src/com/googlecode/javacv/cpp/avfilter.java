@@ -49,8 +49,9 @@ import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
-import com.googlecode.javacpp.annotation.ByVal;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 
@@ -62,11 +63,12 @@ import static com.googlecode.javacv.cpp.avutil.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(not="windows", define="__STDC_CONSTANT_MACROS", cinclude="<libavfilter/avfilter.h>",
-              link="avfilter", includepath=genericIncludepath, linkpath=genericLinkpath),
+    @Platform(not="windows", define="__STDC_CONSTANT_MACROS", cinclude="<libavfilter/avfilter.h>", 
+        link={"avfilter", "swscale", "avcodec", "avutil"},
+                               includepath=genericIncludepath, linkpath=genericLinkpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class avfilter {
-    static { load(avutil.class); load(); }
+    static { load(avcodec.class); load(swscale.class); load(); }
 
     public static final int LIBAVFILTER_VERSION_MAJOR = 1;
     public static final int LIBAVFILTER_VERSION_MINOR = 19;
@@ -140,7 +142,7 @@ public class avfilter {
         public native long pts();                 public native AVFilterPicRef pts(long pts);
         public native long pos();                 public native AVFilterPicRef pos(long pos);
 
-        @ByVal
+        @ByRef
         public native AVRational pixel_aspect();  public native AVFilterPicRef pixel_aspect(AVRational pixel_aspect);
 
         public native int perms();                public native AVFilterPicRef perms(int perms);
@@ -326,10 +328,8 @@ public class avfilter {
         }
         public native Query_formats query_formats(); public native AVFilter query_formats(Query_formats query_formats);
 
-        @Cast("const AVFilterPad*")
-        public native AVFilterPad inputs();          public native AVFilter inputs(AVFilterPad inputs);
-        @Cast("const AVFilterPad*")
-        public native AVFilterPad outputs();         public native AVFilter outputs(AVFilterPad outputs);
+        public native @Const AVFilterPad inputs();   public native AVFilter inputs(AVFilterPad inputs);
+        public native @Const AVFilterPad outputs();  public native AVFilter outputs(AVFilterPad outputs);
 
         @Cast("const char*")
         public native BytePointer description();     public native AVFilter description(BytePointer description);
@@ -347,25 +347,24 @@ public class avfilter {
             return (AVFilterContext)super.position(position);
         }
 
-        @Cast("const AVClass*")
-        public native AVClass av_class();       public native AVFilterContext av_class(AVClass av_class);
+        public native @Const AVClass av_class(); public native AVFilterContext av_class(AVClass av_class);
 
-        public native AVFilter filter();        public native AVFilterContext filter(AVFilter filter);
+        public native AVFilter filter();         public native AVFilterContext filter(AVFilter filter);
 
         @Cast("char*")
-        public native BytePointer name();       public native AVFilterContext name(BytePointer name);
+        public native BytePointer name();        public native AVFilterContext name(BytePointer name);
 
-        public native int input_count();        public native AVFilterContext input_count(int input_count);
-        public native AVFilterPad input_pads(); public native AVFilterContext input_pads(AVFilterPad input_pads);
+        public native int input_count();         public native AVFilterContext input_count(int input_count);
+        public native AVFilterPad input_pads();  public native AVFilterContext input_pads(AVFilterPad input_pads);
         @Cast("AVFilterLink**")
-        public native PointerPointer inputs();  public native AVFilterContext inputs(PointerPointer inputs);
+        public native PointerPointer inputs();   public native AVFilterContext inputs(PointerPointer inputs);
 
-        public native int output_count();       public native AVFilterContext output_count(int output_count);
-        public native AVFilterPad output_pads();public native AVFilterContext output_pads(AVFilterPad output_pads);
+        public native int output_count();        public native AVFilterContext output_count(int output_count);
+        public native AVFilterPad output_pads(); public native AVFilterContext output_pads(AVFilterPad output_pads);
         @Cast("AVFilterLink**")
-        public native PointerPointer outputs(); public native AVFilterContext outputs(PointerPointer outputs);
+        public native PointerPointer outputs();  public native AVFilterContext outputs(PointerPointer outputs);
 
-        public native Pointer priv();           public native AVFilterContext priv(Pointer priv);
+        public native Pointer priv();            public native AVFilterContext priv(Pointer priv);
     }
 
     public static class AVFilterLink extends Pointer {

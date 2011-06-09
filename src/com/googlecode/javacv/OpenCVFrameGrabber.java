@@ -171,7 +171,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             return_image = image;
         }
 
-        return_image.timestamp(Math.round(cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC)*1000));
+        return_image.timestamp = Math.round(cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC)*1000);
         return return_image;
     }
 }

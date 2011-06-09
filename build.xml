@@ -35,11 +35,14 @@
             <arg value="com.googlecode.javacv.cpp.opencv_core"/>
             <arg value="com.googlecode.javacv.cpp.opencv_imgproc"/>
             <arg value="com.googlecode.javacv.cpp.opencv_video"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_flann"/>
             <arg value="com.googlecode.javacv.cpp.opencv_features2d"/>
             <arg value="com.googlecode.javacv.cpp.opencv_calib3d"/>
             <arg value="com.googlecode.javacv.cpp.opencv_objdetect"/>
             <arg value="com.googlecode.javacv.cpp.opencv_highgui"/>
             <arg value="com.googlecode.javacv.cpp.opencv_legacy"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_ml"/>
+            <arg value="com.googlecode.javacv.cpp.opencv_contrib"/>
             <arg value="com.googlecode.javacv.cpp.avutil"/>
             <arg value="com.googlecode.javacv.cpp.avcodec"/>
             <arg value="com.googlecode.javacv.cpp.avformat"/>
@@ -49,6 +52,7 @@
             <arg value="com.googlecode.javacv.cpp.swscale"/>
             <arg value="com.googlecode.javacv.cpp.dc1394"/>
             <arg value="com.googlecode.javacv.cpp.PGRFlyCapture"/>
+            <arg value="com.googlecode.javacv.cpp.freenect"/>
             <arg value="com.googlecode.javacv.cpp.videoInputLib"/>
             <arg value="com.googlecode.javacv.cpp.ARToolKitPlus"/>
             <arg value="com.googlecode.javacv.cpp.cvkernels"/>

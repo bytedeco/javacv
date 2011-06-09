@@ -46,6 +46,7 @@ import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.ShortPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.MemberGetter;
@@ -253,14 +254,25 @@ public class dc1394 {
 
     public static class dc1394color_codings_t extends Pointer {
         static { load(); }
-        public native int num();          public native dc1394color_codings_t num(int num);
+        public dc1394color_codings_t() { allocate(); }
+        public dc1394color_codings_t(int size) { allocateArray(size); }
+        public dc1394color_codings_t(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
 
+        public native int num();          public native dc1394color_codings_t num(int num);
         @Cast("dc1394color_coding_t") // codings[DC1394_COLOR_CODING_NUM]
         public native int codings(int i); public native dc1394color_codings_t codings(int i, int codings);
     }
 
     public static class dc1394video_modes_t extends Pointer {
         static { load(); }
+        public dc1394video_modes_t() { allocate(); }
+        public dc1394video_modes_t(int size) { allocateArray(size); }
+        public dc1394video_modes_t(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
         public native int num();          public native dc1394video_modes_t num(int num);
         @Cast("dc1394video_mode_t") // modes[DC1394_VIDEO_MODE_NUM]
         public native int modes(int i);   public native dc1394video_modes_t modes(int i, int modes);
@@ -521,9 +533,9 @@ public class dc1394 {
             return (dc1394feature_modes_t)super.position(position);
         }
 
-        public native int num();          public native dc1394video_modes_t num(int num);
+        public native int num();          public native dc1394feature_modes_t num(int num);
         @Cast("dc1394feature_mode_t") // modes[DC1394_FEATURE_MODE_NUM]
-        public native int modes(int i);   public native dc1394video_modes_t modes(int i, int modes);
+        public native int modes(int i);   public native dc1394feature_modes_t modes(int i, int modes);
     }
 
     public static class dc1394trigger_modes_t extends Pointer {
@@ -538,9 +550,9 @@ public class dc1394 {
             return (dc1394trigger_modes_t)super.position(position);
         }
 
-        public native int num();          public native dc1394video_modes_t num(int num);
+        public native int num();          public native dc1394trigger_modes_t num(int num);
         @Cast("dc1394trigger_mode_t") // modes[DC1394_TRIGGER_MODE_NUM]
-        public native int modes(int i);   public native dc1394video_modes_t modes(int i, int modes);
+        public native int modes(int i);   public native dc1394trigger_modes_t modes(int i, int modes);
     }
 
     public static class dc1394trigger_sources_t extends Pointer {
@@ -555,9 +567,9 @@ public class dc1394 {
             return (dc1394trigger_sources_t)super.position(position);
         }
 
-        public native int num();          public native dc1394video_modes_t num(int num);
+        public native int num();          public native dc1394trigger_sources_t num(int num);
         @Cast("dc1394trigger_source_t") // sources[DC1394_TRIGGER_SOURCE_NUM]
-        public native int sources(int i); public native dc1394video_modes_t sources(int i, int sources);
+        public native int sources(int i); public native dc1394trigger_sources_t sources(int i, int sources);
     }
 
     public static class dc1394feature_info_t extends Pointer {
@@ -588,15 +600,15 @@ public class dc1394 {
         public native int is_on();            public native dc1394feature_info_t is_on(int is_on);
         @Cast("dc1394feature_mode_t")
         public native int current_mode();     public native dc1394feature_info_t current_mode(int current_mode);
-        @ByVal public native dc1394feature_modes_t modes();
+        @ByRef public native dc1394feature_modes_t modes();
                public native dc1394feature_info_t  modes(dc1394feature_modes_t modes);
-        @ByVal public native dc1394trigger_modes_t trigger_modes();
+        @ByRef public native dc1394trigger_modes_t trigger_modes();
                public native dc1394feature_info_t  trigger_modes(dc1394trigger_modes_t trigger_modes);
         @Cast("dc1394trigger_mode_t")
         public native int trigger_mode();     public native dc1394feature_info_t trigger_mode(int trigger_mode);
         @Cast("dc1394trigger_polarity_t")
         public native int trigger_polarity(); public native dc1394feature_info_t trigger_polarity(int trigger_polarity);
-        @ByVal public native dc1394trigger_sources_t trigger_sources();
+        @ByRef public native dc1394trigger_sources_t trigger_sources();
                public native dc1394feature_info_t    trigger_sources(dc1394trigger_sources_t trigger_sources);
         @Cast("dc1394trigger_source_t")
         public native int trigger_source();   public native dc1394feature_info_t trigger_source(int trigger_source);
@@ -801,9 +813,9 @@ public class dc1394 {
             return (dc1394framerates_t)super.position(position);
         }
 
-        public native int num();             public native dc1394video_modes_t num(int num);
+        public native int num();             public native dc1394framerates_t num(int num);
         @Cast("dc1394framerate_t") // modes[DC1394_FRAMERATE_NUM]
-        public native int framerates(int i); public native dc1394video_modes_t framerates(int i, int framerates);
+        public native int framerates(int i); public native dc1394framerates_t framerates(int i, int framerates);
     }
 
     public static class dc1394video_frame_t extends Pointer {
@@ -847,7 +859,7 @@ public class dc1394 {
         @Cast("dc1394bool_t")
         public native int  data_in_padding();       public native dc1394video_frame_t data_in_padding(int data_in_padding);
 
-        public ByteBuffer getByteBuffer() { return image().asBuffer((int)total_bytes()); }
+        public ByteBuffer getByteBuffer() { return image().capacity((int)total_bytes()).asByteBuffer(); }
     }
 
     public static native @Cast("dc1394error_t") int dc1394_video_get_supported_modes(dc1394camera_t camera,
@@ -978,7 +990,7 @@ public class dc1394 {
         public native int unit_pos_x();       public native dc1394format7mode_t unit_pos_x(int unit_pos_x);
         public native int unit_pos_y();       public native dc1394format7mode_t unit_pos_y(int unit_pos_y);
 
-        @ByVal public native dc1394color_codings_t color_codings(); 
+        @ByRef public native dc1394color_codings_t color_codings();
                public native dc1394format7mode_t   color_codings(dc1394color_codings_t color_codings);
         @Cast("dc1394color_coding_t")
         public native int  color_coding();    public native dc1394format7mode_t color_coding(int color_coding);

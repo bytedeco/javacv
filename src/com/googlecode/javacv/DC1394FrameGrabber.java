@@ -548,7 +548,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
         }
 
         enqueue_image = frame;
-        return_image.timestamp(frame.timestamp());
+        return_image.timestamp = frame.timestamp();
 //System.out.println(frame.timestamp);
         return return_image;
     }

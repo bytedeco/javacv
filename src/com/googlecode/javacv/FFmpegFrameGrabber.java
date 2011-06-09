@@ -29,7 +29,6 @@ import java.io.File;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.LongPointer;
-import com.googlecode.javacpp.PointerPointer;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.avutil.*;
@@ -91,20 +90,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } catch (Exception ex) { }
     }
 
-    private String filename;
+    private String          filename;
     private AVFormatContext pFormatCtx;
     private int             videoStream;
     private AVStream        pStream;
     private AVCodecContext  pCodecCtx;
     private AVCodec         pCodec;
-    private AVFrame         pFrame;
-    private AVFrame         pFrameRGB;
+    private AVFrame         pFrame, pFrameRGB;
+    private int             numBytes;
+    private BytePointer     buffer;
     private SwsContext      img_convert_ctx;
     private AVPacket        packet;
     private int[]           frameFinished;
-    private int             numBytes;
-    private BytePointer     buffer;
-    private IplImage return_image = null;
+    private IplImage        return_image = null;
 
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
@@ -195,7 +193,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 // of AVPicture
                 avpicture_fill(pFrameRGB, buffer, PIX_FMT_BGR24, width, height);
 
-                // Convert the image into YUV format that SDL uses
+                // Convert the image into BGR format that OpenCV uses
                 img_convert_ctx = sws_getContext(
                         pCodecCtx.width(), pCodecCtx.height(), pCodecCtx.pix_fmt(),
                         width, height, PIX_FMT_BGR24, SWS_BILINEAR, null, null, null);
@@ -210,12 +208,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 numBytes = avpicture_get_size(PIX_FMT_GRAY8, width, height);
                 buffer = new BytePointer(av_malloc(numBytes));
                 avpicture_fill(pFrameRGB, buffer, PIX_FMT_GRAY8, width, height);
+
+                // Convert the image into GRAY format that OpenCV uses
                 img_convert_ctx = sws_getContext(
                         pCodecCtx.width(), pCodecCtx.height(), pCodecCtx.pix_fmt(),
                         width, height, PIX_FMT_GRAY8, SWS_BILINEAR, null, null, null);
                 if (img_convert_ctx == null) {
                     throw new Exception("Cannot initialize the conversion context.");
                 }
+
                 return_image = IplImage.createHeader(width, height, IPL_DEPTH_8U, 1);
                 break;
 
@@ -317,9 +318,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             }
 
                             // Convert the image from its native format to RGB
-                            sws_scale(img_convert_ctx, new PointerPointer(pFrame), pFrame.linesize(), 0,
-                                    pCodecCtx.height(), new PointerPointer(pFrameRGB), pFrameRGB.linesize());
-                            return_image.imageData(pFrameRGB.data(0));
+                            sws_scale(img_convert_ctx, pFrame.data(0), pFrame.linesize(), 0,
+                                    pCodecCtx.height(), buffer, pFrameRGB.linesize());
+                            return_image.imageData(buffer);
                             return_image.widthStep(pFrameRGB.linesize(0));
                             break;
                         case RAW:
@@ -341,7 +342,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_free_packet(packet);
         }
 
-        return_image.timestamp(pts);
+        return_image.timestamp = pts;
         return return_image;
     }
 }

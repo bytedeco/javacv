@@ -170,7 +170,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                 if (c.X[i] == null) { c.X[i] = CvMat.create(4, 4); }
                 if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
                     c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
-                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
+                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer();
                 }
 
                 boolean inverse = inverses == null ? false : inverses[i];

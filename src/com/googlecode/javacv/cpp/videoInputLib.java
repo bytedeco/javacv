@@ -62,7 +62,6 @@ import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.CharPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.ByRef;
-import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.Opaque;
@@ -158,7 +157,7 @@ public class videoInputLib {
 
         public native IMediaEventEx pMediaEvent();           public native videoDevice pMediaEvent(IMediaEventEx pMediaEvent);
 
-        @ByVal public native GUID videoType();               public native videoDevice videoType(GUID videoType);
+        public native @ByRef GUID videoType();               public native videoDevice videoType(GUID videoType);
         public native long formatType();                     public native videoDevice formatType(long formatType);
 
         public native SampleGrabberCallback sgCallback();    public native videoDevice sgCallback(SampleGrabberCallback sgCallback);

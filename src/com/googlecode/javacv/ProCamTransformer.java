@@ -286,7 +286,7 @@ public class ProCamTransformer implements ImageTransformer {
                 if (c.X [i] == null) { c.X [i] = CvMat.create(4, 4); }
                 if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
                     c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
-                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
+                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer();
                 }
 
                 prepareHomographyTransform(c.H1[i], c.H2[i], c.X[i], data[i].pyramidLevel, (Parameters)parameters[i]);

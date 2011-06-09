@@ -38,6 +38,7 @@ public abstract class FrameGrabber {
     static {
         list.add(DC1394FrameGrabber.class);
         list.add(FlyCaptureFrameGrabber.class);
+        list.add(OpenKinectFrameGrabber.class);
         list.add(VideoInputFrameGrabber.class);
         list.add(OpenCVFrameGrabber.class);
         list.add(FFmpegFrameGrabber.class);
@@ -268,12 +269,12 @@ public abstract class FrameGrabber {
             for (int i = 0; i < frameGrabbers.length; i++) {
                 grabbedImages[i] = frameGrabbers[i].grab();
                 if (grabbedImages[i] != null) {
-                    newestTimestamp = Math.max(newestTimestamp, grabbedImages[i].timestamp());
+                    newestTimestamp = Math.max(newestTimestamp, grabbedImages[i].timestamp);
                 }
             }
             for (int i = 0; i < frameGrabbers.length; i++) {
                 if (grabbedImages[i] != null) {
-                    latencies[i] = newestTimestamp-grabbedImages[i].timestamp();
+                    latencies[i] = newestTimestamp-grabbedImages[i].timestamp;
                 }
             }
             if (bestLatencies == null) {
@@ -303,17 +304,17 @@ public abstract class FrameGrabber {
                     if (frameGrabbers[i].isTriggerMode() || grabbedImages[i] == null) {
                         continue;
                     }
-                    int latency = (int)(newestTimestamp - grabbedImages[i].timestamp());
+                    int latency = (int)(newestTimestamp - grabbedImages[i].timestamp);
                     while (latency-bestLatencies[i] > 0.1*bestLatencies[i]) {
                         grabbedImages[i] = frameGrabbers[i].grab();
                         if (grabbedImages[i] == null) {
                             break;
                         }
-                        latency = (int)(newestTimestamp - grabbedImages[i].timestamp());
+                        latency = (int)(newestTimestamp - grabbedImages[i].timestamp);
                         if (latency < 0) {
                             // woops, a camera seems to have dropped a frame somewhere...
                             // bump up the newestTimestamp
-                            newestTimestamp = grabbedImages[i].timestamp();
+                            newestTimestamp = grabbedImages[i].timestamp;
                             break;
                         }
                     }

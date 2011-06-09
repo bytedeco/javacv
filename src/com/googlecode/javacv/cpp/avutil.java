@@ -49,8 +49,10 @@ import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Opaque;
@@ -248,8 +250,7 @@ public class avutil {
             public native @Cast("const char*") BytePointer call(Pointer ctx);
         }
         public native Item_name item_name();           public native AVClass item_name(Item_name item_name);
-        @Cast("const AVOption*")
-        public native AVOption option();               public native AVClass option(AVOption option);
+        public native @Const AVOption option();        public native AVClass option(AVOption option);
 //        public native int version();                   public native AVClass version(int version);
     }
 
@@ -557,7 +558,7 @@ public class avutil {
         public native byte log2_chroma_h(); public native AVPixFmtDescriptor log2_chroma_h(byte log2_chroma_h);
         public native byte flags();         public native AVPixFmtDescriptor flags(byte flags);
 
-        @ByVal public native AVComponentDescriptor comp(int i);
+        @ByRef public native AVComponentDescriptor comp(int i);
                public native AVPixFmtDescriptor    comp(int i, AVComponentDescriptor comp);
     }
 
@@ -567,7 +568,7 @@ public class avutil {
             PIX_FMT_BITSTREAM = 4,
             PIX_FMT_HWACCEL   = 8;
 
-    @MemberGetter public static native @Cast("const AVPixFmtDescriptor*") AVPixFmtDescriptor av_pix_fmt_descriptors();
+    @MemberGetter public static native @Const AVPixFmtDescriptor av_pix_fmt_descriptors();
 
 //    public static native void read_line(@Cast("uint16_t*") short[]      dst, @Cast("const uint8_t**") PointerPointer data,
 //            int linesize[/*4*/], AVPixFmtDescriptor desc, int x, int y, int c, int w, int read_pal_component);

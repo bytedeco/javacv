@@ -52,7 +52,7 @@ import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
-import com.googlecode.javacpp.annotation.ByVal;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Opaque;
@@ -683,7 +683,7 @@ public class PGRFlyCapture {
         @Cast("FlyCaptureVideoMode")
         public native int videoMode();                 public native FlyCaptureImage videoMode(int videoMode);
         // Timestamp of this image.
-        @ByVal
+        @ByRef
         public native FlyCaptureTimestamp timeStamp(); public native FlyCaptureImage timeStamp(FlyCaptureTimestamp timeStamp);
         // Pointer to the actual image data.
         @Cast("unsigned char*")
@@ -710,7 +710,7 @@ public class PGRFlyCapture {
         public native int ulReserved(int i);           public native FlyCaptureImage ulReserved(int i, int ulReserved);
 
         public ByteBuffer getByteBuffer() {
-            return pData().asByteBuffer(iRowInc()*iRows());
+            return pData().capacity(iRowInc()*iRows()).asByteBuffer();
         }
     }
 
@@ -2490,7 +2490,7 @@ public class PGRFlyCapture {
         // The FlyCaptureImage that this FlyCaptureImagePlus structure is wrapping.
         // Please see documentation in pgrflycapture.h.
         //
-        @ByVal
+        @ByRef
         public native FlyCaptureImage image();           public native FlyCaptureImagePlus image(FlyCaptureImage image);
 
         //
@@ -3450,7 +3450,7 @@ public class PGRFlyCapture {
         public native int                  Msg_Reset_iBusNumber();
         public native FlyCaptureMessage    Msg_Reset_iBusNumber(int Msg_Reset_iBusNumber);
         // The timestamp of the bus event.
-        @Name("Msg.Reset.stTimeStamp")     @ByVal
+        @Name("Msg.Reset.stTimeStamp")     @ByRef
         public native FlyCaptureSystemTime Msg_Reset_stTimeStamp();
         public native FlyCaptureMessage    Msg_Reset_stTimeStamp(FlyCaptureSystemTime Msg_Reset_stTimeStamp);
 
@@ -3472,7 +3472,7 @@ public class PGRFlyCapture {
         public native int                  Msg_Arrival_iNodeNumber();
         public native FlyCaptureMessage    Msg_Arrival_iNodeNumber(int Msg_Arrival_iNodeNumber);
         // The timestamp of the bus event.
-        @Name("Msg.Arrival.stTimeStamp")   @ByVal
+        @Name("Msg.Arrival.stTimeStamp")   @ByRef
         public native FlyCaptureSystemTime Msg_Arrival_stTimeStamp();
         public native FlyCaptureMessage    Msg_Arrival_stTimeStamp(FlyCaptureSystemTime Msg_Arrival_stTimeStamp);
 
@@ -3494,7 +3494,7 @@ public class PGRFlyCapture {
         public native int                  Msg_Removal_iNodeNumber();
         public native FlyCaptureMessage    Msg_Removal_iNodeNumber(int Msg_Removal_iNodeNumber);
         // The timestamp of the bus event.
-        @Name("Msg.Removal.stTimeStamp")   @ByVal
+        @Name("Msg.Removal.stTimeStamp")   @ByRef
         public native FlyCaptureSystemTime Msg_Removal_stTimeStamp();
         public native FlyCaptureMessage    Msg_Removal_stTimeStamp(FlyCaptureSystemTime Msg_Removal_stTimeStamp);
 
@@ -3516,7 +3516,7 @@ public class PGRFlyCapture {
         public native int                  Msg_BusError_iNodeNumber();
         public native FlyCaptureMessage    Msg_BusError_iNodeNumber(int Msg_BusError_iNodeNumber);
         // The timestamp of the bus error.
-        @Name("Msg.BusError.stTimeStamp")  @ByVal
+        @Name("Msg.BusError.stTimeStamp")  @ByRef
         public native FlyCaptureSystemTime Msg_BusError_stTimeStamp();
         public native FlyCaptureMessage    Msg_BusError_stTimeStamp(FlyCaptureSystemTime Msg_BusError_stTimeStamp);
         // The bus error code.
@@ -3550,7 +3550,7 @@ public class PGRFlyCapture {
         public native int                  Msg_Image_ulBytes();
         public native FlyCaptureMessage    Msg_Image_ulBytes(int Msg_Image_ulBytes);
         // The timestamp of the grabbed image.
-        @Name("Msg.Image.stTimeStamp")     @ByVal
+        @Name("Msg.Image.stTimeStamp")     @ByRef
         public native FlyCaptureSystemTime Msg_Image_stTimeStamp();
         public native FlyCaptureMessage    Msg_Image_stTimeStamp(FlyCaptureSystemTime Msg_Image_stTimeStamp);
 

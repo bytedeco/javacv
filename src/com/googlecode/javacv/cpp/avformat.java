@@ -50,8 +50,9 @@ import com.googlecode.javacpp.LongPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
-import com.googlecode.javacpp.annotation.ByVal;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
@@ -67,7 +68,7 @@ import static com.googlecode.javacv.cpp.avcodec.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="avformat.h",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link="avformat"),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avformat", "avcodec", "avutil"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avformat-52"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -108,8 +109,7 @@ public class avformat {
         }
 
 //#if LIBAVFORMAT_VERSION_MAJOR >= 53
-//        @Cast("const AVClass*")
-//        public native AVClass av_class();     public native URLContext av_class(AVClass av_class);
+//        public native @Const AVClass av_class(); public native URLContext av_class(AVClass av_class);
 //#endif
         public native URLProtocol prot();     public native URLContext prot(URLProtocol prot);
         public native int flags();            public native URLContext flags(int flags);
@@ -570,7 +570,7 @@ public class avformat {
             return (AVFormatParameters)super.position(position);
         }
 
-        @ByVal
+        @ByRef
         public native AVRational time_base();    public native AVFormatParameters time_base(AVRational time_base);
         public native int sample_rate();         public native AVFormatParameters sample_rate(int sample_rate);
         public native int channels();            public native AVFormatParameters channels(int channels);
@@ -686,7 +686,7 @@ public class avformat {
         @Cast("CodecID")
         public native int subtitle_codec();           public native AVOutputFormat subtitle_codec(int subtitle_codec);
 
-        @Cast("const AVMetadataConv*")
+        @Const
         public native AVMetadataConv metadata_conv(); public native AVOutputFormat metadata_conv(AVMetadataConv metadata_conv);
 
         public native AVOutputFormat next();          public native AVOutputFormat next(AVOutputFormat next);
@@ -799,7 +799,7 @@ public class avformat {
         }
         public native Read_seek2 read_seek2();        public native AVInputFormat read_seek2(Read_seek2 read_seek2);
 
-        @Cast("const AVMetadataConv*")
+        @Const
         public native AVMetadataConv metadata_conv(); public native AVInputFormat metadata_conv(AVMetadataConv metadata_conv);
 
         public native AVInputFormat next();           public native AVInputFormat next(AVInputFormat next);
@@ -857,15 +857,15 @@ public class avformat {
         public native int index();                          public native AVStream index(int index);
         public native int id();                             public native AVStream id(int id);
         public native AVCodecContext codec();               public native AVStream codec(AVCodecContext codec);
-        @ByVal
+        @ByRef
         public native AVRational r_frame_rate();            public native AVStream r_frame_rate(AVRational r_frame_rate);
         public native Pointer priv_data();                  public native AVStream priv_data(Pointer priv_data);
 
         public native long first_dts();                     public native AVStream first_dts(long first_dts);
-        @ByVal
+        @ByRef
         public native AVFrac pts();                         public native AVStream pts(AVFrac pts);
 
-        @ByVal
+        @ByRef
         public native AVRational time_base();               public native AVStream time_base(AVRational time_base);
         public native int pts_wrap_bits();                  public native AVStream pts_wrap_bits(int pts_wrap_bits);
         public native int stream_copy();                    public native AVStream stream_copy(int stream_copy);
@@ -903,13 +903,13 @@ public class avformat {
 
         public native int disposition();                    public native AVStream disposition(int disposition);
 
-        @ByVal
+        @ByRef
         public native AVProbeData probe_data();             public native AVStream probe_data(AVProbeData probe_data);
         public static final int MAX_REORDER_DELAY = 16;
         //  int64_t pts_buffer[MAX_REORDER_DELAY+1];
         public native long pts_buffer(int i);               public native AVStream pts_buffer(int i, long pts_buffer);
 
-        @ByVal
+        @ByRef
         public native AVRational sample_aspect_ratio();     public native AVStream sample_aspect_ratio(AVRational sample_aspect_ratio);
 
         public native AVMetadata metadata();                public native AVStream metadata(AVMetadata metadata);
@@ -917,7 +917,7 @@ public class avformat {
         @Cast("const uint8_t*")
         public native BytePointer cur_ptr();                public native AVStream cur_ptr(BytePointer cur_ptr);
         public native int cur_len();                        public native AVStream cur_len(int cur_len);
-        @ByVal
+        @ByRef
         public native AVPacket cur_pkt();                   public native AVStream cur_pkt(AVPacket cur_pkt);
 
         public native long reference_dts();                 public native AVStream reference_dts(long reference_dts);
@@ -927,7 +927,7 @@ public class avformat {
 
         public native AVPacketList last_in_packet_buffer(); public native AVStream last_in_packet_buffer(AVPacketList last_in_packet_buffer);
 
-        @ByVal
+        @ByRef
         public native AVRational avg_frame_rate();          public native AVStream avg_frame_rate(AVRational avg_frame_rate);
 
         public native int codec_info_nb_frames();           public native AVStream codec_info_nb_frames(int codec_info_nb_frames);
@@ -978,7 +978,7 @@ public class avformat {
         }
 
         public native int id();               public native AVChapter id(int id);
-        @ByVal
+        @ByRef
         public native AVRational time_base(); public native AVChapter time_base(AVRational time_base);
         public native long start();           public native AVChapter start(long start);
         public native long end();             public native AVChapter end(long end);
@@ -1007,8 +1007,7 @@ public class avformat {
             return (AVFormatContext)super.position(position);
         }
 
-        @Cast("const AVClass*")
-        public native AVClass av_class();               public native AVFormatContext av_class(AVClass av_class);
+        public native @Const AVClass av_class();        public native AVFormatContext av_class(AVClass av_class);
         public native AVInputFormat iformat();          public native AVFormatContext iformat(AVInputFormat iformat);
         public native AVOutputFormat oformat();         public native AVFormatContext oformat(AVOutputFormat oformat);
         public native Pointer priv_data();              public native AVFormatContext priv_data(Pointer priv_data);
@@ -1050,7 +1049,7 @@ public class avformat {
         public native BytePointer cur_ptr_deprecated(); public native AVFormatContext cur_ptr_deprecated(BytePointer cur_ptr_deprecated);
         @Deprecated
         public native int cur_len_deprecated();         public native AVFormatContext cur_len_deprecated(int cur_len_deprecated);
-        @Deprecated @ByVal
+        @Deprecated @ByRef
         public native AVPacket cur_pkt_deprecated();    public native AVFormatContext cur_pkt_deprecated(AVPacket cur_pkt_deprecated);
 //#endif
 
@@ -1133,7 +1132,7 @@ public class avformat {
             return (AVPacketList)super.position(position);
         }
 
-        @ByVal
+        @ByRef
         public native AVPacket pkt();      public native AVPacketList pkt(AVPacket pkt);
         public native AVPacketList next(); public native AVPacketList next(AVPacketList next);
     }

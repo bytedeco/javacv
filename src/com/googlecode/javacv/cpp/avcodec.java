@@ -54,8 +54,10 @@ import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.ShortPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Opaque;
@@ -72,7 +74,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={
         "<libavcodec/avcodec.h>", "<libavcodec/opt.h>", "<libavcodec/avfft.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avutil", "avcodec"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avcodec", "avutil"}),
     @Platform(value={"linux", "freebsd", "solaris", "sunos"}, cinclude={
         "<libavcodec/vaapi.h>", "<libavcodec/vdpau.h>", "<libavcodec/xvmc.h>",
         "<libavcodec/avcodec.h>", "<libavcodec/opt.h>", "<libavcodec/avfft.h>"}),
@@ -699,7 +701,8 @@ public class avcodec {
         public native BytePointer mbskip_table();        public native AVFrame mbskip_table(BytePointer mbskip_table);
         //public int16_t (*motion_val[2])[2];
         @Cast("int16_t (*)[2]")
-        public native ShortPointer motion_val(int i);    public native AVFrame motion_val(int i, ShortPointer motion_val);
+        public native PointerPointer motion_val(int i);      public native AVFrame motion_val(int i, PointerPointer motion_val);
+        public native short motion_val(int i, int j, int k); public native AVFrame motion_val(int i, int j, int k, short motion_val);
         @Cast("uint32_t*")
         public native IntPointer mb_type();              public native AVFrame mb_type(IntPointer mb_type);
         public native byte motion_subsample_log2();      public native AVFrame motion_subsample_log2(byte motion_subsample_log2);
@@ -798,7 +801,7 @@ public class avcodec {
             return (AVCodecContext)super.position(position);
         }
 
-        @Cast("const AVClass*")
+        @Const
         public native AVClass av_class();       public native AVCodecContext av_class(AVClass av_class);
         public native int bit_rate();           public native AVCodecContext bit_rate(int bit_rate);
         public native int bit_rate_tolerance(); public native AVCodecContext bit_rate_tolerance(int bit_rate_tolerance);
@@ -810,7 +813,7 @@ public class avcodec {
         public native BytePointer extradata();  public native AVCodecContext extradata(BytePointer extradata);
         public native int extradata_size();     public native AVCodecContext extradata_size(int extradata_size);
 
-        @ByVal
+        @ByRef
         public native AVRational time_base();   public native AVCodecContext time_base(AVRational time_base);
         public native int width();              public native AVCodecContext width(int width);
         public native int height();             public native AVCodecContext height(int height);
@@ -827,7 +830,7 @@ public class avcodec {
             public    Draw_horiz_band(Pointer p) { super(p); }
             protected Draw_horiz_band() { allocate(); }
             protected final native void allocate();
-            public native void call(AVCodecContext s, @Cast("const AVFrame*") AVFrame src,
+            public native void call(AVCodecContext s, @Const AVFrame src,
                     IntPointer offset/*[4]*/, int y, int type, int height);
         }
         public native Draw_horiz_band draw_horiz_band();
@@ -1065,7 +1068,7 @@ public class avcodec {
             FF_PRED_PLANE  = 1,
             FF_PRED_MEDIAN = 2;
 
-        @ByVal public native AVRational sample_aspect_ratio();
+        @ByRef public native AVRational sample_aspect_ratio();
                public native AVCodecContext sample_aspect_ratio(AVRational sample_aspect_ratio);
 
         public native AVFrame coded_frame();    public native AVCodecContext coded_frame(AVFrame coded_frame);
@@ -1439,18 +1442,18 @@ public class avcodec {
             public native void call(AVCodecContext c);
         }
         public native Flush flush();        public native AVCodec flush(Flush flush);
-        @Cast("const AVRational*")
+        @Const
         public native AVRational supported_framerates();    public native AVCodec supported_framerates(AVRational supported_framerates);
         @Cast("const PixelFormat*")
         public native IntPointer pix_fmts();                public native AVCodec pix_fmts(IntPointer pix_fmts);
 
         @Cast("const char*")
         public native BytePointer long_name();              public native AVCodec long_name(BytePointer long_name);
-        @Cast("const int*")
+        @Const
         public native IntPointer supported_samplerates();   public native AVCodec supported_samplerates(IntPointer supported_samplerates);
         @Cast("const SampleFormat*")
         public native IntPointer sample_fmts();             public native AVCodec sample_fmts(IntPointer sample_fmts);
-        @Cast("const int64_t*")
+        @Const
         public native LongPointer channel_layouts();        public native AVCodec channel_layouts(LongPointer channel_layouts);
     }
 
@@ -1576,7 +1579,7 @@ public class avcodec {
         public native int h();            public native AVSubtitleRect h(int h);
         public native int nb_colors();    public native AVSubtitleRect nb_colors(int nb_colors);
 
-        @ByVal
+        @ByRef
         public native AVPicture pict();   public native AVSubtitleRect pict(AVPicture pict);
         @Cast("AVSubtitleType")
         public native int type();         public native AVSubtitleRect type(int type);
@@ -2102,44 +2105,44 @@ public class avcodec {
         }
 
         @Cast("const char *")
-        public native BytePointer name();   public native AVOption name(BytePointer name);
+        public native BytePointer name();   public native AVOption2 name(BytePointer name);
         @Cast("const char *")
-        public native BytePointer help();   public native AVOption help(BytePointer help);
-        public native int offset();         public native AVOption offset(int offset);
+        public native BytePointer help();   public native AVOption2 help(BytePointer help);
+        public native int offset();         public native AVOption2 offset(int offset);
         @Cast("AVOptionType")
-        public native int type();           public native AVOption type(int type);
+        public native int type();           public native AVOption2 type(int type);
 
         // union { } default_val
         @Name("default_val.dbl") public native double      default_val_dbl();
-                                 public native AVOption    default_val_dbl(double default_val_dbl);
+                                 public native AVOption2    default_val_dbl(double default_val_dbl);
         @Name("default_val.str") @Cast("const char*")
                                  public native BytePointer default_val_str();
-                                 public native AVOption    default_val_str(BytePointer default_val_str);
+                                 public native AVOption2    default_val_str(BytePointer default_val_str);
 
-        public native double min();         public native AVOption min(double min);
-        public native double max();         public native AVOption max(double max);
+        public native double min();         public native AVOption2 min(double min);
+        public native double max();         public native AVOption2 max(double max);
 
-        public native int flags();          public native AVOption flags(int flags);
+        public native int flags();          public native AVOption2 flags(int flags);
 
         @Cast("const char *")
-        public native BytePointer unit();   public native AVOption unit(BytePointer unit);
+        public native BytePointer unit();   public native AVOption2 unit(BytePointer unit);
     }
 
-    public static native @Cast("const AVOption*") AVOption av_find_opt(Pointer obj, String name, String unit, int mask, int flags);
+    public static native @Const AVOption av_find_opt(Pointer obj, String name, String unit, int mask, int flags);
 //    @Deprecated
-//    public static native @Cast("const AVOption*") AVOption av_set_string(Pointer obj, String name, String val);
+//    public static native @Const AVOption av_set_string(Pointer obj, String name, String val);
 //    @Deprecated
-//    public static native @Cast("const AVOption*") AVOption av_set_string2(Pointer obj, String name, String val, int alloc);
-    public static native int av_set_string3(Pointer obj, String name, String val, int alloc, @Cast("const AVOption**") @ByPtrPtr AVOption o_out);
-    public static native @Cast("const AVOption*") AVOption av_set_double(Pointer obj, String name, double n);
-    public static native @Cast("const AVOption*") AVOption av_set_q(Pointer obj, String name, @ByVal AVRational n);
-    public static native @Cast("const AVOption*") AVOption av_set_int(Pointer obj, String name, long n);
-    public static native double av_get_double(Pointer obj, String name, @Cast("const AVOption**") @ByPtrPtr AVOption o_out);
-    public static native @ByVal AVRational av_get_q(Pointer obj, String name, @Cast("const AVOption**") @ByPtrPtr AVOption o_out);
-    public static native long av_get_int(Pointer obj, String name, @Cast("const AVOption**") @ByPtrPtr AVOption o_out);
-    public static native String av_get_string(Pointer obj, String name, @Cast("const AVOption**") @ByPtrPtr AVOption o_out, 
+//    public static native @Const AVOption av_set_string2(Pointer obj, String name, String val, int alloc);
+    public static native int av_set_string3(Pointer obj, String name, String val, int alloc, @Const @ByPtrPtr AVOption o_out);
+    public static native @Const AVOption av_set_double(Pointer obj, String name, double n);
+    public static native @Const AVOption av_set_q(Pointer obj, String name, @ByVal AVRational n);
+    public static native @Const AVOption av_set_int(Pointer obj, String name, long n);
+    public static native double av_get_double(Pointer obj, String name, @Const @ByPtrPtr AVOption o_out);
+    public static native @ByVal AVRational av_get_q(Pointer obj, String name, @Const @ByPtrPtr AVOption o_out);
+    public static native long av_get_int(Pointer obj, String name, @Const @ByPtrPtr AVOption o_out);
+    public static native String av_get_string(Pointer obj, String name, @Const @ByPtrPtr AVOption o_out,
             @Cast("char*") byte[] buf, int buf_len);
-    public static native @Cast("const AVOption*") AVOption av_next_option(Pointer obj, AVOption last);
+    public static native @Const AVOption av_next_option(Pointer obj, AVOption last);
     public static native int av_opt_show(Pointer obj, Pointer av_log_obj);
     public static native void av_opt_set_defaults(Pointer s);
     public static native void av_opt_set_defaults2(Pointer s, int mask, int flags);
@@ -2258,7 +2261,7 @@ public class avcodec {
         }
 
         public native IDirectXVideoDecoder decoder();  public native dxva_context decoder(IDirectXVideoDecoder decoder);
-        @Cast("const DXVA2_ConfigPictureDecode *")
+        @Const
         public native DXVA2_ConfigPictureDecode cfg(); public native dxva_context cfg(DXVA2_ConfigPictureDecode cfg);
         public native int surface_count();             public native dxva_context surface_count(int surface_count);
         public native LPDIRECT3DSURFACE9 surface();    public native dxva_context surface(LPDIRECT3DSURFACE9 surface);
@@ -2332,7 +2335,7 @@ public class avcodec {
             public VdpPictureInfo() { }
             public VdpPictureInfo(Pointer p) { super(p); }
         }
-        @ByVal public native VdpPictureInfo info(); public native vdpau_render_state info(VdpPictureInfo info);
+        @ByRef public native VdpPictureInfo info(); public native vdpau_render_state info(VdpPictureInfo info);
 
         public native int bitstream_buffers_allocated();      public native vdpau_render_state bitstream_buffers_allocated(int bitstream_buffers_allocated);
         public native int bitstream_buffers_used();           public native vdpau_render_state bitstream_buffers_used(int bitstream_buffers_used);
@@ -2397,5 +2400,6 @@ public class avcodec {
         public native int state();                    public native xvmc_pix_fmt state(int state);
         public native Pointer p_osd_target_surface_render();
         public native xvmc_pix_fmt p_osd_target_surface_render(Pointer p_osd_target_surface_render);
+//#endif
     }
 }

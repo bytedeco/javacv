@@ -214,7 +214,7 @@ public class MarkerDetector {
             int dir = markers.dir();
             double confidence = markers.cf();
             double[] vertex = new double[8];
-            markers.vertex().asBuffer(8).get(vertex);
+            markers.vertex().capacity(8).asBuffer().get(vertex);
 
             int w = settings.subPixelWindow/2+1;
             if (vertex[0]-w < 0 || vertex[0]+w >= width || vertex[1]-w < 0 || vertex[1]+w >= height ||

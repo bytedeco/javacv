@@ -261,7 +261,7 @@ public class HandMouse {
             if (contourPoints == null || contourPointsSize < total) {
                 contourPoints = new CvPoint(total);
                 contourPointsSize = total;
-                contourPointsBuffer = contourPoints.asByteBuffer(2*4*total).asIntBuffer();
+                contourPointsBuffer = contourPoints.asByteBuffer().asIntBuffer();
             }
             cvCvtSeqToArray(contour, contourPoints.position(0), CV_WHOLE_SEQ);
 

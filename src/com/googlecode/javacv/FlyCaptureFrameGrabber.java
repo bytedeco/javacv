@@ -420,7 +420,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
 
         FlyCaptureTimestamp timeStamp = raw_image.timeStamp();
-        return_image.timestamp(timeStamp.ulSeconds()*1000000 + timeStamp.ulMicroSeconds());
+        return_image.timestamp = timeStamp.ulSeconds()*1000000 + timeStamp.ulMicroSeconds();
         return return_image;
     }
 }

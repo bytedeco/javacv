@@ -238,7 +238,7 @@ public class ProjectiveTransformer implements ImageTransformer {
                 if (c.H[i] == null) { c.H[i] = CvMat.create(3, 3); }
                 if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
                     c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
-                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer(data[i].dstDstDot.length);
+                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer();
                 }
 
                 prepareHomography(c.H[i], data[i].pyramidLevel, (Parameters)parameters[i], 

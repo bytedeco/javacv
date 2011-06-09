@@ -18,8 +18,8 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in core/types_c.h and core_c.h
- * of OpenCV 2.2, which are covered by the following copyright notice:
+ * This file is based on information found in core/types_c.h, core_c.h, and
+ * core.hpp of OpenCV 2.2, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -91,15 +91,22 @@ import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.ShortPointer;
 import com.googlecode.javacpp.SizeTPointer;
+import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
+import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.Convention;
+import com.googlecode.javacpp.annotation.Index;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.Name;
+import com.googlecode.javacpp.annotation.Namespace;
+import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
+import com.googlecode.javacpp.annotation.ValueGetter;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -109,7 +116,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include="<opencv2/core/core_c.h>", includepath=genericIncludepath,
+    @Platform(include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
         linkpath=genericLinkpath,       link="opencv_core"),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, link="opencv_core220", preload={"msvcr100", "msvcp100"}),
@@ -124,10 +131,105 @@ public class opencv_core {
     public static final String androidIncludepath = "../include/";
     public static final String androidLinkpath    = "../lib/";
 
+    public static final int
+            CV_MAJOR_VERSION    = 2,
+            CV_MINOR_VERSION    = 2,
+            CV_SUBMINOR_VERSION = 0;
+
+    public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
+
     @Opaque public static class CvArr extends Pointer implements Cloneable {
         static { load(); }
         public CvArr() { }
         public CvArr(Pointer p) { super(p); }
+    }
+
+    @Name("CvArr*")
+    public static class CvArrArray extends Pointer {
+        public CvArrArray(CvArr ... array) { this(array.length); put(array); position(0); }
+        public CvArrArray(int size) { allocateArray(size); }
+        public CvArrArray(Pointer p) { super(p); }
+        private native void allocateArray(int size);
+
+        @Override public CvArrArray position(int position) {
+            return (CvArrArray)super.position(position);
+        }
+
+        public CvArrArray put(CvArr ... array) {
+            for (int i = 0; i < array.length; i++) {
+                position(i).put(array[i]);
+            }
+            return this;
+        }
+
+        public native CvArr get();
+        public native CvArrArray put(CvArr p);
+    }
+
+    @Name("CvMat*")
+    public static class CvMatArray extends CvArrArray {
+        public CvMatArray(CvMat ... array) { super(array); }
+        public CvMatArray(int size) { super(size); }
+        public CvMatArray(Pointer p) { super(p); }
+
+        @Override public CvMatArray position(int position) {
+            return (CvMatArray)super.position(position);
+        }
+        @Override public CvMatArray put(CvArr ... array) {
+            return (CvMatArray)super.put(array);
+        }
+        @Override @ValueGetter public native CvMat get();
+        @Override public CvMatArray put(CvArr p) {
+            if (p instanceof CvMat) {
+                return (CvMatArray)super.put(p);
+            } else {
+                throw new ArrayStoreException(p.getClass().getName());
+            }
+        }
+    }
+
+    @Name("CvMatND*")
+    public static class CvMatNDArray extends CvArrArray {
+        public CvMatNDArray(CvMatND ... array) { super(array); }
+        public CvMatNDArray(int size) { super(size); }
+        public CvMatNDArray(Pointer p) { super(p); }
+
+        @Override public CvMatNDArray position(int position) {
+            return (CvMatNDArray)super.position(position);
+        }
+        @Override public CvMatNDArray put(CvArr ... array) {
+            return (CvMatNDArray)super.put(array);
+        }
+        @Override @ValueGetter public native CvMatND get();
+        @Override public CvMatNDArray put(CvArr p) {
+            if (p instanceof CvMatND) {
+                return (CvMatNDArray)super.put(p);
+            } else {
+                throw new ArrayStoreException(p.getClass().getName());
+            }
+        }
+    }
+
+    @Name("IplImage*")
+    public static class IplImageArray extends CvArrArray {
+        public IplImageArray(IplImage ... array) { super(array); }
+        public IplImageArray(int size) { super(size); }
+        public IplImageArray(Pointer p) { super(p); }
+
+        @Override public IplImageArray position(int position) {
+            return (IplImageArray)super.position(position);
+        }
+        @Override public IplImageArray put(CvArr ... array) {
+            return (IplImageArray)super.put(array);
+        }
+        @Override @ValueGetter public native IplImage get();
+        @Override public IplImageArray put(CvArr p) {
+            if (p instanceof IplImage) {
+                return (IplImageArray)super.put(p);
+            } else {
+                throw new ArrayStoreException(p.getClass().getName());
+            }
+        }
     }
 
     public static class Cv32suf extends Pointer {
@@ -159,9 +261,9 @@ public class opencv_core {
             return (Cv64suf)super.position(position);
         }
 
-        public native long i();   public native Cv32suf i(long i);
-        public native long u();   public native Cv32suf u(long u);
-        public native double f(); public native Cv32suf f(double f);
+        public native long i();   public native Cv64suf i(long i);
+        public native long u();   public native Cv64suf u(long u);
+        public native double f(); public native Cv64suf f(double f);
     }
 
     // typedef int CVStatus;
@@ -439,7 +541,7 @@ public class opencv_core {
 
         public CvSize cvSize() { return opencv_core.cvSize(width(), height()); }
 
-        public ByteBuffer   getByteBuffer  (int index) { return imageData().position(index).asBuffer(imageSize()-index); }
+        public ByteBuffer   getByteBuffer  (int index) { return imageData().position(index).capacity(imageSize()).asByteBuffer(); }
         public ShortBuffer  getShortBuffer (int index) { return getByteBuffer(index*2).asShortBuffer();  }
         public IntBuffer    getIntBuffer   (int index) { return getByteBuffer(index*4).asIntBuffer();    }
         public FloatBuffer  getFloatBuffer (int index) { return getByteBuffer(index*4).asFloatBuffer();  }
@@ -451,14 +553,7 @@ public class opencv_core {
         public DoubleBuffer getDoubleBuffer() { return getDoubleBuffer(0); }
 
         // timestamp is an extension of IplImage used by FrameGrabber
-        private long timestamp;
-        public long timestamp() {
-            return timestamp;
-        }
-        public void timestamp(long timestamp) {
-            this.timestamp = timestamp;
-        }
-
+        public long timestamp;
 
         public static final byte[]
                 gamma22    = new byte[256],
@@ -1128,11 +1223,11 @@ public class opencv_core {
 
         // union { } data
         @Cast("uchar*")
-        @Name("data.ptr") public native BytePointer   data_ptr(); public native CvMatND data_ptr(BytePointer ptr);
-        @Name("data.fl")  public native FloatPointer  data_fl();  public native CvMatND data_fl(FloatPointer fl);
-        @Name("data.db")  public native DoublePointer data_db();  public native CvMatND data_db(DoublePointer db);
-        @Name("data.i")   public native IntPointer    data_i();   public native CvMatND data_i(IntPointer i);
-        @Name("data.s")   public native ShortPointer  data_s();   public native CvMatND data_s(ShortPointer s);
+        @Name("data.ptr") public native BytePointer   data_ptr(); public native CvMat data_ptr(BytePointer ptr);
+        @Name("data.fl")  public native FloatPointer  data_fl();  public native CvMat data_fl(FloatPointer fl);
+        @Name("data.db")  public native DoublePointer data_db();  public native CvMat data_db(DoublePointer db);
+        @Name("data.i")   public native IntPointer    data_i();   public native CvMat data_i(IntPointer i);
+        @Name("data.s")   public native ShortPointer  data_s();   public native CvMat data_s(ShortPointer s);
 
         public native int rows(); public native CvMat rows(int rows);
         public native int cols(); public native CvMat cols(int cols);
@@ -1194,35 +1289,35 @@ public class opencv_core {
         private DoubleBuffer doubleBuffer = null;
         public ByteBuffer getByteBuffer() {
             if (byteBuffer == null) {
-                byteBuffer = data_ptr().asBuffer(fullSize());
+                byteBuffer = data_ptr().capacity(fullSize()).asBuffer();
             }
             byteBuffer.position(0);
             return byteBuffer;
         }
         public ShortBuffer getShortBuffer() {
             if (shortBuffer == null) {
-                shortBuffer = data_s().asBuffer(fullSize()/2);
+                shortBuffer = data_s().capacity(fullSize()/2).asBuffer();
             }
             shortBuffer.position(0);
             return shortBuffer;
         }
         public IntBuffer getIntBuffer() {
             if (intBuffer == null) {
-                intBuffer = data_i().asBuffer(fullSize()/4);
+                intBuffer = data_i().capacity(fullSize()/4).asBuffer();
             }
             intBuffer.position(0);
             return intBuffer;
         }
         public FloatBuffer getFloatBuffer() {
             if (floatBuffer == null) {
-                floatBuffer = data_fl().asBuffer(fullSize()/4);
+                floatBuffer = data_fl().capacity(fullSize()/4).asBuffer();
             }
             floatBuffer.position(0);
             return floatBuffer;
         }
         public DoubleBuffer getDoubleBuffer() {
             if (doubleBuffer == null) {
-                doubleBuffer = data_db().asBuffer(fullSize()/8);
+                doubleBuffer = data_db().capacity(fullSize()/8).asBuffer();
             }
             doubleBuffer.position(0);
             return doubleBuffer;
@@ -1559,9 +1654,9 @@ public class opencv_core {
         @Name("data.s")   public native ShortPointer  data_s();   public native CvMatND data_s(ShortPointer s);
 
         // struct { } dim[CV_MAX_DIM]
-        @Name(value="dim", suffix=".size")
+        @Name({"dim", ".size"})
         public native int data_size(int i); public native CvMatND data_size(int i, int size);
-        @Name(value="dim", suffix=".step")
+        @Name({"dim", ".step"})
         public native int data_step(int i); public native CvMatND data_step(int i, int step);
     }
 
@@ -2108,8 +2203,8 @@ public class opencv_core {
             return (CvBox2D)super.position(position);
         }
 
-        public native @ByVal CvPoint2D32f center(); public native CvBox2D center(CvPoint2D32f center);
-        public native @ByVal CvSize2D32f size();    public native CvBox2D size(CvSize2D32f size);
+        public native @ByRef CvPoint2D32f center(); public native CvBox2D center(CvPoint2D32f center);
+        public native @ByRef CvSize2D32f size();    public native CvBox2D size(CvSize2D32f size);
         public native float angle();                public native CvBox2D angle(float angle);
 
         @Override public String toString() { return center() + " " + size() + " " + angle(); }
@@ -2394,8 +2489,8 @@ public class opencv_core {
             return cvCreateSet(set_flags, header_size, elem_size, storage);
         }
 
-        public native CvSetElem free_elems(); public native CvSetElem free_elems(CvSetElem free_elems);
-        public native int active_count();     public native CvSetElem active_count(int active_count);
+        public native CvSetElem free_elems(); public native CvSet free_elems(CvSetElem free_elems);
+        public native int active_count();     public native CvSet active_count(int active_count);
     }
     public static final int
             CV_SET_ELEM_IDX_MASK  = ((1 << 26) - 1),
@@ -2486,7 +2581,7 @@ public class opencv_core {
             return (CvChain)super.position(position);
         }
 
-        public native @ByVal CvPoint origin(); public native CvChain origin(CvPoint origin);
+        public native @ByRef CvPoint origin(); public native CvChain origin(CvPoint origin);
     }
 
     public static class CvContour extends CvSeq {
@@ -2500,7 +2595,7 @@ public class opencv_core {
             return (CvContour)super.position(position);
         }
 
-        public native @ByVal CvRect rect();       public native CvContour rect(CvRect rect);
+        public native @ByRef CvRect rect();       public native CvContour rect(CvRect rect);
         public native int color();                public native CvContour color(int color);
         public native int/*[3]*/ reserved(int i); public native CvContour reserved(int i, int reserved);
     }
@@ -2815,7 +2910,7 @@ public class opencv_core {
         }
 
         public native int hashval();           public native CvStringHashNode hashval(int hashval);
-        public native @ByVal CvString str();   public native CvStringHashNode str(CvString str);
+        public native @ByRef CvString str();   public native CvStringHashNode str(CvString str);
         public native CvStringHashNode next(); public native CvStringHashNode next(CvStringHashNode next);
     }
 
@@ -2843,7 +2938,7 @@ public class opencv_core {
         // union { } data
         @Name("data.f")   public native double          data_f();   public native CvFileNode data_f(double f);
         @Name("data.i")   public native int             data_i();   public native CvFileNode data_i(int i);
-        @Name("data.str") public native @ByVal CvString data_str(); public native CvFileNode data_str(CvString str);
+        @Name("data.str") public native @ByRef CvString data_str(); public native CvFileNode data_str(CvString str);
         @Name("data.seq") public native CvSeq           data_seq(); public native CvFileNode data_seq(CvSeq seq);
         @Name("data.map") public native CvFileNodeHash  data_map(); public native CvFileNode data_map(CvFileNodeHash map);
     }
@@ -2854,7 +2949,7 @@ public class opencv_core {
         public    CvIsInstanceFunc(Pointer p) { super(p); }
         protected CvIsInstanceFunc() { allocate(); }
         protected final native void allocate();
-        public native int call(@Cast("const void*") Pointer struct_ptr);
+        public native int call(@Const Pointer struct_ptr);
     }
     public static class CvReleaseFunc extends FunctionPointer {
         static { load(); }
@@ -2876,14 +2971,14 @@ public class opencv_core {
         protected CvWriteFunc() { allocate(); }
         protected final native void allocate();
         public native void call(CvFileStorage storage, String name,
-                @Cast("const void*") Pointer struct_ptr, @ByVal CvAttrList attributes);
+                @Const Pointer struct_ptr, @ByVal CvAttrList attributes);
     }
     public static class CvCloneFunc extends FunctionPointer {
         static { load(); }
         public    CvCloneFunc(Pointer p) { super(p); }
         protected CvCloneFunc() { allocate(); }
         protected final native void allocate();
-        public native Pointer call(@Cast("const void*") Pointer struct_ptr);
+        public native Pointer call(@Const Pointer struct_ptr);
     }
     public static class CvTypeInfo extends Pointer {
         static { load(); }
@@ -3034,7 +3129,7 @@ public class opencv_core {
         public native int count();            public native CvNArrayIterator count(int count);
         public native int dims();             public native CvNArrayIterator dims(int dims);
 
-        public native @ByVal CvSize size();   public native CvNArrayIterator size(CvSize size);
+        public native @ByRef CvSize size();   public native CvNArrayIterator size(CvSize size);
         @Cast("uchar*")
         public native BytePointer/*[CV_MAX_ARR]*/ ptr(int i);   public native CvNArrayIterator ptr(int i, BytePointer ptr);
         public native int        /*[CV_MAX_DIM]*/ stack(int i); public native CvNArrayIterator stack(int i, int ptr);
@@ -3048,9 +3143,9 @@ public class opencv_core {
 
     public static int cvInitNArrayIterator(int count, CvArr[] arrs,
             CvArr mask, CvMatND stubs, CvNArrayIterator array_iterator, int flags/*=0*/) {
-        return cvInitNArrayIterator(count, new PointerPointer(arrs), mask, stubs, array_iterator, flags);
+        return cvInitNArrayIterator(count, new CvArrArray(arrs), mask, stubs, array_iterator, flags);
     }
-    public static native int cvInitNArrayIterator(int count, @Cast("CvArr**") PointerPointer arrs,
+    public static native int cvInitNArrayIterator(int count, CvArrArray arrs,
             CvArr mask, CvMatND stubs, CvNArrayIterator array_iterator, int flags/*=0*/);
     public static native int cvNextNArraySlice(CvNArrayIterator array_iterator);
 
@@ -3106,7 +3201,7 @@ public class opencv_core {
         cvCopy(src, dst, null);
     }
     public static native void cvSet(CvArr arr, @ByVal CvScalar value, CvArr mask/*=null*/);
-    public static void cvSet(CvArr arr, @ByVal CvScalar value) {
+    public static void cvSet(CvArr arr, CvScalar value) {
         cvSet(arr, value, null);
     }
     public static native void cvSetZero(CvArr arr);
@@ -3118,10 +3213,10 @@ public class opencv_core {
     public static native void cvMerge(CvArr src0, CvArr src1, CvArr src2, CvArr src3, CvArr dst);
     public static void cvMixChannels(CvArr[] src, int src_count,
             CvArr[] dst, int dst_count, int[] from_to, int pair_count) {
-        cvMixChannels(new PointerPointer(src), src_count, new PointerPointer(dst), dst_count, from_to, pair_count);
+        cvMixChannels(new CvArrArray(src), src_count, new CvArrArray(dst), dst_count, from_to, pair_count);
     }
-    public static native void cvMixChannels(@Cast("const CvArr**") PointerPointer src, int src_count,
-            @Cast("CvArr**") PointerPointer dst, int dst_count, int[] from_to, int pair_count);
+    public static native void cvMixChannels(@Const CvArrArray src, int src_count,
+            CvArrArray dst, int dst_count, int[] from_to, int pair_count);
 
     public static native void cvConvertScale(CvArr src, CvArr dst, double scale/*=1*/, double shift/*=0*/);
     public static void cvCvtScale(CvArr src, CvArr dst, double scale/*=1*/, double shift/*=0*/) {
@@ -3310,9 +3405,9 @@ public class opencv_core {
             CV_COVAR_ROWS      = 8,
             CV_COVAR_COLS     = 16;
     public static void cvCalcCovarMatrix(CvArr[] vects, int count, CvArr cov_mat, CvArr avg, int flags) {
-        cvCalcCovarMatrix(new PointerPointer(vects), count, cov_mat, avg, flags);
+        cvCalcCovarMatrix(new CvArrArray(vects), count, cov_mat, avg, flags);
     }
-    public static native void cvCalcCovarMatrix(@Cast("const CvArr**") PointerPointer vects,
+    public static native void cvCalcCovarMatrix(@Const CvArrArray vects,
             int count, CvArr cov_mat, CvArr avg, int flags);
 
     public static final int
@@ -3453,7 +3548,7 @@ public class opencv_core {
         public    CvCmpFunc(Pointer p) { super(p); }
         protected CvCmpFunc() { allocate(); }
         protected final native void allocate();
-        public native int call(@Cast("const void*") Pointer a, @Cast("const void*") Pointer b, Pointer userdata);
+        public native int call(@Const Pointer a, @Const Pointer b, Pointer userdata);
     }
     public static native void cvSeqSort(CvSeq seq, CvCmpFunc func, Pointer userdata/*=null*/);
     public static native Pointer cvSeqSearch(CvSeq seq, Pointer elem, CvCmpFunc func,
@@ -3716,22 +3811,18 @@ public class opencv_core {
         }
 
         @Cast("const char*")
-        public native BytePointer nameFont();public native CvFont nameFont(BytePointer nameFont);
-        @ByVal
-        public native CvScalar color();      public native CvFont color(CvScalar color);
-        public native int font_face();       public native CvFont font_face(int font_face);
-        @Cast("const int*")
-        public native IntPointer ascii();    public native CvFont ascii(IntPointer ascii);
-        @Cast("const int*")
-        public native IntPointer greek();    public native CvFont greek(IntPointer greek);
-        @Cast("const int*")
-        public native IntPointer cyrillic(); public native CvFont cyrillic(IntPointer cyrillic);
-        public native float hscale();        public native CvFont hscale(float hscale);
-        public native float vscale();        public native CvFont vscale(float vscale);
-        public native float shear();         public native CvFont shear(float shear);
-        public native int thickness();       public native CvFont thickness(int thickness);
-        public native float dx();            public native CvFont dx(float dx);
-        public native int line_type();       public native CvFont line_type(int line_type);
+        public native BytePointer nameFont();       public native CvFont nameFont(BytePointer nameFont);
+        public native @ByRef CvScalar color();      public native CvFont color(CvScalar color);
+        public native int font_face();              public native CvFont font_face(int font_face);
+        public native @Const IntPointer ascii();    public native CvFont ascii(IntPointer ascii);
+        public native @Const IntPointer greek();    public native CvFont greek(IntPointer greek);
+        public native @Const IntPointer cyrillic(); public native CvFont cyrillic(IntPointer cyrillic);
+        public native float hscale();               public native CvFont hscale(float hscale);
+        public native float vscale();               public native CvFont vscale(float vscale);
+        public native float shear();                public native CvFont shear(float shear);
+        public native int thickness();              public native CvFont thickness(int thickness);
+        public native float dx();                   public native CvFont dx(float dx);
+        public native int line_type();              public native CvFont line_type(int line_type);
     }
     public static native void cvInitFont(CvFont font, int font_face, double hscale, double vscale,
             double shear/*=0*/, int thickness/*=1*/, int line_type/*=8*/);
@@ -3772,10 +3863,9 @@ public class opencv_core {
             return (CvTreeNodeIterator)super.position(position);
         }
 
-        @Cast("const void*")
-        public native Pointer node();  public native CvTreeNodeIterator node(Pointer node);
-        public native int level();     public native CvTreeNodeIterator level(int level);
-        public native int max_level(); public native CvTreeNodeIterator max_level(int max_level);
+        public native @Const Pointer node();  public native CvTreeNodeIterator node(Pointer node);
+        public native int level();            public native CvTreeNodeIterator level(int level);
+        public native int max_level();        public native CvTreeNodeIterator max_level(int max_level);
     }
     public static native void cvInitTreeNodeIterator(CvTreeNodeIterator tree_iterator, Pointer first, int max_level);
     public static native Pointer cvNextTreeNode(CvTreeNodeIterator tree_iterator);
@@ -3854,7 +3944,7 @@ public class opencv_core {
         public    Cv_iplCloneImage(Pointer p) { super(p); }
         protected Cv_iplCloneImage() { allocate(); }
         protected final native void allocate();
-        public native IplImage call(@Cast("const IplImage*") IplImage p0);
+        public native IplImage call(@Const IplImage p0);
     }
     public static native void cvSetIPLAllocators(
             Cv_iplCreateImageHeader create_header,
@@ -3923,7 +4013,7 @@ public class opencv_core {
             BytePointer pointer = str.ptr();
             int length = str.len();
             byte[] bytes = new byte[length];
-            pointer.asBuffer(length).get(bytes);
+            pointer.capacity(length).asBuffer().get(bytes);
             return new String(bytes);
         } else {
             return null;
@@ -4025,4 +4115,149 @@ public class opencv_core {
             String file_name, int line, Pointer userdata);
     public static native int cvGuiBoxReport(int status, String func_name, String err_msg,
             String file_name, int line, Pointer userdata);
+
+
+    @Name("std::vector<std::vector<char> >") @Index
+    public static class ByteVectorVector extends Pointer {
+        static { load(); }
+        public ByteVectorVector()       { allocate();  }
+        public ByteVectorVector(long n) { allocate(n); }
+        public ByteVectorVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        public native long size();
+        public native void resize(long n);
+        public native @Index(1) long size(long i);
+        public native @Index(1) void resize(long i, long n);
+
+        public native byte get(long i, long j);
+        public native ByteVectorVector put(long i, long j, byte value);
+    }
+
+    @Name("std::vector<std::vector<int> >") @Index
+    public static class IntVectorVector extends Pointer {
+        static { load(); }
+        public IntVectorVector()       { allocate();  }
+        public IntVectorVector(long n) { allocate(n); }
+        public IntVectorVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        public native long size();
+        public native void resize(long n);
+        public native @Index(1) long size(long i);
+        public native @Index(1) void resize(long i, long n);
+
+        public native int get(long i, long j);
+        public native IntVectorVector put(long i, long j, int value);
+    }
+
+    @Name("std::vector<std::vector<cv::Point> >") @Index
+    public static class PointVectorVector extends Pointer {
+        static { load(); }
+        public PointVectorVector()       { allocate();  }
+        public PointVectorVector(long n) { allocate(n); }
+        public PointVectorVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        public native long size();
+        public native void resize(long n);
+        public native @Index(1) long size(long i);
+        public native @Index(1) void resize(long i, long n);
+
+        @ByVal public native CvPoint get(long i, long j);
+        public native PointVectorVector put(long i, long j, CvPoint value);
+    }
+
+    @Name("std::vector<std::vector<cv::Point2f> >") @Index
+    public static class Point2fVectorVector extends Pointer {
+        static { load(); }
+        public Point2fVectorVector()       { allocate();  }
+        public Point2fVectorVector(long n) { allocate(n); }
+        public Point2fVectorVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        public native long size();
+        public native void resize(long n);
+        public native @Index(1) long size(long i);
+        public native @Index(1) void resize(long i, long n);
+
+        @ByVal public native CvPoint2D32f get(long i, long j);
+        public native Point2fVectorVector put(long i, long j, CvPoint2D32f value);
+    }
+
+    @Name("std::vector<std::vector<cv::Point2d> >") @Index
+    public static class Point2dVectorVector extends Pointer {
+        static { load(); }
+        public Point2dVectorVector()       { allocate();  }
+        public Point2dVectorVector(long n) { allocate(n); }
+        public Point2dVectorVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        public native long size();
+        public native void resize(long n);
+        public native @Index(1) long size(long i);
+        public native @Index(1) void resize(long i, long n);
+
+        @ByVal public native CvPoint2D32f get(long i, long j);
+        public native Point2dVectorVector put(long i, long j, CvPoint2D32f value);
+    }
+
+    @NoOffset @Namespace("cv") public static class KDTree extends Pointer {
+        static { load(); }
+        @NoOffset public static class Node extends Pointer {
+            static { load(); }
+            public Node() { allocate(); }
+            public Node(Pointer p) { super(p); }
+            public Node(int _idx, int _left, int _right, float _boundary) {
+                allocate(_idx, _left, _right, _boundary);
+            }
+            private native void allocate();
+            private native void allocate(int _idx, int _left, int _right, float _boundary);
+
+            public native int idx();        public native Node idx(int idx);
+            public native int left();       public native Node left(int left);
+            public native int right();      public native Node right(int right);
+            public native float boundary(); public native Node boundary(float boundary);
+        }
+        public KDTree() { allocate(); }
+        public KDTree(Pointer p) { super(p); }
+        public KDTree(CvMat _points, boolean copyAndReorderPoints/*=false*/) {
+            allocate(_points, copyAndReorderPoints);
+        }
+        public KDTree(CvMat _points, CvMat _labels, boolean copyAndReorderPoints/*=false*/) {
+            allocate(_points, _labels, copyAndReorderPoints);
+        }
+        private native void allocate();
+        private native void allocate(CvMat _points, boolean copyAndReorderPoints/*=false*/);
+        private native void allocate(CvMat _points, CvMat _labels, boolean copyAndReorderPoints/*=false*/);
+
+        public native void build(CvMat _points, boolean copyAndReorderPoints/*=false*/);
+        public native void build(CvMat _points, CvMat _labels, boolean copyAndReorderPoints/*=false*/);
+
+        public native int findNearest(float[] vec, int K, int Emax, int[] neighborsIdx,
+                @Adapter(value="MatAdapter", out=true) CvMat neighbors/*=null*/,
+                float[] dist/*=null*/, int[] labels/*=null*/);
+        public native void findOrthoRange(float[] minBounds, float[] maxBounds,
+                @Adapter(value="VectorAdapter<int>", out=true) IntPointer neighborsIdx,
+                @Adapter(value="MatAdapter", out=true) CvMat neighbors/*=null*/,
+                @Adapter(value="VectorAdapter<int>", out=true) IntPointer labels/*=null*/);
+        public native void getPoints(int[] idx, long nidx, @Adapter(value="MatAdapter", out=true) CvMat pts,
+                @Adapter(value="VectorAdapter<int>", out=true) IntPointer labels/*=null*/);
+        public native @Const FloatPointer getPoint(int ptidx, int[] label/*=null*/);
+        public native int dims();
+
+        @Adapter("VectorAdapter<cv::KDTree::Node>")
+        public native Node nodes();   public native KDTree nodes(Node nodes);
+        @Adapter("MatAdapter")
+        public native CvMat points(); public native KDTree points(CvMat points);
+        @Adapter("VectorAdapter<int>")
+        public native IntPointer labels(); public native KDTree labels(IntPointer labels);
+        public native int maxDepth(); public native KDTree maxDepth(int maxDepth);
+        public native int normType(); public native KDTree normType(int normType);
+    }
 }

@@ -63,8 +63,8 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(not="windows", define="__STDC_CONSTANT_MACROS", cinclude="<libpostproc/postprocess.h>",
-              link="postproc", includepath=genericIncludepath, linkpath=genericLinkpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+        link={"postproc", "avutil"}, includepath=genericIncludepath, linkpath=genericLinkpath),
+    @Platform(value="android",       includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class postproc {
     static { load(avutil.class); load(); }
 
