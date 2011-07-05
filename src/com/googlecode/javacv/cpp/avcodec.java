@@ -687,7 +687,7 @@ public class avcodec {
         @Cast("uint8_t*") // [4]
         public native BytePointer base(int i);           public native AVFrame base(int i, BytePointer base);
         public native int key_frame();                   public native AVFrame key_frame(int key_frame);
-        public native int pict_type();                   public native AVFrame pict_type(int pict_type);
+//        public native int pict_type();                   public native AVFrame pict_type(int pict_type);
         public native long pts();                        public native AVFrame pts(long pts);
         public native int coded_picture_number();        public native AVFrame coded_picture_number(int coded_picture_number);
         public native int display_picture_number();      public native AVFrame display_picture_number(int display_picture_number);
@@ -2075,7 +2075,7 @@ public class avcodec {
         public native int offset();         public native AVOption offset(int offset);
         @Cast("AVOptionType")
         public native int type();           public native AVOption type(int type);
-        public native double default_val(); public native AVOption default_val(double default_val);
+//        public native double default_val(); public native AVOption default_val(double default_val);
         public native double min();         public native AVOption min(double min);
         public native double max();         public native AVOption max(double max);
 
@@ -2092,41 +2092,41 @@ public class avcodec {
         public native BytePointer unit();   public native AVOption unit(BytePointer unit);
     }
 
-    public static class AVOption2 extends Pointer {
-        static { load(); }
-        public AVOption2() { allocate(); }
-        public AVOption2(int size) { allocateArray(size); }
-        public AVOption2(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocateArray(int size);
-
-        @Override public AVOption2 position(int position) {
-            return (AVOption2)super.position(position);
-        }
-
-        @Cast("const char *")
-        public native BytePointer name();   public native AVOption2 name(BytePointer name);
-        @Cast("const char *")
-        public native BytePointer help();   public native AVOption2 help(BytePointer help);
-        public native int offset();         public native AVOption2 offset(int offset);
-        @Cast("AVOptionType")
-        public native int type();           public native AVOption2 type(int type);
-
-        // union { } default_val
-        @Name("default_val.dbl") public native double      default_val_dbl();
-                                 public native AVOption2    default_val_dbl(double default_val_dbl);
-        @Name("default_val.str") @Cast("const char*")
-                                 public native BytePointer default_val_str();
-                                 public native AVOption2    default_val_str(BytePointer default_val_str);
-
-        public native double min();         public native AVOption2 min(double min);
-        public native double max();         public native AVOption2 max(double max);
-
-        public native int flags();          public native AVOption2 flags(int flags);
-
-        @Cast("const char *")
-        public native BytePointer unit();   public native AVOption2 unit(BytePointer unit);
-    }
+//    public static class AVOption2 extends Pointer {
+//        static { load(); }
+//        public AVOption2() { allocate(); }
+//        public AVOption2(int size) { allocateArray(size); }
+//        public AVOption2(Pointer p) { super(p); }
+//        private native void allocate();
+//        private native void allocateArray(int size);
+//
+//        @Override public AVOption2 position(int position) {
+//            return (AVOption2)super.position(position);
+//        }
+//
+//        @Cast("const char *")
+//        public native BytePointer name();   public native AVOption2 name(BytePointer name);
+//        @Cast("const char *")
+//        public native BytePointer help();   public native AVOption2 help(BytePointer help);
+//        public native int offset();         public native AVOption2 offset(int offset);
+//        @Cast("AVOptionType")
+//        public native int type();           public native AVOption2 type(int type);
+//
+//        // union { } default_val
+//        @Name("default_val.dbl") public native double      default_val_dbl();
+//                                 public native AVOption2    default_val_dbl(double default_val_dbl);
+//        @Name("default_val.str") @Cast("const char*")
+//                                 public native BytePointer default_val_str();
+//                                 public native AVOption2    default_val_str(BytePointer default_val_str);
+//
+//        public native double min();         public native AVOption2 min(double min);
+//        public native double max();         public native AVOption2 max(double max);
+//
+//        public native int flags();          public native AVOption2 flags(int flags);
+//
+//        @Cast("const char *")
+//        public native BytePointer unit();   public native AVOption2 unit(BytePointer unit);
+//    }
 
     public static native @Const AVOption av_find_opt(Pointer obj, String name, String unit, int mask, int flags);
 //    @Deprecated

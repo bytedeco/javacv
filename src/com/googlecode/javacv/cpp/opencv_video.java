@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in tracking.hpp and background_segm.hpp
- * of OpenCV 2.2, which are covered by the following copyright notice:
+ * of OpenCV 2.3.0, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -60,11 +60,15 @@ import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
+import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
 import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Const;
+import com.googlecode.javacpp.annotation.Name;
+import com.googlecode.javacpp.annotation.Namespace;
+import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 
@@ -77,10 +81,13 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"<opencv2/video/tracking.hpp>", "<opencv2/video/background_segm.hpp>"},
-        linkpath=genericLinkpath,       link={"opencv_video", "opencv_imgproc", "opencv_core"}, includepath=genericIncludepath),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link={"opencv_video220", "opencv_imgproc220", "opencv_core220"}),
+    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
+        include={"<opencv2/video/tracking.hpp>", "<opencv2/video/background_segm.hpp>", "opencv_adapters.h"},
+        link={"opencv_video", "opencv_imgproc", "opencv_core"}),
+    @Platform(value="windows", includepath=windowsIncludepath,
+        link={"opencv_video230", "opencv_imgproc230", "opencv_core230"}),
+    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
+    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_video {
     static { load(opencv_imgproc.class); load(); }
@@ -568,4 +575,81 @@ public class opencv_video {
             @ByVal CvRect roi/*=cvRect(0,0,0,0)*/, CvArr mask/*=null*/);
     public static native CvSeq cvSegmentFGMask(CvArr fgmask, int poly1Hull0/*=1*/, float perimScale/*=4.f*/,
             CvMemStorage storage/*=null*/, @ByVal CvPoint offset/*=cvPoint(0,0)*/);
+
+
+    @Namespace("cv") public static class BackgroundSubtractor extends Pointer {
+        static { load(); }
+        public BackgroundSubtractor() { }
+        public BackgroundSubtractor(Pointer p) { super(p); }
+
+        public native @Name("operator()") void apply(@Adapter("ArrayAdapter") CvArr image,
+                @Adapter("ArrayAdapter") CvArr fgmask, double learningRate/*=0*/);
+
+        public native void getBackgroundImage(@Adapter("ArrayAdapter") CvArr backgroundImage);
+    }
+
+    @NoOffset @Namespace("cv") public static class BackgroundSubtractorMOG extends BackgroundSubtractor {
+        static { load(); }
+        public BackgroundSubtractorMOG() { allocate(); }
+        public BackgroundSubtractorMOG(int history, int nmixtures, double backgroundRatio, double noiseSigma/*=0*/) {
+            allocate(history, nmixtures, backgroundRatio, noiseSigma);
+        }
+        public BackgroundSubtractorMOG(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int history, int nmixtures, double backgroundRatio, double noiseSigma/*=0*/);
+
+//        public native @Name("operator()") void apply(@Adapter("ArrayAdapter") CvArr image,
+//                @Adapter("ArrayAdapter") CvArr fgmask, double learningRate/*=0*/);
+
+        public native void initialize(@ByVal CvSize frameSize, int frameType);
+
+        public native @ByVal CvSize frameSize(); public native BackgroundSubtractorMOG frameSize(CvSize frameSize);
+        public native int frameType();           public native BackgroundSubtractorMOG frameType(int frameType);
+        @Adapter("MatAdapter")
+        public native IplImage bgmodel();        public native BackgroundSubtractorMOG bgmodel(IplImage bgmodel);
+        public native int nframes();             public native BackgroundSubtractorMOG nframes(int nframes);
+        public native int history();             public native BackgroundSubtractorMOG history(int history);
+        public native int nmixtures();           public native BackgroundSubtractorMOG nmixtures(int nmixtures);
+        public native double varThreshold();     public native BackgroundSubtractorMOG varThreshold(double varThreshold);
+        public native double backgroundRatio();  public native BackgroundSubtractorMOG backgroundRatio(double backgroundRatio);
+        public native double noiseSigma();       public native BackgroundSubtractorMOG noiseSigma(double noiseSigma);
+    }
+
+    @NoOffset @Namespace("cv") public static class BackgroundSubtractorMOG2 extends BackgroundSubtractor {
+        static { load(); }
+        public BackgroundSubtractorMOG2() { allocate(); }
+        public BackgroundSubtractorMOG2(int history,  float varThreshold, boolean bShadowDetection/*=true*/) {
+            allocate(history, varThreshold, bShadowDetection);
+        }
+        public BackgroundSubtractorMOG2(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int history, float varThreshold, boolean bShadowDetection/*=true*/);
+
+//        public native @Name("operator()") void apply(@Adapter("ArrayAdapter") CvArr image,
+//                @Adapter("ArrayAdapter") CvArr fgmask, double learningRate/*=-1*/);
+//
+//        public native void getBackgroundImage(@Adapter("ArrayAdapter") CvArr backgroundImage);
+
+        public native void initialize(@ByVal CvSize frameSize, int frameType);
+
+        public native @ByVal CvSize frameSize();   public native BackgroundSubtractorMOG2 frameSize(CvSize frameSize);
+        public native int frameType();             public native BackgroundSubtractorMOG2 frameType(int frameType);
+        @Adapter("MatAdapter")
+        public native IplImage bgmodel();          public native BackgroundSubtractorMOG2 bgmodel(IplImage bgmodel);
+        @Adapter("MatAdapter")
+        public native IplImage bgmodelUsedModes(); public native BackgroundSubtractorMOG2 bgmodelUsedModes(IplImage bgmodelUsedModes);
+        public native int nframes();               public native BackgroundSubtractorMOG2 nframes(int nframes);
+        public native int history();               public native BackgroundSubtractorMOG2 history(int history);
+        public native int nmixtures();             public native BackgroundSubtractorMOG2 nmixtures(int nmixtures);
+        public native float varThreshold();        public native BackgroundSubtractorMOG2 varThreshold(float varThreshold);
+        public native float backgroundRatio();     public native BackgroundSubtractorMOG2 backgroundRatio(float backgroundRatio);
+        public native float varThresholdGen();     public native BackgroundSubtractorMOG2 varThresholdGen(float varThresholdGen);
+        public native float fVarInit();            public native BackgroundSubtractorMOG2 fVarInit(float fVarInit);
+        public native float fVarMin();             public native BackgroundSubtractorMOG2 fVarMin(float fVarMin);
+        public native float fVarMax();             public native BackgroundSubtractorMOG2 fVarMax(float fVarMax);
+        public native float fCT();                 public native BackgroundSubtractorMOG2 fCT(float fCT);
+        public native boolean bShadowDetection();  public native BackgroundSubtractorMOG2 bShadowDetection(boolean bShadowDetection);
+        public native byte nShadowDetection();     public native BackgroundSubtractorMOG2 nShadowDetection(byte nShadowDetection);
+        public native float fTau();                public native BackgroundSubtractorMOG2 fTau(float fTau);
+    }
 }

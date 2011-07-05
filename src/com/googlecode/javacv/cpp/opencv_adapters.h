@@ -15,9 +15,9 @@ public:
             cvReleaseImage((IplImage**)&pointer);
         }
     }
-    operator CvMat*()    { return cvCloneMat  (&(CvMat&)   mat); }
-    operator CvMatND*()  { return cvCloneMatND(&(CvMatND&) mat); }
-    operator IplImage*() { return cvCloneImage(&(IplImage&)mat); }
+    operator CvMat*()    { return cvCloneMat  (&(const CvMat&)   mat); }
+    operator CvMatND*()  { return cvCloneMatND(&(const CvMatND&) mat); }
+    operator IplImage*() { return cvCloneImage(&(const IplImage&)mat); }
     operator cv::Mat&()  { return mat; }
     operator cv::Mat*()  { return pointer ? &mat : 0; }
 
@@ -25,6 +25,33 @@ public:
     unsigned int capacity;
     cv::Mat mat2;
     cv::Mat& mat;
+};
+
+class ArrayAdapter {
+public:
+    ArrayAdapter(CvArr* pointer, int capacity) : pointer(pointer), capacity(capacity),
+            mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
+    ArrayAdapter(const cv::_OutputArray& arr) : pointer(0), capacity(0), arr((cv::_OutputArray&)arr) { }
+    static void deallocate(CvArr* pointer) {
+        if (CV_IS_MAT(pointer)) {
+            cvReleaseMat  ((CvMat**)   &pointer);
+        } else if (CV_IS_MATND(pointer)) {
+            cvReleaseMatND((CvMatND**) &pointer);
+        } else if (CV_IS_IMAGE(pointer)) {
+            cvReleaseImage((IplImage**)&pointer);
+        }
+    }
+    operator CvMat*()    { return cvCloneMat  (&(const CvMat&)   arr.getMatRef()); }
+    operator CvMatND*()  { return cvCloneMatND(&(const CvMatND&) arr.getMatRef()); }
+    operator IplImage*() { return cvCloneImage(&(const IplImage&)arr.getMatRef()); }
+    operator cv::_OutputArray&()  { return arr; }
+    operator cv::_OutputArray*()  { return pointer ? &arr : 0; }
+
+    CvArr* pointer;
+    unsigned int capacity;
+    cv::Mat mat;
+    cv::_OutputArray arr2;
+    cv::_OutputArray& arr;
 };
 
 class RNGAdapter {

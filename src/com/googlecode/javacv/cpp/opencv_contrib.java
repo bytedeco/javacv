@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in contrib.hpp of OpenCV 2.2,
+ * This file is based on information found in contrib.hpp of OpenCV 2.3.0,
  * which is covered by the following copyright notice:
  *
  *                           License Agreement
@@ -81,13 +81,16 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"<opencv2/contrib/contrib.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link={"opencv_contrib",  "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link={"opencv_contrib220", "opencv_calib3d220", "opencv_highgui220", "opencv_imgproc220", "opencv_core220"}),
+    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
+        include={"<opencv2/contrib/contrib.hpp>", "opencv_adapters.h"},
+        link={"opencv_contrib", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
+    @Platform(value="windows", includepath=windowsIncludepath,
+        link={"opencv_contrib230","opencv_features2d230", "opencv_flann230", "opencv_calib3d230", "opencv_highgui230", "opencv_imgproc230", "opencv_core230"}),
+    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
+    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_contrib {
-    static { load(opencv_video.class); load(opencv_features2d.class); load(opencv_objdetect.class); load(opencv_ml.class); load(); }
+    static { load(opencv_features2d.class); load(); }
 
     public static class CvAdaptiveSkinDetector extends Pointer {
         static { load(); }
@@ -413,10 +416,10 @@ public class opencv_contrib {
         public native long getDescriptorSize();
         public native @ByVal CvSize getGridSize(@ByVal CvSize imgsize, @ByVal CvSize winStride);
 
-        public native void compute(IplImage img, @Adapter(value="VectorAdapter<float>", out=true) FloatPointer descriptors,
+        public native void compute(@Adapter("MatAdapter") CvArr img, @Adapter(value="VectorAdapter<float>", out=true) FloatPointer descriptors,
                 @ByVal CvSize winStride/*=Size()*/, @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint locations/*=null*/);
-        public native void computeLogPolarMapping(@Adapter("MatAdapter") IplImage mappingMask);
-        public native void SSD(IplImage img, @ByVal CvPoint pt, @Adapter("MatAdapter") IplImage ssd);
+        public native void computeLogPolarMapping(@Adapter("MatAdapter") CvArr mappingMask);
+        public native void SSD(@Adapter("MatAdapter") CvArr img, @ByVal CvPoint pt, @Adapter("MatAdapter") CvArr ssd);
 
         public native int smallSize();               public native SelfSimDescriptor smallSize(int smallSize);
         public native int largeSize();               public native SelfSimDescriptor largeSize(int largeSize);
@@ -430,113 +433,160 @@ public class opencv_contrib {
     }
 
 
-    public static class Fjac extends FunctionPointer {
-        static { load(); }
-        public    Fjac(Pointer p) { super(p); }
-        protected Fjac() { allocate(); }
-        protected final native void allocate();
-        public native void call(int i, int j, @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat point_params,
-                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat cam_params,
-                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat A,
-                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat B, Pointer data);
-    }
+//    public static class Fjac extends FunctionPointer {
+//        static { load(); }
+//        public    Fjac(Pointer p) { super(p); }
+//        protected Fjac() { allocate(); }
+//        protected final native void allocate();
+//        public native void call(int i, int j, @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat point_params,
+//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat cam_params,
+//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat A,
+//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat B, Pointer data);
+//    }
+//
+//    public static class Func extends FunctionPointer {
+//        static { load(); }
+//        public    Func(Pointer p) { super(p); }
+//        protected Func() { allocate(); }
+//        protected final native void allocate();
+//        public native void call(int i, int j, @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat point_params,
+//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat cam_params,
+//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat estim, Pointer data);
+//    }
+//
+//    public static class BundleAdjustCallback extends FunctionPointer {
+//        static { load(); }
+//        public    BundleAdjustCallback(Pointer p) { super(p); }
+//        protected BundleAdjustCallback() { allocate(); }
+//        protected final native void allocate();
+//        public native @Cast("bool") boolean call(int iteration, double norm_error, Pointer user_data);
+//    }
+//
+//    @NoOffset @Namespace("cv") public static class LevMarqSparse extends Pointer {
+//        static { load(); }
+//        public LevMarqSparse() { allocate(); }
+//        public LevMarqSparse(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
+//                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
+//                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data,
+//                BundleAdjustCallback cb, Pointer user_data) {
+//            allocate(npoints, ncameras, nPointParams, nCameraParams, nErrParams, visibility, P0, X, criteria, fjac, func, data, cb, user_data);
+//        }
+//        public LevMarqSparse(Pointer p) { super(p); }
+//        private native void allocate();
+//        private native void allocate(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
+//                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
+//                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data,
+//                BundleAdjustCallback cb, Pointer user_data);
+//
+//        public native void run(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
+//                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
+//                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data);
+//
+//        public native void clear();
+//
+//        // useful function to do simple bundle adjastment tasks
+//        public static native void bundleAdjust(@Adapter("VectorAdapter<CvPoint3D32f,cv::Point3d>") CvPoint3D32f points,
+//                @ByRef Point2dVectorVector imagePoints, @ByRef IntVectorVector visibility,
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray cameraMatrix,
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray R,
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray T,
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray distCoeffs,
+//                @ByVal CvTermCriteria criteria/*=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON)*/,
+//                BundleAdjustCallback cb/*=null*/, Pointer user_data/*=null*/);
+//
+//        public native void optimize(@ByRef CvMat _vis);
+//
+//        public native void ask_for_proj(@ByRef CvMat _vis, boolean once/*=false*/);
+//        public native void ask_for_projac(@ByRef CvMat _vis);
+//
+//        public native CvMat err();               public native LevMarqSparse err(CvMat err);
+//        public native double prevErrNorm();      public native LevMarqSparse prevErrNorm(double prevErrNorm);
+//        public native double errNorm();          public native LevMarqSparse errNorm(double errNorm);
+//        public native double lambda();           public native LevMarqSparse lambda(double lambda);
+//        @ByRef
+//        public native CvTermCriteria criteria(); public native LevMarqSparse criteria(CvTermCriteria criteria);
+//        public native int iters();               public native LevMarqSparse iters(int iters);
+//
+//        public native CvMatArray U();            public native LevMarqSparse U(CvMatArray U);
+//        public native CvMatArray V();            public native LevMarqSparse V(CvMatArray V);
+//        public native CvMatArray inv_V_star();   public native LevMarqSparse inv_V_star(CvMatArray inv_V_star);
+//
+//        public native CvMatArray A();            public native LevMarqSparse A(CvMatArray A);
+//        public native CvMatArray B();            public native LevMarqSparse B(CvMatArray B);
+//        public native CvMatArray W();            public native LevMarqSparse W(CvMatArray W);
+//
+//        public native CvMat X();                 public native LevMarqSparse X(CvMat X);
+//        public native CvMat hX();                public native LevMarqSparse hX(CvMat hX);
+//
+//        public native CvMat prevP();             public native LevMarqSparse prevP(CvMat prevP);
+//        public native CvMat P();                 public native LevMarqSparse P(CvMat P);
+//
+//        public native CvMat deltaP();            public native LevMarqSparse deltaP(CvMat deltaP);
+//
+//        public native CvMatArray ea();           public native LevMarqSparse ea(CvMatArray ea);
+//        public native CvMatArray eb();           public native LevMarqSparse eb(CvMatArray eb);
+//
+//        public native CvMatArray Yj();           public native LevMarqSparse Yj(CvMatArray Yj);
+//        public native CvMat S();                 public native LevMarqSparse S(CvMat S);
+//        public native CvMat JtJ_diag();          public native LevMarqSparse JtJ_diag(CvMat JtJ_diag);
+//        public native CvMat Vis_index();         public native LevMarqSparse Vis_index(CvMat Vis_index);
+//
+//        public native int num_cams();            public native LevMarqSparse num_cams(int num_cams);
+//        public native int num_points();          public native LevMarqSparse num_points(int num_points);
+//        public native int num_err_param();       public native LevMarqSparse num_err_param(int num_err_param);
+//        public native int num_cam_param();       public native LevMarqSparse num_cam_param(int num_cam_param);
+//        public native int num_point_param();     public native LevMarqSparse num_point_param(int cnum_point_paramb);
+//
+//        public native Fjac fjac();               public native LevMarqSparse fjac(Fjac fjac);
+//        public native Func func();               public native LevMarqSparse func(Func func);
+//
+//        public native Pointer data();            public native LevMarqSparse data(Pointer data);
+//
+//        public native BundleAdjustCallback cb(); public native LevMarqSparse cb(BundleAdjustCallback cb);
+//        public native Pointer user_data();       public native LevMarqSparse user_data(Pointer user_data);
+//    }
 
-    public static class Func extends FunctionPointer {
-        static { load(); }
-        public    Func(Pointer p) { super(p); }
-        protected Func() { allocate(); }
-        protected final native void allocate();
-        public native void call(int i, int j, @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat point_params,
-                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat cam_params,
-                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat estim, Pointer data);
-    }
-
-    @Namespace("cv") public static class LevMarqSparse extends Pointer {
-        static { load(); }
-        public LevMarqSparse() { allocate(); }
-        public LevMarqSparse(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
-                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
-                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data) {
-            allocate(npoints, ncameras, nPointParams, nCameraParams, nErrParams, visibility, P0, X, criteria, fjac, func, data);
-        }
-        public LevMarqSparse(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocate(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
-                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
-                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data);
-
-        public native void run(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
-                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
-                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data);
-
-        public native void clear();
-
-        // useful function to do simple bundle adjastment tasks
-        public static native void bundleAdjust(@Adapter("VectorAdapter<CvPoint3D32f,cv::Point3d>") CvPoint3D32f points,
-                @ByRef Point2dVectorVector imagePoints, @ByRef IntVectorVector visibility,
-                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray cameraMatrix,
-                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray R,
-                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray T,
-                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray distCoeffs,
-                @ByVal CvTermCriteria criteria/*=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON)*/);
-
-//        protected native void optimize();
-//
-//        protected native void ask_for_proj();
-//        protected native void ask_for_projac();
-//
-//        protected native CvMat err();
-//        protected native double prevErrNorm();
-//        protected native double errNorm();
-//        protected native double lambda();
-//        protected native @ByRef CvTermCriteria criteria();
-//        protected native int iters();
-//
-//        protected native CvMatArray U();
-//        protected native CvMatArray V();
-//        protected native CvMatArray inv_V_star();
-//
-//        protected native CvMat A();
-//        protected native CvMat B();
-//        protected native CvMat W();
-//
-//        protected native CvMat X();
-//        protected native CvMat hX();
-//
-//        protected native CvMat prevP();
-//        protected native CvMat P();
-//
-//        protected native CvMat deltaP();
-//
-//        protected native CvMatArray ea();
-//        protected native CvMatArray eb();
-//
-//        protected native CvMatArray Yj();
-//        protected native CvMat S();
-//        protected native CvMat JtJ_diag();
-//        protected native CvMat Vis_index();
-//
-//        protected native int num_cams();
-//        protected native int num_points();
-//        protected native int num_err_param();
-//        protected native int num_cam_param();
-//        protected native int num_point_param();
-//
-//        protected native Fjac fjac();
-//        protected native Func func();
-//
-//        protected native Pointer data;
-    }
-
-
-    @Namespace("cv") public static native boolean find4QuadCornerSubpix(IplImage img,
-            @Adapter(value="VectorAdapter<CvPoint2D32f,cv::Point2f>", out=true) CvPoint2D32f corners,
-            @ByVal CvSize region_size);
-
-    @Namespace("cv") public static native int chamerMatching(@Adapter("MatAdapter") IplImage img,
-            @Adapter("MatAdapter") IplImage templ, @ByRef PointVectorVector results,
+    @Namespace("cv") public static native int chamerMatching(@Adapter("MatAdapter") CvArr img,
+            @Adapter("MatAdapter") CvArr templ, @ByRef PointVectorVector results,
             @Adapter(value="VectorAdapter<float>", out=true) FloatPointer cost,
             double templScale/*=1*/, int maxMatches/*=20*/, double minMatchDistance/*=1.0*/, int padX/*=3*/,
             int padY/*=3*/, int scales/*=5*/, double minScale/*=0.6*/, double maxScale/*=1.6*/,
             double orientationWeight/*=0.5*/, double truncate/*=20*/);
+
+
+    @NoOffset @Namespace("cv") public static class StereoVar extends Pointer {
+        static { load(); }
+        public StereoVar() { allocate(); }
+        public StereoVar(int levels, double pyrScale, int nIt, int minDisp, int maxDisp, int poly_n,
+                double poly_sigma, float fi, float lambda, int penalization, int cycle, int flags) {
+            allocate(levels, pyrScale, nIt, minDisp, maxDisp, poly_n, poly_sigma, fi, lambda, penalization, cycle, flags);
+        }
+        public StereoVar(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int levels, double pyrScale, int nIt, int minDisp, int maxDisp, int poly_n,
+                double poly_sigma, float fi, float lambda, int penalization, int cycle, int flags);
+
+        public static final int
+                USE_INITIAL_DISPARITY = 1, USE_EQUALIZE_HIST = 2, USE_SMART_ID = 4, USE_MEDIAN_FILTERING = 8,
+                CYCLE_O = 0, CYCLE_V = 1,
+                PENALIZATION_TICHONOV = 0, PENALIZATION_CHARBONNIER = 1, PENALIZATION_PERONA_MALIK = 2;
+
+        public native @Name("operator()") void compute(@Adapter("MatAdapter") CvArr left,
+                @Adapter("MatAdapter") CvArr right, @Adapter("MatAdapter") CvArr disp);
+
+        public native int levels();        public native StereoVar levels(int levels);
+        public native double pyrScale();   public native StereoVar pyrScale(double pyrScale);
+        public native int nIt();           public native StereoVar nIt(int nIt);
+        public native int minDisp();       public native StereoVar minDisp(int minDisp);
+        public native int maxDisp();       public native StereoVar maxDisp(int maxDisp);
+        public native int poly_n();        public native StereoVar poly_n(int poly_n);
+        public native double poly_sigma(); public native StereoVar poly_sigma(double poly_sigma);
+        public native float fi();          public native StereoVar fi(float fi);
+        public native float lambda();      public native StereoVar lambda(float lambda);
+        public native int penalization();  public native StereoVar penalization(int penalization);
+        public native int cycle();         public native StereoVar cycle(int cycle);
+        public native int flags();         public native StereoVar flags(int flags);
+    }
+
+    @Namespace("cv") public static native void polyfit(CvMat srcx, CvMat srcy, @Adapter("MatAdapter") CvMat dst, int order);
 }

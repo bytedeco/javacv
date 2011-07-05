@@ -662,14 +662,14 @@ public class avformat {
 
         public native int flags();                    public native AVOutputFormat flags(int flags);
 
-        public static class Set_parameters extends FunctionPointer {
-            static { load(); }
-            public    Set_parameters(Pointer p) { super(p); }
-            protected Set_parameters() { allocate(); }
-            protected final native void allocate();
-            public native int call(AVFormatContext c, AVFormatParameters p);
-        }
-        public native Set_parameters set_parameters(); public native AVOutputFormat set_parameters(Set_parameters set_parameters);
+//        public static class Set_parameters extends FunctionPointer {
+//            static { load(); }
+//            public    Set_parameters(Pointer p) { super(p); }
+//            protected Set_parameters() { allocate(); }
+//            protected final native void allocate();
+//            public native int call(AVFormatContext c, AVFormatParameters p);
+//        }
+//        public native Set_parameters set_parameters(); public native AVOutputFormat set_parameters(Set_parameters set_parameters);
 
         public static class Interleave_packet extends FunctionPointer {
             static { load(); }
@@ -1249,13 +1249,10 @@ public class avformat {
     public static native long av_gettime();
 
 
-    public static final int FFM_PACKET_SIZE = 4096;
-    @Platform(not="windows")
-    public static native long ffm_read_write_index(int fd);
-    @Platform(not="windows")
-    public static native int ffm_write_write_index(int fd, long pos);
-    @Platform(not="windows")
-    public static native void ffm_set_write_index(AVFormatContext s, long pos, long file_size);
+//    public static final int FFM_PACKET_SIZE = 4096;
+//    public static native long ffm_read_write_index(int fd);
+//    public static native int ffm_write_write_index(int fd, long pos);
+//    public static native void ffm_set_write_index(AVFormatContext s, long pos, long file_size);
 
 
     public static native int find_info_tag(@Cast("char*") byte[] arg, int arg_size, String tag1, String info);

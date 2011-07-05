@@ -20,6 +20,9 @@
 
 package com.googlecode.javacv;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.Loader;
@@ -104,6 +107,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
+        depth = "depth".equalsIgnoreCase(format);
     }
 
     public void stop() throws Exception {
@@ -161,7 +165,16 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         int w = 640, h = 480; // how to get the resolution ??
         if (rawImage == null || rawImage.width() != w || rawImage.height() != h) {
             rawImage = IplImage.createHeader(w, h, iplDepth, channels);
-            cvSetData(rawImage, rawImageData, w*channels);
+        }
+        cvSetData(rawImage, rawImageData, w*channels*iplDepth/8);
+
+        if (iplDepth > 8 && ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            // ack, the camera's endianness doesn't correspond to our machine ...
+            // swap bytes of 16-bit images
+            ByteBuffer  bb  = rawImage.getByteBuffer();
+            ShortBuffer in  = bb.order(ByteOrder.BIG_ENDIAN   ).asShortBuffer();
+            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+            out.put(in);
         }
 
         if (colorMode == ColorMode.GRAY && channels == 3) {

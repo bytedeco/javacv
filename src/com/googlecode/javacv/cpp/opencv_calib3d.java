@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in calib3d.hpp
- * of OpenCV 2.2, which are covered by the following copyright notice:
+ * of OpenCV 2.3.0, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -74,19 +74,23 @@ import com.googlecode.javacpp.annotation.Properties;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_features2d.*;
 
 /**
  *
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link={"opencv_calib3d", "opencv_imgproc", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link={"opencv_calib3d220", "opencv_imgproc220", "opencv_core220"}),
+    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
+        include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"},
+        link={"opencv_calib3d", "opencv_flann", "opencv_imgproc", "opencv_core"}),
+    @Platform(value="windows", includepath=windowsIncludepath,
+        link={"opencv_calib3d230", "opencv_features2d230", "opencv_flann230", "opencv_highgui230", "opencv_imgproc230", "opencv_core230"}),
+    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
+    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_calib3d {
-    static { load(opencv_imgproc.class); load(); }
+    static { load(opencv_imgproc.class); load(opencv_flann.class); load(); }
 
     @Opaque public static class CvPOSITObject extends Pointer {
         static { load(); }
@@ -444,13 +448,52 @@ public class opencv_calib3d {
         public native boolean completeSymmFlag(); public native CvLevMarq completeSymmFlag(boolean completeSymmFlag);
     }
 
-    @Namespace("cv") public static native float rectify3Collinear(CvMat cameraMatrix1, CvMat distCoeffs1, CvMat cameraMatrix2, CvMat distCoeffs2,
-            CvMat cameraMatrix3, CvMat distCoeffs3, @ByRef Point2fVectorVector imgpt1, @ByRef Point2fVectorVector imgpt3,
-            @ByVal CvSize imageSize, CvMat R12, CvMat T12, CvMat R13, CvMat T13,
-            @Adapter("MatAdapter") CvMat R1, @Adapter("MatAdapter") CvMat R2, @Adapter("MatAdapter") CvMat R3,
-            @Adapter("MatAdapter") CvMat P1, @Adapter("MatAdapter") CvMat P2, @Adapter("MatAdapter") CvMat P3,
-            @Adapter("MatAdapter") CvMat Q,  double alpha, @ByVal CvSize newImgSize,
+    @Namespace("cv") public static native void solvePnPRansac(@Adapter("ArrayAdapter") CvMat objectPoints,
+            @Adapter("ArrayAdapter") CvMat imagePoints, @Adapter("ArrayAdapter") CvMat cameraMatrix,
+            @Adapter("ArrayAdapter") CvMat distCoeffs,  @Adapter("ArrayAdapter") CvMat rvec,
+            @Adapter("ArrayAdapter") CvMat tvec, boolean useExtrinsicGuess/*=false*/,
+            int iterationsCount/*=100*/, float reprojectionError/*=8.0*/, int minInliersCount/*=100*/,
+            @Adapter(value="ArrayAdapter", out=true) CvMat inliers/*=noArray()*/);
+
+    @Namespace("cv") public static native boolean find4QuadCornerSubpix(@Adapter("ArrayAdapter") CvArr img,
+            @Adapter("ArrayAdapter") CvArr corners, @ByVal CvSize region_size);
+    
+    public static final int CALIB_CB_SYMMETRIC_GRID = 1, CALIB_CB_ASYMMETRIC_GRID = 2,
+            CALIB_CB_CLUSTERING = 4;
+    @Platform(not="android") // Android does not support circular dependencies...
+    @Namespace("cv") public static native boolean findCirclesGrid(@Adapter("ArrayAdapter") CvArr image, @ByVal CvSize patternSize,
+            @Adapter(value="ArrayAdapter", out=true) CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/,
+            @ByRef FeatureDetectorPtr blobDetector/*=new SimpleBlobDetector()*/);
+
+    @Namespace("cv") public static native float rectify3Collinear(@Adapter("ArrayAdapter") CvMat cameraMatrix1,
+            @Adapter("ArrayAdapter") CvMat distCoeffs1, @Adapter("ArrayAdapter") CvMat cameraMatrix2, @Adapter("ArrayAdapter") CvMat distCoeffs2,
+            @Adapter("ArrayAdapter") CvMat cameraMatrix3, @Adapter("ArrayAdapter") CvMat distCoeffs3, @ByRef Point2fVectorVector imgpt1, @ByRef Point2fVectorVector imgpt3,
+            @ByVal CvSize imageSize, @Adapter("ArrayAdapter") CvMat R12, @Adapter("ArrayAdapter") CvMat T12, @Adapter("ArrayAdapter") CvMat R13, @Adapter("ArrayAdapter") CvMat T13,
+            @Adapter("ArrayAdapter") CvMat R1, @Adapter("ArrayAdapter") CvMat R2, @Adapter("ArrayAdapter") CvMat R3,
+            @Adapter("ArrayAdapter") CvMat P1, @Adapter("ArrayAdapter") CvMat P2, @Adapter("ArrayAdapter") CvMat P3,
+            @Adapter("ArrayAdapter") CvMat Q,  double alpha, @ByVal CvSize newImgSize,
             @Adapter("RectAdapter") CvRect roi1, @Adapter("RectAdapter") CvRect roi2, int flags);
+
+    @NoOffset @Namespace("cv") public static class StereoBM extends Pointer {
+        static { load(); }
+        public StereoBM() { allocate(); }
+        public StereoBM(int preset, int ndisparities/*=0*/, int SADWindowSize/*=21*/) {
+            allocate(preset, ndisparities, SADWindowSize);
+        }
+        public StereoBM(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int preset, int ndisparities/*=0*/, int SADWindowSize/*=21*/);
+
+        public static final int
+                PREFILTER_NORMALIZED_RESPONSE = 0, PREFILTER_XSOBEL = 1,
+                BASIC_PRESET=0, FISH_EYE_PRESET=1, NARROW_PRESET=2;
+
+        public native void init(int preset, int ndisparities/*=0*/, int SADWindowSize/*=21*/);
+        public native @Name("operator()") void compute(@Adapter("ArrayAdapter") CvArr left,
+                @Adapter("ArrayAdapter") CvArr right, @Adapter("ArrayAdapter") CvArr disparity, int disptype/*=CV_16S*/);
+
+        public native CvStereoBMState state(); public native StereoBM state(CvStereoBMState state);
+    }
 
     @NoOffset @Namespace("cv") public static class StereoSGBM extends Pointer {
         static { load(); }
@@ -469,7 +512,8 @@ public class opencv_calib3d {
 
         public static final int DISP_SHIFT=4, DISP_SCALE = (1<<DISP_SHIFT);
 
-        public native @Name("operator()") void compute(IplImage left, IplImage right, @Adapter("MatAdapter") IplImage disp);
+        public native @Name("operator()") void compute(@Adapter("ArrayAdapter") CvArr left,
+                @Adapter("ArrayAdapter") CvArr right, @Adapter("ArrayAdapter") CvArr disp);
 
         public native int minDisparity();        public native StereoSGBM minDisparity(int minDisparity);
         public native int numberOfDisparities(); public native StereoSGBM numberOfDisparities(int numberOfDisparities);
@@ -486,6 +530,10 @@ public class opencv_calib3d {
 //        protected native @Adapter("MatAdapter") CvMat buffer();
     }
 
-    @Namespace("cv") public static native void filterSpeckles(@Adapter("MatAdapter") IplImage img, double newVal,
-            int maxSpeckleSize, double maxDiff, @Adapter("MatAdapter") IplImage buf);
+    @Namespace("cv") public static native void filterSpeckles(@Adapter("ArrayAdapter") CvArr img, double newVal,
+            int maxSpeckleSize, double maxDiff, @Adapter("ArrayAdapter") CvArr buf);
+
+    @Namespace("cv") public static native int estimateAffine3D(@Adapter("ArrayAdapter") CvMat _from,
+            @Adapter("ArrayAdapter") CvMat _to, @Adapter(value="ArrayAdapter", out=true) CvMat _out,
+            @Adapter(value="ArrayAdapter", out=true) CvMat _inliers, double param1/*=3*/, double param2/*=0.99*/);
 }

@@ -110,7 +110,8 @@ import static com.googlecode.javacpp.Loader.*;
         includepath  ={"/opt/local/include/libfreenect/", "/usr/local/include/libfreenect/", "/opt/local/include/", "/usr/include/libfreenect/"},
         linkpath     ={"/opt/local/lib/", "/opt/local/lib64/", "/usr/local/lib/", "/usr/local/lib64/"}) ,
     @Platform(value="windows", include={"<libfreenect.h>", "<libfreenect_sync.h>", "<libfreenect_sync.c>"}, link={"freenect", "pthreadVC2"},
-        includepath  ={"C:/libfreenect/include/", "C:/libfreenect/wrappers/c_sync/", "C:/pthreads-w32-2-8-0-release/", "C:/pthreads.2/", "C:/Pre-built.2/include/"},
+        includepath  ={"C:/libfreenect/include/", "C:/libfreenect/wrappers/c_sync/", "C:/pthreads-w32-2-8-0-release/",
+            "C:/pthreads.2/", "C:/Pre-built.2/include/", "src/com/googlecode/javacv/cpp/"},
         linkpath     ={"C:/libfreenect/lib/", "C:/pthreads-w32-2-8-0-release/", "C:/pthreads.2/", "C:/Pre-built.2/lib/"}) })
 public class freenect {
     static { load(); }

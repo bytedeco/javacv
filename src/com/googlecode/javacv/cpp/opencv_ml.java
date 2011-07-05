@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in ml.hpp of OpenCV 2.2,
+ * This file is based on information found in ml.hpp of OpenCV 2.3.0,
  * which is covered by the following copyright notice:
  *
  *                        Intel License Agreement
@@ -69,6 +69,7 @@ import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Const;
+import com.googlecode.javacpp.annotation.Index;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
@@ -84,10 +85,11 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link={"opencv_ml", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link={"opencv_ml220", "opencv_core220"}),
+    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
+        include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml", "opencv_core"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml230", "opencv_core230"}),
+    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
+    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_ml {
     static { load(opencv_core.class); load(); }
@@ -251,13 +253,13 @@ public class opencv_ml {
         public native int get_sample_count();
         public native boolean is_regression();
 
-//        protected native float write_results(int k, int k1, int start, int end,
-//                float[] neighbor_responses, float[] dist, CvMat _results,
-//                CvMat _neighbor_responses, CvMat _dist, Cv32suf sort_buf);
-//
-//        protected native void find_neighbors_direct(CvMat _samples, int k, int start, int end,
-//                float[] neighbor_responses, @Cast("float**") PointerPointer neighbors, float[] dist);
-//
+        public native float write_results(int k, int k1, int start, int end,
+                float[] neighbor_responses, float[] dist, CvMat _results,
+                CvMat _neighbor_responses, CvMat _dist, Cv32suf sort_buf);
+
+        public native void find_neighbors_direct(CvMat _samples, int k, int start, int end,
+                float[] neighbor_responses, @Cast("const float**") PointerPointer neighbors, float[] dist);
+
 //        protected native int max_k();
 //        protected native int var_count();
 //        protected native int total();
@@ -512,6 +514,7 @@ public class opencv_ml {
                 boolean balanced/*=false*/);
 
         public native float predict(CvMat sample, boolean returnDFVal/*=false*/);
+        public native float predict(CvMat samples, CvMat results);
 
         public native int get_support_vector_count();
         public native @Const FloatPointer get_support_vector(int i);
@@ -601,6 +604,7 @@ public class opencv_ml {
         public native boolean train(CvMat samples, CvMat sampleIdx/*=null*/,
                 @ByVal CvEMParams params/*=CvEMParams()*/, CvMat labels/*=null*/);
         public native float predict(CvMat sample, CvMat probs);
+        public native double calcLikelihood(CvMat sample);
 //        public native void clear();
 
         public native int           get_nclusters();
@@ -610,11 +614,18 @@ public class opencv_ml {
         public native @Const CvMat  get_probs();
 
         public native double        get_log_likelihood();
+        public native double        get_log_likelihood_delta();
 
 //        public native @Const CvMat  get_log_weight_div_det();
 //        public native @Const CvMat  get_inv_eigen_values();
 //        public native @Const CvMatArray get_cov_rotate_mats();
-//
+
+//        public native void read(CvFileStorage fs, CvFileNode node);
+//        public native void write(CvFileStorage fs, String name);
+
+        public native void write_params(CvFileStorage fs);
+        public native void read_params(CvFileStorage fs, CvFileNode node);
+
 //        protected native void set_params(@ByRef CvEMParams params, @ByRef CvVectors train_data);
 //        protected native void init_em(@ByRef CvVectors train_data);
 //        protected native double run_em(@ByRef CvVectors train_data);
@@ -624,6 +635,7 @@ public class opencv_ml {
 //        @ByRef
 //        protected native CvEMParams params();
 //        protected native double log_likelihood();
+//        protected native double log_likelihood_delta();
 //
 //        protected native CvMat means();
 //        protected native CvMatArray covs();
@@ -1221,6 +1233,8 @@ public class opencv_ml {
                 CvMat sampleIdx/*=null*/, CvMat varType/*=null*/, CvMat missingDataMask/*=null*/,
                 @ByVal CvGBTreesParams params/*=CvGBTreesParams()*/, boolean update/*=false*/);
         public native boolean train(CvMLData data, @ByVal CvGBTreesParams params/*=CvGBTreesParams()*/, boolean update/*=false*/);
+        public native float predict_serial(CvMat sample, CvMat missing/*=null*/, CvMat weakResponses/*=null*/,
+                @ByVal CvSlice slice/*=CV_WHOLE_SEQ*/, int k/*=-1*/);
         public native float predict(CvMat sample, CvMat missing/*=null*/, CvMat weakResponses/*=null*/,
                 @ByVal CvSlice slice/*=CV_WHOLE_SEQ*/, int k/*=-1*/);
 
@@ -1240,6 +1254,7 @@ public class opencv_ml {
 //        protected native boolean problem_type();
 //        protected native void write_params(CvFileStorage fs);
 //        protected native void read_params(CvFileStorage fs, CvFileNode fnode);
+//        protected native int get_len(CvMat mat);
 //
 //        protected native CvDTreeTrainData data();
 //        protected native @ByRef CvGBTreesParams params();
@@ -1248,7 +1263,6 @@ public class opencv_ml {
 //        protected native CvMat orig_response();
 //        protected native CvMat sum_response();
 //        protected native CvMat sum_response_tmp();
-//        protected native CvMat weak_eval();
 //        protected native CvMat sample_idx();
 //        protected native CvMat subsample_train();
 //        protected native CvMat subsample_test();
@@ -1324,6 +1338,8 @@ public class opencv_ml {
         public native @Const CvMat get_layer_sizes();
         public native DoublePointer get_weights(int layer);
 
+        public native void calc_activ_func_deriv(CvMat xf, CvMat deriv, double[] bias);
+
 //        protected native boolean prepare_to_train(CvMat _inputs, CvMat _outputs, CvMat _sample_weights,
 //                CvMat sampleIdx, CvVectors _ivecs, CvVectors _ovecs, @Cast("double**") PointerPointer _sw, int _flags);
 //
@@ -1332,7 +1348,6 @@ public class opencv_ml {
 //        protected native int train_rprop(CvVectors _ivecs, CvVectors _ovecs, double[] _sw);
 //
 //        protected native void calc_activ_func(CvMat xf, double[] bias);
-//        protected native void calc_activ_func_deriv(CvMat xf, CvMat deriv, double[] bias);
 //        protected native void set_activ_func(int _activ_func/*=SIGMOID_SYM*/,
 //                double _f_param1/*=0*/, double _f_param2/*=0*/);
 //        protected native void init_weights();
@@ -1376,13 +1391,13 @@ public class opencv_ml {
     @NoOffset public static class CvTrainTestSplit extends Pointer {
         static { load(); }
         public CvTrainTestSplit() { allocate(); }
-        public CvTrainTestSplit(int _train_sample_count, boolean _mix/*=true*/) { allocate(_train_sample_count, _mix); }
-        public CvTrainTestSplit(float _train_sample_portion, boolean _mix/*=true*/) { allocate(_train_sample_portion, _mix); }
+        public CvTrainTestSplit(int train_sample_count, boolean mix/*=true*/) { allocate(train_sample_count, mix); }
+        public CvTrainTestSplit(float train_sample_portion, boolean mix/*=true*/) { allocate(train_sample_portion, mix); }
         public CvTrainTestSplit(int size) { allocateArray(size); }
         public CvTrainTestSplit(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int _train_sample_count, boolean _mix/*=true*/);
-        private native void allocate(float _train_sample_portion, boolean _mix/*=true*/);
+        private native void allocate(int train_sample_count, boolean mix/*=true*/);
+        private native void allocate(float train_sample_portion, boolean mix/*=true*/);
         private native void allocateArray(int size);
 
         @Name("train_sample_part.count")
@@ -1391,13 +1406,20 @@ public class opencv_ml {
         public native float train_sample_part_portion(); public native CvTrainTestSplit train_sample_part_portion(float train_sample_part_portion);
         public native int train_sample_part_mode();      public native CvTrainTestSplit train_sample_part_mode(int train_sample_part_mode);
 
-        @Name("class_part->count") @NoOffset
-        public native IntPointer class_part_count();     public native CvTrainTestSplit class_part_count(IntPointer class_part_count);
-        @Name("class_part->portion") @NoOffset
-        public native FloatPointer class_part_portion(); public native CvTrainTestSplit class_part_portion(FloatPointer class_part_portion);
-        public native int class_part_mode();             public native CvTrainTestSplit class_part_mode(int class_part_mode);
-
         public native boolean mix();                     public native CvTrainTestSplit mix(boolean mix);
+    }
+
+    @Name("std::map<std::string, int>") @Index
+    public static class StringIntMap extends Pointer {
+        static { load(); }
+        public StringIntMap() { allocate(); }
+        public StringIntMap(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native long size();
+
+        public native int get(String i);
+        public native StringIntMap put(String i, int value);
     }
 
     public static class CvMLData extends Pointer {
@@ -1417,10 +1439,10 @@ public class opencv_ml {
         public native void set_response_idx(int idx);
         public native int get_response_idx();
 
+        public native void set_train_test_split(CvTrainTestSplit spl);
         public native @Const CvMat get_train_sample_idx();
         public native @Const CvMat get_test_sample_idx();
         public native void mix_train_and_test_idx();
-        public native void set_train_test_split(CvTrainTestSplit spl);
 
         public native @Const CvMat get_var_idx();
         public native void chahge_var_idx(int vi, boolean state);
@@ -1435,6 +1457,8 @@ public class opencv_ml {
 
         public native void set_miss_ch(byte ch);
         public native byte get_miss_ch();
+
+        public native @Const @ByRef StringIntMap get_class_labels_map();
 
 //        protected native void clear();
 //
@@ -1460,7 +1484,7 @@ public class opencv_ml {
 //        protected native boolean mix();
 //
 //        protected native int total_class_count();
-//        protected native StringIntMap /* std::map<std::string, int> * */ class_map();
+//        protected native @ByRef StringIntMap class_map();
 //
 //        protected native CvMat train_sample_idx();
 //        protected native CvMat test_sample_idx();

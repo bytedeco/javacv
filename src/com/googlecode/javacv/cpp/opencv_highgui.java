@@ -18,8 +18,8 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h
- * of OpenCV 2.2, which are covered by the following copyright notice:
+ * This file is based on information found in highgui_c.h of OpenCV 2.3.0,
+ * which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -73,10 +73,13 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author saudet
  */
 @Properties({
-    @Platform(include="<opencv2/highgui/highgui_c.h>", includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link={"opencv_highgui", "opencv_imgproc", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link={"opencv_highgui220", "opencv_imgproc220", "opencv_core220"}, preload="opencv_ffmpeg220"),
+    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
+        include="<opencv2/highgui/highgui_c.h>",
+        link={"opencv_highgui", "opencv_imgproc", "opencv_core"}),
+    @Platform(value="windows", includepath=windowsIncludepath,
+        link={"opencv_highgui230", "opencv_imgproc230", "opencv_core230"}, preload="opencv_ffmpeg230"),
+    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
+    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_highgui {
     static {
@@ -318,7 +321,11 @@ public class opencv_highgui {
 
             CV_CAP_DSHOW   = 700,
 
-            CV_CAP_PVAPI   = 800;
+            CV_CAP_PVAPI   = 800,
+
+            CV_CAP_OPENNI  = 900,
+
+            CV_CAP_ANDROID = 1000;
 
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native int cvGrabFrame(CvCapture capture);
@@ -328,6 +335,10 @@ public class opencv_highgui {
     public static native void cvReleaseCapture(@ByPtrPtr CvCapture capture);
 
     public static final int
+            CV_CAP_PROP_DC1394_OFF         = -4,
+            CV_CAP_PROP_DC1394_MODE_MANUAL = -3,
+            CV_CAP_PROP_DC1394_MODE_AUTO = -2,
+            CV_CAP_PROP_DC1394_MODE_ONE_PUSH_AUTO = -1,
             CV_CAP_PROP_POS_MSEC      =  0,
             CV_CAP_PROP_POS_FRAMES    =  1,
             CV_CAP_PROP_POS_AVI_RATIO =  2,
@@ -345,10 +356,56 @@ public class opencv_highgui {
             CV_CAP_PROP_GAIN          = 14,
             CV_CAP_PROP_EXPOSURE      = 15,
             CV_CAP_PROP_CONVERT_RGB   = 16,
-            CV_CAP_PROP_WHITE_BALANCE = 17,
+            CV_CAP_PROP_WHITE_BALANCE_BLUE_U = 17,
             CV_CAP_PROP_RECTIFICATION = 18,
-            CV_CAP_PROP_MONOCROME     = 19;
+            CV_CAP_PROP_MONOCROME     = 19,
+            CV_CAP_PROP_SHARPNESS     = 20,
+            CV_CAP_PROP_AUTO_EXPOSURE = 21,
+            CV_CAP_PROP_GAMMA         = 22,
+            CV_CAP_PROP_TEMPERATURE   = 23,
+            CV_CAP_PROP_TRIGGER       = 24,
+            CV_CAP_PROP_TRIGGER_DELAY = 25,
+            CV_CAP_PROP_WHITE_BALANCE_RED_V = 26,
+            CV_CAP_PROP_MAX_DC1394    = 27,
+            CV_CAP_PROP_AUTOGRAB      = 1024,
+            CV_CAP_PROP_SUPPORTED_PREVIEW_SIZES_STRING=1025,
 
+            CV_CAP_OPENNI_DEPTH_GENERATOR = 0,
+            CV_CAP_OPENNI_IMAGE_GENERATOR = 1 << 31,
+            CV_CAP_OPENNI_GENERATORS_MASK = 1 << 31,
+
+            CV_CAP_PROP_OPENNI_OUTPUT_MODE      = 100,
+            CV_CAP_PROP_OPENNI_FRAME_MAX_DEPTH  = 101,
+            CV_CAP_PROP_OPENNI_BASELINE         = 102,
+            CV_CAP_PROP_OPENNI_FOCAL_LENGTH     = 103,
+            CV_CAP_PROP_OPENNI_REGISTRATION_ON    = 104,
+            CV_CAP_OPENNI_IMAGE_GENERATOR_OUTPUT_MODE = CV_CAP_OPENNI_IMAGE_GENERATOR + CV_CAP_PROP_OPENNI_OUTPUT_MODE,
+            CV_CAP_OPENNI_DEPTH_GENERATOR_BASELINE = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_BASELINE,
+            CV_CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_FOCAL_LENGTH,
+            CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION_ON = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_REGISTRATION_ON,
+
+            CV_CAP_GSTREAMER_QUEUE_LENGTH      = 200,
+            CV_CAP_PROP_PVAPI_MULTICASTIP       = 300,
+
+            CV_CAP_OPENNI_DEPTH_MAP                 = 0,
+            CV_CAP_OPENNI_POINT_CLOUD_MAP           = 1,
+            CV_CAP_OPENNI_DISPARITY_MAP             = 2,
+            CV_CAP_OPENNI_DISPARITY_MAP_32F         = 3,
+            CV_CAP_OPENNI_VALID_DEPTH_MASK          = 4,
+
+            CV_CAP_OPENNI_BGR_IMAGE                 = 5,
+            CV_CAP_OPENNI_GRAY_IMAGE                = 6,
+
+            CV_CAP_OPENNI_VGA_30HZ     = 0,
+            CV_CAP_OPENNI_SXGA_15HZ    = 1,
+
+            CV_CAP_ANDROID_COLOR_FRAME_BGR = 0,
+            CV_CAP_ANDROID_COLOR_FRAME = CV_CAP_ANDROID_COLOR_FRAME_BGR,
+            CV_CAP_ANDROID_GREY_FRAME  = 1,
+            CV_CAP_ANDROID_COLOR_FRAME_RGB = 2,
+            CV_CAP_ANDROID_COLOR_FRAME_BGRA = 3,
+            CV_CAP_ANDROID_COLOR_FRAME_RGBA = 4;
+ 
     public static native double cvGetCaptureProperty(CvCapture capture, int property_id);
     public static native int    cvSetCaptureProperty(CvCapture capture, int property_id, double value);
     public static native int    cvGetCaptureDomain(CvCapture capture);

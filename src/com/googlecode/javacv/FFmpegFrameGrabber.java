@@ -29,6 +29,7 @@ import java.io.File;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.LongPointer;
+import com.googlecode.javacpp.PointerPointer;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.avutil.*;
@@ -318,8 +319,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             }
 
                             // Convert the image from its native format to RGB
-                            sws_scale(img_convert_ctx, pFrame.data(0), pFrame.linesize(), 0,
-                                    pCodecCtx.height(), buffer, pFrameRGB.linesize());
+                            sws_scale(img_convert_ctx, new PointerPointer(pFrame), pFrame.linesize(), 0,
+                                    pCodecCtx.height(), new PointerPointer(pFrameRGB), pFrameRGB.linesize());
                             return_image.imageData(buffer);
                             return_image.widthStep(pFrameRGB.linesize(0));
                             break;

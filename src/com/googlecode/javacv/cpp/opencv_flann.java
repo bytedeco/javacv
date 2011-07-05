@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in flann.hpp of OpenCV 2.2,
+ * This file is based on information found in flann.hpp of OpenCV 2.3.0,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -62,6 +62,7 @@ import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
@@ -75,27 +76,28 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"opencv_adapters.h", "<opencv2/flann/flann.hpp>"}, includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link={"opencv_flann", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link={"opencv_flann220", "opencv_core220"}),
+    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
+        include={"opencv_adapters.h", "<opencv2/flann/flann.hpp>"}, link={"opencv_flann", "opencv_core"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann230", "opencv_core230"}),
+    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
+    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_flann {
     static { load(opencv_core.class); load(); }
 
     public static final int
     // enum flann_algorithm_t
-            LINEAR = 0,
-            KDTREE = 1,
-            KMEANS = 2,
-            COMPOSITE = 3,
-            SAVED = 254,
-            AUTOTUNED = 255,
+            FLANN_INDEX_LINEAR = 0,
+            FLANN_INDEX_KDTREE = 1,
+            FLANN_INDEX_KMEANS = 2,
+            FLANN_INDEX_COMPOSITE = 3,
+            FLANN_INDEX_SAVED = 254,
+            FLANN_INDEX_AUTOTUNED = 255,
 
     // enum flann_centers_init_t
-            CENTERS_RANDOM = 0,
-            CENTERS_GONZALES = 1,
-            CENTERS_KMEANSPP = 2;
+            FLANN_CENTERS_RANDOM = 0,
+            FLANN_CENTERS_GONZALES = 1,
+            FLANN_CENTERS_KMEANSPP = 2;
     
     @NoOffset @Namespace("cvflann") public static class IndexParams extends Pointer {
         static { load(); }
@@ -234,14 +236,14 @@ public class opencv_flann {
         public native void knnSearch(@Adapter("VectorAdapter<float>") FloatPointer query,
                 @Adapter(value="VectorAdapter<int>",out=true) IntPointer indices,
                 @Adapter(value="VectorAdapter<float>",out=true) FloatPointer dists, int knn, @ByRef SearchParams params);
-        public native void knnSearch(CvMat queries, @Adapter(value="MatAdapter",out=true) CvMat indices,
-                @Adapter(value="MatAdapter",out=true) CvMat dists, int knn, @ByRef SearchParams params);
+        public native void knnSearch(CvMat queries, @Adapter("MatAdapter") CvMat indices,
+                @Adapter("MatAdapter") CvMat dists, int knn, @ByRef SearchParams params);
 
         public native int radiusSearch(@Adapter("VectorAdapter<float>") FloatPointer query,
                 @Adapter(value="VectorAdapter<int>",out=true) IntPointer indices,
                 @Adapter(value="VectorAdapter<float>",out=true) FloatPointer dists, float radius, @ByRef SearchParams params);
-        public native int radiusSearch(CvMat query, @Adapter(value="MatAdapter",out=true) CvMat indices,
-                @Adapter(value="MatAdapter",out=true) CvMat dists, float radius, @ByRef SearchParams params);
+        public native int radiusSearch(CvMat query, @Adapter("MatAdapter") CvMat indices,
+                @Adapter("MatAdapter") CvMat dists, float radius, @ByRef SearchParams params);
 
         public native void save(String filename);
 
@@ -249,6 +251,6 @@ public class opencv_flann {
 
         public native int size();
 
-//      public native @Const IndexParams getIndexParameters();
+        public native @Const IndexParams getIndexParameters();
     }
 }

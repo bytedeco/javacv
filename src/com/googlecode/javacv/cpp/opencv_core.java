@@ -19,13 +19,13 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.2, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.3.0, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
  *
  * Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
- * Copyright (C) 2009, Willow Garage Inc., all rights reserved.
+ * Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.
  * Third party copyrights are property of their respective owners.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -116,24 +116,27 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, includepath=genericIncludepath,
-        linkpath=genericLinkpath,       link="opencv_core"),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, link="opencv_core220", preload={"msvcr100", "msvcp100"}),
+    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
+        include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core"),
+    @Platform(value="windows", includepath=windowsIncludepath, link="opencv_core230", preload={"msvcr100", "msvcp100", "tbb"}),
+    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
+    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_core {
     static { load(); }
-    public static final String genericIncludepath = "/opt/local/include/";
-    public static final String genericLinkpath    = "/opt/local/lib/:/opt/local/lib64/:/usr/local/lib/:/usr/local/lib64/";
-    public static final String windowsIncludepath = "C:/OpenCV2.2/include/";
-    public static final String windowsLinkpath    = "C:/OpenCV2.2/lib/";
-    public static final String windowsPreloadpath = "C:/OpenCV2.2/bin/Release/;C:/OpenCV2.2/bin/";
-    public static final String androidIncludepath = "../include/";
-    public static final String androidLinkpath    = "../lib/";
+    public static final String genericIncludepath    = "/opt/local/include/";
+    public static final String genericLinkpath       = "/opt/local/lib/:/opt/local/lib64/:/usr/local/lib/:/usr/local/lib64/";
+    public static final String windowsIncludepath    = "C:/OpenCV2.3/include/;C:/OpenCV2.3/build/include/";
+    public static final String windowsx86Linkpath    = "C:/OpenCV2.3/lib/;C:/OpenCV2.3/build/x86/vc10/lib/";
+    public static final String windowsx86Preloadpath = "C:/OpenCV2.3/bin/Release/;C:/OpenCV2.3/bin/;C:/OpenCV2.3/build/x86/vc10/bin/";
+    public static final String windowsx64Linkpath    = "C:/OpenCV2.3/lib/;C:/OpenCV2.3/build/x64/vc10/lib/";
+    public static final String windowsx64Preloadpath = "C:/OpenCV2.3/bin/Release/;C:/OpenCV2.3/bin/;C:/OpenCV2.3/build/x64/vc10/bin/";
+    public static final String androidIncludepath    = "../include/";
+    public static final String androidLinkpath       = "../lib/";
 
     public static final int
             CV_MAJOR_VERSION    = 2,
-            CV_MINOR_VERSION    = 2,
+            CV_MINOR_VERSION    = 3,
             CV_SUBMINOR_VERSION = 0;
 
     public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
@@ -168,9 +171,10 @@ public class opencv_core {
 
     @Name("CvMat*")
     public static class CvMatArray extends CvArrArray {
-        public CvMatArray(CvMat ... array) { super(array); }
-        public CvMatArray(int size) { super(size); }
+        public CvMatArray(CvMat ... array) { this(array.length); put(array); position(0); }
+        public CvMatArray(int size) { allocateArray(size); }
         public CvMatArray(Pointer p) { super(p); }
+        private native void allocateArray(int size);
 
         @Override public CvMatArray position(int position) {
             return (CvMatArray)super.position(position);
@@ -190,9 +194,10 @@ public class opencv_core {
 
     @Name("CvMatND*")
     public static class CvMatNDArray extends CvArrArray {
-        public CvMatNDArray(CvMatND ... array) { super(array); }
-        public CvMatNDArray(int size) { super(size); }
+        public CvMatNDArray(CvMatND ... array) { this(array.length); put(array); position(0); }
+        public CvMatNDArray(int size) { allocateArray(size); }
         public CvMatNDArray(Pointer p) { super(p); }
+        private native void allocateArray(int size);
 
         @Override public CvMatNDArray position(int position) {
             return (CvMatNDArray)super.position(position);
@@ -212,9 +217,10 @@ public class opencv_core {
 
     @Name("IplImage*")
     public static class IplImageArray extends CvArrArray {
-        public IplImageArray(IplImage ... array) { super(array); }
-        public IplImageArray(int size) { super(size); }
+        public IplImageArray(IplImage ... array) { this(array.length); put(array); position(0); }
+        public IplImageArray(int size) { allocateArray(size); }
         public IplImageArray(Pointer p) { super(p); }
+        private native void allocateArray(int size);
 
         @Override public IplImageArray position(int position) {
             return (IplImageArray)super.position(position);
@@ -318,8 +324,11 @@ public class opencv_core {
             CV_StsAssert                = -215,
             CV_GpuNotSupported          = -216,
             CV_GpuApiCallError          = -217,
-            CV_GpuNppCallError          = -218;
+            CV_GpuNppCallError          = -218,
+            CV_GpuCufftCallError        = -219;
 
+
+    public static final long CV_RNG_COEFF = 4164903690L;
     public static class CvRNG extends LongPointer {
         static { load(); }
         public CvRNG() { super(1); }
@@ -333,7 +342,7 @@ public class opencv_core {
     }
     public static int cvRandInt(CvRNG rng) {
         long temp = rng.get();
-        temp = ((temp&0xFFFFFFFFL)*4164903690L) + ((temp >> 32)&0xFFFFFFFFL);
+        temp = ((temp&0xFFFFFFFFL)*CV_RNG_COEFF) + ((temp >> 32)&0xFFFFFFFFL);
         rng.put(temp);
         return (int)temp;
     }
@@ -1601,7 +1610,7 @@ public class opencv_core {
 
     public static final int
             CV_MAX_DIM          = 32,
-            CV_MAX_DIM_HEAP     = (1 << 16);
+            CV_MAX_DIM_HEAP     = 1024;
 
     public static class CvMatND extends CvArr {
         public CvMatND() { allocate(); }
@@ -2802,7 +2811,10 @@ public class opencv_core {
         public CvFileStorage(Pointer p) { super(p); }
 
         public static CvFileStorage open(String filename, CvMemStorage memstorage, int flags) {
-            CvFileStorage f = cvOpenFileStorage(filename, memstorage, flags);
+            return open(filename, memstorage, flags, null);
+        }
+        public static CvFileStorage open(String filename, CvMemStorage memstorage, int flags, String encoding) {
+            CvFileStorage f = cvOpenFileStorage(filename, memstorage, flags, encoding);
             if (f != null) {
                 f.deallocator(new ReleaseDeallocator(f));
             }
@@ -3047,6 +3059,8 @@ public class opencv_core {
         public native BytePointer version();        public native CvModuleInfo version(BytePointer version);
         public native CvPluginFuncInfo func_tab();  public native CvModuleInfo func_tab(CvPluginFuncInfo func_tab);
     }
+
+    public static final int CV_PARAM_TYPE_INT=0, CV_PARAM_TYPE_REAL=1, CV_PARAM_TYPE_STRING=2, CV_PARAM_TYPE_MAT=3;
 
 
     public static native Pointer cvAlloc(@Cast("size_t") long size);
@@ -3954,7 +3968,7 @@ public class opencv_core {
             Cv_iplCloneImage clone_image);
 
 
-    public static native CvFileStorage cvOpenFileStorage(String filename, CvMemStorage memstorage, int flags);
+    public static native CvFileStorage cvOpenFileStorage(String filename, CvMemStorage memstorage, int flags, String encoding/*=null*/);
     public static native void cvReleaseFileStorage(@ByPtrPtr CvFileStorage fs);
     public static native String cvAttrValue(CvAttrList attr, String attr_name);
 
@@ -4072,6 +4086,7 @@ public class opencv_core {
             CV_CPU_SSSE3  =  5,
             CV_CPU_SSE4_1 =  6,
             CV_CPU_SSE4_2 =  7,
+            CV_CPU_POPCNT =  8,
             CV_CPU_AVX    = 10,
             CV_HARDWARE_MAX_FEATURE = 255;
 
@@ -4233,21 +4248,23 @@ public class opencv_core {
             allocate(_points, _labels, copyAndReorderPoints);
         }
         private native void allocate();
-        private native void allocate(CvMat _points, boolean copyAndReorderPoints/*=false*/);
-        private native void allocate(CvMat _points, CvMat _labels, boolean copyAndReorderPoints/*=false*/);
+        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, boolean copyAndReorderPoints/*=false*/);
+        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, boolean copyAndReorderPoints/*=false*/);
 
-        public native void build(CvMat _points, boolean copyAndReorderPoints/*=false*/);
-        public native void build(CvMat _points, CvMat _labels, boolean copyAndReorderPoints/*=false*/);
+        public native void build(@Adapter("ArrayAdapter") CvMat _points, boolean copyAndReorderPoints/*=false*/);
+        public native void build(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, boolean copyAndReorderPoints/*=false*/);
 
-        public native int findNearest(float[] vec, int K, int Emax, int[] neighborsIdx,
-                @Adapter(value="MatAdapter", out=true) CvMat neighbors/*=null*/,
-                float[] dist/*=null*/, int[] labels/*=null*/);
-        public native void findOrthoRange(float[] minBounds, float[] maxBounds,
-                @Adapter(value="VectorAdapter<int>", out=true) IntPointer neighborsIdx,
-                @Adapter(value="MatAdapter", out=true) CvMat neighbors/*=null*/,
-                @Adapter(value="VectorAdapter<int>", out=true) IntPointer labels/*=null*/);
-        public native void getPoints(int[] idx, long nidx, @Adapter(value="MatAdapter", out=true) CvMat pts,
-                @Adapter(value="VectorAdapter<int>", out=true) IntPointer labels/*=null*/);
+        public native int findNearest(@Adapter("ArrayAdapter") CvMat vec, int K, int Emax,
+                @Adapter(value="ArrayAdapter", out=true) CvMat neighborsIdx,
+                @Adapter(value="ArrayAdapter", out=true) CvMat neighbors/*=null*/,
+                @Adapter(value="ArrayAdapter", out=true) CvMat dist/*=null*/,
+                @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/);
+        public native void findOrthoRange(@Adapter("ArrayAdapter") CvMat minBounds, @Adapter("ArrayAdapter") CvMat maxBounds,
+                @Adapter(value="ArrayAdapter", out=true) CvMat neighborsIdx,
+                @Adapter(value="ArrayAdapter", out=true) CvMat neighbors/*=null*/,
+                @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/);
+        public native void getPoints(@Adapter("ArrayAdapter") CvMat idx, @Adapter(value="ArrayAdapter", out=true) CvMat pts,
+                @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/);
         public native @Const FloatPointer getPoint(int ptidx, int[] label/*=null*/);
         public native int dims();
 

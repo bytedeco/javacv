@@ -62,11 +62,8 @@ import static com.googlecode.javacv.cpp.avutil.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(not="windows", define="__STDC_CONSTANT_MACROS", cinclude="<libavfilter/avfilter.h>", 
-        link={"avfilter", "swscale", "avcodec", "avutil"},
-                               includepath=genericIncludepath, linkpath=genericLinkpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Platform(not={"android", "windows"}, define="__STDC_CONSTANT_MACROS", cinclude="<libavfilter/avfilter.h>",
+    includepath=genericIncludepath, linkpath=genericLinkpath, link={"avfilter", "swscale", "avcodec", "avutil"})
 public class avfilter {
     static { load(avcodec.class); load(swscale.class); load(); }
 

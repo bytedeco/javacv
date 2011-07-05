@@ -81,6 +81,13 @@ public class ObjectFinder {
             parameters.extended(extended ? 1 : 0);
         }
 
+        public boolean isUpright() {
+            return parameters.upright() != 0;
+        }
+        public void setUpright(boolean upright) {
+            parameters.upright(upright ? 1 : 0);
+        }
+
         public double getHessianThreshold() {
             return parameters.hessianThreshold();
         }
