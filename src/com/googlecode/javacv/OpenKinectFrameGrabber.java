@@ -93,8 +93,9 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
 
     private int deviceNumber = 0;
     private boolean depth = false; // default to "video"
-    private IplImage rawImage = null, grayImage = null;
-    private BytePointer rawImageData = new BytePointer((Pointer)null);
+    private BytePointer rawDepthImageData = new BytePointer((Pointer)null),
+                        rawVideoImageData = new BytePointer((Pointer)null);
+    private IplImage rawDepthImage = null, rawVideoImage = null, returnImage = null;
     private int[] timestamp = { 0 };
 
     @Override public double getGamma() {
@@ -118,12 +119,12 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         int fmt = bpp; // default bpp == 0 == FREENECT_DEPTH_11BIT == FREENECT_VIDEO_RGB
         for (int i = 0; i < triggerFlushSize; i++) {
             if (depth) {
-                int err = freenect_sync_get_depth(rawImageData, timestamp, deviceNumber, fmt);
+                int err = freenect_sync_get_depth(rawDepthImageData, timestamp, deviceNumber, fmt);
                 if (err != 0) {
-                    throw new Exception("freenect_sync_get_depth() Error " + err + ": Failed to get video synchronously.");
+                    throw new Exception("freenect_sync_get_depth() Error " + err + ": Failed to get depth synchronously.");
                 }
             } else {
-                int err = freenect_sync_get_video(rawImageData, timestamp, deviceNumber, fmt);
+                int err = freenect_sync_get_video(rawVideoImageData, timestamp, deviceNumber, fmt);
                 if (err != 0) {
                     throw new Exception("freenect_sync_get_video() Error " + err + ": Failed to get video synchronously.");
                 }
@@ -131,66 +132,105 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         }
     }
 
-    public IplImage grab() throws Exception {
-        int fmt = bpp; // default bpp == 0 == FREENECT_DEPTH_11BIT == FREENECT_VIDEO_RGB
-        int iplDepth = IPL_DEPTH_8U, channels = 3;
-        if (depth) {
-            int err = freenect_sync_get_depth(rawImageData, timestamp, deviceNumber, fmt);
-            if (err != 0) {
-                throw new Exception("freenect_sync_get_depth() Error " + err + ": Failed to get depth synchronously.");
-            }
-            switch (fmt) {
-                case FREENECT_DEPTH_11BIT:
-                case FREENECT_DEPTH_10BIT: iplDepth = IPL_DEPTH_16U; channels = 1; break;
-                case FREENECT_DEPTH_11BIT_PACKED:
-                case FREENECT_DEPTH_10BIT_PACKED:
-                default: assert false;
-            }
-        } else {
-            int err = freenect_sync_get_video(rawImageData, timestamp, deviceNumber, fmt);
-            if (err != 0) {
-                throw new Exception("freenect_sync_get_video() Error " + err + ": Failed to get video synchronously.");
-            }
-            switch (fmt) {
-                case FREENECT_VIDEO_RGB:      iplDepth = IPL_DEPTH_8U; channels = 3; break;
-                case FREENECT_VIDEO_BAYER:
-                case FREENECT_VIDEO_IR_8BIT:  iplDepth = IPL_DEPTH_8U; channels = 1; break;
-                case FREENECT_VIDEO_IR_10BIT: iplDepth = IPL_DEPTH_16U; channels = 1; break;
-                case FREENECT_VIDEO_YUV_RGB:  iplDepth = IPL_DEPTH_8U; channels = 3; break;
-                case FREENECT_VIDEO_YUV_RAW:  iplDepth = IPL_DEPTH_8U; channels = 2; break;
-                case FREENECT_VIDEO_IR_10BIT_PACKED:
-                default: assert false;
-            }
+    public IplImage grabDepth() throws Exception {
+        int fmt = bpp; // default bpp == 0 == FREENECT_DEPTH_11BIT
+        int iplDepth = IPL_DEPTH_16U, channels = 1;
+        switch (fmt) {
+            case FREENECT_DEPTH_11BIT:
+            case FREENECT_DEPTH_10BIT: iplDepth = IPL_DEPTH_16U; channels = 1; break;
+            case FREENECT_DEPTH_11BIT_PACKED:
+            case FREENECT_DEPTH_10BIT_PACKED:
+            default: assert false;
         }
+
+        int err = freenect_sync_get_depth(rawDepthImageData, timestamp, deviceNumber, fmt);
+        if (err != 0) {
+            throw new Exception("freenect_sync_get_depth() Error " + err + ": Failed to get depth synchronously.");
+        }
+
         int w = 640, h = 480; // how to get the resolution ??
-        if (rawImage == null || rawImage.width() != w || rawImage.height() != h) {
-            rawImage = IplImage.createHeader(w, h, iplDepth, channels);
+        if (rawDepthImage == null || rawDepthImage.width() != w || rawDepthImage.height() != h) {
+            rawDepthImage = IplImage.createHeader(w, h, iplDepth, channels);
         }
-        cvSetData(rawImage, rawImageData, w*channels*iplDepth/8);
+        cvSetData(rawDepthImage, rawDepthImageData, w*channels*iplDepth/8);
 
         if (iplDepth > 8 && ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
             // ack, the camera's endianness doesn't correspond to our machine ...
             // swap bytes of 16-bit images
-            ByteBuffer  bb  = rawImage.getByteBuffer();
+            ByteBuffer  bb  = rawDepthImage.getByteBuffer();
             ShortBuffer in  = bb.order(ByteOrder.BIG_ENDIAN   ).asShortBuffer();
             ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
             out.put(in);
         }
 
-        if (colorMode == ColorMode.GRAY && channels == 3) {
-            if (grayImage == null) {
-                grayImage = IplImage.create(w, h, iplDepth, 1);
+        rawDepthImage.timestamp = timestamp[0];
+        return rawDepthImage;
+    }
+
+    public IplImage grabVideo() throws Exception {
+        int fmt = bpp; // default bpp == 0 == FREENECT_VIDEO_RGB
+        int iplDepth = IPL_DEPTH_8U, channels = 3;
+        switch (fmt) {
+            case FREENECT_VIDEO_RGB:      iplDepth = IPL_DEPTH_8U; channels = 3; break;
+            case FREENECT_VIDEO_BAYER:
+            case FREENECT_VIDEO_IR_8BIT:  iplDepth = IPL_DEPTH_8U; channels = 1; break;
+            case FREENECT_VIDEO_IR_10BIT: iplDepth = IPL_DEPTH_16U; channels = 1; break;
+            case FREENECT_VIDEO_YUV_RGB:  iplDepth = IPL_DEPTH_8U; channels = 3; break;
+            case FREENECT_VIDEO_YUV_RAW:  iplDepth = IPL_DEPTH_8U; channels = 2; break;
+            case FREENECT_VIDEO_IR_10BIT_PACKED:
+            default: assert false;
+        }
+
+        int err = freenect_sync_get_video(rawVideoImageData, timestamp, deviceNumber, fmt);
+        if (err != 0) {
+            throw new Exception("freenect_sync_get_video() Error " + err + ": Failed to get video synchronously.");
+        }
+
+        int w = 640, h = 480; // how to get the resolution ??
+        if (rawVideoImage == null || rawVideoImage.width() != w || rawVideoImage.height() != h) {
+            rawVideoImage = IplImage.createHeader(w, h, iplDepth, channels);
+        }
+        cvSetData(rawVideoImage, rawVideoImageData, w*channels*iplDepth/8);
+
+        if (iplDepth > 8 && ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            // ack, the camera's endianness doesn't correspond to our machine ...
+            // swap bytes of 16-bit images
+            ByteBuffer  bb  = rawVideoImage.getByteBuffer();
+            ShortBuffer in  = bb.order(ByteOrder.BIG_ENDIAN   ).asShortBuffer();
+            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+            out.put(in);
+        }
+
+        if (channels == 3) {
+            cvCvtColor(rawVideoImage, rawVideoImage, CV_RGB2BGR);
+        }
+        rawVideoImage.timestamp = timestamp[0];
+        return rawVideoImage;
+    }
+
+    public IplImage grab() throws Exception {
+        IplImage image = depth ? grabDepth() :  grabVideo();
+        int w = image.width();
+        int h = image.height();
+        int iplDepth = image.depth();
+        int channels = image.nChannels();
+
+        if (colorMode == ColorMode.BGR && channels == 1) {
+            if (returnImage == null) {
+                returnImage = IplImage.create(w, h, iplDepth, 3);
             }
-            cvCvtColor(rawImage, grayImage, CV_RGB2GRAY);
-            grayImage.timestamp = timestamp[0];
-            return grayImage;
-        } else if (colorMode == ColorMode.BGR && channels == 3) {
-            cvCvtColor(rawImage, rawImage, CV_RGB2BGR);
-            rawImage.timestamp = timestamp[0];
-            return rawImage;
+            cvCvtColor(image, returnImage, CV_GRAY2BGR);
+            returnImage.timestamp = image.timestamp;
+            return returnImage;
+        } else if (colorMode == ColorMode.GRAY && channels == 3) {
+            if (returnImage == null) {
+                returnImage = IplImage.create(w, h, iplDepth, 1);
+            }
+            cvCvtColor(image, returnImage, CV_BGR2GRAY);
+            returnImage.timestamp = image.timestamp;
+            return returnImage;
         } else {
-            rawImage.timestamp = timestamp[0];
-            return rawImage;
+            return image;
         }
     }
 }

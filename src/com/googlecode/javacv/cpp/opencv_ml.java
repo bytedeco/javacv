@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in ml.hpp of OpenCV 2.3.0,
+ * This file is based on information found in ml.hpp of OpenCV 2.3.1,
  * which is covered by the following copyright notice:
  *
  *                        Intel License Agreement
@@ -87,7 +87,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml230", "opencv_core230"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -558,17 +558,17 @@ public class opencv_ml {
     @NoOffset public static class CvEMParams extends Pointer {
         static { load(); }
         public CvEMParams() { allocate(); }
-        public CvEMParams(int _nclusters, int _cov_mat_type/*=CvEM::COV_MAT_DIAGONAL*/, int _start_step/*=CvEM::START_AUTO_STEP*/,
-                @ByVal CvTermCriteria _term_crit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/,
-                CvMat _probs/*=null*/, CvMat _weights/*=null*/, CvMat _means/*=null*/, @Const CvMatArray _covs/*=null*/) {
-            allocate(_nclusters, _cov_mat_type, _start_step, _term_crit, _probs, _weights, _means, _covs);
+        public CvEMParams(int nclusters, int cov_mat_type/*=CvEM::COV_MAT_DIAGONAL*/, int start_step/*=CvEM::START_AUTO_STEP*/,
+                @ByVal CvTermCriteria term_crit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/,
+                CvMat probs/*=null*/, CvMat weights/*=null*/, CvMat means/*=null*/, @Const CvMatArray covs/*=null*/) {
+            allocate(nclusters, cov_mat_type, start_step, term_crit, probs, weights, means, covs);
         }
         public CvEMParams(int size) { allocateArray(size); }
         public CvEMParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int _nclusters, int _cov_mat_type/*=CvEM::COV_MAT_DIAGONAL*/, int _start_step/*=CvEM::START_AUTO_STEP*/,
-                @ByVal CvTermCriteria _term_crit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/,
-                CvMat _probs/*=null*/, CvMat _weights/*=null*/, CvMat _means/*=null*/, @Const CvMatArray _covs/*=null*/);
+        private native void allocate(int nclusters, int cov_mat_type/*=CvEM::COV_MAT_DIAGONAL*/, int start_step/*=CvEM::START_AUTO_STEP*/,
+                @ByVal CvTermCriteria term_crit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/,
+                CvMat probs/*=null*/, CvMat weights/*=null*/, CvMat means/*=null*/, @Const CvMatArray covs/*=null*/);
         private native void allocateArray(int size);
 
         public native int nclusters();            public native CvEMParams nclusters(int nclusters);
@@ -725,16 +725,16 @@ public class opencv_ml {
     @NoOffset public static class CvDTreeParams extends Pointer {
         static { load(); }
         public CvDTreeParams() { allocate(); }
-        public CvDTreeParams(int _max_depth, int _min_sample_count, float _regression_accuracy, boolean _use_surrogates,
-                int _max_categories, int _cv_folds, boolean _use_1se_rule, boolean _truncate_pruned_tree, float[] _priors) {
-            allocate(_max_depth, _min_sample_count, _regression_accuracy, _use_surrogates,
-                    _max_categories, _cv_folds, _use_1se_rule, _truncate_pruned_tree, _priors);
+        public CvDTreeParams(int max_depth, int min_sample_count, float regression_accuracy, boolean use_surrogates,
+                int max_categories, int cv_folds, boolean use_1se_rule, boolean truncate_pruned_tree, float[] priors) {
+            allocate(max_depth, min_sample_count, regression_accuracy, use_surrogates,
+                    max_categories, cv_folds, use_1se_rule, truncate_pruned_tree, priors);
         }
         public CvDTreeParams(int size) { allocateArray(size); }
         public CvDTreeParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int _max_depth, int _min_sample_count, float _regression_accuracy, boolean _use_surrogates,
-                int _max_categories, int _cv_folds, boolean _use_1se_rule, boolean _truncate_pruned_tree, float[] _priors);
+        private native void allocate(int max_depth, int min_sample_count, float regression_accuracy, boolean use_surrogates,
+                int max_categories, int cv_folds, boolean use_1se_rule, boolean truncate_pruned_tree, float[] priors);
         private native void allocateArray(int size);
 
         public native int max_categories();           public native CvDTreeParams max_categories(int max_categories);
@@ -947,18 +947,18 @@ public class opencv_ml {
     @NoOffset public static class CvRTParams extends CvDTreeParams {
         static { load(); }
         public CvRTParams() { allocate(); }
-        public CvRTParams(int _max_depth, int _min_sample_count, float _regression_accuracy, boolean _use_surrogates,
-                int _max_categories, float[] _priors, boolean _calc_var_importance, int _nactive_vars,
+        public CvRTParams(int max_depth, int min_sample_count, float regression_accuracy, boolean use_surrogates,
+                int max_categories, float[] priors, boolean calc_var_importance, int nactive_vars,
                 int max_num_of_trees_in_the_forest, float forest_accuracy, int termcrit_type) {
-            allocate(_max_depth, _min_sample_count, _regression_accuracy, _use_surrogates,
-                    _max_categories, _priors, _calc_var_importance, _nactive_vars,
+            allocate(max_depth, min_sample_count, regression_accuracy, use_surrogates,
+                    max_categories, priors, calc_var_importance, nactive_vars,
                     max_num_of_trees_in_the_forest, forest_accuracy, termcrit_type);
         }
         public CvRTParams(int size) { allocateArray(size); }
         public CvRTParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int _max_depth, int _min_sample_count, float _regression_accuracy, boolean _use_surrogates,
-                int _max_categories, float[] _priors, boolean _calc_var_importance, int _nactive_vars,
+        private native void allocate(int max_depth, int min_sample_count, float regression_accuracy, boolean use_surrogates,
+                int max_categories, float[] priors, boolean calc_var_importance, int nactive_vars,
                 int max_num_of_trees_in_the_forest, float forest_accuracy, int termcrit_type);
         private native void allocateArray(int size);
 

@@ -27,8 +27,8 @@
     <target name="-post-compile">
         <property name="javacpp.options" value=""/>
         <java jar="${reference.javacpp.jar}" fork="true">
-            <!-- Hack required for Microsoft SDK and videoInputLib -->
-            <env key="CL" value="&quot;/I${env.MSSdk}/Include/&quot;"/>
+            <!-- Hack required for Windows SDK v7.1 and videoInputLib -->
+            <env key="CL" value="&quot;/I${env.sdkdir}/Include/&quot;"/>
             <arg line="${javacpp.options}"/>
             <arg value="-classpath"/> <arg value="${build.classes.dir}"/>
             <arg value="-jarprefix"/> <arg value="${dist.dir}/javacv"/>

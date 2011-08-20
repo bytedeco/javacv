@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in tracking.hpp and background_segm.hpp
- * of OpenCV 2.3.0, which are covered by the following copyright notice:
+ * of OpenCV 2.3.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -85,7 +85,7 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
         include={"<opencv2/video/tracking.hpp>", "<opencv2/video/background_segm.hpp>", "opencv_adapters.h"},
         link={"opencv_video", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_video230", "opencv_imgproc230", "opencv_core230"}),
+        link={"opencv_video231", "opencv_imgproc231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

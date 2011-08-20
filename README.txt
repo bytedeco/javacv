@@ -12,12 +12,12 @@ I will continue to add all code that I am developing for my doctoral research as
 
 ==Required Software==
 To use JavaCV, you will need to download and install the following software:
- * An implementation of Java SE 6
-  * OpenJDK 6  http://openjdk.java.net/install/  or
-  * Sun JDK 6  http://www.oracle.com/technetwork/java/javase/downloads/  or
-  * IBM JDK 6  http://www.ibm.com/developerworks/java/jdk/  or
-  * Java SE 6 for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.3.0  http://sourceforge.net/projects/opencvlibrary/files/
+ * An implementation of Java SE 6 or 7
+  * OpenJDK  http://openjdk.java.net/install/  or
+  * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
+  * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
+  * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
+ * OpenCV 2.3.1  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
@@ -42,13 +42,13 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 
 
 ==Quick Start for OpenCV==
-First, put all the JAR files (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV can be found either in their default installation directory or in the system PATH, which includes the current directory under Windows. Here are some more specific instructions for common cases:
+First, put all the JAR files (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV can be found either in their default installation directory or in the system PATH, which includes the current directory under Windows. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
-NetBeans (Java SE 6):
+NetBeans (Java SE 6 or 7):
  * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
  * Locate the JAR files, select them, and click OK.
 
-Eclipse (Java SE 6):
+Eclipse (Java SE 6 or 7):
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs..."
  * Locate the JAR files, select them, and click OK.
 
@@ -56,7 +56,7 @@ Eclipse (Android 2.2 or newer):
  * Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
  * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
- * Extract the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.3.0-android-arm.zip` in the newly created "libs/armeabi" folder.
+ * Extract the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.3.1-android-arm.zip` in the newly created "libs/armeabi" folder.
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
  * Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -208,6 +208,14 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===August 21, 2011===
+ * Upgraded support to OpenCV 2.3.1
+ * An output argument of type `cv::Mat` or `cv::OutputArray` returned with a size 0 now correctly sets `CvArr.address = 0`
+ * Fixed `IplImage.createFrom()` and `copyFrom()` when called on objects returned by `BufferedImage.getSubimage()`
+ * Added missing allocator to `CvRNG`
+ * `OpenCVFrameGrabber` now detects when CV_CAP_PROP_POS_MSEC is broken and gives up calling `cvGetCaptureProperty()`
+ * New `OpenKinectFrameGrabber.grabDepth()` and `grabVideo()` methods to capture "depth" and "video" simultaneously, regardless of the mode
+
 ===July 5, 2011===
  * Upgraded support to OpenCV 2.3.0
  * Fixed `OpenKinectFrameGrabber`, which can now also capture depth images when `setFormat("depth")` is called before `start()`

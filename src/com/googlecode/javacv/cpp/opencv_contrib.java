@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in contrib.hpp of OpenCV 2.3.0,
+ * This file is based on information found in contrib.hpp of OpenCV 2.3.1,
  * which is covered by the following copyright notice:
  *
  *                           License Agreement
@@ -85,7 +85,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/contrib/contrib.hpp>", "opencv_adapters.h"},
         link={"opencv_contrib", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_contrib230","opencv_features2d230", "opencv_flann230", "opencv_calib3d230", "opencv_highgui230", "opencv_imgproc230", "opencv_core230"}),
+        link={"opencv_contrib231","opencv_features2d231", "opencv_flann231", "opencv_calib3d231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -567,7 +567,7 @@ public class opencv_contrib {
                 double poly_sigma, float fi, float lambda, int penalization, int cycle, int flags);
 
         public static final int
-                USE_INITIAL_DISPARITY = 1, USE_EQUALIZE_HIST = 2, USE_SMART_ID = 4, USE_MEDIAN_FILTERING = 8,
+                USE_INITIAL_DISPARITY = 1, USE_EQUALIZE_HIST = 2, USE_SMART_ID = 4, USE_AUTO_PARAMS = 8, USE_MEDIAN_FILTERING = 16,
                 CYCLE_O = 0, CYCLE_V = 1,
                 PENALIZATION_TICHONOV = 0, PENALIZATION_CHARBONNIER = 1, PENALIZATION_PERONA_MALIK = 2;
 
@@ -589,4 +589,53 @@ public class opencv_contrib {
     }
 
     @Namespace("cv") public static native void polyfit(CvMat srcx, CvMat srcy, @Adapter("MatAdapter") CvMat dst, int order);
+
+
+    // enum RETINA_COLORSAMPLINGMETHOD
+    public static final int
+        RETINA_COLOR_RANDOM = 0,
+        RETINA_COLOR_DIAGONAL = 1,
+        RETINA_COLOR_BAYER = 2;
+
+    @Namespace("cv") public static class Retina extends Pointer {
+        static { load(); }
+        public Retina(String parametersSaveFile, @ByVal CvSize inputSize) {
+            allocate(parametersSaveFile, inputSize);
+        }
+        public Retina(String parametersSaveFile, @ByVal CvSize inputSize,
+                boolean colorMode, @Cast("cv::RETINA_COLORSAMPLINGMETHOD") int colorSamplingMethod/*=RETINA_COLOR_BAYER*/,
+                boolean useRetinaLogSampling/*=false*/, double reductionFactor/*=1.0*/, double samplingStrenght/*=10.0*/) {
+            allocate(parametersSaveFile, inputSize, colorMode, colorSamplingMethod,
+                    useRetinaLogSampling, reductionFactor, samplingStrenght);
+        }
+        public Retina(Pointer p) { super(p); }
+        private native void allocate(String parametersSaveFile, @ByVal CvSize inputSize);
+        private native void allocate(String parametersSaveFile, @ByVal CvSize inputSize,
+                boolean colorMode, @Cast("cv::RETINA_COLORSAMPLINGMETHOD") int colorSamplingMethod/*=RETINA_COLOR_BAYER*/,
+                boolean useRetinaLogSampling/*=false*/, double reductionFactor/*=1.0*/, double samplingStrenght/*=10.0*/);
+
+        public native void setup(String retinaParameterFile/*=""*/, boolean applyDefaultSetupOnFailure/*=true*/);
+        public native @ByRef String printSetup();
+        public native void setupOPLandIPLParvoChannel(boolean colorMode/*=true*/, boolean normaliseOutput/*=true*/,
+                double photoreceptorsLocalAdaptationSensitivity/*=0.7*/, double photoreceptorsTemporalConstant/*=0.5*/,
+                double photoreceptorsSpatialConstant/*=0.53*/, double horizontalCellsGain/*=0*/,
+                double HcellsTemporalConstant/*=1*/, double HcellsSpatialConstant/*=7*/, double ganglionCellsSensitivity/*=0.7*/);
+        public native void setupIPLMagnoChannel(boolean normaliseOutput/*=true*/, double parasolCells_beta/*=0*/,
+                double parasolCells_tau/*=0*/, double parasolCells_k/*=7*/, double amacrinCellsTemporalCutFrequency/*=1.2*/,
+                double V0CompressionParameter/*=0.95*/, double localAdaptintegration_tau/*=0*/, double localAdaptintegration_k/*=7*/);
+        public native void run(@Adapter("MatAdapter") CvArr inputImage);
+        public native void getParvo(@Adapter("MatAdapter") CvArr retinaOutput_parvo);
+        public native void getMagno(@Adapter("MatAdapter") CvArr retinaOutput_magno);
+        public native void clearBuffers();
+
+//        protected native @Adapter("FileStorageAdapter") CvFileStorage _parametersSaveFile();
+//        protected native @ByRef String _parametersSaveFileName();
+//        protected native std::valarray<double> _inputBuffer();
+//        protected native RetinaFilter _retinaFilter();
+//        protected native void _convertValarrayGrayBuffer2cvMat(@ByRef std::valarray<double> grayMatrixToConvert,
+//                int nbRows, int nbColumns, boolean colorMode, @Adapter("MatAdapter") CvArr outBuffer);
+//        protected native void _init(String parametersSaveFile, @ByVal CvSize inputSize, boolean colorMode,
+//                @Cast("cv::RETINA_COLORSAMPLINGMETHOD") int colorSamplingMethod/*=RETINA_COLOR_BAYER*/,
+//                boolean useRetinaLogSampling/*=false*/, double reductionFactor/*=1.0*/, double samplingStrenght/*=10.0*/);
+    }
 }

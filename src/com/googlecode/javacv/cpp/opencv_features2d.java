@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.3.0,
+ * This file is based on information found in features2d.hpp of OpenCV 2.3.1,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -85,7 +85,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d230", "opencv_flann230", "opencv_calib3d230", "opencv_highgui230", "opencv_imgproc230", "opencv_core230"}),
+        link={"opencv_features2d231", "opencv_flann231", "opencv_calib3d231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -1243,8 +1243,14 @@ public class opencv_features2d {
             public native boolean filterByConvexity();   public native Params filterByConvexity(boolean filterByConvexity);
             public native float minConvexity();          public native Params minConvexity(float minConvexity);
             public native float maxConvexity();          public native Params maxConvexity(float maxConvexity);
+
+            public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+            public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
         }
 
+//        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+//        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
+//
 //        protected static class Center extends Pointer {
 //            public native @ByVal CvPoint2D32f location();
 //            public native double radius();
@@ -1282,6 +1288,9 @@ public class opencv_features2d {
 
             public native boolean varyXyStepWithScale();   public native Params varyXyStepWithScale(boolean varyXyStepWithScale);
             public native boolean varyImgBoundWithScale(); public native Params varyImgBoundWithScale(boolean varyImgBoundWithScale);
+
+            public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+            public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
         }
         public DenseFeatureDetector() { allocate(); }
         public DenseFeatureDetector(Pointer p) { super(p); }
@@ -1546,16 +1555,16 @@ public class opencv_features2d {
 //        protected native @ByRef SURF surf();
     }
 
-//    @Namespace("cv") public static class OrbDescriptorExtractor extends DescriptorExtractor {
-//        static { load(); }
-//        public OrbDescriptorExtractor() { allocate(); }
-//        public OrbDescriptorExtractor(Pointer p) { super(p); }
-//        public OrbDescriptorExtractor(@ByVal ORB.CommonParams params/*=new ORB.CommonParams()*/) {
-//            allocate(params);
-//        }
-//        private native void allocate();
-//        private native void allocate(@ByVal ORB.CommonParams params/*=new ORB.CommonParams()*/);
-//
+    @Namespace("cv") public static class OrbDescriptorExtractor extends DescriptorExtractor {
+        static { load(); }
+        public OrbDescriptorExtractor() { allocate(); }
+        public OrbDescriptorExtractor(Pointer p) { super(p); }
+        public OrbDescriptorExtractor(@ByVal ORB.CommonParams params/*=new ORB.CommonParams()*/) {
+            allocate(params);
+        }
+        private native void allocate();
+        private native void allocate(@ByVal ORB.CommonParams params/*=new ORB.CommonParams()*/);
+
 //        public native int descriptorSize();
 //        public native int descriptorType();
 //
@@ -1565,7 +1574,7 @@ public class opencv_features2d {
 //        protected native void computeImpl(@Adapter("MatAdapter") CvArr image,
 //                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
 //                @Adapter(value="MatAdapter", out=true) CvMat descriptors);
-//    }
+    }
 
     @Name("cv::CalonderDescriptorExtractor<float>")
     public static class FloatCalonderDescriptorExtractor extends DescriptorExtractor {
@@ -1806,6 +1815,25 @@ public class opencv_features2d {
 //        protected cv::L2<float> distance();
     }
 
+    @Name("cv::BruteForceMatcher<cv::SL2<float> >")
+    public static class FloatSL2BruteForceMatcher extends DescriptorMatcher {
+        static { load(); }
+        public FloatSL2BruteForceMatcher()       { allocate();  }
+//        public FloatSL2BruteForceMatcher(cv::SL2<float> d = cv::SL2<float>());
+        public FloatSL2BruteForceMatcher(Pointer p) { super(p); }
+        private native void allocate();
+
+//        public native boolean isMaskSupported();
+//        public native @ByVal DescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+//
+//        protected native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//        protected native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//
+//        protected cv::SL2<float> distance();
+    }
+
     @Namespace("cv") public static class FlannBasedMatcher extends DescriptorMatcher {
         static { load(); }
         public FlannBasedMatcher()       { allocate();  }
@@ -1816,6 +1844,10 @@ public class opencv_features2d {
 
 //        public native void add(@Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray descriptors);
 //        public native void clear();
+//
+//        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+//        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
+//
 //        public native void train();
 //        public native boolean isMaskSupported();
 //        public native DescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);

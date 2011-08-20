@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.3.0,
+ * This file is based on information found in highgui_c.h of OpenCV 2.3.1,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement
@@ -77,7 +77,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include="<opencv2/highgui/highgui_c.h>",
         link={"opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_highgui230", "opencv_imgproc230", "opencv_core230"}, preload="opencv_ffmpeg230"),
+        link={"opencv_highgui231", "opencv_imgproc231", "opencv_core231"}, preload="opencv_ffmpeg231"),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -325,7 +325,9 @@ public class opencv_highgui {
 
             CV_CAP_OPENNI  = 900,
 
-            CV_CAP_ANDROID = 1000;
+            CV_CAP_ANDROID = 1000,
+
+            CV_CAP_XIAPI   = 1100;
 
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native int cvGrabFrame(CvCapture capture);
@@ -369,6 +371,7 @@ public class opencv_highgui {
             CV_CAP_PROP_MAX_DC1394    = 27,
             CV_CAP_PROP_AUTOGRAB      = 1024,
             CV_CAP_PROP_SUPPORTED_PREVIEW_SIZES_STRING=1025,
+            CV_CAP_PROP_PREVIEW_FORMAT=1025,
 
             CV_CAP_OPENNI_DEPTH_GENERATOR = 0,
             CV_CAP_OPENNI_IMAGE_GENERATOR = 1 << 31,
@@ -378,14 +381,37 @@ public class opencv_highgui {
             CV_CAP_PROP_OPENNI_FRAME_MAX_DEPTH  = 101,
             CV_CAP_PROP_OPENNI_BASELINE         = 102,
             CV_CAP_PROP_OPENNI_FOCAL_LENGTH     = 103,
-            CV_CAP_PROP_OPENNI_REGISTRATION_ON    = 104,
+            CV_CAP_PROP_OPENNI_REGISTRATION_ON  = 104,
+            CV_CAP_PROP_OPENNI_REGISTRATION     = CV_CAP_PROP_OPENNI_REGISTRATION_ON,
             CV_CAP_OPENNI_IMAGE_GENERATOR_OUTPUT_MODE = CV_CAP_OPENNI_IMAGE_GENERATOR + CV_CAP_PROP_OPENNI_OUTPUT_MODE,
             CV_CAP_OPENNI_DEPTH_GENERATOR_BASELINE = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_BASELINE,
             CV_CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_FOCAL_LENGTH,
             CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION_ON = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_REGISTRATION_ON,
 
-            CV_CAP_GSTREAMER_QUEUE_LENGTH      = 200,
+            CV_CAP_GSTREAMER_QUEUE_LENGTH       = 200,
             CV_CAP_PROP_PVAPI_MULTICASTIP       = 300,
+
+            CV_CAP_PROP_XI_DOWNSAMPLING  = 400,
+            CV_CAP_PROP_XI_DATA_FORMAT   = 401,
+            CV_CAP_PROP_XI_OFFSET_X      = 402,
+            CV_CAP_PROP_XI_OFFSET_Y      = 403,
+            CV_CAP_PROP_XI_TRG_SOURCE    = 404,
+            CV_CAP_PROP_XI_TRG_SOFTWARE  = 405,
+            CV_CAP_PROP_XI_GPI_SELECTOR  = 406,
+            CV_CAP_PROP_XI_GPI_MODE      = 407,
+            CV_CAP_PROP_XI_GPI_LEVEL     = 408,
+            CV_CAP_PROP_XI_GPO_SELECTOR  = 409,
+            CV_CAP_PROP_XI_GPO_MODE      = 410,
+            CV_CAP_PROP_XI_LED_SELECTOR  = 411,
+            CV_CAP_PROP_XI_LED_MODE      = 412,
+            CV_CAP_PROP_XI_MANUAL_WB     = 413,
+            CV_CAP_PROP_XI_AUTO_WB       = 414,
+            CV_CAP_PROP_XI_AEAG          = 415,
+            CV_CAP_PROP_XI_EXP_PRIORITY  = 416,
+            CV_CAP_PROP_XI_AE_MAX_LIMIT  = 417,
+            CV_CAP_PROP_XI_AG_MAX_LIMIT  = 418,
+            CV_CAP_PROP_XI_AEAG_LEVEL    = 419,
+            CV_CAP_PROP_XI_TIMEOUT       = 420,
 
             CV_CAP_OPENNI_DEPTH_MAP                 = 0,
             CV_CAP_OPENNI_POINT_CLOUD_MAP           = 1,

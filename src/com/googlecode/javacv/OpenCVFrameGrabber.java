@@ -77,6 +77,8 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     private String filename = null;
     private CvCapture capture = null;
     private IplImage return_image = null;
+    private double prevPos = Double.NaN;
+    private boolean timestampBroken = false;
 
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
@@ -88,6 +90,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
+        timestampBroken = false;
         if (filename != null && filename.length() > 0) {
             capture = cvCreateFileCapture(filename);
             if (capture == null) {
@@ -171,7 +174,15 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             return_image = image;
         }
 
-        return_image.timestamp = Math.round(cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC)*1000);
+        if (!timestampBroken) {
+            double pos = cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC);
+            return_image.timestamp = Math.round(pos*1000);
+            if (prevPos == pos) {
+                timestampBroken = true;
+            } else {
+                prevPos = pos;
+            }
+        }
         return return_image;
     }
 }

@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in flann.hpp of OpenCV 2.3.0,
+ * This file is based on information found in flann.hpp of OpenCV 2.3.1,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -56,13 +56,14 @@
 
 package com.googlecode.javacv.cpp;
 
+import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.IntPointer;
-import com.googlecode.javacpp.FloatPointer;
+import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.Cast;
-import com.googlecode.javacpp.annotation.Const;
+import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
@@ -77,8 +78,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"opencv_adapters.h", "<opencv2/flann/flann.hpp>"}, link={"opencv_flann", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann230", "opencv_core230"}),
+        include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann", "opencv_core"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -97,160 +98,177 @@ public class opencv_flann {
     // enum flann_centers_init_t
             FLANN_CENTERS_RANDOM = 0,
             FLANN_CENTERS_GONZALES = 1,
-            FLANN_CENTERS_KMEANSPP = 2;
-    
-    @NoOffset @Namespace("cvflann") public static class IndexParams extends Pointer {
+            FLANN_CENTERS_KMEANSPP = 2,
+
+    // enum flann_distance_t
+            FLANN_DIST_EUCLIDEAN = 1,
+            FLANN_DIST_L2 = 1,
+            FLANN_DIST_MANHATTAN = 2,
+            FLANN_DIST_L1 = 2,
+            FLANN_DIST_MINKOWSKI = 3,
+            FLANN_DIST_MAX   = 4,
+            FLANN_DIST_HIST_INTERSECT   = 5,
+            FLANN_DIST_HELLINGER = 6,
+            FLANN_DIST_CHI_SQUARE = 7,
+            FLANN_DIST_CS         = 7,
+            FLANN_DIST_KULLBACK_LEIBLER  = 8,
+            FLANN_DIST_KL                = 8;
+
+    @Name("std::vector<std::string>") 
+    @com.googlecode.javacpp.annotation.Index
+    public static class StringVector extends Pointer {
+        static { load(); }
+        public StringVector()       { allocate();  }
+        public StringVector(long n) { allocate(n); }
+        public StringVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        public native long size();
+        public native void resize(long n);
+
+        @ByRef public native String get(long i);
+        public native StringVector put(long i, String value);
+    }
+
+    @NoOffset @Namespace("cv::flann") public static class IndexParams extends Pointer {
         static { load(); }
         public IndexParams() { }
         public IndexParams(Pointer p) { super(p); }
-//        protected native IndexParams(@Cast("flann_algorithm_t" int algorithm_);
 
-        public /*abstract*/ native @Cast("cvflann::flann_algorithm_t") int getIndexType();
-        public /*abstract*/ native void print();
+        public native @ByRef String getString(String key, String defaultVal/*=""*/);
+        public native int getInt(String key, int defaultVal/*=-1*/);
+        public native double getDouble(String key, double defaultVal/*=-1*/);
 
-        @Cast("cvflann::flann_algorithm_t")
-        public native int algorithm(); public native IndexParams algorithm(int algorithm);
+        public native void setString(String key, String value);
+        public native void setInt(String key, int value);
+        public native void setDouble(String key, double value);
+        public native void setFloat(String key, float value);
+        public native void setBool(String key, boolean value);
+        public native void setAlgorithm(int value);
+
+        public native void getAll(@ByRef StringVector names,
+            @Adapter(value="VectorAdapter<int>", out=true) IntPointer types,
+            @ByRef StringVector strValues,
+            @Adapter(value="VectorAdapter<double>", out=true) DoublePointer numValues);
+
+        public native Pointer params(); public native IndexParams params(Pointer params);
     }
 
-    @Namespace("cvflann") public static class LinearIndexParams extends IndexParams {
+    @Namespace("cv::flann") public static class KDTreeIndexParams extends IndexParams {
+        static { load(); }
+        public KDTreeIndexParams() { allocate(); }
+        public KDTreeIndexParams(int trees/*=4*/) { allocate(trees); }
+        public KDTreeIndexParams(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int trees/*=4*/);
+    }
+
+    @Namespace("cv::flann") public static class LinearIndexParams extends IndexParams {
         static { load(); }
         public LinearIndexParams() { allocate(); }
         public LinearIndexParams(Pointer p) { super(p); }
         private native void allocate();
-
-//        public native @Cast("cvflann::flann_algorithm_t") int getIndexType();
-//        public native void print();
     }
 
-    @NoOffset @Namespace("cvflann") public static class KDTreeIndexParams extends IndexParams {
-        static { load(); }
-        public KDTreeIndexParams() { allocate(); }
-        public KDTreeIndexParams(int trees_/*=4*/) { allocate(trees_); }
-        public KDTreeIndexParams(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocate(int trees_/*=4*/);
-
-        public native int trees(); public native KDTreeIndexParams trees(int trees);
-
-//        public native @Cast("cvflann::flann_algorithm_t") int getIndexType();
-//        public native void print();
-    }
-
-    @NoOffset @Namespace("cvflann") public static class KMeansIndexParams extends IndexParams {
-        static { load(); }
-        public KMeansIndexParams() { allocate(); }
-        public KMeansIndexParams(int branching_/*=32*/, int iterations_/*= 11*/,
-                int centers_init_/*=CENTERS_RANDOM*/, float cb_index_/*=0.2*/) {
-            allocate(branching_, iterations_, centers_init_, cb_index_);
-        }
-        public KMeansIndexParams(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocate(int branching_/*=32*/, int iterations_/*= 11*/,
-                @Cast("cvflann::flann_centers_init_t") int centers_init_/*=CENTERS_RANDOM*/, float cb_index_/*=0.2*/);
-
-        public native int branching();    public native KMeansIndexParams branching(int branching);
-        public native int iterations();   public native KMeansIndexParams iterations(int iterations);
-        @Cast("cvflann::flann_centers_init_t")
-        public native int centers_init(); public native KMeansIndexParams centers_init(int centers_init);
-        public native float cb_index();   public native KMeansIndexParams cb_index(float cb_index);
-
-//        public native @Cast("cvflann::flann_algorithm_t") int getIndexType();
-//        public native void print();
-    }
-
-    @NoOffset @Namespace("cvflann") public static class CompositeIndexParams extends IndexParams {
+    @Namespace("cv::flann") public static class CompositeIndexParams extends IndexParams {
         static { load(); }
         public CompositeIndexParams() { allocate(); }
-        public CompositeIndexParams(int trees_/*=4*/, int branching_/*=32*/, int iterations_/*=11*/,
-                int centers_init_/*=CENTERS_RANDOM*/, float cb_index_/*=0.2*/) {
-            allocate(trees_, branching_, iterations_, centers_init_, cb_index_);
+        public CompositeIndexParams(int trees/*=4*/, int branching/*=32*/, int iterations/*=11*/,
+                int centers_init/*=FLANN_CENTERS_RANDOM*/, float cb_index/*=0.2*/) {
+            allocate(trees, branching, iterations, centers_init, cb_index);
         }
         public CompositeIndexParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int trees_/*=4*/, int branching_/*=32*/, int iterations_/*=11*/,
-                @Cast("cvflann::flann_centers_init_t") int centers_init_/*=CENTERS_RANDOM*/, float cb_index_/*=0.2*/);
-
-        public native int trees();        public native CompositeIndexParams trees(int trees);
-        public native int branching();    public native CompositeIndexParams branching(int branching);
-        public native int iterations();   public native CompositeIndexParams iterations(int iterations);
-        @Cast("cvflann::flann_centers_init_t")
-        public native int centers_init(); public native CompositeIndexParams centers_init(int centers_init);
-        public native float cb_index();   public native CompositeIndexParams cb_index(float cb_index);
-
-//        public native @Cast("cvflann::flann_algorithm_t") int getIndexType();
-//        public native void print();
+        private native void allocate(int trees/*=4*/, int branching/*=32*/, int iterations/*=11*/,
+                @Cast("cv::flann::flann_centers_init_t") int centers_init/*=CENTERS_RANDOM*/, float cb_index/*=0.2*/);
     }
 
-    @NoOffset @Namespace("cvflann") public static class AutotunedIndexParams extends IndexParams {
+    @Namespace("cv::flann") public static class AutotunedIndexParams extends IndexParams {
         static { load(); }
         public AutotunedIndexParams() { allocate(); }
-        public AutotunedIndexParams(float target_precision_/*=0.8*/, float build_weight_/*=0.01*/,
-                float memory_weight_/*=0*/, float sample_fraction_/*=0.1*/) {
-            allocate(target_precision_, build_weight_, memory_weight_, sample_fraction_);
+        public AutotunedIndexParams(float target_precision/*=0.8*/, float build_weight/*=0.01*/,
+                float memory_weight/*=0*/, float sample_fraction/*=0.1*/) {
+            allocate(target_precision, build_weight, memory_weight, sample_fraction);
         }
         public AutotunedIndexParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(float target_precision_/*=0.8*/, float build_weight_/*=0.01*/,
-                float memory_weight_/*=0*/, float sample_fraction_/*=0.1*/);
-
-        public native float target_precision(); public native AutotunedIndexParams target_precision(float target_precision);
-        public native float build_weight();     public native AutotunedIndexParams build_weight(float build_weight);
-        public native float memory_weight();    public native AutotunedIndexParams memory_weight(float memory_weight);
-        public native float sample_fraction();  public native AutotunedIndexParams sample_fraction(float sample_fraction);
-
-//        public native @Cast("cvflann::flann_algorithm_t") int getIndexType();
-//        public native void print();
+        private native void allocate(float target_precision/*=0.8*/, float build_weight/*=0.01*/,
+                float memory_weight/*=0*/, float sample_fraction/*=0.1*/);
     }
 
-    @NoOffset @Namespace("cvflann") public static class SavedIndexParams extends IndexParams {
+    @Namespace("cv::flann") public static class KMeansIndexParams extends IndexParams {
+        static { load(); }
+        public KMeansIndexParams() { allocate(); }
+        public KMeansIndexParams(int branching/*=32*/, int iterations/*= 11*/,
+                int centers_init/*=FLANN_CENTERS_RANDOM*/, float cb_index/*=0.2*/) {
+            allocate(branching, iterations, centers_init, cb_index);
+        }
+        public KMeansIndexParams(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int branching/*=32*/, int iterations/*= 11*/,
+                @Cast("cv::flann::flann_centers_init_t") int centers_init/*=CENTERS_RANDOM*/, float cb_index/*=0.2*/);
+    }
+
+    @Namespace("cv::flann") public static class LshIndexParams extends IndexParams {
+        static { load(); }
+        public LshIndexParams(int table_number, int key_size, int multi_probe_level) {
+            allocate(table_number, key_size, multi_probe_level);
+        }
+        public LshIndexParams(Pointer p) { super(p); }
+        private native void allocate(int table_number, int key_size, int multi_probe_level);
+    }
+
+    @Namespace("cv::flann") public static class SavedIndexParams extends IndexParams {
         static { load(); }
         public SavedIndexParams() { }
-        public SavedIndexParams(String filename_) { allocate(filename_); }
+        public SavedIndexParams(String filename) { allocate(filename); }
         public SavedIndexParams(Pointer p) { super(p); }
-        private native void allocate(String filename_);
-
-        public native @ByRef String filename(); public native SavedIndexParams filename(String filename);
-
-//        public native @Cast("cvflann::flann_algorithm_t") int getIndexType();
-//        public native void print();
+        private native void allocate(String filename);
     }
 
-    @Namespace("cvflann") public static class SearchParams extends Pointer {
+    @Namespace("cv::flann") public static class SearchParams extends IndexParams {
         static { load(); }
         public SearchParams() { allocate(); }
-        public SearchParams(int checks_/*=32*/) { allocate(checks_); }
+        public SearchParams(int checks/*=32*/, float eps/*=0*/, boolean sorted/*=true*/) {
+            allocate(checks, eps, sorted);
+        }
         public SearchParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int checks_/*= 32*/);
-
-        @NoOffset public native int checks(); public native SearchParams checks(int checks);
+        private native void allocate(int checks/*=32*/, float eps/*=0*/, boolean sorted/*=true*/);
     }
 
     @Namespace("cv::flann") public static class Index extends Pointer {
-        static { load(); }
+        static { Loader.load(); }
         public Index() { }
-        public Index(CvMat features, @ByRef IndexParams params) { allocate(features, params); }
+        public Index(CvArr features, IndexParams params, int distType/*=FLANN_DIST_L2*/) {
+            allocate(features, params, distType);
+        }
         public Index(Pointer p) { super(p); }
-        private native void allocate(CvMat features, @ByRef IndexParams params);
+        private native void allocate(@Adapter("ArrayAdapter") CvArr features, @ByRef IndexParams params,
+                @Cast("cv::flann::flann_distance_t") int distType);
 
-        public native void knnSearch(@Adapter("VectorAdapter<float>") FloatPointer query,
-                @Adapter(value="VectorAdapter<int>",out=true) IntPointer indices,
-                @Adapter(value="VectorAdapter<float>",out=true) FloatPointer dists, int knn, @ByRef SearchParams params);
-        public native void knnSearch(CvMat queries, @Adapter("MatAdapter") CvMat indices,
-                @Adapter("MatAdapter") CvMat dists, int knn, @ByRef SearchParams params);
+        public native void build(@Adapter("ArrayAdapter") CvArr features, @ByRef IndexParams params,
+                @Cast("cv::flann::flann_distance_t") int distType/*=FLANN_DIST_L2*/);
+        public native void knnSearch(@Adapter("ArrayAdapter") CvArr query,
+                @Adapter(value="ArrayAdapter",out=true) CvMat indices,
+                @Adapter(value="ArrayAdapter",out=true) CvMat dists, int knn,
+                @ByRef SearchParams params/*=SearchParams()*/);
 
-        public native int radiusSearch(@Adapter("VectorAdapter<float>") FloatPointer query,
-                @Adapter(value="VectorAdapter<int>",out=true) IntPointer indices,
-                @Adapter(value="VectorAdapter<float>",out=true) FloatPointer dists, float radius, @ByRef SearchParams params);
-        public native int radiusSearch(CvMat query, @Adapter("MatAdapter") CvMat indices,
-                @Adapter("MatAdapter") CvMat dists, float radius, @ByRef SearchParams params);
+        public native int radiusSearch(@Adapter("ArrayAdapter") CvArr query,
+                @Adapter(value="ArrayAdapter",out=true) CvMat indices,
+                @Adapter(value="ArrayAdapter",out=true) CvMat dists, double radius, int maxResults,
+                @ByRef SearchParams params/*=SearchParams()*/);
 
         public native void save(String filename);
+        public native boolean load(@Adapter("ArrayAdapter") CvArr features, String filename);
+        public native void release();
+        public native @Cast("cv::flann::flann_distance_t") int getDistance();
+        public native @Cast("cv::flann::flann_algorithm_t") int getAlgorithm();
 
-        public native int veclen();
-
-        public native int size();
-
-        public native @Const IndexParams getIndexParameters();
+//        protected native @Cast("cv::flann::flann_distance_t") int distType();
+//        protected native @Cast("cv::flann::flann_algorithm_t") int algo();
+//        protected native int featureType();
+//        protected native Pointer index();
     }
 }

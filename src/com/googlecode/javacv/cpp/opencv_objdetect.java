@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in objdetect.hpp of OpenCV 2.3.0,
+ * This file is based on information found in objdetect.hpp of OpenCV 2.3.1,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -89,7 +89,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         include={"<opencv2/objdetect/objdetect.hpp>", "opencv_adapters.h"},
         link={"opencv_objdetect", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_objdetect230", "opencv_features2d230", "opencv_flann230", "opencv_calib3d230", "opencv_highgui230", "opencv_imgproc230", "opencv_core230"}),
+        link={"opencv_objdetect231", "opencv_features2d231", "opencv_flann231", "opencv_calib3d231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -285,8 +285,7 @@ public class opencv_objdetect {
         public native float/*[4]*/ fineFunction(int i); public native CvLSVMFilterObject fineFunction(int i, float fineFunction);
         public native int sizeX();                      public native CvLSVMFilterObject sizeX(int sizeX);
         public native int sizeY();                      public native CvLSVMFilterObject sizeY(int sizeY);
-        public native int p();                          public native CvLSVMFilterObject p(int p);
-        public native int xp();                         public native CvLSVMFilterObject xp(int xp);
+        public native int numFeatures();                public native CvLSVMFilterObject numFeatures(int numFeatures);
         public native FloatPointer H();                 public native CvLSVMFilterObject H(FloatPointer H);
     }
 
@@ -343,6 +342,9 @@ public class opencv_objdetect {
             CvRect rectList, int groupThreshold, double eps/*=0.2*/);
     @Namespace("cv") public static native void groupRectangles(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
             CvRect rectList, @Adapter(value="VectorAdapter<int>", out=true) IntPointer weights, int groupThreshold, double eps/*=0.2*/);
+    @Namespace("cv") public static native void groupRectangles(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
+            CvRect rectList, int groupThreshold, double eps, @Adapter(value="VectorAdapter<int>", out=true) IntPointer weights,
+            @Adapter(value="VectorAdapter<double>", out=true) DoublePointer levelWeights);
     @Namespace("cv") public static native void groupRectangles(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
             CvRect rectList, @Adapter(value="VectorAdapter<int>", out=true) IntPointer rejectLevels,
             @Adapter(value="VectorAdapter<double>", out=true) DoublePointer levelWeights, int groupThreshold, double eps/*=0.2*/);
@@ -505,11 +507,6 @@ public class opencv_objdetect {
 //        protected native CvHaarClassifierCascade oldCascade();   protected native CascadeClassifier oldCascade(CvHaarClassifierCascade oldCascade);
     }
 
-    @Namespace("cv") public static native void groupRectangles(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
-            CvRect rectList, int groupThreshold,  double eps,
-            @Adapter(value="VectorAdapter<int>", out=true) IntPointer weights,
-            @Adapter(value="VectorAdapter<double>", out=true) DoublePointer levelWeights);
-
 
     @NoOffset @Namespace("cv") public static class HOGDescriptor extends Pointer {
         static { Loader.load(); }
@@ -542,7 +539,7 @@ public class opencv_objdetect {
         public native boolean checkDetectorSize();
         public native double getWinSigma();
 
-        public native void setSVMDetector(@Adapter("VectorAdapter<float>") float[] _svmdetector);
+        public native void setSVMDetector(@Adapter("ArrayAdapter") CvArr _svmdetector);
 
         public native boolean read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
         public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs, String objname);

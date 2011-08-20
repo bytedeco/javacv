@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.3.0, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.3.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -118,7 +118,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core"),
-    @Platform(value="windows", includepath=windowsIncludepath, link="opencv_core230", preload={"msvcr100", "msvcp100", "tbb"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link="opencv_core231", preload={"msvcr100", "msvcp100", "tbb"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -126,18 +126,18 @@ public class opencv_core {
     static { load(); }
     public static final String genericIncludepath    = "/opt/local/include/";
     public static final String genericLinkpath       = "/opt/local/lib/:/opt/local/lib64/:/usr/local/lib/:/usr/local/lib64/";
-    public static final String windowsIncludepath    = "C:/OpenCV2.3/include/;C:/OpenCV2.3/build/include/";
-    public static final String windowsx86Linkpath    = "C:/OpenCV2.3/lib/;C:/OpenCV2.3/build/x86/vc10/lib/";
-    public static final String windowsx86Preloadpath = "C:/OpenCV2.3/bin/Release/;C:/OpenCV2.3/bin/;C:/OpenCV2.3/build/x86/vc10/bin/";
-    public static final String windowsx64Linkpath    = "C:/OpenCV2.3/lib/;C:/OpenCV2.3/build/x64/vc10/lib/";
-    public static final String windowsx64Preloadpath = "C:/OpenCV2.3/bin/Release/;C:/OpenCV2.3/bin/;C:/OpenCV2.3/build/x64/vc10/bin/";
+    public static final String windowsIncludepath    = "C:/OpenCV2.3/build/include/";
+    public static final String windowsx86Linkpath    = "C:/OpenCV2.3/build/x86/vc10/lib/";
+    public static final String windowsx86Preloadpath = "C:/OpenCV2.3/build/x86/vc10/bin/;C:/OpenCV2.3/build/common/tbb/ia32/vc10";
+    public static final String windowsx64Linkpath    = "C:/OpenCV2.3/build/x64/vc10/lib/";
+    public static final String windowsx64Preloadpath = "C:/OpenCV2.3/build/x64/vc10/bin/;C:/OpenCV2.3/build/common/tbb/intel64/vc10";
     public static final String androidIncludepath    = "../include/";
     public static final String androidLinkpath       = "../lib/";
 
     public static final int
             CV_MAJOR_VERSION    = 2,
             CV_MINOR_VERSION    = 3,
-            CV_SUBMINOR_VERSION = 0;
+            CV_SUBMINOR_VERSION = 1;
 
     public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
 
@@ -331,8 +331,9 @@ public class opencv_core {
     public static final long CV_RNG_COEFF = 4164903690L;
     public static class CvRNG extends LongPointer {
         static { load(); }
-        public CvRNG() { super(1); }
+        public CvRNG() { this(null); allocate(); }
         public CvRNG(Pointer p) { super(p); }
+        private native void allocate();
     }
     public static CvRNG cvRNG() {
         return cvRNG(-1);
@@ -480,7 +481,7 @@ public class opencv_core {
                     default: assert (false);
                 }
             }
-            IplImage i = create(sm.getWidth(), sm.getHeight(), depth, numChannels);
+            IplImage i = create(image.getWidth(), image.getHeight(), depth, numChannels);
             i.copyFrom(image, 1.0, null);
             return i;
         }
@@ -848,17 +849,21 @@ public class opencv_core {
             SampleModel sm = image.getSampleModel();
             Raster r       = image.getRaster();
             DataBuffer in  = r.getDataBuffer();
-            int x = r.getSampleModelTranslateX();
-            int y = r.getSampleModelTranslateY();
-            int step = sm.getWidth()*sm.getNumBands();
+            int x = -r.getSampleModelTranslateX();
+            int y = -r.getSampleModelTranslateY();
+            int pixelSize = sm.getNumBands();
+            int step = sm.getWidth()*pixelSize;
             if (sm instanceof ComponentSampleModel) {
+                pixelSize = ((ComponentSampleModel)sm).getPixelStride();
                 step = ((ComponentSampleModel)sm).getScanlineStride();
             } else if (sm instanceof SinglePixelPackedSampleModel) {
+                pixelSize = ((ComponentSampleModel)sm).getPixelStride();
                 step = ((SinglePixelPackedSampleModel)sm).getScanlineStride();
             } else if (sm instanceof MultiPixelPackedSampleModel) {
+                pixelSize = ((ComponentSampleModel)sm).getPixelStride();
                 step = ((MultiPixelPackedSampleModel)sm).getScanlineStride();
             }
-            int start = y*step + x;
+            int start = y*step + x*pixelSize;
 
             if (in instanceof DataBufferByte) {
                 byte[] a = ((DataBufferByte)in).getData();

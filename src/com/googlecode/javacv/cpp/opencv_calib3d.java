@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in calib3d.hpp
- * of OpenCV 2.3.0, which are covered by the following copyright notice:
+ * of OpenCV 2.3.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -85,7 +85,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"},
         link={"opencv_calib3d", "opencv_flann", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_calib3d230", "opencv_features2d230", "opencv_flann230", "opencv_highgui230", "opencv_imgproc230", "opencv_core230"}),
+        link={"opencv_calib3d231", "opencv_features2d231", "opencv_flann231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -150,7 +150,8 @@ public class opencv_calib3d {
 
     public static native void cvGetOptimalNewCameraMatrix(CvMat camera_matrix,
             CvMat dist_coeffs, @ByVal CvSize image_size, double alpha, CvMat new_camera_matrix,
-            @ByVal CvSize new_imag_size/*=cvSize(0,0)*/, CvRect valid_pixel_ROI/*=null*/);
+            @ByVal CvSize new_imag_size/*=cvSize(0,0)*/, CvRect valid_pixel_ROI/*=null*/, 
+            int center_principal_point/*=0*/);
 
     public static native int cvRodrigues2(CvMat src, CvMat dst, CvMat jacobian/*=null*/);
 
@@ -464,6 +465,9 @@ public class opencv_calib3d {
     @Namespace("cv") public static native boolean findCirclesGrid(@Adapter("ArrayAdapter") CvArr image, @ByVal CvSize patternSize,
             @Adapter(value="ArrayAdapter", out=true) CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/,
             @ByRef FeatureDetectorPtr blobDetector/*=new SimpleBlobDetector()*/);
+    @Platform(not="android") // Android does not support circular dependencies...
+    @Namespace("cv") public static native boolean findCirclesGridDefault(@Adapter("ArrayAdapter") CvArr image, @ByVal CvSize patternSize,
+             @Adapter(value="ArrayAdapter", out=true) CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/);
 
     @Namespace("cv") public static native float rectify3Collinear(@Adapter("ArrayAdapter") CvMat cameraMatrix1,
             @Adapter("ArrayAdapter") CvMat distCoeffs1, @Adapter("ArrayAdapter") CvMat cameraMatrix2, @Adapter("ArrayAdapter") CvMat distCoeffs2,

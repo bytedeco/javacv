@@ -15,9 +15,9 @@ public:
             cvReleaseImage((IplImage**)&pointer);
         }
     }
-    operator CvMat*()    { return cvCloneMat  (&(const CvMat&)   mat); }
-    operator CvMatND*()  { return cvCloneMatND(&(const CvMatND&) mat); }
-    operator IplImage*() { return cvCloneImage(&(const IplImage&)mat); }
+    operator CvMat*()    { const CvMat&    m = mat; return CV_IS_MAT  (&m) ? cvCloneMat  (&m) : NULL; }
+    operator CvMatND*()  { const CvMatND&  m = mat; return CV_IS_MATND(&m) ? cvCloneMatND(&m) : NULL; }
+    operator IplImage*() { const IplImage& m = mat; return CV_IS_IMAGE(&m) ? cvCloneImage(&m) : NULL; }
     operator cv::Mat&()  { return mat; }
     operator cv::Mat*()  { return pointer ? &mat : 0; }
 
@@ -41,9 +41,9 @@ public:
             cvReleaseImage((IplImage**)&pointer);
         }
     }
-    operator CvMat*()    { return cvCloneMat  (&(const CvMat&)   arr.getMatRef()); }
-    operator CvMatND*()  { return cvCloneMatND(&(const CvMatND&) arr.getMatRef()); }
-    operator IplImage*() { return cvCloneImage(&(const IplImage&)arr.getMatRef()); }
+    operator CvMat*()    { const CvMat&    m = arr.getMatRef(); return CV_IS_MAT  (&m) ? cvCloneMat  (&m) : NULL; }
+    operator CvMatND*()  { const CvMatND&  m = arr.getMatRef(); return CV_IS_MATND(&m) ? cvCloneMatND(&m) : NULL; }
+    operator IplImage*() { const IplImage& m = arr.getMatRef(); return CV_IS_IMAGE(&m) ? cvCloneImage(&m) : NULL; }
     operator cv::_OutputArray&()  { return arr; }
     operator cv::_OutputArray*()  { return pointer ? &arr : 0; }
 

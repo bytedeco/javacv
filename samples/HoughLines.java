@@ -47,7 +47,7 @@ public class HoughLines {
         if (args.length == 2 && args[1].contentEquals("probabilistic")) { 
             System.out.println("Using the Probabilistic Hough Transform");
             lines = cvHoughLines2(dst, storage, CV_HOUGH_PROBABILISTIC, 1, Math.PI / 180, 40, 50, 10);
-            for (int i = 0; i <= lines.total(); i++) {
+            for (int i = 0; i < lines.total(); i++) {
                 // from JavaCPP, the equivalent of the C code:
                 // CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
                 // CvPoint first=line[0], second=line[1]
