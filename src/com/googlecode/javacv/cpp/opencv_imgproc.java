@@ -431,28 +431,28 @@ public class opencv_imgproc {
 
         public native int flags();                           public native CvQuadEdge2D flags(int flags);
         public native CvSubdiv2DPoint/*[4]*/ pt(int i);      public native CvQuadEdge2D pt(int i, CvSubdiv2DPoint pt);
-        public native long/*CvSubdiv2DEdge[4]*/ next(int i); public native CvQuadEdge2D next(int i, long next);
+        public native @Cast("CvSubdiv2DEdge") long next(int i); public native CvQuadEdge2D next(int i, long next);
 
-        public long /*CvSubdiv2DEdge*/ CV_SUBDIV2D_NEXT_EDGE(long /*CvSubdiv2DEdge*/ edge) {
+        public @Cast("CvSubdiv2DEdge") long CV_SUBDIV2D_NEXT_EDGE(@Cast("CvSubdiv2DEdge") long edge) {
             return next((int)edge & 3);
         }
-        public long /*CvSubdiv2DEdge*/ cvSubdiv2DNextEdge(long /*CvSubdiv2DEdge*/ edge) {
+        public @Cast("CvSubdiv2DEdge") long cvSubdiv2DNextEdge(@Cast("CvSubdiv2DEdge") long edge) {
             return CV_SUBDIV2D_NEXT_EDGE(edge);
         }
-        public long /*CvSubdiv2DEdge*/ cvSubdiv2DGetEdge(long /*CvSubdiv2DEdge*/ edge, int /* CvNextEdgeType */ type) {
+        public @Cast("CvSubdiv2DEdge") long cvSubdiv2DGetEdge(@Cast("CvSubdiv2DEdge") long edge, @Cast("CvNextEdgeType") int type) {
             edge = next(((int)edge + type) & 3);
             return (edge & ~3) + ((edge + (type >> 4)) & 3);
         }
-        public static long /*CvSubdiv2DEdge*/  cvSubdiv2DRotateEdge(long /*CvSubdiv2DEdge*/ edge, int rotate) {
+        public static @Cast("CvSubdiv2DEdge") long cvSubdiv2DRotateEdge(@Cast("CvSubdiv2DEdge") long edge, int rotate) {
             return (edge & ~3) + ((edge + rotate) & 3);
         }
-        public CvSubdiv2DPoint cvSubdiv2DEdgeOrg(long /*CvSubdiv2DEdge*/ edge) {
+        public CvSubdiv2DPoint cvSubdiv2DEdgeOrg(@Cast("CvSubdiv2DEdge") long edge) {
             return pt((int)edge & 3);
         }
-        public CvSubdiv2DPoint cvSubdiv2DEdgeDst(long /*CvSubdiv2DEdge*/ edge) {
+        public CvSubdiv2DPoint cvSubdiv2DEdgeDst(@Cast("CvSubdiv2DEdge") long edge) {
             return pt(((int)edge + 2) & 3);
         }
-        public static long /*CvSubdiv2DEdge*/ cvSubdiv2DSymEdge(long /*CvSubdiv2DEdge*/ edge) {
+        public static @Cast("CvSubdiv2DEdge") long cvSubdiv2DSymEdge(@Cast("CvSubdiv2DEdge") long edge) {
             return edge ^ 2;
         }
 
@@ -470,10 +470,10 @@ public class opencv_imgproc {
             return (CvSubdiv2DPoint)super.position(position);
         }
 
-        public native int                     flags(); public native CvSubdiv2DPoint flags(int first);
-        public native long /*CvSubdiv2DEdge*/ first(); public native CvSubdiv2DPoint first(long first);
-        public native @ByRef CvPoint2D32f     pt();    public native CvSubdiv2DPoint pt(CvPoint2D32f pt);
-        public native int                     id();    public native CvSubdiv2DPoint id(int id);
+        public native int                          flags(); public native CvSubdiv2DPoint flags(int first);
+        public native @Cast("CvSubdiv2DEdge") long first(); public native CvSubdiv2DPoint first(long first);
+        public native @ByRef CvPoint2D32f             pt(); public native CvSubdiv2DPoint pt(CvPoint2D32f pt);
+        public native int                             id(); public native CvSubdiv2DPoint id(int id);
     }
 
     public static class CvSubdiv2D extends CvGraph {
@@ -488,11 +488,11 @@ public class opencv_imgproc {
             return (CvSubdiv2D)super.position(position);
         }
 
-        public native int quad_edges();                      public native CvSubdiv2D quad_edges(int quad_edges);
-        public native int is_geometry_valid();               public native CvSubdiv2D is_geometry_valid(int is_geometry_valid);
-        public native long /*CvSubdiv2DEdge*/ recent_edge(); public native CvSubdiv2D recent_edge(long recent_edge);
-        public native @ByRef CvPoint2D32f topleft();         public native CvSubdiv2D topleft(CvPoint2D32f topleft);
-        public native @ByRef CvPoint2D32f bottomright();     public native CvSubdiv2D bottomright(CvPoint2D32f bottomright);
+        public native int quad_edges();                           public native CvSubdiv2D quad_edges(int quad_edges);
+        public native int is_geometry_valid();                    public native CvSubdiv2D is_geometry_valid(int is_geometry_valid);
+        public native @Cast("CvSubdiv2DEdge") long recent_edge(); public native CvSubdiv2D recent_edge(long recent_edge);
+        public native @ByRef CvPoint2D32f topleft();              public native CvSubdiv2D topleft(CvPoint2D32f topleft);
+        public native @ByRef CvPoint2D32f bottomright();          public native CvSubdiv2D bottomright(CvPoint2D32f bottomright);
     }
 
     // enum CvSubdiv2DPointLocation
@@ -1121,12 +1121,12 @@ public class opencv_imgproc {
 
         public native int start(@ByVal CvSize wholeSize, @ByVal CvRect roi, int maxBufRows/*=-1*/);
         public native int start(@Adapter("MatAdapter") CvArr src, @ByVal CvRect srcRoi/*=Rect(0,0,-1,-1)*/,
-                boolean isolated/*=false*/, int maxBufRows/*=-1*/);
+                @Cast("bool") boolean isolated/*=false*/, int maxBufRows/*=-1*/);
         public native int proceed(@Cast("uchar*") BytePointer src, int srcStep, int srcCount,
                 @Cast("uchar*") BytePointer dst, int dstStep);
         public native void apply(@Adapter("MatAdapter") CvArr src, @Adapter("MatAdapter") CvArr dst,
                 @ByVal CvRect srcRoi/*=Rect(0,0,-1,-1)*/, @ByVal CvPoint dstOfs/*=Point(0,0)*/,
-                boolean isolated/*=false*/);
+                @Cast("bool") boolean isolated/*=false*/);
         public native boolean isSeparable();
         public native int remainingInputRows();
         public native int remainingOutputRows();
@@ -1238,7 +1238,7 @@ public class opencv_imgproc {
 
     @Namespace("cv") public static native void getDerivKernels(@Adapter(value="ArrayAdapter", out=true) CvMat kx,
             @Adapter(value="ArrayAdapter", out=true) CvMat ky, int dx, int dy, int ksize,
-            boolean normalize/*=false*/, int ktype/*=CV_32F*/);
+            @Cast("bool") boolean normalize/*=false*/, int ktype/*=CV_32F*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createDerivFilter(int srcType, int dstType,
             int dx, int dy, int ksize, int borderType/*=BORDER_DEFAULT*/);
     
@@ -1247,7 +1247,7 @@ public class opencv_imgproc {
     @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getColumnSumFilter( int sumType, int dstType,
             int ksize, int anchor/*=-1*/, double scale/*=1*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createBoxFilter(int srcType, int dstType, @ByVal CvSize ksize,
-            @ByVal CvPoint anchor/*=Point(-1,-1)*/, boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
+            @ByVal CvPoint anchor/*=Point(-1,-1)*/, @Cast("bool") boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
 
     public static final int
             MORPH_ERODE=CV_MOP_ERODE, MORPH_DILATE=CV_MOP_DILATE,
@@ -1273,7 +1273,7 @@ public class opencv_imgproc {
     @Namespace("cv") public static native void bilateralFilter(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int d,
             double sigmaColor, double sigmaSpace, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void boxFilter(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ddepth,
-            @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
+            @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, @Cast("bool") boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void blur(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst,
             @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void filter2D(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ddepth,

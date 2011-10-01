@@ -93,16 +93,16 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
         }
 
         for (j = 0; j < 9; j++) {
-            h[i][j] = data[i].H1->data.db[j];
+            h[i][j] = (float)data[i].H1->data.db[j];
         }
         if (data[i].H2 != NULL) {
             for (j = 0; j < 9; j++) {
-                g[i][j] = data[i].H2->data.db[j];
+                g[i][j] = (float)data[i].H2->data.db[j];
             }
         }
         if (data[i].X != NULL) {
             for (j = 0; j < 16; j++) {
-                Xa[i][j] = data[i].X->data.db[j];
+                Xa[i][j] = (float)data[i].X->data.db[j];
             }
         }
 
@@ -136,10 +136,10 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
     }
     float fill[4] = { 0.0 };
     if (fillColor != NULL) {
-        fill[0] = fillColor->val[0];
-        fill[1] = fillColor->val[1];
-        fill[2] = fillColor->val[2];
-        fill[3] = fillColor->val[3];
+        fill[0] = (float)fillColor->val[0];
+        fill[1] = (float)fillColor->val[1];
+        fill[2] = (float)fillColor->val[2];
+        fill[3] = (float)fillColor->val[3];
     }
 
     int x, y, z;

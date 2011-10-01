@@ -383,10 +383,12 @@ public class opencv_features2d {
                 allocate(_magnification, _isNormalize, _recalculateAngles);
             }
             private native void allocate();
-            private native void allocate(double _magnification, boolean _isNormalize, boolean _recalculateAngles);
+            private native void allocate(double _magnification, @Cast("bool") boolean _isNormalize, @Cast("bool") boolean _recalculateAngles);
 
             public native double magnification();      public native DescriptorParams magnification(double magnification);
+            @Cast("bool")
             public native boolean isNormalize();       public native DescriptorParams isNormalize(boolean isNormalize);
+            @Cast("bool")
             public native boolean recalculateAngles(); public native DescriptorParams recalculateAngles(boolean recalculateAngles);
         }
 
@@ -417,7 +419,7 @@ public class opencv_features2d {
         private native void allocate();
         private native void allocate(double _threshold, double _edgeThreshold,
                 int _nOctaves, int _nOctaveLayers, int _firstOctave, int _angleMode);
-        private native void allocate(double _magnification, boolean _isNormalize, boolean _recalculateAngles,
+        private native void allocate(double _magnification, @Cast("bool") boolean _isNormalize, @Cast("bool") boolean _recalculateAngles,
                 int _nOctaves, int _nOctaveLayers, int _firstOctave, int _angleMode);
         private native void allocate(@ByRef CommonParams _commParams,
               @ByRef DetectorParams _detectorParams, @ByRef DescriptorParams _descriptorParams);
@@ -428,7 +430,7 @@ public class opencv_features2d {
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints);
         public native @Name("operator()") void detect(@Adapter("MatAdapter") CvArr img, @Adapter("MatAdapter") CvArr mask,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-                @Adapter(value="MatAdapter", out=true) CvMat descriptors, boolean useProvidedKeypoints/*=false*/);
+                @Adapter(value="MatAdapter", out=true) CvMat descriptors, @Cast("bool") boolean useProvidedKeypoints/*=false*/);
 
         public native @ByVal CommonParams getCommonParams();
         public native @ByVal DetectorParams getDetectorParams();
@@ -472,7 +474,7 @@ public class opencv_features2d {
             allocate(n_features, detector_params);
         }
         private native void allocate();
-        private native void allocate(long n_features/*=500*/, @ByRef CommonParams detector_params/*=CommonParams()*/);
+        private native void allocate(@Cast("size_t") long n_features/*=500*/, @ByRef CommonParams detector_params/*=CommonParams()*/);
 
         public native int descriptorSize();
 
@@ -480,12 +482,12 @@ public class opencv_features2d {
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints);
         public native @Name("operator()") void detect(@Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-                @Adapter(value="MatAdapter", out=true) CvMat descriptors, boolean useProvidedKeypoints/*=false*/);
+                @Adapter(value="MatAdapter", out=true) CvMat descriptors, @Cast("bool") boolean useProvidedKeypoints/*=false*/);
     }
 
     @Namespace("cv") public static native void FAST(@Adapter("MatAdapter") CvArr image,
             @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true)
-            KeyPoint keypoints, int threshold, boolean nonmaxSupression/*=true*/);
+            KeyPoint keypoints, int threshold, @Cast("bool") boolean nonmaxSupression/*=true*/);
 
     @NoOffset @Namespace("cv") public static class PatchGenerator extends Pointer {
         public PatchGenerator() { allocate(); }
@@ -498,7 +500,7 @@ public class opencv_features2d {
         }
         private native void allocate();
         private native void allocate(double _backgroundMin, double _backgroundMax, double _noiseRange,
-                boolean _randomBlur/*=true*/, double _lambdaMin/*=0.6*/, double _lambdaMax/*=1.5*/,
+                @Cast("bool") boolean _randomBlur/*=true*/, double _lambdaMin/*=0.6*/, double _lambdaMax/*=1.5*/,
                 double _thetaMin/*=-CV_PI*/, double _thetaMax/*=CV_PI*/, double _phiMin/*=-CV_PI*/, double _phiMax/*=CV_PI*/);
 
         public native @Name("operator()") void generate(@Adapter("MatAdapter") CvArr image, @ByVal CvPoint2D32f pt,
@@ -508,12 +510,13 @@ public class opencv_features2d {
         public native void warpWholeImage(@Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvMat matT, @Adapter("MatAdapter") CvArr buf,
                 @Adapter("MatAdapter") CvArr warped, int border, @Adapter(value="RNGAdapter", out=true) CvRNG rng);
         public native void generateRandomTransform(@ByVal CvPoint2D32f srcCenter, @ByVal CvPoint2D32f dstCenter,
-                @Adapter("MatAdapter") CvMat transform, @Adapter(value="RNGAdapter", out=true) CvRNG rng, boolean inverse/*=false*/);
+                @Adapter("MatAdapter") CvMat transform, @Adapter(value="RNGAdapter", out=true) CvRNG rng, @Cast("bool") boolean inverse/*=false*/);
         public native void setAffineParam(double lambda, double theta, double phi);
 
         public native double backgroundMin(); public native PatchGenerator backgroundMin(double backgroundMin);
         public native double backgroundMax(); public native PatchGenerator backgroundMax(double backgroundMax);
         public native double noiseRange();    public native PatchGenerator noiseRange(double backgroundMin);
+        @Cast("bool")
         public native boolean randomBlur();   public native PatchGenerator randomBlur(boolean randomBlur);
         public native double lambdaMin();     public native PatchGenerator lambdaMin(double lambdaMin);
         public native double lambdaMax();     public native PatchGenerator lambdaMax(double lambdaMax);
@@ -537,14 +540,14 @@ public class opencv_features2d {
 
         public native @Name("operator()") void detect(@Adapter("MatAdapter") CvArr image,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-                int maxCount/*=0*/, boolean scaleCoords/*=true*/);
+                int maxCount/*=0*/, @Cast("bool") boolean scaleCoords/*=true*/);
         public native @Name("operator()") void detect(@Adapter("VectorAdapter<IplImage*,cv::Mat>") IplImageArray pyr,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-                int maxCount/*=0*/, boolean scaleCoords/*=true*/);
+                int maxCount/*=0*/, @Cast("bool") boolean scaleCoords/*=true*/);
         public native void getMostStable2D(@Adapter("MatAdapter") CvArr image,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
                 int maxCount, @ByRef PatchGenerator patchGenerator);
-        public native void setVerbose(boolean verbose);
+        public native void setVerbose(@Cast("bool") boolean verbose);
 
         public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
         public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs, String name);
@@ -553,6 +556,7 @@ public class opencv_features2d {
         public native int threshold();   public native LDetector threshold(int threshold);
         public native int nOctaves();    public native LDetector nOctaves(int nOctaves);
         public native int nViews();      public native LDetector nViews(int nViews);
+        @Cast("bool")
         public native boolean verbose(); public native LDetector verbose(boolean verbose);
 
         public native double baseFeatureSize();    public native LDetector baseFeatureSize(double baseFeatureSize);
@@ -613,7 +617,7 @@ public class opencv_features2d {
         public native @Name("operator()") int classify(@Adapter("MatAdapter") CvArr patch,
                 @Adapter(value="VectorAdapter<float>", out=true) FloatPointer signature);
         public native void clear();
-        public native void setVerbose(boolean verbose);
+        public native void setVerbose(@Cast("bool") boolean verbose);
 
         public native int getClassCount();
         public native int getStructCount();
@@ -695,10 +699,10 @@ public class opencv_features2d {
         private native void allocate();
 
         public native void train(@Adapter("VectorAdapter<cv::BaseKeypoint>") BaseKeypoint base_set,
-                @Adapter("RNGAdapter") CvRNG rng, int depth, int views, long reduced_num_dim, int num_quant_bits);
+                @Adapter("RNGAdapter") CvRNG rng, int depth, int views, @Cast("size_t") long reduced_num_dim, int num_quant_bits);
         public native void train(@Adapter("VectorAdapter<cv::BaseKeypoint>") BaseKeypoint base_set,
                 @Adapter("RNGAdapter") CvRNG rng, @ByRef PatchGenerator make_patch,
-                int depth, int views, long reduced_num_dim, int num_quant_bits);
+                int depth, int views, @Cast("size_t") long reduced_num_dim, int num_quant_bits);
 
         public static native void quantizeVector(float[] vec, int dim, int N, float bnds[/*2*/], int clamp_mode/*=0*/);
         public static native void quantizeVector(float[] src, int dim, int N, float bnds[/*2*/], @Cast("uchar*") BytePointer dst);
@@ -714,13 +718,13 @@ public class opencv_features2d {
         public native int classes();
         public native int depth();
 
-        //public native void setKeepFloatPosteriors(boolean b);
+        //public native void setKeepFloatPosteriors(@Cast("bool") boolean b);
         public native void discardFloatPosteriors();
 
         public native void applyQuantization(int num_quant_bits);
 
-        public native void savePosteriors(String url, boolean append/*=false*/);
-        public native void savePosteriors2(String url, boolean append/*=false*/);
+        public native void savePosteriors(String url, @Cast("bool") boolean append/*=false*/);
+        public native void savePosteriors2(String url, @Cast("bool") boolean append/*=false*/);
     }
 
     @NoOffset @Namespace("cv") public static class RTreeNode extends Pointer {
@@ -750,14 +754,14 @@ public class opencv_features2d {
              @Adapter("RNGAdapter") CvRNG rng, int num_trees/* = RTreeClassifier::DEFAULT_TREES*/,
              int depth/* = RandomizedTree::DEFAULT_DEPTH*/,
              int views/* = RandomizedTree::DEFAULT_VIEWS*/,
-             long reduced_num_dim/* = RandomizedTree::DEFAULT_REDUCED_NUM_DIM*/,
+             @Cast("size_t") long reduced_num_dim/* = RandomizedTree::DEFAULT_REDUCED_NUM_DIM*/,
              int num_quant_bits/* = DEFAULT_NUM_QUANT_BITS*/);
         public native void train(@Adapter("VectorAdapter<cv::BaseKeypoint>") BaseKeypoint base_set,
              @Adapter("RNGAdapter") CvRNG rng, @ByRef PatchGenerator make_patch,
              int num_trees/* = RTreeClassifier::DEFAULT_TREES*/,
              int depth/* = RandomizedTree::DEFAULT_DEPTH*/,
              int views/* = RandomizedTree::DEFAULT_VIEWS*/,
-             long reduced_num_dim/* = RandomizedTree::DEFAULT_REDUCED_NUM_DIM*/,
+             @Cast("size_t") long reduced_num_dim/* = RandomizedTree::DEFAULT_REDUCED_NUM_DIM*/,
              int num_quant_bits/* = DEFAULT_NUM_QUANT_BITS*/);
 
         public native void getSignature(IplImage patch, @Cast("uchar*") byte[] sig);
@@ -994,15 +998,15 @@ public class opencv_features2d {
         public KeyPointVectorVector(long n) { allocate(n); }
         public KeyPointVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByRef public native KeyPoint get(long i, long j);
-        public native KeyPointVectorVector put(long i, long j, KeyPoint value);
+        @ByRef public native KeyPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native KeyPointVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, KeyPoint value);
     }
 
     @Name("cv::Ptr<cv::FeatureDetector>")
@@ -1040,7 +1044,7 @@ public class opencv_features2d {
         public FastFeatureDetector(int threshold/*=10*/, boolean nonmaxSuppression/*=true*/) {
             allocate(threshold, nonmaxSuppression);
         }
-        private native void allocate(int threshold/*=10*/, boolean nonmaxSuppression/*=true*/);
+        private native void allocate(int threshold/*=10*/, @Cast("bool") boolean nonmaxSuppression/*=true*/);
 
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -1063,7 +1067,7 @@ public class opencv_features2d {
             public Params(Pointer p) { super(p); }
             private native void allocate();
             private native void allocate(int maxCorners/*=1000*/, double qualityLevel/*=0.01*/, double minDistance/*=1.*/,
-                    int blockSize/*=3*/, boolean useHarrisDetector/*=false*/, double k/*=0.04*/);
+                    int blockSize/*=3*/, @Cast("bool") boolean useHarrisDetector/*=false*/, double k/*=0.04*/);
             private native void allocateArray(int size);
 
             public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
@@ -1073,6 +1077,7 @@ public class opencv_features2d {
             public native double qualityLevel();       public native Params qualityLevel(double qualityLevel);
             public native double minDistance();        public native Params minDistance(double minDistance);
             public native int blockSize();             public native Params blockSize(int blockSize);
+            @Cast("bool")
             public native boolean useHarrisDetector(); public native Params useHarrisDetector(boolean useHarrisDetector);
             public native double k();                  public native Params k(double k);
         }
@@ -1086,7 +1091,7 @@ public class opencv_features2d {
         private native void allocate();
         private native void allocate(@ByRef Params params);
         private native void allocate(int maxCorners, double qualityLevel, double minDistance,
-                int blockSize/*=3*/, boolean useHarrisDetector/*=false*/, double k/*=0.04*/);
+                int blockSize/*=3*/, @Cast("bool") boolean useHarrisDetector/*=false*/, double k/*=0.04*/);
 
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -1176,7 +1181,7 @@ public class opencv_features2d {
             allocate(hessianThreshold, octaves, octaveLayers, upright);
         }
         private native void allocate();
-        private native void allocate(double hessianThreshold/*=400.*/, int octaves/*=3*/, int octaveLayers/*=4*/, boolean upright/*=false*/);
+        private native void allocate(double hessianThreshold/*=400.*/, int octaves/*=3*/, int octaveLayers/*=4*/, @Cast("bool") boolean upright/*=false*/);
 
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -1193,7 +1198,7 @@ public class opencv_features2d {
             allocate(n_features, params);
         }
         private native void allocate();
-        private native void allocate(long n_features/*=700*/, @ByVal ORB.CommonParams params/*=new ORB.CommonParams()*/);
+        private native void allocate(@Cast("size_t") long n_features/*=700*/, @ByVal ORB.CommonParams params/*=new ORB.CommonParams()*/);
 
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -1222,24 +1227,25 @@ public class opencv_features2d {
             public native float thresholdStep();         public native Params thresholdStep(float thresholdStep);
             public native float minThreshold();          public native Params minThreshold(float minThreshold);
             public native float maxThreshold();          public native Params maxThreshold(float maxThreshold);
+            @Cast("size_t")
             public native long minRepeatability();       public native Params minRepeatability(long minRepeatability);
             public native float minDistBetweenBlobs();   public native Params minDistBetweenBlobs(float minDistBetweenBlobs);
-
+            @Cast("bool")
             public native boolean filterByColor();       public native Params filterByColor(boolean filterByColor);
             public native byte blobColor();              public native Params blobColor(byte blobColor);
-
+            @Cast("bool")
             public native boolean filterByArea();        public native Params filterByArea(boolean filterByArea);
             public native float minArea();               public native Params minArea(float minArea);
             public native float maxArea();               public native Params maxArea(float maxArea);
-
+            @Cast("bool")
             public native boolean filterByCircularity(); public native Params filterByCircularity(boolean filterByCircularity);
             public native float minCircularity();        public native Params minCircularity(float minCircularity);
             public native float maxCircularity();        public native Params maxCircularity(float maxCircularity);
-
+            @Cast("bool")
             public native boolean filterByInertia();     public native Params filterByInertia(boolean filterByInertia);
             public native float minInertiaRatio();       public native Params minInertiaRatio(float minInertiaRatio);
             public native float maxInertiaRatio();       public native Params maxInertiaRatio(float maxInertiaRatio);
-
+            @Cast("bool")
             public native boolean filterByConvexity();   public native Params filterByConvexity(boolean filterByConvexity);
             public native float minConvexity();          public native Params minConvexity(float minConvexity);
             public native float maxConvexity();          public native Params maxConvexity(float maxConvexity);
@@ -1276,7 +1282,7 @@ public class opencv_features2d {
             public Params(Pointer p) { super(p); }
             private native void allocate();
             private native void allocate(float initFeatureScale/*=1.f*/, int featureScaleLevels/*=1*/, float featureScaleMul/*=0.1f*/,
-                    int initXyStep/*=6*/, int initImgBound/*=0*/, boolean varyXyStepWithScale/*=true*/, boolean varyImgBoundWithScale/*=false*/);
+                    int initXyStep/*=6*/, int initImgBound/*=0*/, @Cast("bool") boolean varyXyStepWithScale/*=true*/, @Cast("bool") boolean varyImgBoundWithScale/*=false*/);
             private native void allocateArray(int size);
 
             public native float initFeatureScale();        public native Params initFeatureScale(float initFeatureScale);
@@ -1286,7 +1292,9 @@ public class opencv_features2d {
             public native int initXyStep();                public native Params initXyStep(int initXyStep);
             public native int initImgBound();              public native Params initImgBound(int initImgBound);
 
+            @Cast("bool")
             public native boolean varyXyStepWithScale();   public native Params varyXyStepWithScale(boolean varyXyStepWithScale);
+            @Cast("bool")
             public native boolean varyImgBoundWithScale(); public native Params varyImgBoundWithScale(boolean varyImgBoundWithScale);
 
             public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
@@ -1362,9 +1370,9 @@ public class opencv_features2d {
         public AdjusterAdapter() { }
         public AdjusterAdapter(Pointer p) { super(p); }
 
-	public /*abstract*/ native void tooFew(int min, int n_detected);
-	public /*abstract*/ native void tooMany(int max, int n_detected);
-	public /*abstract*/ native boolean good();
+    	public /*abstract*/ native void tooFew(int min, int n_detected);
+    	public /*abstract*/ native void tooMany(int max, int n_detected);
+    	public /*abstract*/ native boolean good();
 
 //        public /*abstract*/ native AdjusterAdapterPtr clone();
 
@@ -1395,7 +1403,7 @@ public class opencv_features2d {
             allocate(init_thresh, nonmax, min_thresh, max_thresh);
         }
         private native void allocate();
-        private native void allocate(int init_thresh/*=20*/, boolean nonmax/*=true*/, int min_thresh/*=1*/, int max_thresh/*=200*/);
+        private native void allocate(int init_thresh/*=20*/, @Cast("bool") boolean nonmax/*=true*/, int min_thresh/*=1*/, int max_thresh/*=200*/);
 
 //        public native void tooFew(int min, int n_detected);
 //        public native void tooMany(int max, int n_detected);
@@ -1515,8 +1523,8 @@ public class opencv_features2d {
         private native void allocate();
         private native void allocate(@ByRef SIFT.DescriptorParams descriptorParams,
                 @ByRef SIFT.CommonParams commonParams);
-        private native void allocate(double magnification, boolean isNormalize/*=true*/,
-                boolean recalculateAngles/*=true*/, int nOctaves/*=SIFT::CommonParams::DEFAULT_NOCTAVES*/,
+        private native void allocate(double magnification, @Cast("bool") boolean isNormalize/*=true*/,
+                @Cast("bool") boolean recalculateAngles/*=true*/, int nOctaves/*=SIFT::CommonParams::DEFAULT_NOCTAVES*/,
                 int nOctaveLayers/*=SIFT::CommonParams::DEFAULT_NOCTAVE_LAYERS*/,
                 int firstOctave/*=SIFT::CommonParams::DEFAULT_FIRST_OCTAVE*/,
                 int angleMode/*=SIFT::CommonParams::FIRST_ANGLE*/);
@@ -1541,7 +1549,7 @@ public class opencv_features2d {
             allocate(nOctaves, nOctaveLayers, extended, upright);
         }
         private native void allocate();
-        private native void allocate(int nOctaves/*=4*/, int nOctaveLayers/*=2*/, boolean extended/*=false*/, boolean upright/*=false*/);
+        private native void allocate(int nOctaves/*=4*/, int nOctaveLayers/*=2*/, @Cast("bool") boolean extended/*=false*/, @Cast("bool") boolean upright/*=false*/);
 
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -1704,15 +1712,15 @@ public class opencv_features2d {
         public DMatchVectorVector(long n) { allocate(n); }
         public DMatchVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByRef public native DMatch get(long i, long j);
-        public native DMatchVectorVector put(long i, long j, DMatch value);
+        @ByRef public native DMatch get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native DMatchVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, DMatch value);
     }
 
     @Name("cv::Ptr<cv::DescriptorMatcher>")
@@ -1741,21 +1749,21 @@ public class opencv_features2d {
         public native void match(@Adapter("MatAdapter") CvArr queryDescriptors, @Adapter("MatAdapter") CvArr trainDescriptors,
                 @Adapter(value="VectorAdapter<cv::DMatch>", out=true) DMatch matches, @Adapter("MatAdapter") CvArr mask/*=null*/);
         public native void knnMatch(@Adapter("MatAdapter") CvArr queryDescriptors, @Adapter("MatAdapter") CvArr trainDescriptors,
-                @ByRef DMatchVectorVector matches, int k, @Adapter("MatAdapter") CvArr mask/*=null*/, boolean compactResult/*=false*/);
+                @ByRef DMatchVectorVector matches, int k, @Adapter("MatAdapter") CvArr mask/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
         public native void radiusMatch(@Adapter("MatAdapter") CvArr queryDescriptors, @Adapter("MatAdapter") CvArr trainDescriptors,
-                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("MatAdapter") CvArr mask/*=null*/, boolean compactResult/*=false*/);
+                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("MatAdapter") CvArr mask/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
 
         public native void match(@Adapter("MatAdapter") CvArr queryDescriptors, @Adapter(value="VectorAdapter<cv::DMatch>", out=true) DMatch matches,
                 @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=null*/);
         public native void knnMatch(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
-                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=null*/, boolean compactResult/*=false*/);
+                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
         public native void radiusMatch(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
-                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=null*/, boolean compactResult/*=false*/);
+                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
 
         public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
         public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
 
-        public /*abstract*/ native @ByVal DescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+        public /*abstract*/ native @ByVal DescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 
         public native static @ByVal DescriptorMatcherPtr create(String descriptorMatcherType);
 
@@ -1782,9 +1790,9 @@ public class opencv_features2d {
 //        }
 //
 //        protected /*abstract*/ native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //        protected /*abstract*/ native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //
 //        protected native static boolean isPossibleMatch(@Adapter("MatAdapter") CvArr mask, int queryIdx, int trainIdx);
 //        protected native static boolean isMaskedOut(@Adapter("VectorAdapter<CvMat*,cv::Mat>") CvArrArray masks, int queryIdx);
@@ -1805,12 +1813,12 @@ public class opencv_features2d {
         private native void allocate();
 
 //        public native boolean isMaskSupported();
-//        public native @ByVal DescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+//        public native @ByVal DescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //        protected native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //
 //        protected cv::L2<float> distance();
     }
@@ -1827,9 +1835,9 @@ public class opencv_features2d {
 //        public native @ByVal DescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //        protected native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //
 //        protected cv::SL2<float> distance();
     }
@@ -1856,9 +1864,9 @@ public class opencv_features2d {
 //                CvMat indices, CvMat distances, @ByRef DMatchVectorVector matches );
 //
 //        protected native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //        protected native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, boolean compactResult/*=false*/);
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //
 //        protected native @ByRef Ptr<flann::IndexParams> indexParams();
 //        protected native @ByRef Ptr<flann::SearchParams> searchParams();
@@ -1905,11 +1913,11 @@ public class opencv_features2d {
         public native void knnMatch(@Adapter("MatAdapter") CvArr queryImage,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint queryKeypoints,
                 @Adapter("MatAdapter") CvArr trainImage, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint trainKeypoints,
-                @ByRef DMatchVectorVector matches, int k, @Adapter("MatAdapter") CvArr mask/*=null*/, boolean compactResult/*=false*/);
+                @ByRef DMatchVectorVector matches, int k, @Adapter("MatAdapter") CvArr mask/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
         public native void radiusMatch(@Adapter("MatAdapter") CvArr queryImage,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint queryKeypoints,
                 @Adapter("MatAdapter") CvArr trainImage, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint trainKeypoints,
-                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("MatAdapter") CvArr mask/*=null*/, boolean compactResult/*=false*/);
+                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("MatAdapter") CvArr mask/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
 
         public native void match(@Adapter("MatAdapter") CvArr queryImage,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint queryKeypoints,
@@ -1918,25 +1926,25 @@ public class opencv_features2d {
         public native void knnMatch(@Adapter("MatAdapter") CvArr queryImage,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint queryKeypoints,
                 @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>")
-                CvMatArray masks/*=null*/, boolean compactResult/*=false*/);
+                CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
         public native void radiusMatch(@Adapter("MatAdapter") CvArr queryImage,
                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint queryKeypoints,
                 @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>")
-                CvMatArray masks/*=null*/, boolean compactResult/*=false*/);
+                CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
 
         public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
         public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
 
         public native boolean empty();
 
-        public /*abstract*/ native @ByVal GenericDescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+        public /*abstract*/ native @ByVal GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
         public native static @ByVal GenericDescriptorMatcherPtr create(String genericDescritptorMatcherType,
                 String paramsFilename/*=""*/);
 
 //        protected /*abstract*/ native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected /*abstract*/ native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
 //        protected static class KeyPointCollection extends Pointer {
 //            static { load(); }
@@ -2033,12 +2041,12 @@ public class opencv_features2d {
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
 //        public native boolean empty();
-//        public native GenericDescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+//        public native GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
 //        protected native @ByRef OneWayDescriptorBasePtr base();
 //        protected native Params params();
@@ -2097,12 +2105,12 @@ public class opencv_features2d {
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
 //        public native boolean empty();
-//        public native GenericDescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+//        public native GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
 //        protected native void trainFernClassifier();
 //        protected native void calcBestProbAndMatchIdx(@Adapter("MatAdapter") CvArr image, @ByRef CvPoint2D32f pt,
@@ -2131,12 +2139,12 @@ public class opencv_features2d {
 //        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
 //        public native boolean empty();
-//        public native GenericDescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+//        public native GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, int k, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected native void radiusMatchImpl(@Adapter("MatAdapter") CvArr queryImage, @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, boolean compactResult);
+//                @ByRef DMatchVectorVector matches, float maxDistance, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
 //        protected native @ByRef DescriptorExtractorPtr extractor();
 //        protected native @ByRef DescriptorMatcherPtr matcher();

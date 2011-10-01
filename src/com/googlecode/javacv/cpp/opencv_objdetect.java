@@ -335,7 +335,7 @@ public class opencv_objdetect {
             @Adapter(value="VectorAdapter<int>", out=true) IntPointer rejectLevels,
             @Adapter(value="VectorAdapter<double>", out=true) DoublePointer levelWeightds,
             double scale_factor/*=1.1*/, int min_neighbors/*=3*/, int flags/*=0*/,
-            @ByVal CvSize min_size/*=cvSize(0,0)*/, @ByVal CvSize max_size/*=cvSize(0,0)*/, boolean outputRejectLevels/*=false*/);
+            @ByVal CvSize min_size/*=cvSize(0,0)*/, @ByVal CvSize max_size/*=cvSize(0,0)*/, @Cast("bool") boolean outputRejectLevels/*=false*/);
 
 
     @Namespace("cv") public static native void groupRectangles(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true)
@@ -406,7 +406,7 @@ public class opencv_objdetect {
                 CvRect objects, @Adapter(value="VectorAdapter<int>", out=true) IntPointer rejectLevels,
                 @Adapter(value="VectorAdapter<double>", out=true) DoublePointer levelWeights,
                 double scaleFactor/*=1.1*/, int minNeighbors/*=3*/, int flags/*=0*/,
-                @ByVal CvSize minSize/*=Size()*/, @ByVal CvSize maxSize/*=Size()*/, boolean outputRejectLevels/*=false*/);
+                @ByVal CvSize minSize/*=Size()*/, @ByVal CvSize maxSize/*=Size()*/, @Cast("bool") boolean outputRejectLevels/*=false*/);
 
         public native boolean isOldFormatCascade();
         public native @ByVal CvSize getOriginalWindowSize();
@@ -419,7 +419,7 @@ public class opencv_objdetect {
 //        protected native boolean detectSingleScale(@Adapter("MatAdapter") CvArr image, int stripCount, @ByVal CvSize processingRectSize,
 //                int stripSize, int yStep, double factor, @Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true) CvRect candidates,
 //                @Adapter(value="VectorAdapter<int>", out=true) IntPointer rejectLevels,
-//                @Adapter(value="VectorAdapter<double>", out=true) DoublePointer levelWeights, boolean outputRejectLevels/*=false*/);
+//                @Adapter(value="VectorAdapter<double>", out=true) DoublePointer levelWeights, @Cast("bool") boolean outputRejectLevels/*=false*/);
 //
 //        protected static final int BOOST = 0,
 //                DO_CANNY_PRUNING = 1, SCALE_IMAGE = 2,
@@ -481,7 +481,7 @@ public class opencv_objdetect {
 //
 //            public native boolean read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
 //
-//            public native boolean isStumpBased(); public native CascadeClassifier isStumpBased(boolean is_stump_based);
+//            public native boolean isStumpBased(); public native CascadeClassifier isStumpBased(@Cast("bool") boolean is_stump_based);
 //
 //            public native int stageType();       public native CascadeClassifier stageType(int stageType);
 //            public native int featureType();     public native CascadeClassifier featureType(int featureType);
@@ -526,7 +526,7 @@ public class opencv_objdetect {
         private native void allocate(@ByVal CvSize _winSize, @ByVal CvSize _blockSize, @ByVal CvSize _blockStride,
                 @ByVal CvSize _cellSize, int _nbins, int _derivAperture/*=1*/, double _winSigma/*=-1*/,
                 int _histogramNormType/*=HOGDescriptor::L2Hys*/,
-                double _L2HysThreshold/*=0.2*/, boolean _gammaCorrection/*=false*/,
+                double _L2HysThreshold/*=0.2*/, @Cast("bool") boolean _gammaCorrection/*=false*/,
                 int _nlevels/*=HOGDescriptor::DEFAULT_NLEVELS*/);
         private native void allocate(String filename);
         private native void allocate(@ByRef HOGDescriptor d);
@@ -564,10 +564,10 @@ public class opencv_objdetect {
         public native void detectMultiScale(@Adapter("MatAdapter") CvArr img, @Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true) CvRect foundLocations,
                 @Adapter(value="VectorAdapter<double>", out=true) DoublePointer foundWeights, double hitThreshold/*=0*/,
                 @ByVal CvSize winStride/*=cvSize()*/, @ByVal CvSize padding/*=cvSize()*/, double scale/*=1.05*/,
-                double finalThreshold/*=2.0*/, boolean useMeanshiftGrouping/*=false*/);
+                double finalThreshold/*=2.0*/, @Cast("bool") boolean useMeanshiftGrouping/*=false*/);
         public native void detectMultiScale(@Adapter("MatAdapter") CvArr img, @Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true) CvRect foundLocations,
                 double hitThreshold/*=0*/, @ByVal CvSize winStride/*=cvSize()*/, @ByVal CvSize padding/*=cvSize()*/, double scale/*=1.05*/,
-                double finalThreshold/*=2.0*/, boolean useMeanshiftGrouping/*=false*/);
+                double finalThreshold/*=2.0*/, @Cast("bool") boolean useMeanshiftGrouping/*=false*/);
 
         public native void computeGradient(@Adapter("MatAdapter") CvArr img, @Adapter("MatAdapter") CvArr grad,
                 @Adapter("MatAdapter") CvArr angleOfs, @ByVal CvSize paddingTL/*=Size()*/, @ByVal CvSize paddingBR/*=Size()*/);
@@ -584,6 +584,7 @@ public class opencv_objdetect {
         public native double winSigma();           public native HOGDescriptor winSigma(double winSigma);
         public native int histogramNormType();     public native HOGDescriptor histogramNormType(int histogramNormType);
         public native double L2HysThreshold();     public native HOGDescriptor L2HysThreshold(double L2HysThreshold);
+        @Cast("bool")
         public native boolean gammaCorrection();   public native HOGDescriptor gammaCorrection(boolean gammaCorrection);
         @Adapter("VectorAdapter<float>")
         public native FloatPointer svmDetector();  public native HOGDescriptor svmDetector(FloatPointer svmDetector);
@@ -635,7 +636,7 @@ public class opencv_objdetect {
         public native @Adapter("VectorAdapter<cv::KeyPoint>") KeyPoint getModelPoints();
 //        public native @Const @ByRef LDetector getDetector();
 //        public native @Const @ByRef FernClassifier getClassifier();
-        public native void setVerbose(boolean verbose);
+        public native void setVerbose(@Cast("bool") boolean verbose);
 
         public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
         public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs, String name);
@@ -692,13 +693,13 @@ public class opencv_objdetect {
         public CvDataMatrixCodeDeque(long n) { allocate(n); }
         public CvDataMatrixCodeDeque(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
+        public native void resize(@Cast("size_t") long n);
 
-        @ByRef public native CvDataMatrixCode get(long i);
-        public native CvDataMatrixCodeDeque put(long i, CvDataMatrixCode value);
+        @ByRef public native CvDataMatrixCode get(@Cast("size_t") long i);
+        public native CvDataMatrixCodeDeque put(@Cast("size_t") long i, CvDataMatrixCode value);
     }
 
     public static native @ByVal CvDataMatrixCodeDeque cvFindDataMatrix(CvMat im);

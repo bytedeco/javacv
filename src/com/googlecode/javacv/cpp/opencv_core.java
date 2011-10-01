@@ -851,19 +851,19 @@ public class opencv_core {
             DataBuffer in  = r.getDataBuffer();
             int x = -r.getSampleModelTranslateX();
             int y = -r.getSampleModelTranslateY();
-            int pixelSize = sm.getNumBands();
-            int step = sm.getWidth()*pixelSize;
+            int step = sm.getWidth()*sm.getNumBands();
+            int channels = sm.getNumBands();
             if (sm instanceof ComponentSampleModel) {
-                pixelSize = ((ComponentSampleModel)sm).getPixelStride();
                 step = ((ComponentSampleModel)sm).getScanlineStride();
+                channels = ((ComponentSampleModel)sm).getPixelStride();
             } else if (sm instanceof SinglePixelPackedSampleModel) {
-                pixelSize = ((ComponentSampleModel)sm).getPixelStride();
                 step = ((SinglePixelPackedSampleModel)sm).getScanlineStride();
+                channels = 1;
             } else if (sm instanceof MultiPixelPackedSampleModel) {
-                pixelSize = ((ComponentSampleModel)sm).getPixelStride();
                 step = ((MultiPixelPackedSampleModel)sm).getScanlineStride();
+                channels = ((MultiPixelPackedSampleModel)sm).getPixelBitStride()/8; // ??
             }
-            int start = y*step + x*pixelSize;
+            int start = y*step + x*channels;
 
             if (in instanceof DataBufferByte) {
                 byte[] a = ((DataBufferByte)in).getData();
@@ -2316,6 +2316,8 @@ public class opencv_core {
                 ZERO    = new CvScalar().val(0, 0.0).val(1, 0.0).val(2, 0.0).val(3, 0.0),
                 ONE     = new CvScalar().val(0, 1.0).val(1, 1.0).val(2, 1.0).val(3, 1.0),
                 ONEHALF = new CvScalar().val(0, 0.5).val(1, 0.5).val(2, 0.5).val(3, 0.5),
+                ALPHA1  = new CvScalar().val(0, 0.0).val(1, 0.0).val(2, 0.0).val(3, 1.0),
+                ALPHA255= new CvScalar().val(0, 0.0).val(1, 0.0).val(2, 0.0).val(3, 255.0),
 
                 WHITE   = CV_RGB(255, 255, 255),
                 GRAY    = CV_RGB(128, 128, 128),
@@ -4144,15 +4146,15 @@ public class opencv_core {
         public ByteVectorVector(long n) { allocate(n); }
         public ByteVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        public native byte get(long i, long j);
-        public native ByteVectorVector put(long i, long j, byte value);
+        public native byte get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native ByteVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, byte value);
     }
 
     @Name("std::vector<std::vector<int> >") @Index
@@ -4162,15 +4164,15 @@ public class opencv_core {
         public IntVectorVector(long n) { allocate(n); }
         public IntVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        public native int get(long i, long j);
-        public native IntVectorVector put(long i, long j, int value);
+        public native int get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native IntVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, int value);
     }
 
     @Name("std::vector<std::vector<cv::Point> >") @Index
@@ -4180,15 +4182,15 @@ public class opencv_core {
         public PointVectorVector(long n) { allocate(n); }
         public PointVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByVal public native CvPoint get(long i, long j);
-        public native PointVectorVector put(long i, long j, CvPoint value);
+        @ByVal public native CvPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native PointVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint value);
     }
 
     @Name("std::vector<std::vector<cv::Point2f> >") @Index
@@ -4198,15 +4200,15 @@ public class opencv_core {
         public Point2fVectorVector(long n) { allocate(n); }
         public Point2fVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByVal public native CvPoint2D32f get(long i, long j);
-        public native Point2fVectorVector put(long i, long j, CvPoint2D32f value);
+        @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native Point2fVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint2D32f value);
     }
 
     @Name("std::vector<std::vector<cv::Point2d> >") @Index
@@ -4216,15 +4218,15 @@ public class opencv_core {
         public Point2dVectorVector(long n) { allocate(n); }
         public Point2dVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByVal public native CvPoint2D32f get(long i, long j);
-        public native Point2dVectorVector put(long i, long j, CvPoint2D32f value);
+        @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native Point2dVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint2D32f value);
     }
 
     @NoOffset @Namespace("cv") public static class KDTree extends Pointer {
@@ -4253,11 +4255,11 @@ public class opencv_core {
             allocate(_points, _labels, copyAndReorderPoints);
         }
         private native void allocate();
-        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, boolean copyAndReorderPoints/*=false*/);
-        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, boolean copyAndReorderPoints/*=false*/);
+        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
+        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
 
-        public native void build(@Adapter("ArrayAdapter") CvMat _points, boolean copyAndReorderPoints/*=false*/);
-        public native void build(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, boolean copyAndReorderPoints/*=false*/);
+        public native void build(@Adapter("ArrayAdapter") CvMat _points, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
+        public native void build(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
 
         public native int findNearest(@Adapter("ArrayAdapter") CvMat vec, int K, int Emax,
                 @Adapter(value="ArrayAdapter", out=true) CvMat neighborsIdx,

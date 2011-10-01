@@ -79,6 +79,7 @@ import static com.googlecode.javacpp.Loader.*;
 public class videoInputLib {
     static { load(); }
 
+    @Cast("bool")
     public static native boolean verbose(); public static native void verbose(boolean verbose);
 
     public static final double
@@ -158,23 +159,26 @@ public class videoInputLib {
         public native IMediaEventEx pMediaEvent();           public native videoDevice pMediaEvent(IMediaEventEx pMediaEvent);
 
         public native @ByRef GUID videoType();               public native videoDevice videoType(GUID videoType);
-        public native long formatType();                     public native videoDevice formatType(long formatType);
+        public native @Cast("long") int formatType();        public native videoDevice formatType(int formatType);
 
         public native SampleGrabberCallback sgCallback();    public native videoDevice sgCallback(SampleGrabberCallback sgCallback);
 
-        public native boolean tryDiffSize();      public native videoDevice tryDiffSize(boolean tryDiffSize);
-        public native boolean useCrossbar();      public native videoDevice useCrossbar(boolean useCrossbar);
-        public native boolean readyToCapture();   public native videoDevice readyToCapture(boolean readyToCapture);
-        public native boolean sizeSet();          public native videoDevice sizeSet(boolean sizeSet);
-        public native boolean setupStarted();     public native videoDevice setupStarted(boolean setupStarted);
-        public native boolean specificFormat();   public native videoDevice specificFormat(boolean specificFormat);
-        public native boolean autoReconnect();    public native videoDevice autoReconnect(boolean autoReconnect);
-        public native int  nFramesForReconnect(); public native videoDevice nFramesForReconnect(int nFramesForReconnect);
-        public native long nFramesRunning();      public native videoDevice nFramesRunning(long nFramesRunning);
-        public native int  connection();          public native videoDevice connection(int connection);
-        public native int  storeConn();           public native videoDevice storeConn(int storeConn);
-        public native int  myID();                public native videoDevice myID(int myID);
-        public native long requestedFrameTime();  public native videoDevice requestedFrameTime(long requestedFrameTime);
+        public native @Cast("bool") boolean tryDiffSize();    public native videoDevice tryDiffSize(boolean tryDiffSize);
+        public native @Cast("bool") boolean useCrossbar();    public native videoDevice useCrossbar(boolean useCrossbar);
+        public native @Cast("bool") boolean readyToCapture(); public native videoDevice readyToCapture(boolean readyToCapture);
+        public native @Cast("bool") boolean sizeSet();        public native videoDevice sizeSet(boolean sizeSet);
+        public native @Cast("bool") boolean setupStarted();   public native videoDevice setupStarted(boolean setupStarted);
+        public native @Cast("bool") boolean specificFormat(); public native videoDevice specificFormat(boolean specificFormat);
+        public native @Cast("bool") boolean autoReconnect();  public native videoDevice autoReconnect(boolean autoReconnect);
+
+        public native int nFramesForReconnect(); public native videoDevice nFramesForReconnect(int nFramesForReconnect);
+        @Cast("unsigned long")
+        public native int nFramesRunning();      public native videoDevice nFramesRunning(int nFramesRunning);
+        public native int connection();          public native videoDevice connection(int connection);
+        public native int storeConn();           public native videoDevice storeConn(int storeConn);
+        public native int myID();                public native videoDevice myID(int myID);
+        @Cast("long")
+        public native int requestedFrameTime();  public native videoDevice requestedFrameTime(int requestedFrameTime);
 
         @MemberGetter @Cast("char*")  public native BytePointer nDeviceName();
         @MemberGetter @Cast("WCHAR*") public native CharPointer wDeviceName();
@@ -190,14 +194,14 @@ public class videoInputLib {
         public videoInput(Pointer p) { super(p); }
         private native void allocate();
 
-        public static native void setVerbose(boolean _verbose);
+        public static native void setVerbose(@Cast("bool") boolean _verbose);
         public static int listDevices() { return listDevices(false); }
-        public static native int listDevices(boolean silent);
+        public static native int listDevices(@Cast("bool") boolean silent);
         public static native String getDeviceName(int deviceID);
 
-        public native void setUseCallback(boolean useCallback);
+        public native void setUseCallback(@Cast("bool") boolean useCallback);
         public native void setIdealFramerate(int deviceID, int idealFramerate);
-        public native void setAutoReconnectOnFreeze(int deviceNumber, boolean doReconnect, int numMissedFramesBeforeReconnect);
+        public native void setAutoReconnectOnFreeze(int deviceNumber, @Cast("bool") boolean doReconnect, int numMissedFramesBeforeReconnect);
 
         public native boolean setupDevice(int deviceID);
         public native boolean setupDevice(int deviceID, int w, int h);
@@ -210,24 +214,35 @@ public class videoInputLib {
         public native boolean isDeviceSetup(int deviceID);
 
         public BytePointer getPixels(int deviceID) { return getPixels(deviceID, true, false); }
-        public native @Cast("unsigned char*") BytePointer getPixels(int deviceID, boolean flipRedAndBlue, boolean flipImage);
+        public native @Cast("unsigned char*") BytePointer getPixels(int deviceID,
+                @Cast("bool") boolean flipRedAndBlue, @Cast("bool") boolean flipImage);
 
         public boolean getPixels(int id, BytePointer pixels) { return getPixels(id, pixels, true, false); }
-        public native boolean getPixels(int id, @Cast("unsigned char*") BytePointer pixels, boolean flipRedAndBlue, boolean flipImage);
+        public native boolean getPixels(int id, @Cast("unsigned char*") BytePointer pixels,
+                @Cast("bool") boolean flipRedAndBlue, @Cast("bool") boolean flipImage);
 
         public native void showSettingsWindow(int deviceID);
 
-        public native boolean setVideoSettingFilter(int deviceID, long Property, long lValue, long Flags/*=0*/, boolean useDefaultValue/*=false*/);
-        public native boolean setVideoSettingFilterPct(int deviceID, long Property, float pctValue, long Flags/*=0*/);
-        public native boolean getVideoSettingFilter(int deviceID, long Property, @ByRef @Cast("long*") int[] min, @ByRef @Cast("long*") int[] max,
-                @ByRef @Cast("long*") int[] SteppingDelta, @ByRef @Cast("long*") int[] currentValue, @ByRef @Cast("long*") int[] flags, @ByRef @Cast("long*") int[] defaultValue);
+        public native boolean setVideoSettingFilter(int deviceID, @Cast("long") int Property,
+                @Cast("long") int lValue, @Cast("long") int Flags/*=0*/, @Cast("bool") boolean useDefaultValue/*=false*/);
+        public native boolean setVideoSettingFilterPct(int deviceID, @Cast("long") int Property,
+                float pctValue, @Cast("long") int Flags/*=0*/);
+        public native boolean getVideoSettingFilter(int deviceID, @Cast("long") int Property,
+                @ByRef @Cast("long*") int[] min, @ByRef @Cast("long*") int[] max,
+                @ByRef @Cast("long*") int[] SteppingDelta, @ByRef @Cast("long*") int[] currentValue,
+                @ByRef @Cast("long*") int[] flags, @ByRef @Cast("long*") int[] defaultValue);
 
-        public native boolean setVideoSettingCamera(int deviceID, long Property, long lValue, long Flags/*=0*/, boolean useDefaultValue/*=false*/);
-        public native boolean setVideoSettingCameraPct(int deviceID, long Property, float pctValue, long Flags/*=0*/);
-        public native boolean getVideoSettingCamera(int deviceID, long Property, @ByRef @Cast("long*") int[] min, @ByRef @Cast("long*") int[] max,
-                @ByRef @Cast("long*") int[] SteppingDelta, @ByRef @Cast("long*") int[] currentValue, @ByRef @Cast("long*") int[] flags, @ByRef @Cast("long*") int[] defaultValue);
+        public native boolean setVideoSettingCamera(int deviceID, @Cast("long") int Property,
+                @Cast("long") int lValue, @Cast("long") int Flags/*=0*/, @Cast("bool") boolean useDefaultValue/*=false*/);
+        public native boolean setVideoSettingCameraPct(int deviceID, @Cast("long") int Property,
+                float pctValue, @Cast("long") int Flags/*=0*/);
+        public native boolean getVideoSettingCamera(int deviceID, @Cast("long") int Property,
+                @ByRef @Cast("long*") int[] min, @ByRef @Cast("long*") int[] max,
+                @ByRef @Cast("long*") int[] SteppingDelta, @ByRef @Cast("long*") int[] currentValue,
+                @ByRef @Cast("long*") int[] flags, @ByRef @Cast("long*") int[] defaultValue);
 
-        //public native boolean setVideoSettingCam(int deviceID, long Property, long lValue, long Flags/*=0*/, bool useDefaultValue/*=false*/);
+//        public native boolean setVideoSettingCam(int deviceID, @Cast("long") int Property,
+//                @Cast("long") int lValue, @Cast("long") int Flags/*=0*/, @Cast("bool") boolean useDefaultValue/*=false*/);
 
         public native int  getWidth(int deviceID);
         public native int  getHeight(int deviceID);
@@ -236,25 +251,25 @@ public class videoInputLib {
         public native void stopDevice(int deviceID);
         public native boolean restartDevice(int deviceID);
 
-        public native int  devicesFound();              public native videoInput devicesFound(int devicesFound);
+        public native int  devicesFound();                           public native videoInput devicesFound(int devicesFound);
 
-        public native long propBrightness();            public native videoInput propBrightness(long propBrightness);
-        public native long propContrast();              public native videoInput propContrast(long propContrast);
-        public native long propHue();                   public native videoInput propHue(long propHue);
-        public native long propSaturation();            public native videoInput propSaturation(long propSaturation);
-        public native long propSharpness();             public native videoInput propSharpness(long propSharpness);
-        public native long propGamma();                 public native videoInput propGamma(long propGamma);
-        public native long propColorEnable();           public native videoInput propColorEnable(long propColorEnable);
-        public native long propWhiteBalance();          public native videoInput propWhiteBalance(long propWhiteBalance);
-        public native long propBacklightCompensation(); public native videoInput propBacklightCompensation(long propBacklightCompensation);
-        public native long propGain();                  public native videoInput propGain(long propGain);
+        public native @Cast("long") int propBrightness();            public native videoInput propBrightness(int propBrightness);
+        public native @Cast("long") int propContrast();              public native videoInput propContrast(int propContrast);
+        public native @Cast("long") int propHue();                   public native videoInput propHue(int propHue);
+        public native @Cast("long") int propSaturation();            public native videoInput propSaturation(int propSaturation);
+        public native @Cast("long") int propSharpness();             public native videoInput propSharpness(int propSharpness);
+        public native @Cast("long") int propGamma();                 public native videoInput propGamma(int propGamma);
+        public native @Cast("long") int propColorEnable();           public native videoInput propColorEnable(int propColorEnable);
+        public native @Cast("long") int propWhiteBalance();          public native videoInput propWhiteBalance(int propWhiteBalance);
+        public native @Cast("long") int propBacklightCompensation(); public native videoInput propBacklightCompensation(int propBacklightCompensation);
+        public native @Cast("long") int propGain();                  public native videoInput propGain(int propGain);
 
-        public native long propPan();                   public native videoInput propPan(long propPan);
-        public native long propTilt();                  public native videoInput propTilt(long propTilt);
-        public native long propRoll();                  public native videoInput propRoll(long propRoll);
-        public native long propZoom();                  public native videoInput propZoom(long propZoom);
-        public native long propExposure();              public native videoInput propExposure(long propExposure);
-        public native long propIris();                  public native videoInput propIris(long propIris);
-        public native long propFocus();                 public native videoInput propFocus(long propFocus);
+        public native @Cast("long") int propPan();                   public native videoInput propPan(int propPan);
+        public native @Cast("long") int propTilt();                  public native videoInput propTilt(int propTilt);
+        public native @Cast("long") int propRoll();                  public native videoInput propRoll(int propRoll);
+        public native @Cast("long") int propZoom();                  public native videoInput propZoom(int propZoom);
+        public native @Cast("long") int propExposure();              public native videoInput propExposure(int propExposure);
+        public native @Cast("long") int propIris();                  public native videoInput propIris(int propIris);
+        public native @Cast("long") int propFocus();                 public native videoInput propFocus(int propFocus);
     }
 }

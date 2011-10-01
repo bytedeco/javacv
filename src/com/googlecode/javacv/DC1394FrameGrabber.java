@@ -23,8 +23,6 @@ package com.googlecode.javacv;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
 
@@ -110,7 +108,6 @@ public class DC1394FrameGrabber extends FrameGrabber {
         dc1394_camera_free_list(list);
 //System.out.println("Using camera with GUID 0x" + Long.toHexString(camera.guid) + " / " + camera.unit);
     }
-
     public void release() throws Exception {
         if (camera != null) {
             stop();
@@ -122,12 +119,9 @@ public class DC1394FrameGrabber extends FrameGrabber {
             d = null;
         }
     }
-    @Override protected void finalize() {
-        try {
-            release();
-        } catch (Exception ex) {
-            Logger.getLogger(DC1394FrameGrabber.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    @Override protected void finalize() throws Throwable {
+        super.finalize();
+        release();
     }
 
     private static final boolean linux = Loader.getPlatformName().startsWith("linux");
@@ -457,8 +451,9 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 return_image.height(return_image.height() - padding);
             }
             if (temp_image == null) {
-                if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
-                    temp_image = IplImage.create(w, h+padding1, iplDepth, 1);
+                if (colorMode == ColorMode.BGR &&
+                        (numChannels > 1 || depth > 8) && !coloryuv && !colorbayer) {
+                    temp_image = IplImage.create(w, h+padding1, iplDepth, numChannels);
                     temp_image.height(temp_image.height() - padding1);
                 } else if (colorMode == ColorMode.GRAY &&
                         (coloryuv || colorbayer || (colorrgb && depth > 8))) {
@@ -466,9 +461,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
                     temp_image.height(temp_image.height() - padding3);
                 } else if (colorMode == ColorMode.GRAY && colorrgb) {
                     temp_image = IplImage.createHeader(w, h, iplDepth, 3);
-                    temp_image.widthStep(stride);
-                    temp_image.imageSize(size);
-                    temp_image.imageData(imageData);
+                } else if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+                    temp_image = IplImage.createHeader(w, h, iplDepth, 1);
                 } else {
                     temp_image = return_image;
                 }
@@ -522,29 +516,34 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
                 out.put(in);
                 alreadySwapped = true;
-            } else if (!colorrgb) {
+            } else if ((colorMode == ColorMode.GRAY && colorrgb) ||
+                    (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer)) {
+                temp_image.widthStep(stride);
+                temp_image.imageSize(size);
+                temp_image.imageData(imageData);
+            } else if (!colorrgb && (colorbayer || coloryuv || numChannels > 1)) {
                 // from YUV, etc.
                 err = dc1394_convert_frames(frame, conv_image);
                 if (err != DC1394_SUCCESS) {
                     throw new Exception("dc1394_convert_frames() Error " + err + ": Could not convert frame.");
                 }
             }
-        }
 
-        if (!alreadySwapped && depth > 8 && !frameEndian.equals(ByteOrder.nativeOrder())) {
-            // ack, the camera's endianness doesn't correspond to our machine ...
-            // swap bytes of 16-bit images
-            ByteBuffer  bb  = temp_image.getByteBuffer();
-            ShortBuffer in  = bb.order(frameEndian).asShortBuffer();
-            ShortBuffer out = bb.order(ByteOrder.nativeOrder()).asShortBuffer();
-            out.put(in);
-        }
+            if (!alreadySwapped && depth > 8 && !frameEndian.equals(ByteOrder.nativeOrder())) {
+                // ack, the camera's endianness doesn't correspond to our machine ...
+                // swap bytes of 16-bit images
+                ByteBuffer  bb  = temp_image.getByteBuffer();
+                ShortBuffer in  = bb.order(frameEndian).asShortBuffer();
+                ShortBuffer out = bb.order(ByteOrder.nativeOrder()).asShortBuffer();
+                out.put(in);
+            }
 
-        // should we copy the padding as well?
-        if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
-            cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
-        } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb || coloryuv)) {
-            cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
+            // should we copy the padding as well?
+            if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+                cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
+            } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb || coloryuv)) {
+                cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
+            }
         }
 
         enqueue_image = frame;

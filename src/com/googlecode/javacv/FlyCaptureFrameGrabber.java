@@ -23,8 +23,7 @@ package com.googlecode.javacv;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -101,13 +100,9 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             }
         }
     }
-    @Override
-    protected void finalize() {
-        try {
-            release();
-        } catch (Exception ex) {
-            Logger.getLogger(FlyCaptureFrameGrabber.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    @Override protected void finalize() throws Throwable {
+        super.finalize();
+        release();
     }
 
     public static final int
@@ -352,29 +347,33 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         boolean colorbayer = raw_image.bStippled();
         boolean colorrgb = format == FLYCAPTURE_RGB8 || format == FLYCAPTURE_RGB16 ||
                            format == FLYCAPTURE_BGR  || format == FLYCAPTURE_BGRU;
+        boolean coloryuv = format == FLYCAPTURE_411YUV8 || format == FLYCAPTURE_422YUV8 ||
+                           format == FLYCAPTURE_444YUV8;
+        BytePointer imageData = raw_image.pData();
 
         if ((depth == IPL_DEPTH_8U || frameEndian.equals(ByteOrder.nativeOrder())) &&
-                (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3 &&
-                                                format    == FLYCAPTURE_BGR) ||
+                (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3) ||
                 (colorMode == ColorMode.GRAY && numChannels == 1 && !colorbayer))) {
             if (return_image == null) {
                 return_image = IplImage.createHeader(w, h, depth, numChannels);
             }
             return_image.widthStep(stride);
             return_image.imageSize(size);
-            return_image.imageData(raw_image.pData());
+            return_image.imageData(imageData);
         } else {
             if (return_image == null) {
                 return_image = IplImage.create(w, h, depth, colorMode == ColorMode.BGR ? 3 : 1);
             }
             if (temp_image == null) {
-                if (colorMode == ColorMode.GRAY && colorbayer) {
+                if (colorMode == ColorMode.BGR &&
+                        (numChannels > 1 || depth > 8) && !coloryuv && !colorbayer) {
+                    temp_image = IplImage.create(w, h, depth, numChannels);
+                } else if (colorMode == ColorMode.GRAY && colorbayer) {
                     temp_image = IplImage.create(w, h, depth, 3);
                 } else if (colorMode == ColorMode.GRAY && colorrgb) {
                     temp_image = IplImage.createHeader(w, h, depth, 3);
-                    temp_image.widthStep(stride);
-                    temp_image.imageSize(size);
-                    temp_image.imageData(raw_image.pData());
+                } else if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+                    temp_image = IplImage.createHeader(w, h, depth, 1);
                 } else {
                     temp_image = return_image;
                 }
@@ -389,34 +388,39 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                                        temp_image.nChannels() == 1  ? FLYCAPTURE_MONO16 : FLYCAPTURE_RGB16);
             }
 
-            if (conv_image.pixelFormat() == format && conv_image.iRowInc() == stride) {
+            if (depth != IPL_DEPTH_8U && conv_image.pixelFormat() == format && conv_image.iRowInc() == stride) {
                 // we just need a copy to swap bytes..
                 ShortBuffer in  = raw_image.getByteBuffer().order(frameEndian).asShortBuffer();
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
                 out.put(in);
                 alreadySwapped = true;
-            } else if (!colorrgb) {
+            } else if ((colorMode == ColorMode.GRAY && colorrgb) ||
+                    (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer)) {
+                temp_image.widthStep(stride);
+                temp_image.imageSize(size);
+                temp_image.imageData(imageData);
+            } else if (!colorrgb && (colorbayer || coloryuv || numChannels > 1)) {
                 error = flycaptureConvertImage(context, raw_image, conv_image);
                 if (error != FLYCAPTURE_OK) {
                     throw new Exception("flycaptureConvertImage() Error " + error);
                 }
             }
-        }
 
-        if (!alreadySwapped && depth != IPL_DEPTH_8U &&
-                !frameEndian.equals(ByteOrder.nativeOrder())) {
-            // ack, the camera's endianness doesn't correspond to our machine ...
-            // swap bytes of 16-bit images
-            ByteBuffer  bb  = temp_image.getByteBuffer();
-            ShortBuffer in  = bb.order(frameEndian).asShortBuffer();
-            ShortBuffer out = bb.order(ByteOrder.nativeOrder()).asShortBuffer();
-            out.put(in);
-        }
+            if (!alreadySwapped && depth != IPL_DEPTH_8U &&
+                    !frameEndian.equals(ByteOrder.nativeOrder())) {
+                // ack, the camera's endianness doesn't correspond to our machine ...
+                // swap bytes of 16-bit images
+                ByteBuffer  bb  = temp_image.getByteBuffer();
+                ShortBuffer in  = bb.order(frameEndian).asShortBuffer();
+                ShortBuffer out = bb.order(ByteOrder.nativeOrder()).asShortBuffer();
+                out.put(in);
+            }
 
-        if (colorMode == ColorMode.BGR && numChannels != 3 && !colorbayer) {
-            cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
-        } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb)) {
-            cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
+            if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+                cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
+            } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb)) {
+                cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
+            }
         }
 
         FlyCaptureTimestamp timeStamp = raw_image.timeStamp();

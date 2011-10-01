@@ -214,7 +214,7 @@ public class opencv_contrib {
         public native int searchMode(); public native CvFuzzyMeanShiftTracker searchMode(int searchMode);
 
         public native void track(IplImage maskImage, IplImage depthMap, int resizeMethod,
-                boolean resetSearch, int minKernelMass/*=MinKernelMass*/);
+                @Cast("bool") boolean resetSearch, int minKernelMass/*=MinKernelMass*/);
     }
 
 
@@ -237,6 +237,7 @@ public class opencv_contrib {
             public native float z_min();              public native Node z_min(float z_min);
             public native float z_max();              public native Node z_max(float z_max);
             public native int maxLevels();            public native Node maxLevels(int maxLevels);
+            @Cast("bool")
             public native boolean isLeaf();           public native Node isLeaf(boolean isLeaf);
             public native int/*[8]*/ children(int i); public native Node children(int i, int children);
         }
@@ -295,15 +296,15 @@ public class opencv_contrib {
         public Vec2iVectorVector(long n) { allocate(n); }
         public Vec2iVectorVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
-        public native @Index(1) long size(long i);
-        public native @Index(1) void resize(long i, long n);
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ValueGetter @ByVal public native CvScalar get(long i, long j);
-        //public native Vec2iVectorVector put(long i, long j, CvScalar value);
+        @ValueGetter @ByVal public native CvScalar get(@Cast("size_t") long i, @Cast("size_t") long j);
+        //public native Vec2iVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvScalar value);
     }
 
     @NoOffset @Namespace("cv") public static class SpinImageModel extends Pointer {
@@ -333,12 +334,12 @@ public class opencv_contrib {
 
         public native void match(@ByRef SpinImageModel scene, @ByRef Vec2iVectorVector result);
 
-        public native @Adapter("MatAdapter") IplImage packRandomScaledSpins(boolean separateScale/*=false*/, long xCount/*=10*/, long yCount/*=10*/);
+        public native @Adapter("MatAdapter") IplImage packRandomScaledSpins(@Cast("bool") boolean separateScale/*=false*/, @Cast("size_t") long xCount/*=10*/, @Cast("size_t") long yCount/*=10*/);
 
         public native long getSpinCount();
-        public native @Adapter("MatAdapter") IplImage getSpinImage(long index);
-        public native @ByVal CvPoint3D32f getSpinVertex(long index);
-        public native @ByVal CvPoint3D32f getSpinNormal(long index);
+        public native @Adapter("MatAdapter") IplImage getSpinImage(@Cast("size_t") long index);
+        public native @ByVal CvPoint3D32f getSpinVertex(@Cast("size_t") long index);
+        public native @ByVal CvPoint3D32f getSpinNormal(@Cast("size_t") long index);
 
         public native @ByRef Mesh3D getMesh();
 
@@ -361,10 +362,10 @@ public class opencv_contrib {
 //        protected native void matchSpinToModel(IplImage spin,
 //                @Adapter(value="VectorAdapter<int>",out=true) IntPointer indeces,
 //                @Adapter(value="VectorAdapter<float>",out=true) FloatPointer corrCoeffs,
-//                boolean useExtremeOutliers/*=true*/);
+//                @Cast("bool") boolean useExtremeOutliers/*=true*/);
 //
 //        protected native void repackSpinImages(@Adapter(value="VectorAdapter<uchar>",out=true)
-//                @Cast("uchar*") BytePointer mask, IplImage spinImages, boolean reAlloc/*=true*/);
+//                @Cast("uchar*") BytePointer mask, IplImage spinImages, @Cast("bool") boolean reAlloc/*=true*/);
 //
 //        protected native vector<int> subset;
 //        protected native Mesh3D mesh;
@@ -496,7 +497,7 @@ public class opencv_contrib {
 //
 //        public native void optimize(@ByRef CvMat _vis);
 //
-//        public native void ask_for_proj(@ByRef CvMat _vis, boolean once/*=false*/);
+//        public native void ask_for_proj(@ByRef CvMat _vis, @Cast("bool") boolean once/*=false*/);
 //        public native void ask_for_projac(@ByRef CvMat _vis);
 //
 //        public native CvMat err();               public native LevMarqSparse err(CvMat err);
@@ -611,16 +612,16 @@ public class opencv_contrib {
         public Retina(Pointer p) { super(p); }
         private native void allocate(String parametersSaveFile, @ByVal CvSize inputSize);
         private native void allocate(String parametersSaveFile, @ByVal CvSize inputSize,
-                boolean colorMode, @Cast("cv::RETINA_COLORSAMPLINGMETHOD") int colorSamplingMethod/*=RETINA_COLOR_BAYER*/,
-                boolean useRetinaLogSampling/*=false*/, double reductionFactor/*=1.0*/, double samplingStrenght/*=10.0*/);
+                @Cast("bool") boolean colorMode, @Cast("cv::RETINA_COLORSAMPLINGMETHOD") int colorSamplingMethod/*=RETINA_COLOR_BAYER*/,
+                @Cast("bool") boolean useRetinaLogSampling/*=false*/, double reductionFactor/*=1.0*/, double samplingStrenght/*=10.0*/);
 
-        public native void setup(String retinaParameterFile/*=""*/, boolean applyDefaultSetupOnFailure/*=true*/);
+        public native void setup(String retinaParameterFile/*=""*/, @Cast("bool") boolean applyDefaultSetupOnFailure/*=true*/);
         public native @ByRef String printSetup();
-        public native void setupOPLandIPLParvoChannel(boolean colorMode/*=true*/, boolean normaliseOutput/*=true*/,
+        public native void setupOPLandIPLParvoChannel(@Cast("bool") boolean colorMode/*=true*/, @Cast("bool") boolean normaliseOutput/*=true*/,
                 double photoreceptorsLocalAdaptationSensitivity/*=0.7*/, double photoreceptorsTemporalConstant/*=0.5*/,
                 double photoreceptorsSpatialConstant/*=0.53*/, double horizontalCellsGain/*=0*/,
                 double HcellsTemporalConstant/*=1*/, double HcellsSpatialConstant/*=7*/, double ganglionCellsSensitivity/*=0.7*/);
-        public native void setupIPLMagnoChannel(boolean normaliseOutput/*=true*/, double parasolCells_beta/*=0*/,
+        public native void setupIPLMagnoChannel(@Cast("bool") boolean normaliseOutput/*=true*/, double parasolCells_beta/*=0*/,
                 double parasolCells_tau/*=0*/, double parasolCells_k/*=7*/, double amacrinCellsTemporalCutFrequency/*=1.2*/,
                 double V0CompressionParameter/*=0.95*/, double localAdaptintegration_tau/*=0*/, double localAdaptintegration_k/*=7*/);
         public native void run(@Adapter("MatAdapter") CvArr inputImage);
@@ -633,9 +634,9 @@ public class opencv_contrib {
 //        protected native std::valarray<double> _inputBuffer();
 //        protected native RetinaFilter _retinaFilter();
 //        protected native void _convertValarrayGrayBuffer2cvMat(@ByRef std::valarray<double> grayMatrixToConvert,
-//                int nbRows, int nbColumns, boolean colorMode, @Adapter("MatAdapter") CvArr outBuffer);
-//        protected native void _init(String parametersSaveFile, @ByVal CvSize inputSize, boolean colorMode,
+//                int nbRows, int nbColumns, @Cast("bool") boolean colorMode, @Adapter("MatAdapter") CvArr outBuffer);
+//        protected native void _init(String parametersSaveFile, @ByVal CvSize inputSize, @Cast("bool") boolean colorMode,
 //                @Cast("cv::RETINA_COLORSAMPLINGMETHOD") int colorSamplingMethod/*=RETINA_COLOR_BAYER*/,
-//                boolean useRetinaLogSampling/*=false*/, double reductionFactor/*=1.0*/, double samplingStrenght/*=10.0*/);
+//                @Cast("bool") boolean useRetinaLogSampling/*=false*/, double reductionFactor/*=1.0*/, double samplingStrenght/*=10.0*/);
     }
 }

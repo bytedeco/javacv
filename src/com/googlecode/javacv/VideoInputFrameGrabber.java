@@ -66,10 +66,9 @@ public class VideoInputFrameGrabber extends FrameGrabber {
     public void release() throws Exception {
         stop();
     }
-    @Override protected void finalize() {
-        try {
-            release();
-        } catch (Exception ex) { }
+    @Override protected void finalize() throws Throwable {
+        super.finalize();
+        release();
     }
 
     private int deviceNumber = 0;

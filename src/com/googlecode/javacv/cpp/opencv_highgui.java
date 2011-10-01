@@ -261,6 +261,14 @@ public class opencv_highgui {
     public static CvMat cvLoadImageM(String filename)   { return cvLoadImageM(filename, CV_LOAD_IMAGE_COLOR); }
     public static native CvMat cvLoadImageM(String filename, int iscolor/*=CV_LOAD_IMAGE_COLOR*/);
 
+    public static IplImage cvLoadImageRGBA(String filename) {
+        IplImage imageRGB = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
+        IplImage imageRGBA = cvCreateImage(cvGetSize(imageRGB), imageRGB.depth(), 4);
+        opencv_imgproc.cvCvtColor(imageRGB, imageRGBA, opencv_imgproc.CV_RGB2RGBA);
+        cvReleaseImage(imageRGB);
+        return imageRGBA;
+    }
+
     public static final int
             CV_IMWRITE_JPEG_QUALITY    = 1,
             CV_IMWRITE_PNG_COMPRESSION = 16,

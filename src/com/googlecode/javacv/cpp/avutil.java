@@ -383,7 +383,7 @@ public class avutil {
             PIX_FMT_YUV444P16 = AV_HAVE_BIGENDIAN() ? PIX_FMT_YUV444P16BE : PIX_FMT_YUV444P16LE;
 
     //#include "adler32.h"
-    public static native long av_adler32_update(long adler, @Cast("uint8_t*") BytePointer buf, int len);
+    public static native long av_adler32_update(@Cast("unsigned long") long adler, @Cast("uint8_t*") BytePointer buf, int len);
 
     //#include "avstring.h"
     public static native int av_strstart(String str, String pfx, @Cast("const char**") PointerPointer ptr);

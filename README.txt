@@ -42,7 +42,7 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 
 
 ==Quick Start for OpenCV==
-First, put all the JAR files (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV can be found either in their default installation directory or in the system PATH, which includes the current directory under Windows. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directory or in the system PATH, which includes the current directory under Windows. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -208,7 +208,12 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
-===August 21, 2011===
+===October 1, 2011===
+ * Fixed `DC1394FrameGrabber` and `FlyCaptureFrameGrabber` to behave as expected with all Bayer/Raw/Mono/RGB/YUV cameras modes (within the limits of libdc1394 and PGR FlyCapture) (issue #91)
+ * Fixed regression of `IplImage.copyFrom()` and `createFrom()` with `BufferedImage` objects of `SinglePixelPackedSampleModel` (issue #102)
+ * C++ functions using `std::vector` objects as output parameters now work on Windows Vista and Windows 7 as well
+
+===August 20, 2011===
  * Upgraded support to OpenCV 2.3.1
  * An output argument of type `cv::Mat` or `cv::OutputArray` returned with a size 0 now correctly sets `CvArr.address = 0`
  * Fixed `IplImage.createFrom()` and `copyFrom()` when called on objects returned by `BufferedImage.getSubimage()`

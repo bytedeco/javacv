@@ -122,13 +122,13 @@ public class opencv_flann {
         public StringVector(long n) { allocate(n); }
         public StringVector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(long n);
+        private native void allocate(@Cast("size_t") long n);
 
         public native long size();
-        public native void resize(long n);
+        public native void resize(@Cast("size_t") long n);
 
-        @ByRef public native String get(long i);
-        public native StringVector put(long i, String value);
+        @ByRef public native String get(@Cast("size_t") long i);
+        public native StringVector put(@Cast("size_t") long i, String value);
     }
 
     @NoOffset @Namespace("cv::flann") public static class IndexParams extends Pointer {
@@ -144,7 +144,7 @@ public class opencv_flann {
         public native void setInt(String key, int value);
         public native void setDouble(String key, double value);
         public native void setFloat(String key, float value);
-        public native void setBool(String key, boolean value);
+        public native void setBool(String key, @Cast("bool") boolean value);
         public native void setAlgorithm(int value);
 
         public native void getAll(@ByRef StringVector names,
@@ -235,7 +235,7 @@ public class opencv_flann {
         }
         public SearchParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int checks/*=32*/, float eps/*=0*/, boolean sorted/*=true*/);
+        private native void allocate(int checks/*=32*/, float eps/*=0*/, @Cast("bool") boolean sorted/*=true*/);
     }
 
     @Namespace("cv::flann") public static class Index extends Pointer {

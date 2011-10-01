@@ -87,10 +87,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public void release() throws Exception {
         stop();
     }
-    @Override protected void finalize() {
-        try {
-            release();
-        } catch (Exception ex) { }
+    @Override protected void finalize() throws Throwable {
+        super.finalize();
+        release();
     }
 
     private String filename;
