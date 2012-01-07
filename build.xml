@@ -26,7 +26,7 @@
     <property environment="env"/>
     <target name="-post-compile">
         <property name="javacpp.options" value=""/>
-        <java jar="${reference.javacpp.jar}" fork="true">
+        <java jar="${reference.javacpp.jar}" fork="true" failonerror="true">
             <!-- Hack required for Windows SDK v7.1 and videoInputLib -->
             <env key="CL" value="&quot;/I${env.sdkdir}/Include/&quot;"/>
             <arg line="${javacpp.options}"/>

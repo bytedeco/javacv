@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -27,7 +27,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 public interface ImageTransformer {
-    public static class Data {
+
+    public class Data {
         public Data(IplImage srcImg, IplImage subImg, IplImage srcDotImg, IplImage mask,
                 double zeroThreshold, double outlierThreshold, int pyramidLevel,
                 IplImage transImg, IplImage dstImg, int dstDstDotLength) {

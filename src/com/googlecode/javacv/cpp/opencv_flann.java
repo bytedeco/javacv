@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -57,6 +57,7 @@
 package com.googlecode.javacv.cpp;
 
 import com.googlecode.javacpp.DoublePointer;
+import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.Pointer;
@@ -244,24 +245,40 @@ public class opencv_flann {
         public Index(CvArr features, IndexParams params, int distType/*=FLANN_DIST_L2*/) {
             allocate(features, params, distType);
         }
+        public Index(FloatPointer features, IndexParams params, int distType/*=FLANN_DIST_L2*/) {
+            allocate(features, params, distType);
+        }
         public Index(Pointer p) { super(p); }
         private native void allocate(@Adapter("ArrayAdapter") CvArr features, @ByRef IndexParams params,
+                @Cast("cv::flann::flann_distance_t") int distType);
+        private native void allocate(@Adapter("ArrayAdapter") FloatPointer features, @ByRef IndexParams params,
                 @Cast("cv::flann::flann_distance_t") int distType);
 
         public native void build(@Adapter("ArrayAdapter") CvArr features, @ByRef IndexParams params,
                 @Cast("cv::flann::flann_distance_t") int distType/*=FLANN_DIST_L2*/);
+        public native void build(@Adapter("ArrayAdapter") FloatPointer features, @ByRef IndexParams params,
+                @Cast("cv::flann::flann_distance_t") int distType/*=FLANN_DIST_L2*/);
         public native void knnSearch(@Adapter("ArrayAdapter") CvArr query,
                 @Adapter(value="ArrayAdapter",out=true) CvMat indices,
                 @Adapter(value="ArrayAdapter",out=true) CvMat dists, int knn,
+                @ByRef SearchParams params/*=SearchParams()*/);
+        public native void knnSearch(@Adapter("ArrayAdapter") FloatPointer query,
+                @Adapter(value="ArrayAdapter",out=true) IntPointer indices,
+                @Adapter(value="ArrayAdapter",out=true) FloatPointer dists, int knn,
                 @ByRef SearchParams params/*=SearchParams()*/);
 
         public native int radiusSearch(@Adapter("ArrayAdapter") CvArr query,
                 @Adapter(value="ArrayAdapter",out=true) CvMat indices,
                 @Adapter(value="ArrayAdapter",out=true) CvMat dists, double radius, int maxResults,
                 @ByRef SearchParams params/*=SearchParams()*/);
+        public native int radiusSearch(@Adapter("ArrayAdapter") FloatPointer query,
+                @Adapter(value="ArrayAdapter",out=true) IntPointer indices,
+                @Adapter(value="ArrayAdapter",out=true) FloatPointer dists, double radius, int maxResults,
+                @ByRef SearchParams params/*=SearchParams()*/);
 
         public native void save(String filename);
         public native boolean load(@Adapter("ArrayAdapter") CvArr features, String filename);
+        public native boolean load(@Adapter("ArrayAdapter") FloatPointer features, String filename);
         public native void release();
         public native @Cast("cv::flann::flann_distance_t") int getDistance();
         public native @Cast("cv::flann::flann_algorithm_t") int getAlgorithm();

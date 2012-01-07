@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -145,7 +145,7 @@ public class HandMouse {
 //        double threshold = RMSE*settings.threshold;
 //        double threshold2 = RMSE*settings.threshold2;//threshold*threshold;
 
-        IplImage roiMask  = aligner.getRoiMaskImage();
+        IplImage roiMask  = aligner.getMaskImage();
         IplImage residual = aligner.getResidualImage();
         IplImage target   = aligner.getTargetImage();
         IplImage transformed = aligner.getTransformedImage();
@@ -242,7 +242,7 @@ public class HandMouse {
             roiPoints = new CvPoint(roiPts.length/2);
             roiPointsSize = roiPts.length/2;
         }
-        roiPoints.fill((byte)16, roiPts);
+        roiPoints.put((byte)16, roiPts);
         CvSeq contour = new CvContour(null);
         cvFindContours(thresholdedImage, storage, contour, sizeof(CvContour.class),
                 CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
@@ -360,15 +360,15 @@ public class HandMouse {
                 cvFillPoly(thresholdedImage, contourPoints, new int[] { total }, 1, CvScalar.WHITE, 8, 0);
             }
 
-            pt1.fill((byte)16, edgeX, edgeY);
+            pt1.put((byte)16, edgeX, edgeY);
             cvCircle(thresholdedImage, pt1, 5<<16, CvScalar.GRAY, 2, 8, 16);
 
-            pt1.fill((byte)16, centerX-5, centerY-5); pt2.fill((byte)16, centerX+5, centerY+5);
+            pt1.put((byte)16, centerX-5, centerY-5); pt2.put((byte)16, centerX+5, centerY+5);
             cvRectangle(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
 
-            pt1.fill((byte)16, tipX-5, tipY-5); pt2.fill((byte)16, tipX+5, tipY+5);
+            pt1.put((byte)16, tipX-5, tipY-5); pt2.put((byte)16, tipX+5, tipY+5);
             cvLine(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
-            pt1.fill((byte)16, tipX-5, tipY+5); pt2.fill((byte)16, tipX+5, tipY-5);
+            pt1.put((byte)16, tipX-5, tipY+5); pt2.put((byte)16, tipX+5, tipY-5);
             cvLine(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
 
             tipX = (tipX+roiX)*(1<<settings.pyramidLevel);

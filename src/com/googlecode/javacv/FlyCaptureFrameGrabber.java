@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -148,7 +148,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
 
         int c = FLYCAPTURE_VIDEOMODE_ANY;
-        if (colorMode == ColorMode.BGR || colorMode == ColorMode.RAW) {
+        if (imageMode == ImageMode.COLOR || imageMode == ImageMode.RAW) {
             if (imageWidth <= 0 || imageHeight <= 0) {
                 c = FLYCAPTURE_VIDEOMODE_ANY;
             } else if (imageWidth <= 640 && imageHeight <= 480) {
@@ -162,7 +162,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             } else if (imageWidth <= 1600 && imageHeight <= 1200) {
                 c = FLYCAPTURE_VIDEOMODE_1600x1200RGB;
             }
-        } else if (colorMode == ColorMode.GRAY) {
+        } else if (imageMode == ImageMode.GRAY) {
             if (imageWidth <= 0 || imageHeight <= 0) {
                 c = FLYCAPTURE_VIDEOMODE_ANY;
             } else if (imageWidth <= 640 && imageHeight <= 480) {
@@ -352,8 +352,8 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         BytePointer imageData = raw_image.pData();
 
         if ((depth == IPL_DEPTH_8U || frameEndian.equals(ByteOrder.nativeOrder())) &&
-                (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3) ||
-                (colorMode == ColorMode.GRAY && numChannels == 1 && !colorbayer))) {
+                (imageMode == ImageMode.RAW || (imageMode == ImageMode.COLOR && numChannels == 3) ||
+                (imageMode == ImageMode.GRAY && numChannels == 1 && !colorbayer))) {
             if (return_image == null) {
                 return_image = IplImage.createHeader(w, h, depth, numChannels);
             }
@@ -362,17 +362,17 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             return_image.imageData(imageData);
         } else {
             if (return_image == null) {
-                return_image = IplImage.create(w, h, depth, colorMode == ColorMode.BGR ? 3 : 1);
+                return_image = IplImage.create(w, h, depth, imageMode == ImageMode.COLOR ? 3 : 1);
             }
             if (temp_image == null) {
-                if (colorMode == ColorMode.BGR &&
+                if (imageMode == ImageMode.COLOR &&
                         (numChannels > 1 || depth > 8) && !coloryuv && !colorbayer) {
                     temp_image = IplImage.create(w, h, depth, numChannels);
-                } else if (colorMode == ColorMode.GRAY && colorbayer) {
+                } else if (imageMode == ImageMode.GRAY && colorbayer) {
                     temp_image = IplImage.create(w, h, depth, 3);
-                } else if (colorMode == ColorMode.GRAY && colorrgb) {
+                } else if (imageMode == ImageMode.GRAY && colorrgb) {
                     temp_image = IplImage.createHeader(w, h, depth, 3);
-                } else if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+                } else if (imageMode == ImageMode.COLOR && numChannels == 1 && !coloryuv && !colorbayer) {
                     temp_image = IplImage.createHeader(w, h, depth, 1);
                 } else {
                     temp_image = return_image;
@@ -381,10 +381,10 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             conv_image.iRowInc(temp_image.widthStep());
             conv_image.pData(temp_image.imageData());
             if (depth == IPL_DEPTH_8U) {
-                conv_image.pixelFormat(colorMode == ColorMode.RAW ? FLYCAPTURE_RAW8 :
+                conv_image.pixelFormat(imageMode == ImageMode.RAW ? FLYCAPTURE_RAW8 :
                                        temp_image.nChannels() == 1  ? FLYCAPTURE_MONO8 : FLYCAPTURE_BGR);
             } else {
-                conv_image.pixelFormat(colorMode == ColorMode.RAW ? FLYCAPTURE_RAW16 :
+                conv_image.pixelFormat(imageMode == ImageMode.RAW ? FLYCAPTURE_RAW16 :
                                        temp_image.nChannels() == 1  ? FLYCAPTURE_MONO16 : FLYCAPTURE_RGB16);
             }
 
@@ -394,8 +394,8 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
                 out.put(in);
                 alreadySwapped = true;
-            } else if ((colorMode == ColorMode.GRAY && colorrgb) ||
-                    (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer)) {
+            } else if ((imageMode == ImageMode.GRAY && colorrgb) ||
+                    (imageMode == ImageMode.COLOR && numChannels == 1 && !coloryuv && !colorbayer)) {
                 temp_image.widthStep(stride);
                 temp_image.imageSize(size);
                 temp_image.imageData(imageData);
@@ -416,11 +416,22 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
                 out.put(in);
             }
 
-            if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+            if (imageMode == ImageMode.COLOR && numChannels == 1 && !coloryuv && !colorbayer) {
                 cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
-            } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb)) {
+            } else if (imageMode == ImageMode.GRAY && (colorbayer || colorrgb)) {
                 cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
             }
+        }
+
+        error = flycaptureGetColorTileFormat(context, regOut);
+        if (error != FLYCAPTURE_OK) {
+            sensorPattern = -1L;
+        } else switch (regOut[0]) {
+            case FLYCAPTURE_STIPPLEDFORMAT_BGGR: sensorPattern = SENSOR_PATTERN_BGGR; break;
+            case FLYCAPTURE_STIPPLEDFORMAT_GBRG: sensorPattern = SENSOR_PATTERN_GBRG; break;
+            case FLYCAPTURE_STIPPLEDFORMAT_GRBG: sensorPattern = SENSOR_PATTERN_GRBG; break;
+            case FLYCAPTURE_STIPPLEDFORMAT_RGGB: sensorPattern = SENSOR_PATTERN_RGGB; break;
+            default: sensorPattern = -1L;
         }
 
         FlyCaptureTimestamp timeStamp = raw_image.timeStamp();

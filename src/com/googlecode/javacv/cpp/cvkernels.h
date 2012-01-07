@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -104,6 +104,11 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
             for (j = 0; j < 16; j++) {
                 Xa[i][j] = (float)data[i].X->data.db[j];
             }
+        } else {
+            // identity matrix
+            for (j = 0; j < 16; j++) {
+                Xa[i][j] = j%4 == j/4 ? 1 : 0;
+            }
         }
 
         if (data[i].transImg != NULL) {
@@ -125,6 +130,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
     int starty   = 0;
     int step     = modelImage->widthStep/4;
     int channels = modelImage->nChannels;
+    int colors   = channels > 3 ? 3 : channels; // ignore alpha channel
     int endx     = modelImage->width;
     int endy     = modelImage->height;
     int maskStep = modelMask == NULL ? 0 : modelMask->widthStep;
@@ -173,8 +179,8 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                     continue;
                 } else if (srcDotFloats[0] != NULL) {
                     double d, magnitude2 = 0;
-                    switch (channels) {
-                    case 4: d = srcDotFloats[0][pixel+3]; magnitude2 += d*d;
+                    switch (colors) {
+                    //case 4: d = srcDotFloats[0][pixel+3]; magnitude2 += d*d;
                     case 3: d = srcDotFloats[0][pixel+2]; magnitude2 += d*d;
                     case 2: d = srcDotFloats[0][pixel+1]; magnitude2 += d*d;
                     case 1: d = srcDotFloats[0][pixel+0]; magnitude2 += d*d; break;
@@ -204,8 +210,8 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                         continue;
                     } else if (srcDotFloats[i] != NULL) {
                         double d, magnitude2 = 0;
-                        switch (channels) {
-                        case 4: d = srcDotFloats[i][pixel+3]; magnitude2 += d*d;
+                        switch (colors) {
+                        //case 4: d = srcDotFloats[i][pixel+3]; magnitude2 += d*d;
                         case 3: d = srcDotFloats[i][pixel+2]; magnitude2 += d*d;
                         case 2: d = srcDotFloats[i][pixel+1]; magnitude2 += d*d;
                         case 1: d = srcDotFloats[i][pixel+0]; magnitude2 += d*d; break;
@@ -233,10 +239,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                 int xi2 = cvFloor(x2);
                 int yi2 = cvFloor(y2);
 
-                dst[i][0] = fill[0];
-                dst[i][1] = fill[1];
-                dst[i][2] = fill[2];
-                dst[i][3] = fill[3];
+                float src[4] = { fill[0], fill[1], fill[2], fill[3] };
                 float *src00 = fill;
                 float *src10 = fill;
                 float *src01 = fill;
@@ -268,7 +271,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                     float xn = x2 - xi2;
                     float yn = y2 - yi2;
 
-                    for (z = 0; z < channels; z++) {
+                    for (z = 0; z < colors; z++) {
                         float f00 = src00[z];
                         float f10 = src10[z];
                         float f01 = src01[z];
@@ -276,8 +279,16 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
 
                         float f0 = f00*(1-xn) + f10*xn;
                         float f1 = f01*(1-xn) + f11*xn;
-                        dst[i][z]=  f0*(1-yn) + f1*yn;
+                        src[z] =  f0*(1-yn) + f1*yn;
                     }
+                }
+
+                switch (colors) {
+                //case 4: dst[i][3] = Xa[i][12]*src[0] + Xa[i][13]*src[1] + Xa[i][14]*src[2] + Xa[i][15]*src[3];
+                case 3: dst[i][2] = Xa[i][8 ]*src[0] + Xa[i][9 ]*src[1] + Xa[i][10]*src[2] + Xa[i][11]*src[3];
+                case 2: dst[i][1] = Xa[i][4 ]*src[0] + Xa[i][5 ]*src[1] + Xa[i][6 ]*src[2] + Xa[i][7 ]*src[3];
+                case 1: dst[i][0] = Xa[i][0 ]*src[0] + Xa[i][1 ]*src[1] + Xa[i][2 ]*src[2] + Xa[i][3 ]*src[3]; break;
+                default: assert (0);
                 }
 
                 if (srcFloats2[i] != NULL) {
@@ -287,7 +298,6 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                     int xi3 = cvFloor(x3);
                     int yi3 = cvFloor(y3);
 
-                    float mod[4] = { fill[0], fill[1], fill[2], fill[3] };
                     src00 = fill;
                     src10 = fill;
                     src01 = fill;
@@ -319,7 +329,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                         float xn = x3 - xi3;
                         float yn = y3 - yi3;
 
-                        for (z = 0; z < channels; z++) {
+                        for (z = 0; z < colors; z++) {
                             float f00 = src00[z];
                             float f10 = src10[z];
                             float f01 = src01[z];
@@ -327,16 +337,13 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
 
                             float f0 = f00*(1-xn) + f10*xn;
                             float f1 = f01*(1-xn) + f11*xn;
-                            mod[z] =  f0*(1-yn) + f1*yn;
+                            dst[i][z] *= f0*(1-yn) + f1*yn;
                         }
-                    }
-
-                    switch (channels) {
-                    case 4: dst[i][3] *= Xa[i][12]*mod[0] + Xa[i][13]*mod[1] + Xa[i][14]*mod[2] + Xa[i][15]*mod[3];
-                    case 3: dst[i][2] *= Xa[i][8 ]*mod[0] + Xa[i][9 ]*mod[1] + Xa[i][10]*mod[2] + Xa[i][11]*mod[3];
-                    case 2: dst[i][1] *= Xa[i][4 ]*mod[0] + Xa[i][5 ]*mod[1] + Xa[i][6 ]*mod[2] + Xa[i][7 ]*mod[3];
-                    case 1: dst[i][0] *= Xa[i][0 ]*mod[0] + Xa[i][1 ]*mod[1] + Xa[i][2 ]*mod[2] + Xa[i][3 ]*mod[3]; break;
-                    default: assert (0);
+                    } else {
+                        dst[i][0] *= fill[0];
+                        dst[i][1] *= fill[1];
+                        dst[i][2] *= fill[2];
+                        dst[i][3] *= fill[3];
                     }
                 }
 
@@ -345,7 +352,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                         transFloats[i][pixel+z] = dst[i][z];
                     }
 
-                    if (subFloats[i] != NULL) {
+                    if (subFloats[i] != NULL && z < colors) {
                         dst[i][z] -= subFloats[i][pixel+z];
                     }
 
@@ -353,13 +360,13 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                         dstFloats[i][pixel+z] = dst[i][z];
                     }
 
-                    if (srcDotFloats[i] != NULL) {
+                    if (srcDotFloats[i] != NULL && z < colors) {
                         data[i].srcDstDot += srcDotFloats[i][pixel+z]*dst[i][z];
                     }
                 }
             }
 
-            switch (channels) {
+            switch (colors) {
                 case 1:
                     for (i = 0; i < size; i++) {
                         if (data[i].dstDstDot != NULL) {
@@ -388,16 +395,16 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                         }
                     }
                     break;
-                case 4:
-                    for (i = 0; i < size; i++) {
-                        if (data[i].dstDstDot != NULL) {
-                            for (j = i; j < size; j++) {
-                                data[i].dstDstDot[j] += dst[i][0]*dst[j][0] + dst[i][1]*dst[j][1] +
-                                                        dst[i][2]*dst[j][2] + dst[i][3]*dst[j][3];
-                            }
-                        }
-                    }
-                    break;
+//                case 4:
+//                    for (i = 0; i < size; i++) {
+//                        if (data[i].dstDstDot != NULL) {
+//                            for (j = i; j < size; j++) {
+//                                data[i].dstDstDot[j] += dst[i][0]*dst[j][0] + dst[i][1]*dst[j][1] +
+//                                                        dst[i][2]*dst[j][2] + dst[i][3]*dst[j][3];
+//                            }
+//                        }
+//                    }
+//                    break;
                 default: assert (0);
             }
 

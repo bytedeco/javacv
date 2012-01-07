@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -540,6 +540,7 @@ public class opencv_objdetect {
         public native double getWinSigma();
 
         public native void setSVMDetector(@Adapter("ArrayAdapter") CvArr _svmdetector);
+        public native void setSVMDetector(@Adapter("ArrayAdapter") FloatPointer _svmdetector);
 
         public native boolean read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
         public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs, String objname);

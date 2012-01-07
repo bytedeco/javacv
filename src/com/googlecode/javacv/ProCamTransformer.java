@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -42,10 +42,10 @@ public class ProCamTransformer implements ImageTransformer {
         this.camera = camera;
         this.projector = projector;
 
-        this.surfaceTransformer = new ProjectiveGainBiasTransformer(
+        this.surfaceTransformer = new ProjectiveColorTransformer(
                 camera.cameraMatrix, camera.cameraMatrix, null, null, n,
                 referencePoints, null, null, 3, 0);
-        this.projectorTransformer = new ProjectiveGainBiasTransformer(
+        this.projectorTransformer = new ProjectiveColorTransformer(
                 camera.cameraMatrix, projector.cameraMatrix,
                 projector.R, projector.T, null,
                 new double[] { 0, 0,  camera.imageWidth/2, camera.imageHeight,  camera.imageWidth, 0 },
@@ -59,14 +59,14 @@ public class ProCamTransformer implements ImageTransformer {
         }
     }
 
-    private CameraDevice camera = null;
-    private ProjectorDevice projector = null;
-    private ProjectiveGainBiasTransformer surfaceTransformer = null;
-    private ProjectiveGainBiasTransformer projectorTransformer = null;
-    private IplImage[] projectorImage = null, surfaceImage = null;
-    private CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
-    private CvRect roi = new CvRect();
-    private CvMat frontoParallelH = null, invFrontoParallelH = null;
+    protected CameraDevice camera = null;
+    protected ProjectorDevice projector = null;
+    protected ProjectiveColorTransformer surfaceTransformer = null;
+    protected ProjectiveColorTransformer projectorTransformer = null;
+    protected IplImage[] projectorImage = null, surfaceImage = null;
+    protected CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
+    protected CvRect roi = new CvRect();
+    protected CvMat frontoParallelH = null, invFrontoParallelH = null;
 
     public CvScalar getFillColor() {
         return fillColor;
@@ -75,51 +75,51 @@ public class ProCamTransformer implements ImageTransformer {
         this.fillColor = fillColor;
     }
 
-    public ProjectiveGainBiasTransformer getSurfaceTransformer() {
+    public ProjectiveColorTransformer getSurfaceTransformer() {
         return surfaceTransformer;
     }
-    public ProjectiveGainBiasTransformer getProjectorTransformer() {
+    public ProjectiveColorTransformer getProjectorTransformer() {
         return projectorTransformer;
     }
 
     public IplImage getProjectorImage(int pyramidLevel) {
         return projectorImage[pyramidLevel];
     }
-    public void setProjectorImage(IplImage projectorImage0, int pyramidLevels) {
-        setProjectorImage(projectorImage0, pyramidLevels, true);
+    public void setProjectorImage(IplImage projectorImage0, int minPyramidLevel, int maxPyramidLevel) {
+        setProjectorImage(projectorImage0, minPyramidLevel, maxPyramidLevel, true);
     }
-    public void setProjectorImage(IplImage projectorImage0, int pyramidLevels, boolean convertToFloat) {
-        if (projectorImage == null || projectorImage.length != pyramidLevels) {
-            projectorImage = new IplImage[pyramidLevels];
+    public void setProjectorImage(IplImage projectorImage0, int minPyramidLevel, int maxPyramidLevel, boolean convertToFloat) {
+        if (projectorImage == null || projectorImage.length != maxPyramidLevel+1) {
+            projectorImage = new IplImage[maxPyramidLevel+1];
         }
 
         if (projectorImage0.depth() == IPL_DEPTH_32F || !convertToFloat) {
-            projectorImage[0] = projectorImage0;
+            projectorImage[minPyramidLevel] = projectorImage0;
         } else {
-            if (projectorImage[0] == null) {
-                projectorImage[0] = IplImage.create(projectorImage0.width(), projectorImage0.height(),
+            if (projectorImage[minPyramidLevel] == null) {
+                projectorImage[minPyramidLevel] = IplImage.create(projectorImage0.width(), projectorImage0.height(),
                         IPL_DEPTH_32F, projectorImage0.nChannels(), projectorImage0.origin());
             }
             IplROI ir = projectorImage0.roi();
             if (ir != null) {
-                int align  = 1<<projectorImage.length;
+                int align  = 1<<(maxPyramidLevel+1);
                 roi.x(Math.max(0, (int)Math.floor((double)ir.xOffset()/align)*align));
                 roi.y(Math.max(0, (int)Math.floor((double)ir.yOffset()/align)*align));
                 roi.width (Math.min(projectorImage0.width(),  (int)Math.ceil((double)ir.width() /align)*align));
                 roi.height(Math.min(projectorImage0.height(), (int)Math.ceil((double)ir.height()/align)*align));
-                cvSetImageROI(projectorImage0,   roi);
-                cvSetImageROI(projectorImage[0], roi);
+                cvSetImageROI(projectorImage0, roi);
+                cvSetImageROI(projectorImage[minPyramidLevel], roi);
             } else {
                 cvResetImageROI(projectorImage0);
-                cvResetImageROI(projectorImage[0]);
+                cvResetImageROI(projectorImage[minPyramidLevel]);
             }
-            cvConvertScale(projectorImage0, projectorImage[0], 1.0/255.0, 0);
+            cvConvertScale(projectorImage0, projectorImage[minPyramidLevel], 1.0/255.0, 0);
         }
 
 //        CvScalar.ByValue average = cvAvg(projectorImage[0], null);
 //        cvSubS(projectorImage[0], average, projectorImage[0], null);
 
-        for (int i = 1; i < pyramidLevels; i++) {
+        for (int i = minPyramidLevel+1; i <= maxPyramidLevel; i++) {
             int w = projectorImage[i-1].width()/2;
             int h = projectorImage[i-1].height()/2;
             int d = projectorImage[i-1].depth();
@@ -165,9 +165,9 @@ public class ProCamTransformer implements ImageTransformer {
         }
     }
 
-    protected void prepareHomographyTransform(CvMat H1, CvMat H2, CvMat X, int pyramidLevel, Parameters p) {
-        ProjectiveGainBiasTransformer.Parameters cameraParameters    = p.getSurfaceParameters();
-        ProjectiveGainBiasTransformer.Parameters projectorParameters = p.getProjectorParameters();
+    protected void prepareTransforms(CvMat H1, CvMat H2, CvMat X, int pyramidLevel, Parameters p) {
+        ProjectiveColorTransformer.Parameters cameraParameters    = p.getSurfaceParameters();
+        ProjectiveColorTransformer.Parameters projectorParameters = p.getProjectorParameters();
 
         cvInvert(cameraParameters.getH(), H1);
         cvInvert(projectorParameters.getH(), H2);
@@ -187,7 +187,7 @@ public class ProCamTransformer implements ImageTransformer {
         }
 
         double[] x = projector.colorMixingMatrix.get();
-        double[] a = projectorParameters.getGainBiasParameters();
+        double[] a = projectorParameters.getColorParameters();
         double a2 = a[0];
         X.put(a2*x[0], a2*x[1], a2*x[2], a[1],
               a2*x[3], a2*x[4], a2*x[5], a[2],
@@ -273,8 +273,8 @@ public class ProCamTransformer implements ImageTransformer {
             for (int i = 0; i < data.length; i++) {
                 c.kernelData.position(i);
 
-                c.kernelData.srcImg(data[i].srcImg);
-                c.kernelData.srcImg2(projectorImage[data[i].pyramidLevel]);
+                c.kernelData.srcImg2(data[i].srcImg);
+                c.kernelData.srcImg(projectorImage[data[i].pyramidLevel]);
                 c.kernelData.subImg(data[i].subImg);
                 c.kernelData.srcDotImg(data[i].srcDotImg);
                 c.kernelData.mask(data[i].mask);
@@ -289,10 +289,10 @@ public class ProCamTransformer implements ImageTransformer {
                     c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer();
                 }
 
-                prepareHomographyTransform(c.H1[i], c.H2[i], c.X[i], data[i].pyramidLevel, (Parameters)parameters[i]);
+                prepareTransforms(c.H1[i], c.H2[i], c.X[i], data[i].pyramidLevel, (Parameters)parameters[i]);
 
-                c.kernelData.H1(c.H1[i]);
-                c.kernelData.H2(c.H2[i]);
+                c.kernelData.H1(c.H2[i]);
+                c.kernelData.H2(c.H1[i]);
                 c.kernelData.X (c.X [i]);
 
                 c.kernelData.transImg(data[i].transImg);
@@ -329,21 +329,21 @@ public class ProCamTransformer implements ImageTransformer {
         protected Parameters() {
             reset(false);
         }
-        protected Parameters(ProjectiveGainBiasTransformer.Parameters surfaceParameters,
-                             ProjectiveGainBiasTransformer.Parameters projectorParameters) {
+        protected Parameters(ProjectiveColorTransformer.Parameters surfaceParameters,
+                             ProjectiveColorTransformer.Parameters projectorParameters) {
             reset(surfaceParameters, projectorParameters);
         }
 
-        private ProjectiveGainBiasTransformer.Parameters surfaceParameters = null;
-        private ProjectiveGainBiasTransformer.Parameters projectorParameters = null;
+        private ProjectiveColorTransformer.Parameters surfaceParameters = null;
+        private ProjectiveColorTransformer.Parameters projectorParameters = null;
         private IplImage[] tempImage = null;
         private CvMat H = CvMat.create(3, 3), R = CvMat.create(3, 3),
                       n = CvMat.create(3, 1), t = CvMat.create(3, 1);
 
-        public ProjectiveGainBiasTransformer.Parameters getSurfaceParameters() {
+        public ProjectiveColorTransformer.Parameters getSurfaceParameters() {
             return surfaceParameters;
         }
-        public ProjectiveGainBiasTransformer.Parameters getProjectorParameters() {
+        public ProjectiveColorTransformer.Parameters getProjectorParameters() {
             return projectorParameters;
         }
 
@@ -387,13 +387,13 @@ public class ProCamTransformer implements ImageTransformer {
             surfaceParameters.set(pcp.getSurfaceParameters());
             projectorParameters.set(pcp.getProjectorParameters());
 
-            surfaceParameters.resetGainBias(false);
+            surfaceParameters.resetColor(false);
         }
         public void reset(boolean asIdentity) {
             reset(null, null);
         }
-        public void reset(ProjectiveGainBiasTransformer.Parameters surfaceParameters,
-                          ProjectiveGainBiasTransformer.Parameters projectorParameters) {
+        public void reset(ProjectiveColorTransformer.Parameters surfaceParameters,
+                          ProjectiveColorTransformer.Parameters projectorParameters) {
             if (surfaceParameters == null) {
                 surfaceParameters = surfaceTransformer.createParameters();
             }

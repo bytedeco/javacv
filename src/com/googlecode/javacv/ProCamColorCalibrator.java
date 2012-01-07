@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -219,7 +219,7 @@ public class ProCamColorCalibrator {
         // detect the markers in the camera image, to
         // 1. find the expected attenuation due to geometry
         // 2. use only regions we know are "white" on the board
-        camera.undistort(cameraImage, undistImage, false);
+        camera.undistort(cameraImage, undistImage);
         Marker[] detectedBoardMarkers = markerDetector.detect(undistImage, false);
         if (detectedBoardMarkers.length >= boardPlane.getMarkers().length*settings.detectedBoardMin) {
             // use detected markers in the camera image, to

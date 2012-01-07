@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -263,10 +263,14 @@ public class opencv_highgui {
 
     public static IplImage cvLoadImageRGBA(String filename) {
         IplImage imageRGB = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
-        IplImage imageRGBA = cvCreateImage(cvGetSize(imageRGB), imageRGB.depth(), 4);
-        opencv_imgproc.cvCvtColor(imageRGB, imageRGBA, opencv_imgproc.CV_RGB2RGBA);
-        cvReleaseImage(imageRGB);
-        return imageRGBA;
+        if (imageRGB == null) {
+            return null;
+        } else {
+            IplImage imageRGBA = cvCreateImage(cvGetSize(imageRGB), imageRGB.depth(), 4);
+            opencv_imgproc.cvCvtColor(imageRGB, imageRGBA, opencv_imgproc.CV_RGB2RGBA);
+            cvReleaseImage(imageRGB);
+            return imageRGBA;
+        }
     }
 
     public static final int

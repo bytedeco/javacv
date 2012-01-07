@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -63,7 +63,8 @@ public class ReflectanceInitializer {
 
     private static ThreadLocal<CvMat>
             mat3x1 = CvMat.createThreadLocal(3, 1),
-            mat3x3 = CvMat.createThreadLocal(3, 3);
+            mat3x3 = CvMat.createThreadLocal(3, 3),
+            mat4x4 = CvMat.createThreadLocal(4, 4);
 
     private GNImageAligner.Settings alignerSettings;
     private int smoothingSize;
@@ -81,9 +82,10 @@ public class ReflectanceInitializer {
         int h        = cameraImages[0].height();
         int channels = cameraImages[0].nChannels();
 
-        IplImage roiMask = IplImage.create(w, h, IPL_DEPTH_8U, 1);
-        cvSetZero(roiMask);
-        cvFillConvexPoly(roiMask, new CvPoint((byte)16, roiPts), 4, CvScalar.WHITE, 8, 16);
+        IplImage mask = IplImage.create(w, h, IPL_DEPTH_8U, 1);
+        cvSetZero(mask);
+        cvFillConvexPoly(mask, new CvPoint((byte)(16-cameraDevice.getMapsPyramidLevel()), roiPts),
+                4, CvScalar.WHITE, 8, 16);
 
         // make the images very very smooth to compensate for small movements
         IplImage float1 = cameraImages[0];
@@ -97,13 +99,22 @@ public class ReflectanceInitializer {
 
         // remove distortion caused by the mixing matrix of the projector light
         // and recover (very very smooth) reflectance map
-        CvMat p    = mat3x1.get();
-        CvMat invp = mat3x3.get();
+        CvMat p = mat3x1.get();
         p.put(1.0, 1.0, 1.0); // white
         cvMatMul(projectorDevice.colorMixingMatrix, p, p);
-        invp.put(1/p.get(0), 0, 0,
-                 0, 1/p.get(1), 0,
-                 0, 0, 1/p.get(2));
+        CvMat invp;
+        if (float2.nChannels() == 4) {
+            invp = mat4x4.get();
+            invp.put(1/p.get(0), 0, 0, 0,
+                     0, 1/p.get(1), 0, 0,
+                     0, 0, 1/p.get(2), 0,
+                     0, 0, 0, 1);
+        } else {
+            invp = mat3x3.get();
+            invp.put(1/p.get(0), 0, 0,
+                     0, 1/p.get(1), 0,
+                     0, 0, 1/p.get(2));
+        }
         cvTransform(float2, float2, invp, null);
 
         // recover (very very smooth) ambient light by removing distortions
@@ -112,17 +123,17 @@ public class ReflectanceInitializer {
         // cvDiv() doesn't support division by zero...
         FloatBuffer fb1 = float1.getFloatBuffer();
         FloatBuffer fb2 = float2.getFloatBuffer();
-        ByteBuffer  rmb = roiMask.getByteBuffer();
-        assert(fb1.capacity() == fb2.capacity()/3);
-        assert(fb1.capacity() == rmb.capacity()/3);
+        ByteBuffer  mb  = mask.getByteBuffer();
+        assert fb1.capacity() == fb2.capacity()/3;
+        assert fb1.capacity() == mb.capacity()/3;
         int[] nPixels = new int[channels];
         for (int i = 0, j = 0; j < fb1.capacity(); i++, j+=channels) {
             for (int z = 0; z < channels; z++) {
                 float ra = fb1.get(j+z);
                 float r  = fb2.get(j+z);
-                float a  = ra/r;
+                float a  = r == 0 ? 0 : ra/r;
                 fb1.put(j+z, a);
-                if (rmb.get(i) != 0) {
+                if (mb.get(i) != 0) {
                     if (r > reflectanceMin) {
                         nPixels[z]++;
                         ambientLight[z] += a;
@@ -130,7 +141,7 @@ public class ReflectanceInitializer {
                 }
             }
         }
-        for (int z = 0; z < channels; z++) {
+        for (int z = 0; z < ambientLight.length; z++) {
             ambientLight[z] = nPixels[z] == 0 ? 0 : ambientLight[z]/nPixels[z];
         }
 //        System.out.println(ambientLight[0] + " " + ambientLight[1] + " " + ambientLight[2]);
@@ -139,11 +150,11 @@ public class ReflectanceInitializer {
         cvAddS(float1, cvScalar(p.get(0), p.get(1), p.get(2), 0.0), float1, null);
         cvDiv(reflectance, float1, reflectance, 1.0);
 
-        cvNot(roiMask, roiMask);
+        cvNot(mask, mask);
         // increase region a bit so that the resulting image can be
         // interpolated or averaged properly within the region of interest...
-        cvErode(roiMask, roiMask, null, 15);
-        cvSet(reflectance, CvScalar.ZERO, roiMask);
+        cvErode(mask, mask, null, 15);
+        cvSet(reflectance, CvScalar.ZERO, mask);
 
         return reflectance;
     }
@@ -151,7 +162,7 @@ public class ReflectanceInitializer {
     public CvMat initializePlaneParameters(IplImage[] cameraImages, IplImage reflectance,
             double[] roiPts, double[] ambientLight) {
         ProCamTransformer transformer = new ProCamTransformer(roiPts, cameraDevice, projectorDevice, null);
-        transformer.setProjectorImage(projectorImages[2], alignerSettings.pyramidLevels);
+        transformer.setProjectorImage(projectorImages[2], 0, alignerSettings.maxPyramidLevel);
 
         ProCamTransformer.Parameters parameters = transformer.createParameters();
 //        parameters.set(8,  0);
@@ -178,5 +189,4 @@ public class ReflectanceInitializer {
                 "  iterations = " + iterations + "  objectiveRMSE = " + (float)aligner.getRMSE());
         return parameters.getSrcN();
     }
-
 }

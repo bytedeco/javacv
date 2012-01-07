@@ -3,7 +3,7 @@
 ==Introduction==
 JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: [http://opencv.willowgarage.com/ OpenCV], [http://www.ffmpeg.org/ FFmpeg], [http://damien.douxchamps.net/ieee1394/libdc1394/ libdc1394], [http://www.ptgrey.com/products/pgrflycapture/ PGR FlyCapture], [http://openkinect.org/ OpenKinect], [http://muonics.net/school/spring05/videoInput/ videoInput], and [http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php ARToolKitPlus]. The following classes, found under the `com.googlecode.javacv.cpp` package namespace, expose their complete APIs: `opencv_core`, `opencv_imgproc`, `opencv_video`, `opencv_flann`, `opencv_features2d`, `opencv_calib3d`, `opencv_objdetect`, `opencv_highgui`, `opencv_legacy`, `opencv_ml`, `opencv_contrib`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postproc`, `swscale`, `dc1394`, `PGRFlyCapture`, `freenect`, `videoInputLib`, and `ARToolKitPlus`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform, including Android.
 
-JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveGainBiasTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class.
+JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL`, i.e.: `JavaCVCL`, etc.
 
 To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV] section below as well as the sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
 
@@ -22,14 +22,16 @@ To use JavaCV, you will need to download and install the following software:
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
  * FFmpeg 0.6.x or 0.7.x  http://ffmpeg.org/download.html
-  * Precompiled for Windows (last compatible build: 18-Apr-2011)
-   * http://hawkeye.arrozcru.org/builds/win32/shared/
-   * http://hawkeye.arrozcru.org/builds/win64/shared/
+  * Precompiled for Windows  http://ffmpeg.zeranoe.com/builds/  Known compatible builds:
+   * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-0.7.1-win32-shared.7z
+   * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-0.7.1-win64-shared.7z
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
- * PGR FlyCapture 1.7~2.1 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
+ * PGR FlyCapture 1.7~2.2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * OpenKinect  http://openkinect.org/
- * Android SDK API 8~12  http://developer.android.com/sdk/
+ * CL Eye Platform SDK  http://codelaboratories.com/downloads/
+ * Android SDK API 8 or newer  http://developer.android.com/sdk/
+ * JOCL and JOGL from JogAmp  http://jogamp.org/
 
 To modify the source code, please note that the project files were created for:
  * NetBeans 6.9  http://netbeans.org/downloads/
@@ -42,7 +44,7 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 
 
 ==Quick Start for OpenCV==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directory or in the system PATH, which includes the current directory under Windows. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directory or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -56,7 +58,7 @@ Eclipse (Android 2.2 or newer):
  * Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
  * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
- * Extract the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.3.1-android-arm.zip` in the newly created "libs/armeabi" folder.
+ * Extract directly all the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.3.1-android-arm.zip` in the newly created "libs/armeabi" folder, without creating any new subdirectories.
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
  * Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -116,7 +118,7 @@ public class Demo {
 
         // OpenCVFrameGrabber uses opencv_highgui, but other more versatile FrameGrabbers
         // include DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber,
-        // VideoInputFrameGrabber, and FFmpegFrameGrabber.
+        // PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
         FrameGrabber grabber = new OpenCVFrameGrabber(0);
         grabber.start();
 
@@ -158,7 +160,7 @@ public class Demo {
             // Let's try to detect some faces! but we need a grayscale image...
             cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
             CvSeq faces = cvHaarDetectObjects(grayImage, classifier, storage,
-                1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
+                    1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
             int total = faces.total();
             for (int i = 0; i < total; i++) {
                 CvRect r = new CvRect(cvGetSeqElem(faces, i));
@@ -208,6 +210,21 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===January 8, 2012===
+ * JavaCV should now have an easier time automatically finding libraries inside standard directories such as `/usr/local/lib/`, `/opt/local/lib/`, and `C:\opencv\`, even when they are not part of the system configuration or PATH (issue #127)
+ * Renamed `set()` and `fill()` methods to `put()` inside `CvPoint*` classes, for better naming consistency
+ * Renamed `FrameGrabber.ColorMode` to `ImageMode` and its `BGR` value to `COLOR` to reflect the fact that a `FrameGrabber` instance can return color images in some arbitrary format, but added a new `pixelFormat` property to let users know or specify the exact pixel format desired, such as `PIX_FMT_BGR24`, etc. in the case of `FFmpegFrameGrabber`
+ * After `FFmpegFrameGrabber.start()`, the `format`, `imageWidth`, `imageHeight`, and `frameRate` properties switch to their effective values
+ * Added new `FrameGrabber.sensorPattern` property to obtain the Bayer filter layout of raw data from `DC1394FrameGrabber` and `FlyCaptureFrameGrabber`
+ * Readded to `KDTree`, `Index`, and `HOGDescriptor` some functions with `FloatPointer` and `IntPointer` arguments that were mistakenly removed when OpenCV switched to using `cv::InputArray` and `cv::OutputArray` parameter types (issue #134)
+ * Renamed `ProjectiveGainBiasTransformer` to `ProjectiveColorTransformer`
+ * Added a few classes to do some processing using OpenCL and OpenGL: `JavaCVCL`, `GNImageAlignerCL`, `ProjectiveTransformerCL`, `ProjectiveColorTransformerCL`, and `ProCamTransformerCL` with some other related files
+ * Renamed `Parallel.numCores` to the more conventional `Parallel.NUM_CORES`
+ * Added new `FaceRecognition.java` sample from Stephen L. Reed
+ * Inserted a couple of missing calls to `Loader.load()` (issue #142)
+ * Improved hacks for `Loader.load()` in JavaCPP make JavaCV work on Android 4.0
+ * New `PS3EyeFrameGrabber` from Jiri Masa can now grab images using the SDK from Code Laboratories
+
 ===October 1, 2011===
  * Fixed `DC1394FrameGrabber` and `FlyCaptureFrameGrabber` to behave as expected with all Bayer/Raw/Mono/RGB/YUV cameras modes (within the limits of libdc1394 and PGR FlyCapture) (issue #91)
  * Fixed regression of `IplImage.copyFrom()` and `createFrom()` with `BufferedImage` objects of `SinglePixelPackedSampleModel` (issue #102)
@@ -436,7 +453,7 @@ Initial release
 
 
 ----
-Copyright (C) 2009,2010,2011 Samuel Audet <samuel.audet@gmail.com>
+Copyright (C) 2009-2012 Samuel Audet <samuel.audet@gmail.com>
 Project site: http://code.google.com/p/javacv/
 
 Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.

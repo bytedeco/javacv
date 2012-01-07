@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -298,17 +298,17 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             int pix_fmt = -1;
             int depth = frame.depth();
             int channels = frame.nChannels();
-            if (depth == IPL_DEPTH_8U && channels == 3) {
+            if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 3) {
                 pix_fmt = PIX_FMT_BGR24;
-            } else if (depth == IPL_DEPTH_8U && channels == 1) {
+            } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 1) {
                 pix_fmt = PIX_FMT_GRAY8;
-            } else if (depth == IPL_DEPTH_16U && channels == 1) {
+            } else if ((depth == IPL_DEPTH_16U || depth == IPL_DEPTH_16S) && channels == 1) {
                 pix_fmt = (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) ? 
                     PIX_FMT_GRAY16BE : PIX_FMT_GRAY16LE;
-            } else if (depth == IPL_DEPTH_8U && channels == 4) {
-                pix_fmt = PIX_FMT_BGR32;
+            } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 4) {
+                pix_fmt = PIX_FMT_RGBA;
             } else if (!raw) {
-                throw new Exception("Unsupported image format");
+                throw new Exception("Unsupported image format: depth=" + depth + ", channels=" + channels);
             }
 
             if (c.pix_fmt() != pix_fmt && !raw) {

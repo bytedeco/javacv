@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -83,14 +83,14 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"},
-        link={"opencv_calib3d", "opencv_flann", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_calib3d", "opencv_features2d", "opencv_flann", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
         link={"opencv_calib3d231", "opencv_features2d231", "opencv_flann231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_calib3d {
-    static { load(opencv_imgproc.class); load(opencv_flann.class); load(); }
+    static { load(opencv_highgui.class); load(opencv_flann.class); load(opencv_features2d.class); load(); }
 
     @Opaque public static class CvPOSITObject extends Pointer {
         static { load(); }

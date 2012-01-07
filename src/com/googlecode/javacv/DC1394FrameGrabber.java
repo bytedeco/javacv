@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -147,7 +147,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
     }
     public void start(boolean tryReset, boolean try1394b) throws Exception {
         int c = -1;
-        if (colorMode == ColorMode.BGR || colorMode == ColorMode.RAW) {
+        if (imageMode == ImageMode.COLOR || imageMode == ImageMode.RAW) {
             if (imageWidth <= 0 || imageHeight <= 0) {
                 c = -1;
             } else if (imageWidth <= 640 && imageHeight <= 480) {
@@ -161,7 +161,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
             } else if (imageWidth <= 1600 && imageHeight <= 1200) {
                 c = DC1394_VIDEO_MODE_1600x1200_RGB8;
             }
-        } else if (colorMode == ColorMode.GRAY) {
+        } else if (imageMode == ImageMode.GRAY) {
             if (imageWidth <= 0 || imageHeight <= 0) {
                 c = -1;
             } else if (imageWidth <= 640 && imageHeight <= 480) {
@@ -430,8 +430,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
         BytePointer imageData = frame.image();
 
         if ((depth <= 8 || frameEndian.equals(ByteOrder.nativeOrder())) && !coloryuv &&
-                (colorMode == ColorMode.RAW || (colorMode == ColorMode.BGR && numChannels == 3) ||
-                (colorMode == ColorMode.GRAY && numChannels == 1 && !colorbayer))) {
+                (imageMode == ImageMode.RAW || (imageMode == ImageMode.COLOR && numChannels == 3) ||
+                (imageMode == ImageMode.GRAY && numChannels == 1 && !colorbayer))) {
             if (return_image == null) {
                 return_image = IplImage.createHeader(w, h, iplDepth, numChannels);
             }
@@ -445,23 +445,23 @@ public class DC1394FrameGrabber extends FrameGrabber {
             int padding1 = (int)Math.ceil((double)padding_bytes/(w * depth/8));
             int padding3 = (int)Math.ceil((double)padding_bytes/(w*3*depth/8));
             if (return_image == null) {
-                int c       = colorMode == ColorMode.BGR ? 3 : 1;
-                int padding = colorMode == ColorMode.BGR ? padding3 : padding1;
+                int c       = imageMode == ImageMode.COLOR ? 3 : 1;
+                int padding = imageMode == ImageMode.COLOR ? padding3 : padding1;
                 return_image = IplImage.create(w, h+padding, iplDepth, c);
                 return_image.height(return_image.height() - padding);
             }
             if (temp_image == null) {
-                if (colorMode == ColorMode.BGR &&
+                if (imageMode == ImageMode.COLOR &&
                         (numChannels > 1 || depth > 8) && !coloryuv && !colorbayer) {
                     temp_image = IplImage.create(w, h+padding1, iplDepth, numChannels);
                     temp_image.height(temp_image.height() - padding1);
-                } else if (colorMode == ColorMode.GRAY &&
+                } else if (imageMode == ImageMode.GRAY &&
                         (coloryuv || colorbayer || (colorrgb && depth > 8))) {
                     temp_image = IplImage.create(w, h+padding3, iplDepth, 3);
                     temp_image.height(temp_image.height() - padding3);
-                } else if (colorMode == ColorMode.GRAY && colorrgb) {
+                } else if (imageMode == ImageMode.GRAY && colorrgb) {
                     temp_image = IplImage.createHeader(w, h, iplDepth, 3);
-                } else if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+                } else if (imageMode == ImageMode.COLOR && numChannels == 1 && !coloryuv && !colorbayer) {
                     temp_image = IplImage.createHeader(w, h, iplDepth, 1);
                 } else {
                     temp_image = return_image;
@@ -470,12 +470,12 @@ public class DC1394FrameGrabber extends FrameGrabber {
             conv_image.size(0, temp_image.width());
             conv_image.size(1, temp_image.height());
             if (depth > 8) {
-                conv_image.color_coding(colorMode == ColorMode.RAW  ? DC1394_COLOR_CODING_RAW16  :
+                conv_image.color_coding(imageMode == ImageMode.RAW  ? DC1394_COLOR_CODING_RAW16  :
                                         temp_image.nChannels() == 1 ? DC1394_COLOR_CODING_MONO16 :
                                                                       DC1394_COLOR_CODING_RGB16);
                 conv_image.data_depth(16);
             } else {
-                conv_image.color_coding(colorMode == ColorMode.RAW  ? DC1394_COLOR_CODING_RAW8   :
+                conv_image.color_coding(imageMode == ImageMode.RAW  ? DC1394_COLOR_CODING_RAW8   :
                                         temp_image.nChannels() == 1 ? DC1394_COLOR_CODING_MONO8  :
                                                                       DC1394_COLOR_CODING_RGB8);
                 conv_image.data_depth(8);
@@ -516,8 +516,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
                 out.put(in);
                 alreadySwapped = true;
-            } else if ((colorMode == ColorMode.GRAY && colorrgb) ||
-                    (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer)) {
+            } else if ((imageMode == ImageMode.GRAY && colorrgb) ||
+                    (imageMode == ImageMode.COLOR && numChannels == 1 && !coloryuv && !colorbayer)) {
                 temp_image.widthStep(stride);
                 temp_image.imageSize(size);
                 temp_image.imageData(imageData);
@@ -539,11 +539,19 @@ public class DC1394FrameGrabber extends FrameGrabber {
             }
 
             // should we copy the padding as well?
-            if (colorMode == ColorMode.BGR && numChannels == 1 && !coloryuv && !colorbayer) {
+            if (imageMode == ImageMode.COLOR && numChannels == 1 && !coloryuv && !colorbayer) {
                 cvCvtColor(temp_image, return_image, CV_GRAY2BGR);
-            } else if (colorMode == ColorMode.GRAY && (colorbayer || colorrgb || coloryuv)) {
+            } else if (imageMode == ImageMode.GRAY && (colorbayer || colorrgb || coloryuv)) {
                 cvCvtColor(temp_image, return_image, CV_BGR2GRAY);
             }
+        }
+
+        switch (frame.color_filter()) {
+            case DC1394_COLOR_FILTER_RGGB: sensorPattern = SENSOR_PATTERN_RGGB; break;
+            case DC1394_COLOR_FILTER_GBRG: sensorPattern = SENSOR_PATTERN_GBRG; break;
+            case DC1394_COLOR_FILTER_GRBG: sensorPattern = SENSOR_PATTERN_GRBG; break;
+            case DC1394_COLOR_FILTER_BGGR: sensorPattern = SENSOR_PATTERN_BGGR; break;
+            default: sensorPattern = -1L;
         }
 
         enqueue_image = frame;

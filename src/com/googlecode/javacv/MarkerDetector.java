@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -181,13 +181,13 @@ public class MarkerDetector {
 
         if (depth != IPL_DEPTH_8U && channels > 1) {
             cvConvertScale(image, tempsrc2, 255/image.highValue(), 0);
-            cvCvtColor(tempsrc2, tempsrc, CV_BGR2GRAY);
+            cvCvtColor(tempsrc2, tempsrc, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
             image = tempsrc;
         } else if (depth != IPL_DEPTH_8U) {
             cvConvertScale(image, tempsrc, 255/image.highValue(), 0);
             image = tempsrc;
         } else if (channels > 1) {
-            cvCvtColor(image, tempsrc, CV_BGR2GRAY);
+            cvCvtColor(image, tempsrc, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
             image = tempsrc;
         }
 //long time1 = System.currentTimeMillis();
@@ -236,7 +236,7 @@ public class MarkerDetector {
             }
 
             for (int j = 0; j < 4; j++) {
-                corners.position(j).set(vertex[2*j], vertex[2*j+1]);
+                corners.position(j).put(vertex[2*j], vertex[2*j+1]);
             }
 
 if (false) {

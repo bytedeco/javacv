@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Samuel Audet
+ * Copyright (C) 2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -135,7 +135,7 @@ public class avutil {
     public static native void av_freep(Pointer ptr);
 
     //#include "error.h"
-    public static native int av_strerror(int errnum, @Cast("char*") byte[] errbuf, int errbuf_size);
+    public static native int av_strerror(int errnum, @Cast("char*") byte[] errbuf, @Cast("size_t") long errbuf_size);
 
     //#include "mathematics.h"
     public static final double
@@ -389,9 +389,9 @@ public class avutil {
     public static native int av_strstart(String str, String pfx, @Cast("const char**") PointerPointer ptr);
     public static native int av_stristart(String str, String pfx, @Cast("const char**") PointerPointer ptr);
     public static native String av_stristr(String haystack, String needle);
-    public static native int av_strlcpy(@Cast("char*") byte[] dst, String src, int size);
-    public static native int av_strlcat(@Cast("char*") byte[] dst, String src, int size);
-    public static native int av_strlcatf(@Cast("char*") byte[] dst, int size, String fmt);
+    public static native @Cast("size_t") long av_strlcpy(@Cast("char*") byte[] dst, String src, @Cast("size_t") long size);
+    public static native @Cast("size_t") long av_strlcat(@Cast("char*") byte[] dst, String src, @Cast("size_t") long size);
+    public static native @Cast("size_t") long av_strlcatf(@Cast("char*") byte[] dst, @Cast("size_t") long size, String fmt);
     public static native String av_d2str(double d);
 
     //#include "base64.h"
@@ -425,7 +425,7 @@ public class avutil {
     public static native @Cast("const AVCRC*") IntPointer av_crc_get_table(
             @Cast("AVCRCId") int crc_id);
     public static native int av_crc(@Cast("AVCRC*") int[] ctx, int start_crc,
-            @Cast("uint8_t*") BytePointer buffer, int length);
+            @Cast("uint8_t*") BytePointer buffer, @Cast("size_t") long length);
 
     //#include "fifo.h"
     public static class AVFifoBuffer extends Pointer {

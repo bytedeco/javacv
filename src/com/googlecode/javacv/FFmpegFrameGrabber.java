@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -113,6 +113,45 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
+    @Override public String getFormat() {
+        if (pFormatCtx == null) {
+            return super.getFormat();
+        } else {
+            return pFormatCtx.iformat().name().getString();
+        }
+    }
+
+    @Override public int getImageWidth() {
+        return return_image == null ? super.getImageWidth() : return_image.width();
+    }
+
+    @Override public int getImageHeight() {
+        return return_image == null ? super.getImageHeight() : return_image.height();
+    }
+
+    @Override public int getPixelFormat() {
+        if (imageMode == ImageMode.COLOR || imageMode == ImageMode.GRAY) {
+            if (pixelFormat == PIX_FMT_NONE) {
+                return imageMode == ImageMode.COLOR ? PIX_FMT_BGR24 : PIX_FMT_GRAY8;
+            } else {
+                return pixelFormat;
+            }
+        } else if (pCodecCtx != null) { // RAW
+            return pCodecCtx.pix_fmt();
+        } else {
+            return super.getPixelFormat();
+        }
+    }
+
+    @Override public double getFrameRate() {
+        if (pFormatCtx == null) {
+            return super.getFrameRate();
+        } else {
+            AVRational r = pFormatCtx.streams(videoStream).time_base();
+            return (double)r.den()/r.num();
+        }
+    }
+
     public void start() throws Exception {
         // Open video file
         AVInputFormat f = null;
@@ -127,7 +166,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             fp = new AVFormatParameters();
             fp.time_base(av_d2q(1/frameRate, FFmpegFrameRecorder.DEFAULT_FRAME_RATE_BASE));
             fp.sample_rate(bpp);
-            fp.channels(colorMode == ColorMode.BGR ? 3 : 1);
+            fp.channels(imageMode == ImageMode.COLOR ? 3 : 1);
             fp.width(imageWidth);
             fp.height(imageHeight);
         }
@@ -182,37 +221,27 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         int width  = getImageWidth()  > 0 ? getImageWidth()  : pCodecCtx.width();
         int height = getImageHeight() > 0 ? getImageHeight() : pCodecCtx.height();
 
-        switch (colorMode) {
-            case BGR:
+        switch (imageMode) {
+            case COLOR:
+            case GRAY:
+                int fmt = pixelFormat;
+                if (fmt == PIX_FMT_NONE) {
+                    fmt = imageMode == ImageMode.COLOR ? PIX_FMT_BGR24 : PIX_FMT_GRAY8;
+                }
+
                 // Determine required buffer size and allocate buffer
-                numBytes = avpicture_get_size(PIX_FMT_BGR24, width, height);
+                numBytes = avpicture_get_size(fmt, width, height);
                 buffer = new BytePointer(av_malloc(numBytes));
 
                 // Assign appropriate parts of buffer to image planes in pFrameRGB
                 // Note that pFrameRGB is an AVFrame, but AVFrame is a superset
                 // of AVPicture
-                avpicture_fill(pFrameRGB, buffer, PIX_FMT_BGR24, width, height);
+                avpicture_fill(pFrameRGB, buffer, fmt, width, height);
 
-                // Convert the image into BGR format that OpenCV uses
+                // Convert the image into BGR or GRAY format that OpenCV uses
                 img_convert_ctx = sws_getContext(
                         pCodecCtx.width(), pCodecCtx.height(), pCodecCtx.pix_fmt(),
-                        width, height, PIX_FMT_BGR24, SWS_BILINEAR, null, null, null);
-                if (img_convert_ctx == null) {
-                    throw new Exception("Cannot initialize the conversion context.");
-                }
-
-                return_image = IplImage.createHeader(width, height, IPL_DEPTH_8U, 3);
-                break;
-
-            case GRAY:
-                numBytes = avpicture_get_size(PIX_FMT_GRAY8, width, height);
-                buffer = new BytePointer(av_malloc(numBytes));
-                avpicture_fill(pFrameRGB, buffer, PIX_FMT_GRAY8, width, height);
-
-                // Convert the image into GRAY format that OpenCV uses
-                img_convert_ctx = sws_getContext(
-                        pCodecCtx.width(), pCodecCtx.height(), pCodecCtx.pix_fmt(),
-                        width, height, PIX_FMT_GRAY8, SWS_BILINEAR, null, null, null);
+                        width, height, fmt, SWS_BILINEAR, null, null, null);
                 if (img_convert_ctx == null) {
                     throw new Exception("Cannot initialize the conversion context.");
                 }
@@ -309,8 +338,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
                 // Did we get a video frame?
                 if (len > 0 && frameFinished[0] != 0) {
-                    switch (colorMode) {
-                        case BGR:
+                    switch (imageMode) {
+                        case COLOR:
                         case GRAY:
                             // Deinterlace Picture
                             if (deinterlace) {
@@ -333,6 +362,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             assert (false);
                     }
                     return_image.imageSize(return_image.height() * return_image.widthStep());
+                    return_image.nChannels(return_image.widthStep() / return_image.width());
 
                     done = true;
                 }

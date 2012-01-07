@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -33,7 +33,18 @@ import static com.googlecode.javacv.cpp.cvkernels.*;
  * @author Samuel Audet
  */
 public class ProjectiveTransformer implements ImageTransformer {
-    public ProjectiveTransformer(CvMat K1, CvMat K2, CvMat R, CvMat t, CvMat n, 
+    public ProjectiveTransformer() {
+        this(null, null, null, null, null, new double[0], null);
+    }
+    public ProjectiveTransformer(double[] referencePoints) {
+        this(null, null, null, null, null, referencePoints, null);
+    }
+    public ProjectiveTransformer(ProjectiveDevice d1, ProjectiveDevice d2, CvMat n,
+            double[] referencePoints1, double[] referencePoints2) {
+        // assuming d1 has identity values, use d2's stuff directly
+        this(d1.cameraMatrix, d2.cameraMatrix, d2.R, d2.T, n, referencePoints1, referencePoints2);
+    }
+    public ProjectiveTransformer(CvMat K1, CvMat K2, CvMat R, CvMat t, CvMat n,
             double[] referencePoints1, double[] referencePoints2) {
         this.K1    = K1 == null ? null : K1.clone();
         this.K2    = K2 == null ? null : K2.clone();
@@ -52,25 +63,14 @@ public class ProjectiveTransformer implements ImageTransformer {
         this.referencePoints1 = referencePoints1 == null ? null : referencePoints1.clone();
         this.referencePoints2 = referencePoints2 == null ? null : referencePoints2.clone();
     }
-    public ProjectiveTransformer(ProjectiveDevice d1, ProjectiveDevice d2, CvMat n, 
-            double[] referencePoints1, double[] referencePoints2) {
-        // assuming d1 has identity values, use d2's stuff directly
-        this(d1.cameraMatrix, d2.cameraMatrix, d2.R, d2.T, n, referencePoints1, referencePoints2);
-    }
-    public ProjectiveTransformer() {
-        this(null, null, null, null, null, new double[0], null);
-    }
-    public ProjectiveTransformer(double[] referencePoints) {
-        this(null, null, null, null, null, referencePoints, null);
-    }
 
-    private static ThreadLocal<CvMat>
+    protected static ThreadLocal<CvMat>
             H3x3   = CvMat.createThreadLocal(3, 3),
             pts4x1 = CvMat.createThreadLocal(4, 1, CV_64F, 2);
 
-    private CvMat K1 = null, K2 = null, invK1 = null, invK2 = null, R = null, t = null, n = null;
-    private double[] referencePoints1 = null, referencePoints2 = null;
-    private CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
+    protected CvMat K1 = null, K2 = null, invK1 = null, invK2 = null, R = null, t = null, n = null;
+    protected double[] referencePoints1 = null, referencePoints2 = null;
+    protected CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
 
     public CvScalar getFillColor() {
         return fillColor;

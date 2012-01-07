@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Samuel Audet
+ * Copyright (C) 2010,2011,2012 Samuel Audet
  *
  * FacePreview - A fusion of OpenCV's facedetect and Android's CameraPreview samples,
  *               with JavaCV + JavaCPP as the glue in between.
@@ -20,16 +20,30 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
- * 
- * IMPORTANT - Make sure your AndroidManifiest.xml file includes the following:
- *    <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="4" />
- *    <uses-permission android:name="android.permission.CAMERA" />
- *    <uses-feature android:name="android.hardware.camera" />
- *    <application android:label="@string/app_name">
- *        <activity android:name="FacePreview"
- *                  android:label="@string/app_name"
- *                  android:screenOrientation="landscape">
+ *
+ *
+ * IMPORTANT - Make sure the AndroidManifest.xml file looks like this:
+ *
+ * <?xml version="1.0" encoding="utf-8"?>
+ * <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+ *     package="com.googlecode.javacv.facepreview"
+ *     android:versionCode="1"
+ *     android:versionName="1.0" >
+ *     <uses-sdk android:minSdkVersion="4" />
+ *     <uses-permission android:name="android.permission.CAMERA" />
+ *     <uses-feature android:name="android.hardware.camera" />
+ *     <application android:label="@string/app_name">
+ *         <activity
+ *             android:name="FacePreview"
+ *             android:label="@string/app_name"
+ *             android:screenOrientation="landscape">
+ *             <intent-filter>
+ *                 <action android:name="android.intent.action.MAIN" />
+ *                 <category android:name="android.intent.category.LAUNCHER" />
+ *             </intent-filter>
+ *         </activity>
+ *     </application>
+ * </manifest>
  */
 
 package com.googlecode.javacv.facepreview;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -22,6 +22,7 @@ package com.googlecode.javacv;
 
 import java.io.File;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import com.googlecode.javacpp.Pointer;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -322,7 +323,8 @@ public class ProjectiveDevice {
             cameraMatrix.put(5, sy*cameraMatrix.get(5));
             this.imageWidth  = imageWidth;
             this.imageHeight = imageHeight;
-            undistortMap1 = undistortMap2 = distortMap1 = distortMap2 = null;
+            int p = mapsPyramidLevel;
+            undistortMaps1[p] = undistortMaps2[p] = distortMaps1[p] = distortMaps2[p] = null;
         }
     }
 
@@ -459,18 +461,68 @@ public class ProjectiveDevice {
         return xu;
     }
 
-    private IplImage undistortMap1 = null, undistortMap2 = null;
-    private void initUndistortMaps(boolean useFixedPointMaps) {
-        //cvUndistort2(src, dst, cameraMatrix, distortionCoeffs);
-        if (undistortMap1 == null || undistortMap2 == null) {
-            if (useFixedPointMaps) {
-                undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
-                undistortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16U, 1);
-            } else {
-                undistortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
-                undistortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
+
+    private boolean fixedPointMaps = false;
+    private int mapsPyramidLevel = 0;
+    private IplImage[] undistortMaps1 = { null }, undistortMaps2 = { null };
+    private IplImage[] distortMaps1 = { null }, distortMaps2 = { null };
+    private IplImage tempImage = null;
+
+    public boolean isFixedPointMaps() {
+        return fixedPointMaps;
+    }
+    public void setFixedPointMaps(boolean fixedPointMaps) {
+        if (this.fixedPointMaps != fixedPointMaps) {
+            this.fixedPointMaps = fixedPointMaps;
+            int p = mapsPyramidLevel;
+            undistortMaps1[p] = undistortMaps2[p] = distortMaps1[p] = distortMaps2[p] = null;
+        }
+    }
+
+    public int getMapsPyramidLevel() {
+        return mapsPyramidLevel;
+    }
+    public void setMapsPyramidLevel(int mapsPyramidLevel) {
+        if (this.mapsPyramidLevel != mapsPyramidLevel) {
+            this.mapsPyramidLevel = mapsPyramidLevel;
+            int p = mapsPyramidLevel;
+            if (p >= undistortMaps1.length || p >= undistortMaps2.length ||
+                    p >= distortMaps1.length || p >= distortMaps2.length) {
+                undistortMaps1 = Arrays.copyOf(undistortMaps1, p+1);
+                undistortMaps2 = Arrays.copyOf(undistortMaps2, p+1);
+                distortMaps1   = Arrays.copyOf(distortMaps1, p+1);
+                distortMaps2   = Arrays.copyOf(distortMaps2, p+1);
             }
-            cvInitUndistortMap(cameraMatrix, distortionCoeffs, undistortMap1, undistortMap2);
+        }
+    }
+
+    private void initUndistortMaps() {
+        //cvUndistort2(src, dst, cameraMatrix, distortionCoeffs);
+        int p = mapsPyramidLevel;
+        if (undistortMaps1[p] == null || undistortMaps2[p] == null) {
+            if (fixedPointMaps) {
+                undistortMaps1[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
+                undistortMaps2[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16U, 1);
+            } else {
+                undistortMaps1[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
+                undistortMaps2[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
+            }
+            cvInitUndistortMap(cameraMatrix, distortionCoeffs, undistortMaps1[p], undistortMaps2[p]);
+            if (mapsPyramidLevel > 0) {
+                IplImage map1 = undistortMaps1[p];
+                IplImage map2 = undistortMaps2[p];
+                int w = imageWidth  >> p;
+                int h = imageHeight >> p;
+                undistortMaps1[p] = IplImage.create(w, h, map1.depth(), map1.nChannels());
+                undistortMaps2[p] = IplImage.create(w, h, map2.depth(), map2.nChannels());
+                cvResize(map1, undistortMaps1[p], CV_INTER_NN);
+                cvResize(map2, undistortMaps2[p], CV_INTER_NN);
+//                FloatBuffer m1 = map1.getFloatBuffer();
+//                FloatBuffer n1 = undistortMaps1[p].getFloatBuffer();
+//                for (int i = 0; i < 8; i++) {
+//                    System.out.println(m1.get(1280*2*i) - n1.get(640*i));
+//                }
+            }
         }
 //        if (undistortMap1 == null || undistortMap2 == null) {
 //            IplImage mapx = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
@@ -498,28 +550,35 @@ public class ProjectiveDevice {
 //            }
 //        }
     }
-    public IplImage getUndistortMap1(boolean useFixedPointMaps) {
-        initUndistortMaps(useFixedPointMaps);
-        return undistortMap1;
+    public IplImage getUndistortMap1() {
+        initUndistortMaps();
+        return undistortMaps1[mapsPyramidLevel];
     }
-    public IplImage getUndistortMap2(boolean useFixedPointMaps) {
-        initUndistortMaps(useFixedPointMaps);
-        return undistortMap2;
+    public IplImage getUndistortMap2() {
+        initUndistortMaps();
+        return undistortMaps2[mapsPyramidLevel];
     }
     public void undistort(IplImage src, IplImage dst) {
-        undistort(src, dst, true);
-    }
-    public void undistort(IplImage src, IplImage dst, boolean useFixedPointMaps) {
         if (src != null && dst != null) {
-            cvRemap(src, dst, getUndistortMap1(useFixedPointMaps),
-                    getUndistortMap2(useFixedPointMaps), CV_INTER_LINEAR |
-                    CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
+            initUndistortMaps();
+            cvRemap(src, dst, undistortMaps1[mapsPyramidLevel], undistortMaps2[mapsPyramidLevel],
+                    CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
         }
     }
+    public IplImage undistort(IplImage image) {
+        if (image != null) {
+            initUndistortMaps();
+            tempImage = IplImage.createIfNotCompatible(tempImage, image);
+            cvRemap(image, tempImage, undistortMaps1[mapsPyramidLevel], undistortMaps2[mapsPyramidLevel],
+                    CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
+            return tempImage;
+        }
+        return null;
+    }
 
-    private IplImage distortMap1 = null, distortMap2 = null;
-    private void initDistortMaps(boolean useFixedPointMaps) {
-        if (distortMap1 == null || distortMap2 == null) {
+    private void initDistortMaps() {
+        int p = mapsPyramidLevel;
+        if (distortMaps1[p] == null || distortMaps2[p] == null) {
             IplImage mapx = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
             IplImage mapy = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
             FloatBuffer bufx = mapx.getFloatBuffer();
@@ -533,35 +592,52 @@ public class ProjectiveDevice {
                     bufy.put((float)distxy[1]);
                 }
             }
-            if (useFixedPointMaps) {
-                distortMap1 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
-                distortMap2 = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16U /* IPL_DEPTH_16S */, 1);
-                cvConvertMaps(mapx, mapy, distortMap1, distortMap2);
+            if (fixedPointMaps) {
+                distortMaps1[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16S, 2);
+                distortMaps2[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_16U /* IPL_DEPTH_16S */, 1);
+                cvConvertMaps(mapx, mapy, distortMaps1[p], distortMaps2[p]);
                 mapx.release();
                 mapy.release();
             } else {
-                distortMap1 = mapx;
-                distortMap2 = mapy;
+                distortMaps1[p] = mapx;
+                distortMaps2[p] = mapy;
+            }
+            if (mapsPyramidLevel > 0) {
+                IplImage map1 = distortMaps1[p];
+                IplImage map2 = distortMaps2[p];
+                int w = imageWidth  >> p;
+                int h = imageHeight >> p;
+                distortMaps1[p] = IplImage.create(w, h, map1.depth(), map1.nChannels());
+                distortMaps2[p] = IplImage.create(w, h, map2.depth(), map2.nChannels());
+                cvResize(map1, distortMaps1[p], CV_INTER_NN);
+                cvResize(map2, distortMaps2[p], CV_INTER_NN);
             }
         }
     }
-    public IplImage getDistortMap1(boolean useFixedPointMaps) {
-        initDistortMaps(useFixedPointMaps);
-        return distortMap1;
+    public IplImage getDistortMap1() {
+        initDistortMaps();
+        return distortMaps1[mapsPyramidLevel];
     }
-    public IplImage getDistortMap2(boolean useFixedPointMaps) {
-        initDistortMaps(useFixedPointMaps);
-        return distortMap2;
+    public IplImage getDistortMap2() {
+        initDistortMaps();
+        return distortMaps2[mapsPyramidLevel];
     }
     public void distort(IplImage src, IplImage dst) {
-        distort(src, dst, true);
-    }
-    public void distort(IplImage src, IplImage dst, boolean useFixedPointMaps) {
         if (src != null && dst != null) {
-            cvRemap(src, dst, getDistortMap1(useFixedPointMaps),
-                    getDistortMap2(useFixedPointMaps), CV_INTER_LINEAR |
-                    CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
+            initDistortMaps();
+            cvRemap(src, dst, distortMaps1[mapsPyramidLevel], distortMaps2[mapsPyramidLevel],
+                    CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
         }
+    }
+    public IplImage distort(IplImage image) {
+        if (image != null) {
+            initDistortMaps();
+            tempImage = IplImage.createIfNotCompatible(tempImage, image);
+            cvRemap(image, tempImage, distortMaps1[mapsPyramidLevel], distortMaps2[mapsPyramidLevel],
+                    CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
+            return tempImage;
+        }
+        return null;
     }
 
     // B = [ (-R^T t)*plane^T - plane^T*(-R^T t) I ] [ (K R)^-1  ]
@@ -846,9 +922,8 @@ public class ProjectiveDevice {
         "mixing matrix = " + (colorMixingMatrix == null ? "null" : colorMixingMatrix.toString(16)) + "\n" +
         "additive light = " + (additiveLight == null ? "null" : additiveLight.toString(17)) + "\n" +
         "normalized RMSE (intensity) = " + (float)avgColorErr + "\n" +
-        "R2 (intensity) = " + (float)colorR2;
+        "R^2 (intensity) = " + (float)colorR2;
 
         return s;
     }
 }
-

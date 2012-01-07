@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -84,8 +84,8 @@ public class CameraDevice extends ProjectiveDevice {
         void setTriggerFlushSize(int triggerFlushSize);
         int getBitsPerPixel();
         void setBitsPerPixel(int bitsPerPixel);
-        FrameGrabber.ColorMode getColorMode();
-        void setColorMode(FrameGrabber.ColorMode colorMode);
+        FrameGrabber.ImageMode getImageMode();
+        void setImageMode(FrameGrabber.ImageMode imageMode);
         int getTimeout();
         void setTimeout(int timeout);
         int getNumBuffers();
@@ -114,7 +114,7 @@ public class CameraDevice extends ProjectiveDevice {
                 this.triggerMode  = s.triggerMode;
                 this.triggerFlushSize = s.triggerFlushSize;
                 this.bpp          = s.bpp;
-                this.colorMode    = s.colorMode;
+                this.imageMode    = s.imageMode;
                 this.timeout      = s.timeout;
                 this.numBuffers   = s.numBuffers;
                 this.deinterlace  = s.deinterlace;
@@ -267,7 +267,7 @@ public class CameraDevice extends ProjectiveDevice {
         boolean triggerMode = false;
         int triggerFlushSize = 5;
         int bpp = 0;
-        FrameGrabber.ColorMode colorMode = FrameGrabber.ColorMode.RAW;
+        FrameGrabber.ImageMode imageMode = FrameGrabber.ImageMode.COLOR;
         int timeout = 10000;
         int numBuffers = 4;
         boolean deinterlace = false;
@@ -321,11 +321,11 @@ public class CameraDevice extends ProjectiveDevice {
             this.bpp = bitsPerPixel;
         }
 
-        public FrameGrabber.ColorMode getColorMode() {
-            return colorMode;
+        public FrameGrabber.ImageMode getImageMode() {
+            return imageMode;
         }
-        public void setColorMode(FrameGrabber.ColorMode colorMode) {
-            this.colorMode = colorMode;
+        public void setImageMode(FrameGrabber.ImageMode imageMode) {
+            this.imageMode = imageMode;
         }
 
         public int getTimeout() {
@@ -398,8 +398,8 @@ public class CameraDevice extends ProjectiveDevice {
         public void setTriggerFlushSize(int triggerFlushSize) { si.setTriggerFlushSize(triggerFlushSize); }
         public int getBitsPerPixel() { return si.getBitsPerPixel(); }
         public void setBitsPerPixel(int bitsPerPixel) { si.setBitsPerPixel(bitsPerPixel); }
-        public FrameGrabber.ColorMode getColorMode() { return si.getColorMode(); }
-        public void setColorMode(FrameGrabber.ColorMode colorMode) { si.setColorMode(colorMode); }
+        public FrameGrabber.ImageMode getImageMode() { return si.getImageMode(); }
+        public void setImageMode(FrameGrabber.ImageMode imageMode) { si.setImageMode(imageMode); }
         public int getTimeout() { return si.getTimeout(); }
         public void setTimeout(int timeout) { si.setTimeout(timeout); }
         public int getNumBuffers() { return si.getNumBuffers(); }
@@ -455,8 +455,8 @@ public class CameraDevice extends ProjectiveDevice {
         public void setTriggerFlushSize(int triggerFlushSize) { si.setTriggerFlushSize(triggerFlushSize); }
         public int getBitsPerPixel() { return si.getBitsPerPixel(); }
         public void setBitsPerPixel(int bitsPerPixel) { si.setBitsPerPixel(bitsPerPixel); }
-        public FrameGrabber.ColorMode getColorMode() { return si.getColorMode(); }
-        public void setColorMode(FrameGrabber.ColorMode colorMode) { si.setColorMode(colorMode); }
+        public FrameGrabber.ImageMode getImageMode() { return si.getImageMode(); }
+        public void setImageMode(FrameGrabber.ImageMode imageMode) { si.setImageMode(imageMode); }
         public int getTimeout() { return si.getTimeout(); }
         public void setTimeout(int timeout) { si.setTimeout(timeout); }
         public int getNumBuffers() { return si.getNumBuffers(); }
@@ -509,7 +509,7 @@ public class CameraDevice extends ProjectiveDevice {
             f.setTriggerMode(settings.isTriggerMode());
             f.setTriggerFlushSize(settings.getTriggerFlushSize());
             f.setBitsPerPixel(settings.getBitsPerPixel());
-            f.setColorMode(settings.getColorMode());
+            f.setImageMode(settings.getImageMode());
             f.setTimeout(settings.getTimeout());
             f.setNumBuffers(settings.getNumBuffers());
             f.setGamma(settings.getResponseGamma());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -83,14 +83,14 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
-        link={"opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_features2d", "opencv_calib3d", "opencv_flann", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d231", "opencv_flann231", "opencv_calib3d231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
+        link={"opencv_features2d231", "opencv_calib3d231", "opencv_flann231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_features2d {
-    static { load(opencv_highgui.class); load(opencv_calib3d.class); load(opencv_flann.class); load(); }
+    static { load(opencv_highgui.class); load(opencv_flann.class); load(opencv_calib3d.class); load(); }
 
     public static class CvSURFPoint extends Pointer {
         static { load(); }
@@ -490,6 +490,7 @@ public class opencv_features2d {
             KeyPoint keypoints, int threshold, @Cast("bool") boolean nonmaxSupression/*=true*/);
 
     @NoOffset @Namespace("cv") public static class PatchGenerator extends Pointer {
+        static { load(); }
         public PatchGenerator() { allocate(); }
         public PatchGenerator(Pointer p) { super(p); }
         public PatchGenerator(double _backgroundMin, double _backgroundMax, double _noiseRange, 
@@ -627,6 +628,7 @@ public class opencv_features2d {
         public native @ByVal CvSize getPatchSize();
 
         public static class Feature extends Pointer {
+            static { load(); }
             public byte x1, y1, x2, y2;
             public Feature() { allocate(); }
             public Feature(int _x1, int _y1, int _x2, int _y2) {

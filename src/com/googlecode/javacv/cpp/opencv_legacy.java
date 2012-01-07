@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -143,6 +143,11 @@ public class opencv_legacy {
             @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, float[] covarMatrix);
     public static native void cvCalcEigenObjects(int nObjects, Pointer input, Pointer output, int ioFlags,
             int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, float[] eigVals);
+    public static void cvCalcEigenObjects(int nObjects, IplImage[] input, IplImage[] output, int ioFlags,
+            int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, float[] eigVals) {
+        cvCalcEigenObjects(nObjects, new IplImageArray(input), new IplImageArray(output),
+                ioFlags, ioBufSize, userData, calcLimit, avg, eigVals);
+    }
     public static native double cvCalcDecompCoeff(IplImage obj, IplImage eigObj, IplImage avg);
     public static native void cvEigenDecomposite(IplImage obj, int nEigObjs, Pointer eigInput,
             int ioFlags, Pointer userData, IplImage avg, float[] coeffs);
@@ -153,6 +158,11 @@ public class opencv_legacy {
             @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, FloatPointer covarMatrix);
     public static native void cvCalcEigenObjects(int nObjects, Pointer input, Pointer output, int ioFlags,
             int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, FloatPointer eigVals);
+    public static void cvCalcEigenObjects(int nObjects, IplImage[] input, IplImage[] output, int ioFlags,
+            int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, FloatPointer eigVals) {
+        cvCalcEigenObjects(nObjects, new IplImageArray(input), new IplImageArray(output),
+                ioFlags, ioBufSize, userData, calcLimit, avg, eigVals);
+    }
     public static native void cvEigenDecomposite(IplImage obj, int nEigObjs, Pointer eigInput,
             int ioFlags, Pointer userData, IplImage avg, FloatPointer coeffs);
     public static native void cvEigenProjection(Pointer eigInput, int nEigObjs, int ioFlags,

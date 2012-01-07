@@ -1,5 +1,35 @@
+/*
+ * Copyright (C) 2011,2012 Samuel Audet
+ *
+ * This file is part of JavaCV.
+ *
+ * JavaCV is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version (subject to the "Classpath" exception
+ * as provided in the LICENSE.txt file that accompanied this code).
+ *
+ * JavaCV is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <opencv2/core/core_c.h>
 #include <opencv2/core/core.hpp>
+
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0502
+#include <windows.h>
+#endif
+static inline void SetLibraryPath(const char *path) {
+#ifdef _WIN32
+    SetDllDirectory(path);
+#endif
+}
 
 class MatAdapter {
 public:
@@ -22,15 +52,15 @@ public:
     operator cv::Mat*()  { return pointer ? &mat : 0; }
 
     CvArr* pointer;
-    unsigned int capacity;
+    int capacity;
     cv::Mat mat2;
     cv::Mat& mat;
 };
 
 class ArrayAdapter {
 public:
-    ArrayAdapter(CvArr* pointer, int capacity) : pointer(pointer), capacity(capacity),
-            mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
+    template<class T> ArrayAdapter(T* pointer, int capacity) : pointer(pointer), capacity(capacity),
+            mat(pointer ? std::vector<T>(pointer, pointer + capacity) : std::vector<T>(), true), arr2(mat), arr(arr2) { }
     ArrayAdapter(const cv::_OutputArray& arr) : pointer(0), capacity(0), arr((cv::_OutputArray&)arr) { }
     static void deallocate(CvArr* pointer) {
         if (CV_IS_MAT(pointer)) {
@@ -39,7 +69,19 @@ public:
             cvReleaseMatND((CvMatND**) &pointer);
         } else if (CV_IS_IMAGE(pointer)) {
             cvReleaseImage((IplImage**)&pointer);
+        } else {
+            free(pointer);
         }
+    }
+    template<class T> operator T*() {
+        if (mat.total() > capacity) {
+            pointer = malloc(sizeof(T) * mat.total());
+            capacity = mat.total();
+        }
+        if (pointer) {
+            std::copy(mat.begin<T>(), mat.end<T>(), (T*)pointer);
+        }
+        return (T*)pointer;
     }
     operator CvMat*()    { const CvMat&    m = arr.getMatRef(); return CV_IS_MAT  (&m) ? cvCloneMat  (&m) : NULL; }
     operator CvMatND*()  { const CvMatND&  m = arr.getMatRef(); return CV_IS_MATND(&m) ? cvCloneMatND(&m) : NULL; }
@@ -48,11 +90,20 @@ public:
     operator cv::_OutputArray*()  { return pointer ? &arr : 0; }
 
     CvArr* pointer;
-    unsigned int capacity;
+    size_t capacity;
     cv::Mat mat;
     cv::_OutputArray arr2;
     cv::_OutputArray& arr;
 };
+
+template<> ArrayAdapter::ArrayAdapter(CvArr* pointer, int capacity) : pointer(pointer),
+        capacity(capacity), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
+template<> ArrayAdapter::ArrayAdapter(CvMat* pointer, int capacity) : pointer(pointer),
+        capacity(capacity), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
+template<> ArrayAdapter::ArrayAdapter(CvMatND* pointer, int capacity) : pointer(pointer),
+        capacity(capacity), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
+template<> ArrayAdapter::ArrayAdapter(IplImage* pointer, int capacity) : pointer(pointer),
+        capacity(capacity), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
 
 class RNGAdapter {
 public:
@@ -68,7 +119,7 @@ public:
     operator cv::RNG*() { return &rng; }
 
     CvRNG* pointer;
-    unsigned int capacity;
+    int capacity;
     cv::RNG rng2;
     cv::RNG& rng;
 };
@@ -84,7 +135,7 @@ public:
     operator cv::FileStorage&() { return fs; }
     operator cv::FileStorage*() { return &fs; }
 
-    unsigned int capacity;
+    int capacity;
     cv::FileStorage fs2;
     cv::FileStorage& fs;
 };
@@ -101,7 +152,7 @@ public:
     operator cv::FileNode&()  { return  fn; }
     operator cv::FileNode*()  { return &fn; }
 
-    unsigned int capacity, capacity2;
+    int capacity, capacity2;
     cv::FileNode fn2;
     cv::FileNode& fn;
 };
@@ -118,7 +169,7 @@ public:
     operator cv::Rect*() { return pointer ? &rect : 0; }
 
     CvRect* pointer;
-    unsigned int capacity;
+    int capacity;
     cv::Rect rect2;
     cv::Rect& rect;
 };
@@ -135,7 +186,7 @@ public:
     operator cv::Point2d*() { return pointer ? &point2d : 0; }
 
     CvPoint2D64f* pointer;
-    unsigned int capacity;
+    int capacity;
     cv::Point2d point2d2;
     cv::Point2d& point2d;
 };

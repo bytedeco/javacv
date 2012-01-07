@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -117,7 +117,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (bpp > 0) {
             cvSetCaptureProperty(capture, CV_CAP_PROP_FORMAT, bpp); // ??
         }
-        cvSetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB, colorMode == ColorMode.BGR ? 1 : 0);
+        cvSetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB, imageMode == ImageMode.COLOR ? 1 : 0);
 
         if (macosx) {
             // Before cvRetrieveFrame() starts returning something else then null
@@ -159,12 +159,12 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             trigger();
         }
 
-        if (colorMode == ColorMode.GRAY && image.nChannels() > 1) {
+        if (imageMode == ImageMode.GRAY && image.nChannels() > 1) {
             if (return_image == null) {
                 return_image = IplImage.create(image.width(), image.height(), image.depth(), 1);
             }
             cvCvtColor(image, return_image, CV_BGR2GRAY);
-        } else if (colorMode == ColorMode.BGR && image.nChannels() == 1) {
+        } else if (imageMode == ImageMode.COLOR && image.nChannels() == 1) {
             if (return_image == null) {
                 return_image = IplImage.create(image.width(), image.height(), image.depth(), 3);
             }

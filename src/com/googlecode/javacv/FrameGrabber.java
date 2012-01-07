@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -39,6 +39,7 @@ public abstract class FrameGrabber {
         list.add(DC1394FrameGrabber.class);
         list.add(FlyCaptureFrameGrabber.class);
         list.add(OpenKinectFrameGrabber.class);
+        list.add(PS3EyeFrameGrabber.class);
         list.add(VideoInputFrameGrabber.class);
         list.add(OpenCVFrameGrabber.class);
         list.add(FFmpegFrameGrabber.class);
@@ -102,17 +103,25 @@ public abstract class FrameGrabber {
     }
 
 
-    public static enum ColorMode {
-        BGR, GRAY, RAW
+    public static enum ImageMode {
+        COLOR, GRAY, RAW
     }
+
+    public static final long
+            SENSOR_PATTERN_RGGB = 0,
+            SENSOR_PATTERN_GBRG = (1L << 32),
+            SENSOR_PATTERN_GRBG = 1,
+            SENSOR_PATTERN_BGGR = (1L << 32) | 1;
 
     protected String format = null;
     protected int imageWidth = 0, imageHeight = 0;
+    protected ImageMode imageMode = ImageMode.COLOR;
+    protected long sensorPattern = -1L;
+    protected int pixelFormat = -1;
     protected double frameRate = 0;
     protected boolean triggerMode = false;
     protected int triggerFlushSize = 0;
     protected int bpp = 0;
-    protected ColorMode colorMode = ColorMode.BGR;
     protected int timeout = 10000;
     protected int numBuffers = 4;
     protected double gamma = 0.0;
@@ -137,6 +146,27 @@ public abstract class FrameGrabber {
     }
     public void setImageHeight(int imageHeight) {
         this.imageHeight = imageHeight;
+    }
+
+    public ImageMode getImageMode() {
+        return imageMode;
+    }
+    public void setImageMode(ImageMode imageMode) {
+        this.imageMode = imageMode;
+    }
+
+    public long getSensorPattern() {
+        return sensorPattern;
+    }
+    public void setSensorPattern(long sensorPattern) {
+        this.sensorPattern = sensorPattern;
+    }
+
+    public int getPixelFormat() {
+        return pixelFormat;
+    }
+    public void setPixelFormat(int pixelFormat) {
+        this.pixelFormat = pixelFormat;
     }
 
     public double getFrameRate() {
@@ -165,13 +195,6 @@ public abstract class FrameGrabber {
     }
     public void setBitsPerPixel(int bitsPerPixel) {
         this.bpp = bitsPerPixel;
-    }
-
-    public ColorMode getColorMode() {
-        return colorMode;
-    }
-    public void setColorMode(ColorMode colorMode) {
-        this.colorMode = colorMode;
     }
 
     public int getTimeout() {

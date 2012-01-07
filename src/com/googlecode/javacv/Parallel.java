@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
  * @author Samuel Audet
  */
 public class Parallel {
-    public static final int numCores = Runtime.getRuntime().availableProcessors();
+    public static final int NUM_CORES = Runtime.getRuntime().availableProcessors();
 
     private static final ExecutorService threadPool = Executors.newCachedThreadPool();
 
@@ -64,7 +64,7 @@ public class Parallel {
     }
 
     public static void loop(int from, int to, final Looper looper) {
-        loop(from, to, numCores, looper);
+        loop(from, to, NUM_CORES, looper);
     }
     public static void loop(int from, int to, int numThreads, final Looper looper) {
         int numLoopers = Math.min(to-from, numThreads);

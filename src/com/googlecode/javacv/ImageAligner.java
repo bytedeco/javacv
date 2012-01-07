@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -30,29 +30,38 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 public interface ImageAligner {
 
-    public static class Settings extends BaseChildSettings implements Cloneable {
+    public class Settings extends BaseChildSettings implements Cloneable {
         public Settings() { }
         public Settings(Settings s) {
-            pyramidLevels = s.pyramidLevels;
-            gammaTgamma   = s.gammaTgamma;
-            tikhonovAlpha = s.tikhonovAlpha;
-            constrained   = s.constrained;
+            minPyramidLevel = s.minPyramidLevel;
+            maxPyramidLevel = s.maxPyramidLevel;
+            gammaTgamma     = s.gammaTgamma;
+            tikhonovAlpha   = s.tikhonovAlpha;
+            constrained     = s.constrained;
             zeroThresholds    = s.zeroThresholds;
             outlierThresholds = s.outlierThresholds;
         }
 
-        int pyramidLevels    = 5;
+        int minPyramidLevel  = 0;
+        int maxPyramidLevel  = 4;
         CvMat gammaTgamma    = null;
         double tikhonovAlpha = 0;
         boolean constrained  = false;
         double[] zeroThresholds    = { 0.04, 0.03, 0.02, 0.01, 0 };
         double[] outlierThresholds = { 0.1 };
 
-        public int getPyramidLevels() {
-            return pyramidLevels;
+        public int getMinPyramidLevel() {
+            return minPyramidLevel;
         }
-        public void setPyramidLevels(int pyramidLevels) {
-            this.pyramidLevels = pyramidLevels;
+        public void setMinPyramidLevel(int minPyramidLevel) {
+            this.minPyramidLevel = minPyramidLevel;
+        }
+
+        public int getMaxPyramidLevel() {
+            return maxPyramidLevel;
+        }
+        public void setMaxPyramidLevel(int maxPyramidLevel) {
+            this.maxPyramidLevel = maxPyramidLevel;
         }
 
         public CvMat getGammaTgamma() {
@@ -112,7 +121,7 @@ public interface ImageAligner {
     double[] getTransformedRoiPts();
     IplImage getTransformedImage();
     IplImage getResidualImage();
-    IplImage getRoiMaskImage();
+    IplImage getMaskImage();
     double getRMSE();
     CvRect getRoi();
 

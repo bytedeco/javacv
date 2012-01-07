@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -156,7 +156,7 @@ public class VideoInputFrameGrabber extends FrameGrabber {
             throw new Exception("videoInput.getPixels() Error: Could not get pixels.");
         }
 
-        if (colorMode == ColorMode.GRAY) {
+        if (imageMode == ImageMode.GRAY) {
             if (grayImage == null) {
                 grayImage = IplImage.create(w, h, IPL_DEPTH_8U, 1);
             }

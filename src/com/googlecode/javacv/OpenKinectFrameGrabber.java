@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -214,14 +214,14 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         int iplDepth = image.depth();
         int channels = image.nChannels();
 
-        if (colorMode == ColorMode.BGR && channels == 1) {
+        if (imageMode == ImageMode.COLOR && channels == 1) {
             if (returnImage == null) {
                 returnImage = IplImage.create(w, h, iplDepth, 3);
             }
             cvCvtColor(image, returnImage, CV_GRAY2BGR);
             returnImage.timestamp = image.timestamp;
             return returnImage;
-        } else if (colorMode == ColorMode.GRAY && channels == 3) {
+        } else if (imageMode == ImageMode.GRAY && channels == 3) {
             if (returnImage == null) {
                 returnImage = IplImage.create(w, h, iplDepth, 1);
             }

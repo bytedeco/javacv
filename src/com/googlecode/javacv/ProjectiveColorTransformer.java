@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -31,8 +31,8 @@ import static com.googlecode.javacv.cpp.cvkernels.*;
  *
  * @author Samuel Audet
  */
-public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
-    public ProjectiveGainBiasTransformer(CvMat K1, CvMat K2, CvMat R, CvMat t,
+public class ProjectiveColorTransformer extends ProjectiveTransformer {
+    public ProjectiveColorTransformer(CvMat K1, CvMat K2, CvMat R, CvMat t,
             CvMat n, double[] referencePoints1, double[] referencePoints2,
             CvMat X, int numGains, int numBiases) {
         super(K1, K2, R, t, n, referencePoints1, referencePoints2);
@@ -43,12 +43,12 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         this.numBiases = numBiases;
     }
 
-    private static ThreadLocal<CvMat>
+    protected static ThreadLocal<CvMat>
             X24x4   = CvMat.createThreadLocal(4, 4),
             temp3x1 = CvMat.createThreadLocal(3, 1);
 
-    private CvMat X = null;
-    private int numGains = 0, numBiases = 0;
+    protected CvMat X = null;
+    protected int numGains = 0, numBiases = 0;
 
     public CvMat getX() {
         return X;
@@ -60,11 +60,11 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         return numBiases;
     }
 
-    public void transformGainBias(IplImage srcImage, IplImage dstImage, CvRect roi,
+    public void transformColor(IplImage srcImage, IplImage dstImage, CvRect roi,
             int pyramidLevel, ImageTransformer.Parameters parameters, boolean inverse) {
         Parameters p = ((Parameters)parameters);
 
-        if ((Arrays.equals(p.getGainBiasParameters(), p.getIdentityGainBiasParameters()) &&
+        if ((Arrays.equals(p.getColorParameters(), p.getIdentityColorParameters()) &&
                 (X == null || p.fakeIdentity)) || (X == null && numGains == 0 && numBiases == 0)) {
             if (srcImage != dstImage) {
                 cvCopy(srcImage, dstImage);
@@ -73,7 +73,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         }
 
         CvMat X2 = X24x4.get();
-        prepareTransform(X2, pyramidLevel, p, inverse);
+        prepareColorTransform(X2, pyramidLevel, p, inverse);
         X2.rows(3);
         // do color transformation
         if (roi == null) {
@@ -88,7 +88,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         X2.rows(4);
     }
 
-    protected void prepareTransform(CvMat X2, int pyramidLevel, Parameters p, boolean inverse) {
+    protected void prepareColorTransform(CvMat X2, int pyramidLevel, Parameters p, boolean inverse) {
         CvMat A = p.getA(), b = p.getB();
 
         cvSetIdentity(X2);
@@ -128,7 +128,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                         IplImage dstImage = d.transImg == null ? d.dstImg : d.transImg;
                         boolean inverse = inverses == null ? false : inverses[i];
                         transform(d.srcImg, dstImage, roi, d.pyramidLevel, parameters[i], inverse);
-                        transformGainBias(dstImage, dstImage, roi, d.pyramidLevel, parameters[i], inverse);
+                        transformColor(dstImage, dstImage, roi, d.pyramidLevel, parameters[i], inverse);
                 } else {
                     allOK = false;
                 }
@@ -174,8 +174,8 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
                 }
 
                 boolean inverse = inverses == null ? false : inverses[i];
-                prepareHomography(c.H[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
-                prepareTransform (c.X[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
+                prepareHomography    (c.H[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
+                prepareColorTransform(c.X[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
 
                 c.kernelData.H1(c.H[i]);
                 c.kernelData.H2(null);
@@ -209,7 +209,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 
     public class Parameters extends ProjectiveTransformer.Parameters {
         protected Parameters() {
-            identityGainBiasParameters = new double[numGains + numBiases];
+            identityColorParameters = new double[numGains + numBiases];
             if (numGains > 0) {
                 A = CvMat.create(3, 3);
                 cvSetIdentity(A);
@@ -221,33 +221,33 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 
             switch (numGains) {
                 case 0: assert (A == null); break;
-                case 1: identityGainBiasParameters[0] =
+                case 1: identityColorParameters[0] =
                             (A.get(0) + A.get(4) + A.get(8))/3; break;
-                case 3: identityGainBiasParameters[0] = A.get(0);
-                        identityGainBiasParameters[1] = A.get(4);
-                        identityGainBiasParameters[2] = A.get(8); break;
-                case 9: A.get(0, identityGainBiasParameters, 0, 9); break;
+                case 3: identityColorParameters[0] = A.get(0);
+                        identityColorParameters[1] = A.get(4);
+                        identityColorParameters[2] = A.get(8); break;
+                case 9: A.get(0, identityColorParameters, 0, 9); break;
                 default: assert (false);
             }
             switch (numBiases) {
                 case 0: assert (b == null); break;
-                case 1: identityGainBiasParameters[numGains] =
+                case 1: identityColorParameters[numGains] =
                             (b.get(0) + b.get(1) + b.get(2))/3;   break;
-                case 3: b.get(0, identityGainBiasParameters, numGains, 3); break;
+                case 3: b.get(0, identityColorParameters, numGains, 3); break;
                 default: assert (false);
             }
 
             reset(false);
         }
 
-        protected double[] gainBiasParameters = null, identityGainBiasParameters = null;
+        protected double[] colorParameters = null, identityColorParameters = null;
         private CvMat A = null, b = null;
 
-        public double[] getGainBiasParameters() {
-            return gainBiasParameters;
+        public double[] getColorParameters() {
+            return colorParameters;
         }
-        public double[] getIdentityGainBiasParameters() {
-            return identityGainBiasParameters;
+        public double[] getIdentityColorParameters() {
+            return identityColorParameters;
         }
 
         @Override public int size() {
@@ -258,7 +258,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
             if (i < s) {
                 return super.get(i);
             } else {
-                return gainBiasParameters[i-s];
+                return colorParameters[i-s];
             }
         }
         @Override public void set(int i, double p) {
@@ -266,22 +266,22 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
             if (i < s) {
                 super.set(i, p);
             } else {
-                if (gainBiasParameters[i-s] != p) {
-                    gainBiasParameters[i-s] = p;
+                if (colorParameters[i-s] != p) {
+                    colorParameters[i-s] = p;
                     setUpdateNeeded(true);
                 }
             }
         }
         @Override public void reset(boolean asIdentity) {
             super.reset(asIdentity);
-            resetGainBias(asIdentity);
+            resetColor(asIdentity);
         }
-        public void resetGainBias(boolean asIdentity) {
-            if (identityGainBiasParameters != null) {
-                if (!Arrays.equals(gainBiasParameters, identityGainBiasParameters) ||
+        public void resetColor(boolean asIdentity) {
+            if (identityColorParameters != null) {
+                if (!Arrays.equals(colorParameters, identityColorParameters) ||
                         fakeIdentity != asIdentity) {
                     fakeIdentity = asIdentity;
-                    gainBiasParameters = identityGainBiasParameters.clone();
+                    colorParameters = identityColorParameters.clone();
                     setUpdateNeeded(true);
                 }
             }
@@ -296,7 +296,7 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 //                // referenceCameraImage is good only for the value 1,
 //                // so let's use that
 //                int channel = i-s;
-//                gainBiasParameters[channel] += scale;//1;
+//                colorParameters[channel] += scale;//1;
 //                setUpdateNeeded(true);
 //                return false;
 //            }
@@ -304,9 +304,9 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
         @Override public void compose(ImageTransformer.Parameters p1, boolean inverse1,
                 ImageTransformer.Parameters p2, boolean inverse2) {
             super.compose(p1, inverse1, p2, inverse2);
-            composeGainBias(p1, inverse1, p2, inverse2);
+            composeColor(p1, inverse1, p2, inverse2);
         }
-        public void composeGainBias(ImageTransformer.Parameters p1, boolean inverse1,
+        public void composeColor(ImageTransformer.Parameters p1, boolean inverse1,
                 ImageTransformer.Parameters p2, boolean inverse2) {
             assert (!inverse1 && !inverse2);
 
@@ -344,19 +344,19 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 
             switch (numGains) {
                 case 0: assert (A == null); break;
-                case 1: gainBiasParameters[0] =
+                case 1: colorParameters[0] =
                             (A.get(0) + A.get(4) + A.get(8))/3; break;
-                case 3: gainBiasParameters[0] = A.get(0);
-                        gainBiasParameters[1] = A.get(4);
-                        gainBiasParameters[2] = A.get(8); break;
-                case 9: A.get(0, gainBiasParameters, 0, 9); break;
+                case 3: colorParameters[0] = A.get(0);
+                        colorParameters[1] = A.get(4);
+                        colorParameters[2] = A.get(8); break;
+                case 9: A.get(0, colorParameters, 0, 9); break;
                 default: assert (false);
             }
             switch (numBiases) {
                 case 0: assert (b == null); break;
-                case 1: gainBiasParameters[numGains] =
+                case 1: colorParameters[numGains] =
                             (b.get(0) + b.get(1) + b.get(2))/3;   break;
-                case 3: b.get(0, gainBiasParameters, numGains, 3); break;
+                case 3: b.get(0, colorParameters, numGains, 3); break;
                 default: assert (false);
             }
         }
@@ -377,21 +377,21 @@ public class ProjectiveGainBiasTransformer extends ProjectiveTransformer {
 
             switch (numGains) {
                 case 0: assert (A == null); break;
-                case 1: A.put(0, gainBiasParameters[0]);
-                        A.put(4, gainBiasParameters[0]);
-                        A.put(8, gainBiasParameters[0]); break;
-                case 3: A.put(0, gainBiasParameters[0]);
-                        A.put(4, gainBiasParameters[1]);
-                        A.put(8, gainBiasParameters[2]); break;
-                case 9: A.put(0, gainBiasParameters, 0, 9); break;
+                case 1: A.put(0, colorParameters[0]);
+                        A.put(4, colorParameters[0]);
+                        A.put(8, colorParameters[0]); break;
+                case 3: A.put(0, colorParameters[0]);
+                        A.put(4, colorParameters[1]);
+                        A.put(8, colorParameters[2]); break;
+                case 9: A.put(0, colorParameters, 0, 9); break;
                 default: assert (false);
             }
             switch (numBiases) {
                 case 0: assert (b == null); break;
-                case 1: b.put(0, gainBiasParameters[numGains]);
-                        b.put(1, gainBiasParameters[numGains]);
-                        b.put(2, gainBiasParameters[numGains]);    break;
-                case 3: b.put(0, gainBiasParameters, numGains, 3); break;
+                case 1: b.put(0, colorParameters[numGains]);
+                        b.put(1, colorParameters[numGains]);
+                        b.put(2, colorParameters[numGains]);    break;
+                case 3: b.put(0, colorParameters, numGains, 3); break;
                 default: assert (false);
             }
 
