@@ -48,7 +48,7 @@ public abstract class FrameGrabber {
         for (Class<? extends FrameGrabber> c : list) {
             try {
                 c.getMethod("tryLoad").invoke(null);
-            } catch (Exception ex) { }
+            } catch (Throwable t) { }
         }
     }
     public static Class<? extends FrameGrabber> getDefault() {
@@ -72,7 +72,7 @@ public abstract class FrameGrabber {
                 if (mayContainCameras) {
                     break;
                 }
-            } catch (Exception ex) { }
+            } catch (Throwable t) { }
         }
         return c;
     }
