@@ -50,6 +50,13 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  *     stop() grabber
  *     release() internal resources
  *     
+ * Note:
+ * This code depends on the cl.eye.CLCamera class from Code Laboratories CL-Eye
+ * Platform SDK. It is suggested to download SDK and edit the sample file
+ * ....\cl\eye\CLCamera.java. A few references to processing.core.PApplet class
+ * shall be removed and the file recompiled. The tailored file is not included
+ * here namely because of unclear licence.
+ * 
  *  @author jmasa, jmasa@cmail.cz
  *
  */
@@ -242,7 +249,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
     /** Grab one frame;
      *  the caller have to make a copy of returned image before processing.
      *  
-     *  It will throw null pointer exception id not started before grabbing
+     *  It will throw null pointer exception if not started before grabbing.
      *  @return "read-only" RGB, 4-channel or GRAY/1-channel image, it throws exception if no image is available
      */
     @Override
