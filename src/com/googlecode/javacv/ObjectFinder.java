@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * Adapted from find_obj.cpp in the source package of OpenCV 1.1pre1:
+ * Adapted from the find_obj.cpp sample in the source package of OpenCV 2.3.1:
  *
  * A Demo to OpenCV Implementation of SURF
  * Further Information Refer to "SURF: Speed-Up Robust Feature"
@@ -29,35 +29,29 @@
 package com.googlecode.javacv;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_features2d.*;
+import static com.googlecode.javacv.cpp.opencv_flann.*;
 
 /**
  *
  * @author Samuel Audet
  */
 public class ObjectFinder {
-    public ObjectFinder(IplImage objectImage, CvSURFParams parameters,
-            double distanceThreshold, int matchesMin) throws Exception {
-        settings = new Settings();
-        settings.objectImage = objectImage;
-        settings.parameters = parameters;
-        settings.distanceThreshold = distanceThreshold;
-        settings.matchesMin = matchesMin;
-        setSettings(settings);
-    }
-    public ObjectFinder(IplImage objectImage) throws Exception {
+    public ObjectFinder(IplImage objectImage) {
         settings = new Settings();
         settings.objectImage = objectImage;
         setSettings(settings);
     }
-    public ObjectFinder(Settings settings) throws Exception {
+    public ObjectFinder(Settings settings) {
         setSettings(settings);
-
     }
 
     public static class Settings extends BaseChildSettings {
@@ -66,6 +60,7 @@ public class ObjectFinder {
         double distanceThreshold = 0.6;
         int matchesMin = 4;
         double ransacReprojThreshold = 1.0;
+        boolean useFLANN = false;
 
         public IplImage getObjectImage() {
             return objectImage;
@@ -129,13 +124,20 @@ public class ObjectFinder {
         public void setRansacReprojThreshold(double ransacReprojThreshold) {
             this.ransacReprojThreshold = ransacReprojThreshold;
         }
+
+        public boolean isUseFLANN() {
+            return useFLANN;
+        }
+        public void setUseFLANN(boolean useFLANN) {
+            this.useFLANN = useFLANN;
+        }
     }
 
     private Settings settings;
     public Settings getSettings() {
         return settings;
     }
-    public void setSettings(Settings settings) throws Exception {
+    public void setSettings(Settings settings) {
         this.settings = settings;
 
         CvSeq keypoints = new CvSeq(null), descriptors = new CvSeq(null);
@@ -143,16 +145,29 @@ public class ObjectFinder {
         cvExtractSURF(settings.objectImage, null, keypoints, descriptors, storage, settings.parameters, 0);
 
         int total = descriptors.total();
-        int elem_size = descriptors.elem_size();
+        int size = descriptors.elem_size();
         objectKeypoints = new CvSURFPoint[total];
         objectDescriptors = new FloatBuffer[total];
         for (int i = 0; i < total; i++ ) {
             objectKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
-            objectDescriptors[i] = cvGetSeqElem(descriptors, i).capacity(elem_size).asByteBuffer().asFloatBuffer();
+            objectDescriptors[i] = cvGetSeqElem(descriptors, i).capacity(size).asByteBuffer().asFloatBuffer();
         }
-        localpt1  = CvMat.createThreadLocal(1, objectDescriptors.length, CV_32F, 2);
-        localpt2  = CvMat.createThreadLocal(1, objectDescriptors.length, CV_32F, 2);
-        localmask = CvMat.createThreadLocal(1, objectDescriptors.length, CV_8U,  1);
+        if (settings.useFLANN) {
+            int length = objectDescriptors[0].capacity();
+            objectMat  = CvMat.create(total, length, CV_32F, 1);
+            imageMat   = CvMat.create(total, length, CV_32F, 1);
+            indicesMat = CvMat.create(total,      2, CV_32S, 1);
+            distsMat   = CvMat.create(total,      2, CV_32F, 1);
+
+            flannIndex = new Index();
+            indexParams = new KDTreeIndexParams(4); // using 4 randomized kdtrees
+            searchParams = new SearchParams(64, 0, true); // maximum number of leafs checked
+        }
+        pt1  = CvMat.create(1, total, CV_32F, 2);
+        pt2  = CvMat.create(1, total, CV_32F, 2);
+        mask = CvMat.create(1, total, CV_8U,  1);
+        H    = CvMat.create(3, 3);
+        ptpairs = new ArrayList<Integer>(2*objectDescriptors.length);
         logger.info(total + " object descriptors");
     }
 
@@ -160,21 +175,27 @@ public class ObjectFinder {
 
     private CvMemStorage storage     = CvMemStorage.create();
     private CvMemStorage tempStorage = CvMemStorage.create();
-    private CvSURFPoint[] objectKeypoints   = null;
-    private FloatBuffer[] objectDescriptors = null;
-    private ThreadLocal<CvMat> localpt1 = null, localpt2 = null, localmask = null;
+    private CvSURFPoint[] objectKeypoints   = null, imageKeypoints = null;
+    private FloatBuffer[] objectDescriptors = null, imageDescriptors = null;
+    private CvMat objectMat, imageMat, indicesMat, distsMat;
+    private Index flannIndex = null;
+    private IndexParams indexParams = null;
+    private SearchParams searchParams = null;
+    private CvMat pt1 = null, pt2 = null, mask = null, H = null;
+    private ArrayList<Integer> ptpairs = null;
 
     public double[] find(IplImage image) {
         CvSeq keypoints = new CvSeq(null), descriptors = new CvSeq(null);
+        cvClearMemStorage(tempStorage);
         cvExtractSURF(image, null, keypoints, descriptors, tempStorage, settings.parameters, 0);
 
         int total = descriptors.total();
-        int elem_size = descriptors.elem_size();
-        CvSURFPoint[] imageKeypoints = new CvSURFPoint[total];
-        FloatBuffer[] imageDescriptors = new FloatBuffer[total];
+        int size = descriptors.elem_size();
+        imageKeypoints = new CvSURFPoint[total];
+        imageDescriptors = new FloatBuffer[total];
         for (int i = 0; i < total; i++ ) {
             imageKeypoints[i] = new CvSURFPoint(cvGetSeqElem(keypoints, i));
-            imageDescriptors[i] = cvGetSeqElem(descriptors, i).capacity(elem_size).asByteBuffer().asFloatBuffer();
+            imageDescriptors[i] = cvGetSeqElem(descriptors, i).capacity(size).asByteBuffer().asFloatBuffer();
         }
         logger.info(total + " image descriptors");
 
@@ -183,7 +204,6 @@ public class ObjectFinder {
         double[] srcCorners = {0, 0,  w, 0,  w, h,  0, h};
         double[] dstCorners = locatePlanarObject(objectKeypoints, objectDescriptors,
                 imageKeypoints, imageDescriptors, srcCorners);
-        cvClearMemStorage(tempStorage);
         return dstCorners;
     }
 
@@ -226,9 +246,8 @@ public class ObjectFinder {
         return -1;
     }
 
-    private ArrayList<Integer> findPairs(CvSURFPoint[] objectKeypoints, FloatBuffer[] objectDescriptors,
+    private void findPairs(CvSURFPoint[] objectKeypoints, FloatBuffer[] objectDescriptors,
                CvSURFPoint[] imageKeypoints, FloatBuffer[] imageDescriptors) {
-        ArrayList<Integer> ptpairs = new ArrayList<Integer>(2*objectDescriptors.length);
         for (int i = 0; i < objectDescriptors.length; i++ ) {
             CvSURFPoint kp = objectKeypoints[i];
             FloatBuffer descriptor = objectDescriptors[i];
@@ -238,32 +257,68 @@ public class ObjectFinder {
                 ptpairs.add(nearestNeighbor);
             }
         }
-        return ptpairs;
+    }
+
+    private void flannFindPairs(FloatBuffer[] objectDescriptors,  FloatBuffer[] imageDescriptors) {
+        int length = objectDescriptors[0].capacity();
+
+        if (imageMat.rows() < imageDescriptors.length) {
+            imageMat = CvMat.create(imageDescriptors.length, length, CV_32F, 1);
+        }
+        int imageRows = imageMat.rows();
+        imageMat.rows(imageDescriptors.length);
+
+        // copy descriptors
+        FloatBuffer objectBuf = objectMat.getFloatBuffer();
+        for (int i = 0; i < objectDescriptors.length; i++) {
+            objectBuf.put(objectDescriptors[i]);
+        }
+
+        FloatBuffer imageBuf = imageMat.getFloatBuffer();
+        for (int i = 0; i < imageDescriptors.length; i++) {
+            imageBuf.put(imageDescriptors[i]);
+        }
+
+        // find nearest neighbors using FLANN
+        flannIndex.build(imageMat, indexParams, FLANN_DIST_L2);
+        flannIndex.knnSearch(objectMat, indicesMat, distsMat, 2, searchParams);
+
+        IntBuffer indicesBuf = indicesMat.getIntBuffer();
+        FloatBuffer distsBuf = distsMat.getFloatBuffer();
+        for (int i = 0; i < objectDescriptors.length; i++) {
+            if (distsBuf.get(2*i) < settings.distanceThreshold*distsBuf.get(2*i+1)) {
+                ptpairs.add(i);
+                ptpairs.add(indicesBuf.get(2*i));
+            }
+        }
+        imageMat.rows(imageRows);
     }
 
     /* a rough implementation for object location */
-    private static ThreadLocal<CvMat>
-            H3x3 = CvMat.createThreadLocal(3, 3);
     private double[] locatePlanarObject(CvSURFPoint[] objectKeypoints, FloatBuffer[] objectDescriptors,
             CvSURFPoint[] imageKeypoints, FloatBuffer[] imageDescriptors, double[] srcCorners) {
-        ArrayList<Integer> ptpairs = findPairs(objectKeypoints, objectDescriptors, imageKeypoints, imageDescriptors);
+        ptpairs.clear();
+        if (settings.useFLANN) {
+            flannFindPairs(objectDescriptors, imageDescriptors);
+        } else {
+            findPairs(objectKeypoints, objectDescriptors, imageKeypoints, imageDescriptors);
+        }
         int n = ptpairs.size()/2;
         logger.info(n + " matching pairs found");
         if (n < settings.matchesMin) {
             return null;
         }
 
-        CvMat pt1  = localpt1 .get(); pt1 .cols(n);
-        CvMat pt2  = localpt2 .get(); pt2 .cols(n);
-        CvMat mask = localmask.get(); mask.cols(n);
+        pt1 .cols(n);
+        pt2 .cols(n);
+        mask.cols(n);
         for (int i = 0; i < n; i++) {
-            CvPoint2D32f p1 = objectKeypoints[ptpairs.get(i*2)].pt();
-            pt1.put(i*2, p1.x()); pt1.put(i*2+1, p1.y());
-            CvPoint2D32f p2 = imageKeypoints[ptpairs.get(i*2+1)].pt();
-            pt2.put(i*2, p2.x()); pt2.put(i*2+1, p2.y());
+            CvPoint2D32f p1 = objectKeypoints[ptpairs.get(2*i)].pt();
+            pt1.put(2*i, p1.x()); pt1.put(2*i+1, p1.y());
+            CvPoint2D32f p2 = imageKeypoints[ptpairs.get(2*i+1)].pt();
+            pt2.put(2*i, p2.x()); pt2.put(2*i+1, p2.y());
         }
 
-        CvMat H = H3x3.get();
         if (cvFindHomography(pt1, pt2, H, CV_RANSAC, settings.ransacReprojThreshold, mask) == 0) {
             return null;
         }
@@ -272,19 +327,90 @@ public class ObjectFinder {
         }
 
         double[] h = H.get();
-        double[] dstCorners = new double[8];
-        for(int i = 0; i < 4; i++) {
+        double[] dstCorners = new double[srcCorners.length];
+        for(int i = 0; i < srcCorners.length/2; i++) {
             double x = srcCorners[2*i], y = srcCorners[2*i + 1];
-            double Z = 1./(h[6]*x + h[7]*y + h[8]);
+            double Z = 1/(h[6]*x + h[7]*y + h[8]);
             double X = (h[0]*x + h[1]*y + h[2])*Z;
             double Y = (h[3]*x + h[4]*y + h[5])*Z;
             dstCorners[2*i    ] = X;
             dstCorners[2*i + 1] = Y;
         }
 
-        pt1.cols (objectDescriptors.length);
-        pt2.cols (objectDescriptors.length);
+        pt1 .cols(objectDescriptors.length);
+        pt2 .cols(objectDescriptors.length);
         mask.cols(objectDescriptors.length);
         return dstCorners;
+    }
+
+    public static void main(String[] args) throws Exception {
+//        Logger.getLogger("com.googlecode.javacv").setLevel(Level.OFF);
+
+        String objectFilename = args.length == 2 ? args[0] : "/usr/share/opencv/samples/c/box.png";
+        String sceneFilename  = args.length == 2 ? args[1] : "/usr/share/opencv/samples/c/box_in_scene.png";
+
+        IplImage object = cvLoadImage(objectFilename, CV_LOAD_IMAGE_GRAYSCALE);
+        IplImage image  = cvLoadImage(sceneFilename,  CV_LOAD_IMAGE_GRAYSCALE);
+        if (object == null || image == null) {
+            System.err.println("Can not load " + objectFilename + " and/or " + sceneFilename);
+            System.exit(-1);
+        }
+
+        IplImage objectColor = IplImage.create(object.width(), object.height(), 8, 3);
+        cvCvtColor(object, objectColor, CV_GRAY2BGR);
+
+        IplImage correspond = IplImage.create(image.width(), object.height()+ image.height(), 8, 1);
+        cvSetImageROI(correspond, cvRect(0, 0, object.width(), object.height()));
+        cvCopy(object, correspond);
+        cvSetImageROI(correspond, cvRect(0, object.height(), correspond.width(), correspond.height()));
+        cvCopy(image, correspond);
+        cvResetImageROI(correspond);
+
+        ObjectFinder.Settings settings = new ObjectFinder.Settings();
+        settings.objectImage = object;
+        settings.useFLANN = true;
+        ObjectFinder finder = new ObjectFinder(settings);
+
+        long start = System.currentTimeMillis();
+        double[] dst_corners = finder.find(image);
+        System.out.println("Finding time = " + (System.currentTimeMillis() - start) + " ms");
+
+        if (dst_corners !=  null) {
+            for (int i = 0; i < 4; i++) {
+                int j = (i+1)%4;
+                int x1 = (int)Math.round(dst_corners[2*i    ]);
+                int y1 = (int)Math.round(dst_corners[2*i + 1]);
+                int x2 = (int)Math.round(dst_corners[2*j    ]);
+                int y2 = (int)Math.round(dst_corners[2*j + 1]);
+                cvLine(correspond, cvPoint(x1, y1 + object.height()),
+                        cvPoint(x2, y2 + object.height()),
+                        CvScalar.WHITE, 1, 8, 0);
+            }
+        }
+
+        for (int i = 0; i < finder.ptpairs.size(); i += 2) {
+            CvPoint2D32f pt1 = finder.objectKeypoints[finder.ptpairs.get(i)].pt();
+            CvPoint2D32f pt2 = finder.imageKeypoints[finder.ptpairs.get(i+1)].pt();
+            cvLine(correspond, cvPointFrom32f(pt1),
+                    cvPoint(Math.round(pt2.x()), Math.round(pt2.y()+object.height())),
+                    CvScalar.WHITE, 1, 8, 0);
+        }
+
+        CanvasFrame objectFrame = new CanvasFrame("Object");
+        CanvasFrame correspondFrame = new CanvasFrame("Object Correspond");
+
+        correspondFrame.showImage(correspond);
+        for (int i = 0; i < finder.objectKeypoints.length; i++ ) {
+            CvSURFPoint r = finder.objectKeypoints[i];
+            CvPoint center = cvPointFrom32f(r.pt());
+            int radius = Math.round(r.size()*1.2f/9*2);
+            cvCircle(objectColor, center, radius, CvScalar.RED, 1, 8, 0);
+        }
+        objectFrame.showImage(objectColor);
+
+        objectFrame.waitKey();
+
+        objectFrame.dispose();
+        correspondFrame.dispose();
     }
 }

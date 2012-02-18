@@ -77,7 +77,8 @@ public class ReflectanceInitializer {
         return projectorImages;
     }
 
-    public IplImage initializeReflectance(IplImage[] cameraImages, double[] roiPts, double[] ambientLight) {
+    public IplImage initializeReflectance(IplImage[] cameraImages, IplImage reflectance,
+            double[] roiPts, double[] gainAmbientLight) {
         int w        = cameraImages[0].width();
         int h        = cameraImages[0].height();
         int channels = cameraImages[0].nChannels();
@@ -90,7 +91,7 @@ public class ReflectanceInitializer {
         // make the images very very smooth to compensate for small movements
         IplImage float1 = cameraImages[0];
         IplImage float2 = cameraImages[1];
-        IplImage reflectance = float2.clone();
+        cvCopy(float2, reflectance);
         cvSmooth(float1, float1, CV_GAUSSIAN, smoothingSize, 0, 0, 0);
         cvSmooth(float2, float2, CV_GAUSSIAN, smoothingSize, 0, 0, 0);
 
@@ -136,13 +137,14 @@ public class ReflectanceInitializer {
                 if (mb.get(i) != 0) {
                     if (r > reflectanceMin) {
                         nPixels[z]++;
-                        ambientLight[z] += a;
+                        gainAmbientLight[z+1] += a;
                     }
                 }
             }
         }
-        for (int z = 0; z < ambientLight.length; z++) {
-            ambientLight[z] = nPixels[z] == 0 ? 0 : ambientLight[z]/nPixels[z];
+        gainAmbientLight[0] = 1.0; // assume projector gain = 1.0
+        for (int z = 0; z < gainAmbientLight.length-1; z++) {
+            gainAmbientLight[z+1] = nPixels[z] == 0 ? 0 : gainAmbientLight[z+1]/nPixels[z];
         }
 //        System.out.println(ambientLight[0] + " " + ambientLight[1] + " " + ambientLight[2]);
 
@@ -159,21 +161,20 @@ public class ReflectanceInitializer {
         return reflectance;
     }
 
-    public CvMat initializePlaneParameters(IplImage[] cameraImages, IplImage reflectance,
-            double[] roiPts, double[] ambientLight) {
+    public CvMat initializePlaneParameters(IplImage reflectance, IplImage cameraImage,
+            double[] roiPts, double[] gainAmbientLight) {
         ProCamTransformer transformer = new ProCamTransformer(roiPts, cameraDevice, projectorDevice, null);
-        transformer.setProjectorImage(projectorImages[2], 0, alignerSettings.maxPyramidLevel);
+        transformer.setProjectorImage(projectorImages[2], 0, alignerSettings.pyramidLevelMax);
 
         ProCamTransformer.Parameters parameters = transformer.createParameters();
 //        parameters.set(8,  0);
 //        parameters.set(9,  0);
 //        parameters.set(10, -1/cameraDevice.getSettings().nominalDistance);
-        parameters.set(11, 1.0);
-        for (int i = 0; i < ambientLight.length; i++) {
-            parameters.set(12+i, ambientLight[i]);
+        for (int i = 0; i < gainAmbientLight.length; i++) {
+            parameters.set(11+i, gainAmbientLight[i]);
         }
         ImageAligner aligner = new GNImageAligner(transformer, parameters,
-                reflectance, roiPts, cameraImages[2], alignerSettings);
+                reflectance, roiPts, cameraImage, alignerSettings);
 
         double[] delta = new double[parameters.size()+1];
         boolean converged = false;
@@ -184,6 +185,9 @@ public class ReflectanceInitializer {
             iterations++;
         }
         parameters = (ProCamTransformer.Parameters)aligner.getParameters();
+//        for (int i = 0; i < gainAmbientLight.length; i++) {
+//            gainAmbientLight[i] = parameters.get(11+i);
+//        }
         Logger.getLogger(ReflectanceInitializer.class.getName()).info(
             "iteratingTime = " + (System.currentTimeMillis()-iterationsStartTime) +
                 "  iterations = " + iterations + "  objectiveRMSE = " + (float)aligner.getRMSE());

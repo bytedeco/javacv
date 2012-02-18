@@ -32,11 +32,13 @@ import com.jogamp.opencl.CLImageFormat;
 import com.jogamp.opencl.CLImageFormat.ChannelOrder;
 import com.jogamp.opencl.CLImageFormat.ChannelType;
 import com.jogamp.opencl.CLKernel;
+import com.jogamp.opencl.CLMemory;
 import com.jogamp.opencl.CLObject;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.opencl.CLProgram;
 import com.jogamp.opencl.CLProgram.CompilerOptions;
 import com.jogamp.opencl.gl.CLGLContext;
+import com.jogamp.opencl.gl.CLGLImage2d;
 import com.jogamp.opencl.gl.CLGLObject;
 import java.io.InputStream;
 import java.io.IOException;
@@ -45,7 +47,9 @@ import java.nio.ByteBuffer;
 import java.util.Vector;
 import java.util.logging.Logger;
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLCapabilitiesImmutable;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLException;
@@ -60,6 +64,11 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
 /**
  *
  * @author Samuel Audet
+ *
+ * To make NVIDIA drivers happy, we may need to limit the maximum
+ * heap memory size of Java to 1 GB, by defining something like
+ *      export _JAVA_OPTIONS=-Xmx1G
+ *
  */
 public class JavaCVCL {
     public JavaCVCL(CLContext context) {
@@ -76,31 +85,33 @@ public class JavaCVCL {
         this.remapBayerKernel = kernels[2];
     }
 
+    public static GLCapabilities getDefaultGLCapabilities(GLProfile profile) {
+        GLCapabilities caps = new GLCapabilities(profile != null ? profile : GLProfile.getDefault());
+        // Without line below, there is an error on Windows.
+        caps.setDoubleBuffered(false);
+        return caps;
+    }
+
     public JavaCVCL() {
-        this(null, null, null);
+        this(false);
     }
-    public JavaCVCL(GLProfile profile) {
-        this(null, profile, null);
+    public JavaCVCL(boolean createPbuffer) {
+        this(createPbuffer ? getDefaultGLCapabilities(null) : null, null, null);
     }
-    public JavaCVCL(GLContext shareContext) {
-        this(shareContext, null, null);
+    public JavaCVCL(GLContext shareWith) {
+        this(getDefaultGLCapabilities(shareWith == null ? null :
+            shareWith.getGLDrawable().getGLProfile()), shareWith, null);
     }
-    public JavaCVCL(GLContext shareContext, GLProfile profile, CLDevice device) {
-        if (shareContext != null && profile == null) {
-            profile = shareContext.getGL().getGLProfile();
-        }
+    public JavaCVCL(GLCapabilitiesImmutable caps, GLContext shareWith, CLDevice device) {
         GLPbuffer pbuffer = null;
-        if (profile != null) {
-            GLDrawableFactory factory = GLDrawableFactory.getFactory(profile);
+        if (caps != null) {
+            GLDrawableFactory factory = GLDrawableFactory.getFactory(caps.getGLProfile());
             if (factory.canCreateGLPbuffer(null)) {
                 try {
-                    GLCapabilities config = new GLCapabilities(profile);
-                    // Without line below, there is an error on Windows.
-                    config.setDoubleBuffered(false);
                     // makes a new buffer
-                    pbuffer = factory.createGLPbuffer(null, config, null, 32, 32, shareContext);
+                    pbuffer = factory.createGLPbuffer(null, caps, null, 32, 32, shareWith);
                     // required for drawing to the buffer
-                    pbuffer.createContext(shareContext).makeCurrent();
+                    pbuffer.createContext(shareWith).makeCurrent();
                 } catch (GLException e) {
                     logger.warning("Could not create PBuffer: " + e);
                 }
@@ -142,7 +153,7 @@ public class JavaCVCL {
             glu = null;
         }
 
-//        CLImageFormat[] formats = context.getSupportedImage2dFormats(CLMemory.Mem.READ_WRITE);
+//        CLImageFormat[] formats = context.getSupportedImage2dFormats();
 //        for (CLImageFormat f : formats) {
 //            System.out.println(f);
 //        }
@@ -192,15 +203,21 @@ public class JavaCVCL {
     }
 
     public CLGLContext getCLGLContext() {
-        return (CLGLContext)context;
+        return context instanceof CLGLContext ? (CLGLContext)context : null;
     }
 
     public GLContext getGLContext() {
-        return ((CLGLContext)context).getGLContext();
+        return context instanceof CLGLContext ? ((CLGLContext)context).getGLContext() : null;
     }
 
     public GL getGL() {
-        return ((CLGLContext)context).getGLContext().getGL();
+        GLContext glContext = getGLContext();
+        return glContext != null ? glContext.getGL() : null;
+    }
+
+    public GL2 getGL2() {
+        GL gl = getGL();
+        return gl != null ? gl.getGL2() : null;
     }
 
     public GLU getGLU() {
@@ -248,15 +265,15 @@ public class JavaCVCL {
         }
     }
 
-    public CLImage2d createCLImage(IplImage from, CLImage2d.Mem ... flags) {
-        int width = from.width();
-        int height = from.height();
-        int pitch = from.widthStep();
-        ByteBuffer buffer = from.getByteBuffer();
+    public CLImage2d createCLImageFrom(IplImage image, CLImage2d.Mem ... flags) {
+        int width = image.width();
+        int height = image.height();
+        int pitch = image.widthStep();
+        ByteBuffer buffer = image.getByteBuffer();
         ChannelOrder order = null;
         ChannelType type = null;
         int size = 0;
-        switch (from.depth()) {
+        switch (image.depth()) {
             case IPL_DEPTH_8S:  type = ChannelType.SNORM_INT8;   size = 1; break;
             case IPL_DEPTH_8U:  type = ChannelType.UNORM_INT8;   size = 1; break;
             case IPL_DEPTH_16S: type = ChannelType.SNORM_INT16;  size = 2; break;
@@ -265,26 +282,137 @@ public class JavaCVCL {
             case IPL_DEPTH_32F: type = ChannelType.FLOAT;        size = 4; break;
             default: assert false;
         }
-        switch (from.nChannels()) {
-            case 1: order = ChannelOrder.R;
-                if (width != pitch/size) {
-                    // NVIDIA drivers do not like it when width != pitch/size
-                    width = pitch/size;
-                }
-                break;
-            case 2: order = ChannelOrder.RG;   break;
-            case 3: order = ChannelOrder.RGB;  break;
-            case 4: order = ChannelOrder.RGBA; break;
+        switch (image.nChannels()) {
+            case 1: order = ChannelOrder.LUMINANCE;       break;
+            case 2: order = ChannelOrder.RG;   size *= 2; break;
+            case 3: order = ChannelOrder.RGB;  size *= 3; break;
+            case 4: order = ChannelOrder.RGBA; size *= 4; break;
             default: assert false;
+        }
+        // NVIDIA drivers do not like it when width != pitch/size
+        if (width != pitch/size) {
+            width = pitch/size;
         }
         CLImageFormat format = new CLImageFormat(order, type);
         return context.createImage2d(buffer, width, height, /*pitch,*/ format, flags);
     }
 
-    public IplImage createIplImage(CLImage2d from) {
-        int width = from.width;
-        int height = from.height;
-        CLImageFormat format = from.getFormat();
+    public CLGLImage2d createCLGLImageFrom(IplImage image, CLImage2d.Mem ... flags) {
+        GL2 gl = getGL2();
+        if (gl == null) {
+            return null;
+        }
+
+        int width = image.width();
+        int height = image.height();
+        int pitch = image.widthStep();
+        //ByteBuffer buffer = image.getByteBuffer();
+        int format = 0;
+        int size = 0;
+        switch (image.nChannels()) {
+            case 1:
+                switch (image.depth()) {
+                    case IPL_DEPTH_8S:  format = GL2.GL_LUMINANCE8_SNORM;  size = 1; break;
+                    case IPL_DEPTH_8U:  format = GL2.GL_LUMINANCE8;        size = 1; break;
+                    case IPL_DEPTH_16S: format = GL2.GL_LUMINANCE16_SNORM; size = 2; break;
+                    case IPL_DEPTH_16U: format = GL2.GL_LUMINANCE16;       size = 2; break;
+                    case IPL_DEPTH_32S: format = GL2.GL_LUMINANCE32I;      size = 4; break;
+                    case IPL_DEPTH_32F: format = GL2.GL_LUMINANCE32F;      size = 4; break;
+                    default: assert false;
+                }
+                break;
+            case 2:
+                switch (image.depth()) {
+                    case IPL_DEPTH_8S:  format = GL2.GL_RG8_SNORM;  size = 2; break;
+                    case IPL_DEPTH_8U:  format = GL2.GL_RG8;        size = 2; break;
+                    case IPL_DEPTH_16S: format = GL2.GL_RG16_SNORM; size = 4; break;
+                    case IPL_DEPTH_16U: format = GL2.GL_RG16;       size = 4; break;
+                    case IPL_DEPTH_32S: format = GL2.GL_RG32I;      size = 8; break;
+                    case IPL_DEPTH_32F: format = GL2.GL_RG32F;      size = 8; break;
+                    default: assert false;
+                }
+                break;
+            case 3:
+                switch (image.depth()) {
+                    case IPL_DEPTH_8S:  format = GL2.GL_RGB8_SNORM;  size = 3; break;
+                    case IPL_DEPTH_8U:  format = GL2.GL_RGB8;        size = 3; break;
+                    case IPL_DEPTH_16S: format = GL2.GL_RGB16_SNORM; size = 6; break;
+                    case IPL_DEPTH_16U: format = GL2.GL_RGB16;       size = 6; break;
+                    case IPL_DEPTH_32S: format = GL2.GL_RGB32I;      size = 12; break;
+                    case IPL_DEPTH_32F: format = GL2.GL_RGB32F;      size = 12; break;
+                    default: assert false;
+                }
+                break;
+            case 4:
+                switch (image.depth()) {
+                    case IPL_DEPTH_8S:  format = GL2.GL_RGBA8_SNORM;  size = 4; break;
+                    case IPL_DEPTH_8U:  format = GL2.GL_RGBA8;        size = 4; break;
+                    case IPL_DEPTH_16S: format = GL2.GL_RGBA16_SNORM; size = 8; break;
+                    case IPL_DEPTH_16U: format = GL2.GL_RGBA16;       size = 8; break;
+                    case IPL_DEPTH_32S: format = GL2.GL_RGBA32I;      size = 16; break;
+                    case IPL_DEPTH_32F: format = GL2.GL_RGBA32F;      size = 16; break;
+                    default: assert false;
+                }
+                break;
+            default: assert false;
+        }
+        // NVIDIA drivers do not like it when width != pitch/size
+        if (width != pitch/size) {
+            width = pitch/size;
+        }
+        int[] renderBuffer = new int[1];
+        gl.glGenRenderbuffers(1, renderBuffer, 0);
+        gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, renderBuffer[0]);
+        gl.glRenderbufferStorage(GL2.GL_RENDERBUFFER, format, width, height);
+        return getCLGLContext().createFromGLRenderbuffer(renderBuffer[0], flags);
+    }
+
+    public void releaseCLGLImage(CLGLImage2d image) {
+        image.release();
+        getGL2().glDeleteRenderbuffers(1, new int[] { image.getGLObjectID() }, 0);
+    }
+
+    @SuppressWarnings("unchecked")
+    public CLBuffer createPinnedBuffer(int size) {
+        // as per NVIDIA's OpenCL Best Practices Guide
+        CLBuffer pinnedBuffer = context.createBuffer(size, CLMemory.Mem.ALLOCATE_BUFFER);
+        ByteBuffer byteBuffer = commandQueue.putMapBuffer(pinnedBuffer, CLMemory.Map.READ_WRITE, true);
+        pinnedBuffer.use(byteBuffer);
+        return pinnedBuffer;
+    }
+
+    class PinnedIplImage extends IplImage {
+        PinnedIplImage(int width, int height, int depth, int channels) {
+            super(cvCreateImageHeader(new CvSize(width, height), depth, channels));
+            pinnedBuffer = createPinnedBuffer(imageSize());
+            imageData(getByteBuffer());
+        }
+
+        final CLBuffer pinnedBuffer;
+
+        public CLBuffer getCLBuffer() {
+            return pinnedBuffer;
+        }
+
+        @Override public ByteBuffer getByteBuffer() {
+            return (ByteBuffer)pinnedBuffer.getBuffer();
+        }
+
+        @Override public void release() {
+            commandQueue.putUnmapMemory(pinnedBuffer, getByteBuffer());
+            pinnedBuffer.release();
+            cvReleaseImageHeader(this);
+        }
+    }
+
+    public IplImage createPinnedIplImage(int width, int height, int depth, int channels) {
+        return new PinnedIplImage(width, height, depth, channels);
+    }
+
+    public IplImage createIplImageFrom(CLImage2d image) {
+        int width = image.width;
+        int height = image.height;
+        CLImageFormat format = image.getFormat();
         ChannelOrder order = format.getImageChannelOrder();
         ChannelType type = format.getImageChannelDataType();
         int depth = 0, channels = 0;
@@ -331,12 +459,13 @@ public class JavaCVCL {
             default: assert false;
         }
         return IplImage.create(width, height, depth, channels);
+        //return createPinnedIplImage(width, height, depth, channels);
     }
 
     @SuppressWarnings("unchecked")
     public IplImage readImage(CLImage2d clImg, IplImage iplImage, boolean blocking) {
         if (iplImage == null) {
-            iplImage = createIplImage(clImg);
+            iplImage = createIplImageFrom(clImg);
         }
         int x = 0, y = 0;
         int width = clImg.width;
@@ -360,7 +489,7 @@ public class JavaCVCL {
     @SuppressWarnings("unchecked")
     public CLImage2d writeImage(CLImage2d clImg, IplImage iplImage, boolean blocking) {
         if (clImg == null) {
-            clImg = createCLImage(iplImage);
+            clImg = createCLImageFrom(iplImage);
         }
         int x = 0, y = 0;
         int width = iplImage.width();
@@ -553,12 +682,12 @@ public class JavaCVCL {
         System.out.println("cvRemap: " + (System.nanoTime()-start)/1000000.0);
         cvSaveImage("/tmp/opencv.png", downDst);
 
-        CLImage2d src = context.createCLImage(srcImg);
-//        CLImage2d dst = context.createCLImage(dstImg);
-        CLImage2d dst = context.createCLImage(downDst);
+        CLImage2d src = context.createCLImageFrom(srcImg);
+//        CLImage2d dst = context.createCLImageFrom(dstImg);
+        CLImage2d dst = context.createCLImageFrom(downDst);
 
-        CLImage2d mapx = context.createCLImage(mapxImg);
-        CLImage2d mapy = context.createCLImage(mapyImg);
+        CLImage2d mapx = context.createCLImageFrom(mapxImg);
+        CLImage2d mapy = context.createCLImageFrom(mapyImg);
         context.writeImage(src, srcImg, false);
         context.writeImage(mapx, mapxImg, false);
         context.writeImage(mapy, mapyImg, false);

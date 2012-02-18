@@ -47,15 +47,17 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
         this.H1Buffer = context.getCLContext().createFloatBuffer(dotSize*9,  CLBuffer.Mem.READ_ONLY);
         this.H2Buffer = context.getCLContext().createFloatBuffer(dotSize*9,  CLBuffer.Mem.READ_ONLY);
         this.XBuffer  = context.getCLContext().createFloatBuffer(dotSize*16, CLBuffer.Mem.READ_ONLY);
-        CLKernel[] kernels = context.buildKernels(
-                JavaCVCL.fastCompilerOptions + " -cl-nv-maxrregcount=32 -DDOT_SIZE=" + dotSize,
-                //JavaCVCL.fastCompilerOptions + " -DDOT_SIZE=" + dotSize,
-                "ImageTransformer.cl:ProCamTransformer.cl",
-                "transformOne", "transformSub", "transformDot", "reduceOutputData");
-        oneKernel    = kernels[0];
-        subKernel    = kernels[1];
-        dotKernel    = kernels[2];
-        reduceKernel = kernels[3];
+        if (getClass() == ProCamTransformerCL.class) {
+            CLKernel[] kernels = context.buildKernels(
+                    JavaCVCL.fastCompilerOptions + " -cl-nv-maxrregcount=32 -DDOT_SIZE=" + dotSize,
+                    //JavaCVCL.fastCompilerOptions + " -DDOT_SIZE=" + dotSize,
+                    "ImageTransformer.cl:ProCamTransformer.cl",
+                    "transformOne", "transformSub", "transformDot", "reduceOutputData");
+            oneKernel    = kernels[0];
+            subKernel    = kernels[1];
+            dotKernel    = kernels[2];
+            reduceKernel = kernels[3];
+        }
 
         this.surfaceTransformer = new ProjectiveColorTransformerCL(context,
                 camera.cameraMatrix, camera.cameraMatrix, null, null, n,
@@ -76,7 +78,7 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
     protected final JavaCVCL context;
     protected final CLBuffer<FloatBuffer> H1Buffer, H2Buffer, XBuffer;
     protected CLImage2d[] projectorImageCL = null, surfaceImageCL = null;
-    private final CLKernel oneKernel, subKernel, dotKernel, reduceKernel;
+    private CLKernel oneKernel, subKernel, dotKernel, reduceKernel;
 
     public JavaCVCL getContext() {
         return context;
@@ -102,7 +104,7 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
                 int w = projectorImageCL[i-1].width/2;
                 int h = projectorImageCL[i-1].height/2;
                 CLImageFormat format = new CLImageFormat(CLImageFormat.ChannelOrder.RGBA, CLImageFormat.ChannelType.FLOAT);
-                projectorImageCL[i] = context.getCLContext().createImage2d(w, h, format, CLMemory.Mem.READ_WRITE);
+                projectorImageCL[i] = context.getCLContext().createImage2d(w, h, format);
             }
             context.pyrDown(projectorImageCL[i-1], projectorImageCL[i]);
         }
@@ -120,7 +122,7 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
                 int w = surfaceImageCL[i-1].width/2;
                 int h = surfaceImageCL[i-1].height/2;
                 CLImageFormat format = new CLImageFormat(CLImageFormat.ChannelOrder.RGBA, CLImageFormat.ChannelType.FLOAT);
-                surfaceImageCL[i] = context.getCLContext().createImage2d(w, h, format, CLMemory.Mem.READ_WRITE);
+                surfaceImageCL[i] = context.getCLContext().createImage2d(w, h, format);
             }
             context.pyrDown(surfaceImageCL[i-1], surfaceImageCL[i]);
         }

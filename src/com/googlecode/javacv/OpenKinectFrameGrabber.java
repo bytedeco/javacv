@@ -70,11 +70,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
             try {
                 Loader.load(com.googlecode.javacv.cpp.freenect.class);
             } catch (Throwable t) {
-                if (t instanceof Exception) {
-                    throw loadingException = (Exception)t;
-                } else {
-                    throw loadingException = new Exception(t);
-                }
+                throw loadingException = new Exception("Failed to load " + OpenKinectFrameGrabber.class, t);
             }
         }
     }
@@ -106,6 +102,13 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         }
     }
 
+    @Override public void setImageMode(ImageMode imageMode) {
+        if (imageMode != this.imageMode) {
+            returnImage = null;
+        }
+        super.setImageMode(imageMode);
+    }
+
     public void start() throws Exception {
         depth = "depth".equalsIgnoreCase(format);
     }
@@ -116,7 +119,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
 
     public void trigger() throws Exception {
         int fmt = bpp; // default bpp == 0 == FREENECT_DEPTH_11BIT == FREENECT_VIDEO_RGB
-        for (int i = 0; i < triggerFlushSize; i++) {
+        for (int i = 0; i < numBuffers+1; i++) {
             if (depth) {
                 int err = freenect_sync_get_depth(rawDepthImageData, timestamp, deviceNumber, fmt);
                 if (err != 0) {
@@ -162,7 +165,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
             out.put(in);
         }
 
-        rawDepthImage.timestamp = timestamp[0];
+        super.timestamp = timestamp[0];
         return rawDepthImage;
     }
 
@@ -203,7 +206,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         if (channels == 3) {
             cvCvtColor(rawVideoImage, rawVideoImage, CV_RGB2BGR);
         }
-        rawVideoImage.timestamp = timestamp[0];
+        super.timestamp = timestamp[0];
         return rawVideoImage;
     }
 
@@ -219,14 +222,12 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
                 returnImage = IplImage.create(w, h, iplDepth, 3);
             }
             cvCvtColor(image, returnImage, CV_GRAY2BGR);
-            returnImage.timestamp = image.timestamp;
             return returnImage;
         } else if (imageMode == ImageMode.GRAY && channels == 3) {
             if (returnImage == null) {
                 returnImage = IplImage.create(w, h, iplDepth, 1);
             }
             cvCvtColor(image, returnImage, CV_BGR2GRAY);
-            returnImage.timestamp = image.timestamp;
             return returnImage;
         } else {
             return image;

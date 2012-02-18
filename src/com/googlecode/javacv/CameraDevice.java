@@ -80,8 +80,6 @@ public class CameraDevice extends ProjectiveDevice {
         void setFrameRate(double frameRate);
         boolean isTriggerMode();
         void setTriggerMode(boolean triggerMode);
-        int getTriggerFlushSize();
-        void setTriggerFlushSize(int triggerFlushSize);
         int getBitsPerPixel();
         void setBitsPerPixel(int bitsPerPixel);
         FrameGrabber.ImageMode getImageMode();
@@ -112,7 +110,6 @@ public class CameraDevice extends ProjectiveDevice {
                 this.imageHeight  = s.imageHeight;
                 this.frameRate    = s.frameRate;
                 this.triggerMode  = s.triggerMode;
-                this.triggerFlushSize = s.triggerFlushSize;
                 this.bpp          = s.bpp;
                 this.imageMode    = s.imageMode;
                 this.timeout      = s.timeout;
@@ -243,7 +240,7 @@ public class CameraDevice extends ProjectiveDevice {
             if (hasDeviceNumber && deviceNumber == null && deviceFile == null && devicePath == null) {
                 try {
                     setDeviceNumber(0);
-                } catch (Exception e) { }
+                } catch (PropertyVetoException e) { }
             }
         }
 
@@ -252,7 +249,7 @@ public class CameraDevice extends ProjectiveDevice {
             try {
                 Method m = frameGrabber.getMethod("getDeviceDescriptions");
                 descriptions = (String[])m.invoke(null);
-            } catch (Exception ex) { }
+            } catch (java.lang.Exception ex) { }
 
             if (descriptions != null && deviceNumber != null && deviceNumber < descriptions.length) {
                 return descriptions[deviceNumber];
@@ -265,7 +262,6 @@ public class CameraDevice extends ProjectiveDevice {
         int imageWidth = 0, imageHeight = 0;
         double frameRate = 0;
         boolean triggerMode = false;
-        int triggerFlushSize = 5;
         int bpp = 0;
         FrameGrabber.ImageMode imageMode = FrameGrabber.ImageMode.COLOR;
         int timeout = 10000;
@@ -305,13 +301,6 @@ public class CameraDevice extends ProjectiveDevice {
         }
         public void setTriggerMode(boolean triggerMode) {
             this.triggerMode = triggerMode;
-        }
-
-        public int getTriggerFlushSize() {
-            return triggerFlushSize;
-        }
-        public void setTriggerFlushSize(int triggerFlushSize) {
-            this.triggerFlushSize = triggerFlushSize;
         }
 
         public int getBitsPerPixel() {
@@ -394,8 +383,6 @@ public class CameraDevice extends ProjectiveDevice {
         public void setFrameRate(double frameRate) { si.setFrameRate(frameRate); }
         public boolean isTriggerMode() { return si.isTriggerMode(); }
         public void setTriggerMode(boolean triggerMode) { si.setTriggerMode(triggerMode); }
-        public int getTriggerFlushSize() { return si.getTriggerFlushSize(); }
-        public void setTriggerFlushSize(int triggerFlushSize) { si.setTriggerFlushSize(triggerFlushSize); }
         public int getBitsPerPixel() { return si.getBitsPerPixel(); }
         public void setBitsPerPixel(int bitsPerPixel) { si.setBitsPerPixel(bitsPerPixel); }
         public FrameGrabber.ImageMode getImageMode() { return si.getImageMode(); }
@@ -451,8 +438,6 @@ public class CameraDevice extends ProjectiveDevice {
         public void setFrameRate(double frameRate) { si.setFrameRate(frameRate); }
         public boolean isTriggerMode() { return si.isTriggerMode(); }
         public void setTriggerMode(boolean triggerMode) { si.setTriggerMode(triggerMode); }
-        public int getTriggerFlushSize() { return si.getTriggerFlushSize(); }
-        public void setTriggerFlushSize(int triggerFlushSize) { si.setTriggerFlushSize(triggerFlushSize); }
         public int getBitsPerPixel() { return si.getBitsPerPixel(); }
         public void setBitsPerPixel(int bitsPerPixel) { si.setBitsPerPixel(bitsPerPixel); }
         public FrameGrabber.ImageMode getImageMode() { return si.getImageMode(); }
@@ -486,7 +471,7 @@ public class CameraDevice extends ProjectiveDevice {
         }
     }
 
-    public FrameGrabber createFrameGrabber() throws Exception {
+    public FrameGrabber createFrameGrabber() throws FrameGrabber.Exception {
         try {
             settings.getFrameGrabber().getMethod("tryLoad").invoke(null);
             FrameGrabber f;
@@ -507,7 +492,6 @@ public class CameraDevice extends ProjectiveDevice {
             f.setImageHeight(settings.getImageHeight());
             f.setFrameRate(settings.getFrameRate());
             f.setTriggerMode(settings.isTriggerMode());
-            f.setTriggerFlushSize(settings.getTriggerFlushSize());
             f.setBitsPerPixel(settings.getBitsPerPixel());
             f.setImageMode(settings.getImageMode());
             f.setTimeout(settings.getTimeout());
@@ -515,12 +499,14 @@ public class CameraDevice extends ProjectiveDevice {
             f.setGamma(settings.getResponseGamma());
             f.setDeinterlace(settings.isDeinterlace());
             return f;
-        } catch (InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof Exception) {
-                throw (Exception)t;
+        } catch (Throwable t) {
+            if (t instanceof InvocationTargetException) {
+                t = ((InvocationTargetException)t).getCause();
+            }
+            if (t instanceof FrameGrabber.Exception) {
+                throw (FrameGrabber.Exception)t;
             } else {
-                throw new Exception(t);
+                throw new FrameGrabber.Exception("Failed to create " + settings.getFrameGrabber(), t);
             }
         }
     }

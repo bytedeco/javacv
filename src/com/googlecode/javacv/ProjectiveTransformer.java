@@ -20,8 +20,7 @@
 
 package com.googlecode.javacv;
 
-import java.nio.DoubleBuffer;
-import com.googlecode.javacpp.DoublePointer;
+import com.googlecode.javacv.Parallel;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -71,6 +70,9 @@ public class ProjectiveTransformer implements ImageTransformer {
     protected CvMat K1 = null, K2 = null, invK1 = null, invK2 = null, R = null, t = null, n = null;
     protected double[] referencePoints1 = null, referencePoints2 = null;
     protected CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
+
+    protected KernelData kernelData = null;
+    protected CvMat[] H = null;
 
     public CvScalar getFillColor() {
         return fillColor;
@@ -190,84 +192,52 @@ public class ProjectiveTransformer implements ImageTransformer {
     }
 
     public void transform(Data[] data, CvRect roi, ImageTransformer.Parameters[] parameters, boolean[] inverses) {
-        assert (data.length == parameters.length);
-        boolean allOK = true;
+        assert data.length == parameters.length;
+        if (kernelData == null || kernelData.capacity() < data.length) {
+            kernelData = new KernelData(data.length);
+        }
+        if (H == null || H.length < data.length) {
+            H = new CvMat[data.length];
+            for (int i = 0; i < H.length; i++) {
+                H[i] = CvMat.create(3, 3);
+            }
+        }
+
         for (int i = 0; i < data.length; i++) {
-            Data d = data[i];
-            if (d.srcImg != null) {
-                if ((d.transImg != null || d.dstImg != null) &&
-                     d.subImg   == null && d.srcDotImg == null && d.dstDstDot == null) {
-                        transform(d.srcImg, d.transImg == null ? d.dstImg : d.transImg,
-                                roi, d.pyramidLevel, parameters[i], inverses == null ? false : inverses[i]);
-                } else {
-                    allOK = false;
-                }
-            }
-        }
-        if (!allOK) {
-            class Cache {
-                Cache(int length) {
-                    this.length = length;
-                    kernelData = new KernelData(length);
-                    H = new CvMat[length];
-                    dstDstDot = new DoublePointer[length];
-                    dstDstDotBuf = new DoubleBuffer[length];
-                }
-                final int length;
-                final KernelData kernelData;
-                final CvMat[] H;
-                final DoublePointer[] dstDstDot;
-                final DoubleBuffer[] dstDstDotBuf;
-            }
-            Cache c = data[0].cache instanceof Cache ? (Cache)data[0].cache : null;
-            if (c == null || c.length != data.length) {
-                data[0].cache = c = new Cache(data.length);
-            }
+            kernelData.position(i);
 
-            for (int i = 0; i < data.length; i++) {
-                c.kernelData.position(i);
+            kernelData.srcImg(data[i].srcImg);
+            kernelData.srcImg2(null);
+            kernelData.subImg(data[i].subImg);
+            kernelData.srcDotImg(data[i].srcDotImg);
+            kernelData.mask(data[i].mask);
+            kernelData.zeroThreshold(data[i].zeroThreshold);
+            kernelData.outlierThreshold(data[i].outlierThreshold);
 
-                c.kernelData.srcImg(data[i].srcImg);
-                c.kernelData.srcImg2(null);
-                c.kernelData.subImg(data[i].subImg);
-                c.kernelData.srcDotImg(data[i].srcDotImg);
-                c.kernelData.mask(data[i].mask);
-                c.kernelData.zeroThreshold(data[i].zeroThreshold);
-                c.kernelData.outlierThreshold(data[i].outlierThreshold);
+            prepareHomography(H[i], data[i].pyramidLevel, (Parameters)parameters[i],
+                    inverses == null ? false : inverses[i]);
 
-                if (c.H[i] == null) { c.H[i] = CvMat.create(3, 3); }
-                if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
-                    c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
-                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer();
-                }
+            kernelData.H1(H[i]);
+            kernelData.H2(null);
+            kernelData.X (null);
 
-                prepareHomography(c.H[i], data[i].pyramidLevel, (Parameters)parameters[i], 
-                        inverses == null ? false : inverses[i]);
-
-                c.kernelData.H1(c.H[i]);
-                c.kernelData.H2(null);
-                c.kernelData.X (null);
-
-                c.kernelData.transImg(data[i].transImg);
-                c.kernelData.dstImg(data[i].dstImg);
-                c.kernelData.dstDstDot(c.dstDstDot[i]);
-            }
-
-            multiWarpColorTransform(c.kernelData.position(0), data.length, roi, getFillColor());
-
-            for (int i = 0; i < data.length; i++) {
-                c.kernelData.position(i);
-                data[i].dstCount        = c.kernelData.dstCount();
-                data[i].dstCountZero    = c.kernelData.dstCountZero();
-                data[i].dstCountOutlier = c.kernelData.dstCountOutlier();
-                data[i].srcDstDot       = c.kernelData.srcDstDot();
-                if (data[i].dstDstDot != null) {
-                    c.dstDstDotBuf[i].position(0);
-                    c.dstDstDotBuf[i].get(data[i].dstDstDot);
-                }
-            }
+            kernelData.transImg(data[i].transImg);
+            kernelData.dstImg(data[i].dstImg);
+            kernelData.dstDstDot(data[i].dstDstDot);
         }
 
+        int fullCapacity = kernelData.capacity();
+        kernelData.capacity(data.length);
+        multiWarpColorTransform(kernelData, roi, getFillColor());
+        kernelData.capacity(fullCapacity);
+
+        for (int i = 0; i < data.length; i++) {
+            kernelData.position(i);
+            data[i].dstCount        = kernelData.dstCount();
+            data[i].dstCountZero    = kernelData.dstCountZero();
+            data[i].dstCountOutlier = kernelData.dstCountOutlier();
+            data[i].srcDstDot       = kernelData.srcDstDot();
+        }
     }
 
     public Parameters createParameters() {

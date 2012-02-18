@@ -54,9 +54,9 @@ public class GeometricCalibrator {
     }
 
     public static class Settings extends BaseChildSettings {
-        double detectedBoardMin = 0.5;
-        double patternSteadyMax = 0.005;
-        double patternMovedMin  = 0.05;
+        double detectedBoardMin  = 0.5;
+        double patternSteadySize = 0.005;
+        double patternMovedSize  = 0.05;
 
         public double getDetectedBoardMin() {
             return detectedBoardMin;
@@ -65,18 +65,18 @@ public class GeometricCalibrator {
             this.detectedBoardMin = detectedBoardMin;
         }
 
-        public double getPatternSteadyMax() {
-            return patternSteadyMax;
+        public double getPatternSteadySize() {
+            return patternSteadySize;
         }
-        public void setPatternSteadyMax(double patternSteadyMax) {
-            this.patternSteadyMax = patternSteadyMax;
+        public void setPatternSteadySize(double patternSteadySize) {
+            this.patternSteadySize = patternSteadySize;
         }
 
-        public double getPatternMovedMin() {
-            return patternMovedMin;
+        public double getPatternMovedSize() {
+            return patternMovedSize;
         }
-        public void setPatternMovedMin(double patternMovedMin) {
-            this.patternMovedMin = patternMovedMin;
+        public void setPatternMovedSize(double patternMovedSize) {
+            this.patternMovedSize = patternMovedSize;
         }
     }
 
@@ -156,8 +156,9 @@ public class GeometricCalibrator {
         cvCopy(warp, prevWarp);
 
         // send upstream our recommendation for addition or not of these markers...
-        int size = (image.width()+image.height())/2;
-        if (rmsePrev < settings.patternSteadyMax*size && rmseLast > settings.patternMovedMin*size) {
+        int imageSize = (image.width()+image.height())/2;
+        if (rmsePrev < settings.patternSteadySize*imageSize &&
+                rmseLast > settings.patternMovedSize*imageSize) {
             return lastDetectedMarkers;
         } else {
             return null;

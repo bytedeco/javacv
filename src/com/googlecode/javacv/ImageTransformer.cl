@@ -26,11 +26,12 @@ const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE |
 
 inline float4 readLinear(read_only image2d_t img, float2 xy) {
     float2 xy00 = floor(xy);
-    float2 dxy = xy - xy00;
-    float4 rgba  = (1-dxy.x)*(1-dxy.y)*read_imagef(img, sampler, xy00);
-           rgba +=    dxy.x *(1-dxy.y)*read_imagef(img, sampler, xy00 + (float2)(1, 0));
-           rgba += (1-dxy.x)*   dxy.y *read_imagef(img, sampler, xy00 + (float2)(0, 1));
-           rgba +=    dxy.x *   dxy.y *read_imagef(img, sampler, xy00 + (float2)(1, 1));
+    float dx = xy.x - xy00.x;
+    float dy = xy.y - xy00.y;
+    float4 rgba  = (1-dx)*(1-dy)*read_imagef(img, sampler, xy00);
+           rgba +=    dx *(1-dy)*read_imagef(img, sampler, xy00 + (float2)(1, 0));
+           rgba += (1-dx)*   dy *read_imagef(img, sampler, xy00 + (float2)(0, 1));
+           rgba +=    dx *   dy *read_imagef(img, sampler, xy00 + (float2)(1, 1));
     return rgba;
 }
 
@@ -188,10 +189,21 @@ inline void multiWarpColorTransform(read_only image2d_t srcImg, read_only image2
             srcDstDot += dot(dotRGB.xyz, dstRGB.xyz);
         }
 
-skipPixel:
         if (size == 1) {
-            dstDstDot += dot(dstRGB.xyz, dstRGB.xyz);
-        } else {
+            float zeroThreshold2    = inputData->zeroThreshold    * inputData->zeroThreshold;
+            float outlierThreshold2 = inputData->outlierThreshold * inputData->outlierThreshold;
+
+            float norm2 = dot(dstRGB.xyz, dstRGB.xyz);
+            if (norm2 < zeroThreshold2) {
+                dstCountZero++;
+            } else if (outlierThreshold2 > 0 && norm2 > outlierThreshold2) {
+                dstCountOutlier++;
+            } else {
+                dstDstDot += norm2;
+            }
+        }
+skipPixel:
+        if (size > 1) {
             scratch[lz][lx][0] = dstRGB.x;
             scratch[lz][lx][1] = dstRGB.y;
             scratch[lz][lx][2] = dstRGB.z;

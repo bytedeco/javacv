@@ -20,6 +20,10 @@
 
 package com.googlecode.javacv;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+
 import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
@@ -29,6 +33,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 public interface ImageTransformer {
 
     public class Data {
+        public Data() { this(null, null, null, null, 0, 0, 0, null, null, 0); }
         public Data(IplImage srcImg, IplImage subImg, IplImage srcDotImg, IplImage mask,
                 double zeroThreshold, double outlierThreshold, int pyramidLevel,
                 IplImage transImg, IplImage dstImg, int dstDstDotLength) {
@@ -41,22 +46,21 @@ public interface ImageTransformer {
             this.pyramidLevel     = pyramidLevel;
             this.transImg  = transImg;
             this.dstImg    = dstImg;
-            this.dstDstDot = dstDstDotLength == 0 ? null : new double[dstDstDotLength];
+            this.dstDstDot = dstDstDotLength == 0 ? null : 
+                    ByteBuffer.allocateDirect(dstDstDotLength*8).
+                            order(ByteOrder.nativeOrder()).asDoubleBuffer();
         }
 
         // input
-        public IplImage srcImg  = null, subImg = null, srcDotImg = null, mask = null;
-        public double   zeroThreshold = 0, outlierThreshold = 0;
-        public int      pyramidLevel = 0;
+        public IplImage srcImg, subImg, srcDotImg, mask;
+        public double   zeroThreshold, outlierThreshold;
+        public int      pyramidLevel;
 
         // output
-        public IplImage transImg  = null, dstImg = null;
-        public int      dstCount  = 0, dstCountZero = 0, dstCountOutlier = 0;
-        public double   srcDstDot = 0.0;
-        public double[] dstDstDot = null;
-
-        // private data
-        protected Object cache = null;
+        public IplImage transImg, dstImg;
+        public int      dstCount, dstCountZero, dstCountOutlier;
+        public double   srcDstDot;
+        public DoubleBuffer dstDstDot;
     }
 
     public interface Parameters extends Cloneable {

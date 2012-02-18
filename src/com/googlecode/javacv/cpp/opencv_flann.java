@@ -134,8 +134,9 @@ public class opencv_flann {
 
     @NoOffset @Namespace("cv::flann") public static class IndexParams extends Pointer {
         static { load(); }
-        public IndexParams() { }
+        public IndexParams() { allocate(); }
         public IndexParams(Pointer p) { super(p); }
+        private native void allocate();
 
         public native @ByRef String getString(String key, String defaultVal/*=""*/);
         public native int getInt(String key, int defaultVal/*=-1*/);
@@ -241,7 +242,7 @@ public class opencv_flann {
 
     @Namespace("cv::flann") public static class Index extends Pointer {
         static { Loader.load(); }
-        public Index() { }
+        public Index() { allocate(); }
         public Index(CvArr features, IndexParams params, int distType/*=FLANN_DIST_L2*/) {
             allocate(features, params, distType);
         }
@@ -249,6 +250,7 @@ public class opencv_flann {
             allocate(features, params, distType);
         }
         public Index(Pointer p) { super(p); }
+        private native void allocate();
         private native void allocate(@Adapter("ArrayAdapter") CvArr features, @ByRef IndexParams params,
                 @Cast("cv::flann::flann_distance_t") int distType);
         private native void allocate(@Adapter("ArrayAdapter") FloatPointer features, @ByRef IndexParams params,

@@ -25,9 +25,12 @@
  *
  * @author Samuel Audet
  *
- * Code in this file is stuff that should eventually be implemented in OpenCL...
+ * OpenCL implementation also available in the ImageTransformer.cl file.
  *
  */
+#ifndef __JAVACV_CVKERNELS_H__
+#define __JAVACV_CVKERNELS_H__
+
 struct KernelData {
     // input
     IplImage *srcImg, *srcImg2, *subImg, *srcDotImg, *mask;
@@ -40,6 +43,20 @@ struct KernelData {
     double    srcDstDot, *dstDstDot;
 };
 
+#define PTYPE float
+#define multiWarpColorTransform multiWarpColorTransform32F
+#include "cvkernels.h"
+#undef multiWarpColorTransform
+#undef PTYPE
+
+#define PTYPE unsigned char
+#define multiWarpColorTransform multiWarpColorTransform8U
+#include "cvkernels.h"
+#undef multiWarpColorTransform
+#undef PTYPE
+
+#elif defined PTYPE //__JAVACV_CVKERNELS_H__
+
 // transImg  = warp(srcImg, H1) * (X*warp(srcImg2, H2))
 //   dstImg  = transImg - subImg
 // srcDstDot =   dstImg · srcDotImg
@@ -48,8 +65,8 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
     assert (size <= MAX_SIZE);
     int srcStep [MAX_SIZE], srcWidth [MAX_SIZE], srcHeight [MAX_SIZE],
         srcStep2[MAX_SIZE], srcWidth2[MAX_SIZE], srcHeight2[MAX_SIZE];
-    float *srcFloats[MAX_SIZE], *srcFloats2[MAX_SIZE], *transFloats [MAX_SIZE],
-          *subFloats[MAX_SIZE], *dstFloats [MAX_SIZE], *srcDotFloats[MAX_SIZE];
+    PTYPE *srcPixels[MAX_SIZE], *srcPixels2[MAX_SIZE], *transPixels [MAX_SIZE],
+          *subPixels[MAX_SIZE], *dstPixels [MAX_SIZE], *srcDotPixels[MAX_SIZE];
     unsigned char* maskBytes[MAX_SIZE];
     double zeroThreshold2[MAX_SIZE], outlierThreshold2[MAX_SIZE];
     float h[MAX_SIZE][9], g[MAX_SIZE][9], Xa[MAX_SIZE][16];
@@ -57,21 +74,21 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
 
     int i, j, allSrcEqual = 1;
     for (i = 0; i < size; i++) {
-        srcStep  [i] = data[i].srcImg->widthStep/4;
+        srcStep  [i] = data[i].srcImg->widthStep/sizeof(PTYPE);
         srcWidth [i] = data[i].srcImg->width;
         srcHeight[i] = data[i].srcImg->height;
         if (data[i].srcImg2 != NULL) {
-            srcStep2  [i] = data[i].srcImg2->widthStep/4;
+            srcStep2  [i] = data[i].srcImg2->widthStep/sizeof(PTYPE);
             srcWidth2 [i] = data[i].srcImg2->width;
             srcHeight2[i] = data[i].srcImg2->height;
         }
 
-        srcFloats   [i] = (float*)data[i].srcImg ->imageData;
-        srcFloats2  [i] = data[i].srcImg2   == NULL ? NULL : (float*)data[i].srcImg2  ->imageData;
-        transFloats [i] = data[i].transImg  == NULL ? NULL : (float*)data[i].transImg ->imageData;
-        subFloats   [i] = data[i].subImg    == NULL ? NULL : (float*)data[i].subImg   ->imageData;
-        dstFloats   [i] = data[i].dstImg    == NULL ? NULL : (float*)data[i].dstImg   ->imageData;
-        srcDotFloats[i] = data[i].srcDotImg == NULL ? NULL : (float*)data[i].srcDotImg->imageData;
+        srcPixels   [i] = (PTYPE*)data[i].srcImg ->imageData;
+        srcPixels2  [i] = data[i].srcImg2   == NULL ? NULL : (PTYPE*)data[i].srcImg2  ->imageData;
+        transPixels [i] = data[i].transImg  == NULL ? NULL : (PTYPE*)data[i].transImg ->imageData;
+        subPixels   [i] = data[i].subImg    == NULL ? NULL : (PTYPE*)data[i].subImg   ->imageData;
+        dstPixels   [i] = data[i].dstImg    == NULL ? NULL : (PTYPE*)data[i].dstImg   ->imageData;
+        srcDotPixels[i] = data[i].srcDotImg == NULL ? NULL : (PTYPE*)data[i].srcDotImg->imageData;
         maskBytes   [i] = data[i].mask   == NULL ? NULL : (unsigned char*)data[i].mask->imageData;
         zeroThreshold2   [i] = data[i].zeroThreshold   *data[i].zeroThreshold;
         outlierThreshold2[i] = data[i].outlierThreshold*data[i].outlierThreshold;
@@ -128,7 +145,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
 
     int startx   = 0;
     int starty   = 0;
-    int step     = modelImage->widthStep/4;
+    int step     = modelImage->widthStep/sizeof(PTYPE);
     int channels = modelImage->nChannels;
     int colors   = channels > 3 ? 3 : channels; // ignore alpha channel
     int endx     = modelImage->width;
@@ -140,12 +157,12 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
         endx   = startx + roi->width;
         endy   = starty + roi->height;
     }
-    float fill[4] = { 0.0 };
+    PTYPE fill[4] = { 0.0 };
     if (fillColor != NULL) {
-        fill[0] = (float)fillColor->val[0];
-        fill[1] = (float)fillColor->val[1];
-        fill[2] = (float)fillColor->val[2];
-        fill[3] = (float)fillColor->val[3];
+        fill[0] = (PTYPE)fillColor->val[0];
+        fill[1] = (PTYPE)fillColor->val[1];
+        fill[2] = (PTYPE)fillColor->val[2];
+        fill[3] = (PTYPE)fillColor->val[3];
     }
 
     int x, y, z;
@@ -177,13 +194,13 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
             if (allSrcEqual) {
                 if (maskBytes[0] != NULL && maskBytes[0][maskLine + x] == 0) {
                     continue;
-                } else if (srcDotFloats[0] != NULL) {
+                } else if (srcDotPixels[0] != NULL) {
                     double d, magnitude2 = 0;
                     switch (colors) {
-                    //case 4: d = srcDotFloats[0][pixel+3]; magnitude2 += d*d;
-                    case 3: d = srcDotFloats[0][pixel+2]; magnitude2 += d*d;
-                    case 2: d = srcDotFloats[0][pixel+1]; magnitude2 += d*d;
-                    case 1: d = srcDotFloats[0][pixel+0]; magnitude2 += d*d; break;
+                    //case 4: d = srcDotPixels[0][pixel+3]; magnitude2 += d*d;
+                    case 3: d = srcDotPixels[0][pixel+2]; magnitude2 += d*d;
+                    case 2: d = srcDotPixels[0][pixel+1]; magnitude2 += d*d;
+                    case 1: d = srcDotPixels[0][pixel+0]; magnitude2 += d*d; break;
                     default: assert (0);
                     }
                     if (magnitude2 < zeroThreshold2[0]) {
@@ -208,13 +225,13 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                 if (!allSrcEqual) {
                     if (maskBytes[i] != NULL && maskBytes[i][maskLine + x] == 0) {
                         continue;
-                    } else if (srcDotFloats[i] != NULL) {
+                    } else if (srcDotPixels[i] != NULL) {
                         double d, magnitude2 = 0;
                         switch (colors) {
-                        //case 4: d = srcDotFloats[i][pixel+3]; magnitude2 += d*d;
-                        case 3: d = srcDotFloats[i][pixel+2]; magnitude2 += d*d;
-                        case 2: d = srcDotFloats[i][pixel+1]; magnitude2 += d*d;
-                        case 1: d = srcDotFloats[i][pixel+0]; magnitude2 += d*d; break;
+                        //case 4: d = srcDotPixels[i][pixel+3]; magnitude2 += d*d;
+                        case 3: d = srcDotPixels[i][pixel+2]; magnitude2 += d*d;
+                        case 2: d = srcDotPixels[i][pixel+1]; magnitude2 += d*d;
+                        case 1: d = srcDotPixels[i][pixel+0]; magnitude2 += d*d; break;
                         default: assert (0);
                         }
                         if (magnitude2 < zeroThreshold2[i]) {
@@ -239,31 +256,31 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                 int xi2 = cvFloor(x2);
                 int yi2 = cvFloor(y2);
 
-                float src[4] = { fill[0], fill[1], fill[2], fill[3] };
-                float *src00 = fill;
-                float *src10 = fill;
-                float *src01 = fill;
-                float *src11 = fill;
+                PTYPE src[4] = { fill[0], fill[1], fill[2], fill[3] };
+                PTYPE *src00 = fill;
+                PTYPE *src10 = fill;
+                PTYPE *src01 = fill;
+                PTYPE *src11 = fill;
                 int inside = 0;
                 if (xi2 >= 0 && xi2 < srcWidth[i]-1 && yi2 >= 0 && yi2 < srcHeight[i]-1) {
                     inside = 1;
-                    src00 = srcFloats[i] + yi2*srcStep[i] + xi2*channels;
+                    src00 = srcPixels[i] + yi2*srcStep[i] + xi2*channels;
                     src10 = src00 + channels;
                     src01 = src00 + srcStep[i];
                     src11 = src00 + srcStep[i] + channels;
                 } else if (xi2 >= -1 && xi2 < srcWidth[i] && yi2 >= -1 && yi2 < srcHeight[i]) {
                     inside = 1;
                     if (xi2 >= 0 && yi2 >= 0) {
-                        src00 = srcFloats[i] + yi2*srcStep[i] + xi2*channels;
+                        src00 = srcPixels[i] + yi2*srcStep[i] + xi2*channels;
                     }
                     if (xi2 < srcWidth[i]-1 && yi2 >= 0) {
-                        src10 = srcFloats[i] + yi2*srcStep[i] + (xi2+1)*channels;
+                        src10 = srcPixels[i] + yi2*srcStep[i] + (xi2+1)*channels;
                     }
                     if (xi2 >= 0 && yi2 < srcHeight[i]-1) {
-                        src01 = srcFloats[i] + (yi2+1)*srcStep[i] + xi2*channels;
+                        src01 = srcPixels[i] + (yi2+1)*srcStep[i] + xi2*channels;
                     }
                     if (xi2 < srcWidth[i]-1 && yi2 < srcHeight[i]-1) {
-                        src11 = srcFloats[i] + (yi2+1)*srcStep[i] + (xi2+1)*channels;
+                        src11 = srcPixels[i] + (yi2+1)*srcStep[i] + (xi2+1)*channels;
                     }
                 }
 
@@ -291,7 +308,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                 default: assert (0);
                 }
 
-                if (srcFloats2[i] != NULL) {
+                if (srcPixels2[i] != NULL) {
                     float w3 = 1/g3[i];
                     float x3 = g1[i]*w3;
                     float y3 = g2[i]*w3;
@@ -305,23 +322,23 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                     inside = 0;
                     if (xi3 >= 0 && xi3 < srcWidth2[i]-1 && yi3 >= 0 && yi3 < srcHeight2[i]-1) {
                         inside = 1;
-                        src00 = srcFloats2[i] + yi3*srcStep2[i] + xi3*channels;
+                        src00 = srcPixels2[i] + yi3*srcStep2[i] + xi3*channels;
                         src10 = src00 + channels;
                         src01 = src00 + srcStep2[i];
                         src11 = src00 + srcStep2[i] + channels;
                     } else if (xi3 >= -1 && xi3 < srcWidth2[i] && yi3 >= -1 && yi3 < srcHeight2[i]) {
                         inside = 1;
                         if (xi3 >= 0 && yi3 >= 0) {
-                            src00 = srcFloats2[i] + yi3*srcStep2[i] + xi3*channels;
+                            src00 = srcPixels2[i] + yi3*srcStep2[i] + xi3*channels;
                         }
                         if (xi3 < srcWidth2[i]-1 && yi3 >= 0) {
-                            src10 = srcFloats2[i] + yi3*srcStep2[i] + (xi3+1)*channels;
+                            src10 = srcPixels2[i] + yi3*srcStep2[i] + (xi3+1)*channels;
                         }
                         if (xi3 >= 0 && yi3 < srcHeight2[i]-1) {
-                            src01 = srcFloats2[i] + (yi3+1)*srcStep2[i] + xi3*channels;
+                            src01 = srcPixels2[i] + (yi3+1)*srcStep2[i] + xi3*channels;
                         }
                         if (xi3 < srcWidth2[i]-1 && yi3 < srcHeight2[i]-1) {
-                            src11 = srcFloats2[i] + (yi3+1)*srcStep2[i] + (xi3+1)*channels;
+                            src11 = srcPixels2[i] + (yi3+1)*srcStep2[i] + (xi3+1)*channels;
                         }
                     }
 
@@ -348,20 +365,20 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
                 }
 
                 for (z = 0; z < channels; z++) {
-                    if (transFloats[i] != NULL) {
-                        transFloats[i][pixel+z] = dst[i][z];
+                    if (transPixels[i] != NULL) {
+                        transPixels[i][pixel+z] = dst[i][z];
                     }
 
-                    if (subFloats[i] != NULL && z < colors) {
-                        dst[i][z] -= subFloats[i][pixel+z];
+                    if (subPixels[i] != NULL && z < colors) {
+                        dst[i][z] -= subPixels[i][pixel+z];
                     }
 
-                    if (dstFloats[i] != NULL) {
-                        dstFloats[i][pixel+z] = dst[i][z];
+                    if (dstPixels[i] != NULL) {
+                        dstPixels[i][pixel+z] = dst[i][z];
                     }
 
-                    if (srcDotFloats[i] != NULL && z < colors) {
-                        data[i].srcDstDot += srcDotFloats[i][pixel+z]*dst[i][z];
+                    if (srcDotPixels[i] != NULL && z < colors) {
+                        data[i].srcDstDot += srcDotPixels[i][pixel+z]*dst[i][z];
                     }
                 }
             }
@@ -420,3 +437,4 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
         }
     }
 }
+#endif //__JAVACV_CVKERNELS_H__

@@ -20,9 +20,6 @@
 
 package com.googlecode.javacv;
 
-import java.nio.DoubleBuffer;
-import com.googlecode.javacpp.DoublePointer;
-
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
@@ -68,6 +65,11 @@ public class ProCamTransformer implements ImageTransformer {
     protected CvRect roi = new CvRect();
     protected CvMat frontoParallelH = null, invFrontoParallelH = null;
 
+    protected KernelData kernelData = null;
+    protected CvMat[] H1 = null;
+    protected CvMat[] H2 = null;
+    protected CvMat[] X = null;
+
     public CvScalar getFillColor() {
         return fillColor;
     }
@@ -85,41 +87,41 @@ public class ProCamTransformer implements ImageTransformer {
     public IplImage getProjectorImage(int pyramidLevel) {
         return projectorImage[pyramidLevel];
     }
-    public void setProjectorImage(IplImage projectorImage0, int minPyramidLevel, int maxPyramidLevel) {
-        setProjectorImage(projectorImage0, minPyramidLevel, maxPyramidLevel, true);
+    public void setProjectorImage(IplImage projectorImage0, int minLevel, int maxLevel) {
+        setProjectorImage(projectorImage0, minLevel, maxLevel, true);
     }
-    public void setProjectorImage(IplImage projectorImage0, int minPyramidLevel, int maxPyramidLevel, boolean convertToFloat) {
-        if (projectorImage == null || projectorImage.length != maxPyramidLevel+1) {
-            projectorImage = new IplImage[maxPyramidLevel+1];
+    public void setProjectorImage(IplImage projectorImage0, int minLevel, int maxLevel, boolean convertToFloat) {
+        if (projectorImage == null || projectorImage.length != maxLevel+1) {
+            projectorImage = new IplImage[maxLevel+1];
         }
 
         if (projectorImage0.depth() == IPL_DEPTH_32F || !convertToFloat) {
-            projectorImage[minPyramidLevel] = projectorImage0;
+            projectorImage[minLevel] = projectorImage0;
         } else {
-            if (projectorImage[minPyramidLevel] == null) {
-                projectorImage[minPyramidLevel] = IplImage.create(projectorImage0.width(), projectorImage0.height(),
+            if (projectorImage[minLevel] == null) {
+                projectorImage[minLevel] = IplImage.create(projectorImage0.width(), projectorImage0.height(),
                         IPL_DEPTH_32F, projectorImage0.nChannels(), projectorImage0.origin());
             }
             IplROI ir = projectorImage0.roi();
             if (ir != null) {
-                int align  = 1<<(maxPyramidLevel+1);
+                int align = 1<<(maxLevel+1);
                 roi.x(Math.max(0, (int)Math.floor((double)ir.xOffset()/align)*align));
                 roi.y(Math.max(0, (int)Math.floor((double)ir.yOffset()/align)*align));
                 roi.width (Math.min(projectorImage0.width(),  (int)Math.ceil((double)ir.width() /align)*align));
                 roi.height(Math.min(projectorImage0.height(), (int)Math.ceil((double)ir.height()/align)*align));
                 cvSetImageROI(projectorImage0, roi);
-                cvSetImageROI(projectorImage[minPyramidLevel], roi);
+                cvSetImageROI(projectorImage[minLevel], roi);
             } else {
                 cvResetImageROI(projectorImage0);
-                cvResetImageROI(projectorImage[minPyramidLevel]);
+                cvResetImageROI(projectorImage[minLevel]);
             }
-            cvConvertScale(projectorImage0, projectorImage[minPyramidLevel], 1.0/255.0, 0);
+            cvConvertScale(projectorImage0, projectorImage[minLevel], 1.0/255.0, 0);
         }
 
 //        CvScalar.ByValue average = cvAvg(projectorImage[0], null);
 //        cvSubS(projectorImage[0], average, projectorImage[0], null);
 
-        for (int i = minPyramidLevel+1; i <= maxPyramidLevel; i++) {
+        for (int i = minLevel+1; i <= maxLevel; i++) {
             int w = projectorImage[i-1].width()/2;
             int h = projectorImage[i-1].height()/2;
             int d = projectorImage[i-1].depth();
@@ -231,94 +233,68 @@ public class ProCamTransformer implements ImageTransformer {
     }
 
     public void transform(Data[] data, CvRect roi, ImageTransformer.Parameters[] parameters, boolean[] inverses) {
-        assert (data.length == parameters.length);
-        boolean allOK = true;
+        assert data.length == parameters.length;
+        if (kernelData == null || kernelData.capacity() < data.length) {
+            kernelData = new KernelData(data.length);
+        }
+        if (H1 == null || H1.length < data.length) {
+            H1 = new CvMat[data.length];
+            for (int i = 0; i < H1.length; i++) {
+                H1[i] = CvMat.create(3, 3);
+            }
+        }
+        if (H2 == null || H2.length < data.length) {
+            H2 = new CvMat[data.length];
+            for (int i = 0; i < H2.length; i++) {
+                H2[i] = CvMat.create(3, 3);
+            }
+        }
+        if (X == null || X.length < data.length) {
+            X = new CvMat[data.length];
+            for (int i = 0; i < X.length; i++) {
+                X[i] = CvMat.create(4, 4);
+            }
+        }
+
         for (int i = 0; i < data.length; i++) {
-            Data d = data[i];
-            if (inverses != null && inverses[i]) {
-                throw new UnsupportedOperationException("Inverse transform not supported.");
-            }
-            if (d.srcImg != null) {
-                if ((d.transImg != null || d.dstImg != null) &&
-                     d.subImg   == null && d.srcDotImg == null && d.dstDstDot == null) {
-                        transform(d.srcImg, d.transImg == null ? d.dstImg : d.transImg,
-                                roi, d.pyramidLevel, parameters[i], inverses == null ? false : inverses[i]);
-                } else {
-                    allOK = false;
-                }
-            }
+            kernelData.position(i);
+
+            kernelData.srcImg2(data[i].srcImg);
+            kernelData.srcImg(projectorImage[data[i].pyramidLevel]);
+            kernelData.subImg(data[i].subImg);
+            kernelData.srcDotImg(data[i].srcDotImg);
+            kernelData.mask(data[i].mask);
+            kernelData.zeroThreshold(data[i].zeroThreshold);
+            kernelData.outlierThreshold(data[i].outlierThreshold);
+
+            prepareTransforms(H1[i], H2[i], X[i], data[i].pyramidLevel, (Parameters)parameters[i]);
+
+            kernelData.H1(H2[i]);
+            kernelData.H2(H1[i]);
+            kernelData.X (X [i]);
+
+            kernelData.transImg(data[i].transImg);
+            kernelData.dstImg(data[i].dstImg);
+            kernelData.dstDstDot(data[i].dstDstDot);
         }
-        if (!allOK) {
-            class Cache {
-                Cache(int length) {
-                    this.length = length;
-                    kernelData = new KernelData(length);
-                    H1 = new CvMat[length];
-                    H2 = new CvMat[length];
-                    X  = new CvMat[length];
-                    dstDstDot = new DoublePointer[length];
-                    dstDstDotBuf = new DoubleBuffer[length];
-                }
-                final int length;
-                final KernelData kernelData;
-                final CvMat[] H1, H2, X;
-                final DoublePointer[] dstDstDot;
-                final DoubleBuffer[] dstDstDotBuf;
-            }
-            Cache c = data[0].cache instanceof Cache ? (Cache)data[0].cache : null;
-            if (c == null || c.length != data.length) {
-                data[0].cache = c = new Cache(data.length);
-            }
 
-            for (int i = 0; i < data.length; i++) {
-                c.kernelData.position(i);
+        int fullCapacity = kernelData.capacity();
+        kernelData.capacity(data.length);
+        multiWarpColorTransform(kernelData, roi, getFillColor());
+        kernelData.capacity(fullCapacity);
 
-                c.kernelData.srcImg2(data[i].srcImg);
-                c.kernelData.srcImg(projectorImage[data[i].pyramidLevel]);
-                c.kernelData.subImg(data[i].subImg);
-                c.kernelData.srcDotImg(data[i].srcDotImg);
-                c.kernelData.mask(data[i].mask);
-                c.kernelData.zeroThreshold(data[i].zeroThreshold);
-                c.kernelData.outlierThreshold(data[i].outlierThreshold);
-
-                if (c.H1[i] == null) { c.H1[i] = CvMat.create(3, 3); }
-                if (c.H2[i] == null) { c.H2[i] = CvMat.create(3, 3); }
-                if (c.X [i] == null) { c.X [i] = CvMat.create(4, 4); }
-                if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
-                    c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
-                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer();
-                }
-
-                prepareTransforms(c.H1[i], c.H2[i], c.X[i], data[i].pyramidLevel, (Parameters)parameters[i]);
-
-                c.kernelData.H1(c.H2[i]);
-                c.kernelData.H2(c.H1[i]);
-                c.kernelData.X (c.X [i]);
-
-                c.kernelData.transImg(data[i].transImg);
-                c.kernelData.dstImg(data[i].dstImg);
-                c.kernelData.dstDstDot(c.dstDstDot[i]);
-            }
-
-            multiWarpColorTransform(c.kernelData.position(0), data.length, roi, getFillColor());
-
-            for (int i = 0; i < data.length; i++) {
-                c.kernelData.position(i);
-                data[i].dstCount        = c.kernelData.dstCount();
-                data[i].dstCountZero    = c.kernelData.dstCountZero();
-                data[i].dstCountOutlier = c.kernelData.dstCountOutlier();
-                data[i].srcDstDot       = c.kernelData.srcDstDot();
-                if (data[i].dstDstDot != null) {
-                    c.dstDstDotBuf[i].position(0);
-                    c.dstDstDotBuf[i].get(data[i].dstDstDot);
-                }
-            }
-
-//            if (data[0].dstCountZero > 0) {
-//                System.err.println(data[0].dstCountZero + " out of " + data[0].dstCount
-//                        + " are zero = " + 100*data[0].dstCountZero/data[0].dstCount + "%");
-//            }
+        for (int i = 0; i < data.length; i++) {
+            kernelData.position(i);
+            data[i].dstCount        = kernelData.dstCount();
+            data[i].dstCountZero    = kernelData.dstCountZero();
+            data[i].dstCountOutlier = kernelData.dstCountOutlier();
+            data[i].srcDstDot       = kernelData.srcDstDot();
         }
+
+//        if (data[0].dstCountZero > 0) {
+//            System.err.println(data[0].dstCountZero + " out of " + data[0].dstCount
+//                    + " are zero = " + 100*data[0].dstCountZero/data[0].dstCount + "%");
+//        }
     }
 
     public Parameters createParameters() {

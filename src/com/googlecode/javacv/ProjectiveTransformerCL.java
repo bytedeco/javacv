@@ -50,19 +50,21 @@ public class ProjectiveTransformerCL extends ProjectiveTransformer implements Im
         final int dotSize = createParameters().size();
         this.context = context;
         this.HBuffer = context.getCLContext().createFloatBuffer(dotSize*9,  CLBuffer.Mem.READ_ONLY);
-        CLKernel[] kernels = context.buildKernels(
-                JavaCVCL.fastCompilerOptions + " -DDOT_SIZE=" + dotSize,
-                "ImageTransformer.cl:ProjectiveTransformer.cl",
-                "transformOne", "transformSub", "transformDot", "reduceOutputData");
-        this.oneKernel    = kernels[0];
-        this.subKernel    = kernels[1];
-        this.dotKernel    = kernels[2];
-        this.reduceKernel = kernels[3];
+        if (getClass() == ProjectiveTransformerCL.class) {
+            CLKernel[] kernels = context.buildKernels(
+                    JavaCVCL.fastCompilerOptions + " -DDOT_SIZE=" + dotSize,
+                    "ImageTransformer.cl:ProjectiveTransformer.cl",
+                    "transformOne", "transformSub", "transformDot", "reduceOutputData");
+            this.oneKernel    = kernels[0];
+            this.subKernel    = kernels[1];
+            this.dotKernel    = kernels[2];
+            this.reduceKernel = kernels[3];
+        }
     }
 
     protected final JavaCVCL context;
     protected final CLBuffer<FloatBuffer> HBuffer;
-    private final CLKernel oneKernel, subKernel, dotKernel, reduceKernel;
+    private CLKernel oneKernel, subKernel, dotKernel, reduceKernel;
 
     public JavaCVCL getContext() {
         return context;

@@ -78,11 +78,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
             try {
                 Loader.load(com.googlecode.javacv.cpp.dc1394.class);
             } catch (Throwable t) {
-                if (t instanceof Exception) {
-                    throw loadingException = (Exception)t;
-                } else {
-                    throw loadingException = new Exception(t);
-                }
+                throw loadingException = new Exception("Failed to load " + DC1394FrameGrabber.class, t);
             }
         }
     }
@@ -136,10 +132,41 @@ public class DC1394FrameGrabber extends FrameGrabber {
     private dc1394video_frame_t frame = null;
     private dc1394video_frame_t enqueue_image = null;
     private IplImage temp_image, return_image = null;
+    private int[] out = new int[1];
+    private float[] outFloat = new float[1];
     private float[] gammaOut = new float[1];
 
     @Override public double getGamma() {
         return gammaOut[0];
+    }
+
+    @Override public int getImageWidth() {
+        return return_image == null ? super.getImageWidth() : return_image.width();
+    }
+
+    @Override public int getImageHeight() {
+        return return_image == null ? super.getImageHeight() : return_image.height();
+    }
+
+    @Override public double getFrameRate() {
+        if (camera == null) {
+            return super.getFrameRate();
+        } else {
+            if (dc1394_feature_get_absolute_value(camera, 
+                    DC1394_FEATURE_FRAME_RATE, outFloat) != DC1394_SUCCESS) {
+                dc1394_video_get_framerate(camera, out);
+                dc1394_framerate_as_float(out[0], outFloat);
+            }
+            return outFloat[0];
+        }
+    }
+
+    @Override public void setImageMode(ImageMode imageMode) {
+        if (imageMode != this.imageMode) {
+            temp_image = null;
+            return_image = null;
+        }
+        super.setImageMode(imageMode);
     }
 
     public void start() throws Exception {
@@ -179,7 +206,6 @@ public class DC1394FrameGrabber extends FrameGrabber {
         
         if (c == -1) {
             // otherwise, still need to set current video mode to kick start the ISO channel...
-            int[] out = new int[1];
             dc1394_video_get_mode(camera, out);
             c = out[0];
         }
@@ -207,7 +233,6 @@ public class DC1394FrameGrabber extends FrameGrabber {
 
         if (f == -1) {
             // otherwise, still need to set current framerate to kick start the ISO channel...
-            int[] out = new int[1];
             dc1394_video_get_framerate(camera, out);
             f = out[0];
         }
@@ -220,7 +245,11 @@ public class DC1394FrameGrabber extends FrameGrabber {
                     // no trigger support, use one-shot mode instead
                     oneShotMode = true;
                 } else {
-                    dc1394_external_trigger_set_mode(camera, DC1394_TRIGGER_MODE_0);
+                    err = dc1394_external_trigger_set_mode(camera, DC1394_TRIGGER_MODE_14);
+                    if (err != DC1394_SUCCESS) {
+                        // try with trigger mode 0 instead
+                        err = dc1394_external_trigger_set_mode(camera, DC1394_TRIGGER_MODE_0);
+                    }
                     err = dc1394_external_trigger_set_source(camera, DC1394_TRIGGER_SOURCE_SOFTWARE);
                     if (err != DC1394_SUCCESS) {
                         // no support for software trigger, use one-shot mode instead
@@ -291,11 +320,13 @@ public class DC1394FrameGrabber extends FrameGrabber {
                     throw new Exception("dc1394_video_set_transmission() Error " + err + ": Could not start camera iso transmission.");
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             // if we couldn't start, try again with a bus reset
             if (tryReset && !resetDone) {
                 dc1394_reset_bus(camera);
-                Thread.sleep(100);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) { }
                 resetDone = true;
                 start(false, try1394b);
             } else {
@@ -326,6 +357,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
         enqueue_image = null;
         temp_image    = null;
         return_image  = null;
+        timestamp   = 0;
+        frameNumber = 0;
 
         int err = dc1394_video_set_transmission(camera, DC1394_OFF);
         if (err != DC1394_SUCCESS) {
@@ -335,7 +368,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
         if (err != DC1394_SUCCESS && err != DC1394_CAPTURE_IS_NOT_SET) {
             throw new Exception("dc1394_capture_stop() Error " + err + ": Could not stop the camera?");
         }
-        if (triggerMode && !oneShotMode) {
+        err = dc1394_external_trigger_get_mode(camera, out);
+        if (err == DC1394_SUCCESS && out[0] >= DC1394_TRIGGER_MODE_0) {
             err = dc1394_external_trigger_set_power(camera, DC1394_OFF);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_external_trigger_set_power() Error " + err + ": Could not switch off external trigger.");
@@ -365,7 +399,6 @@ public class DC1394FrameGrabber extends FrameGrabber {
             }
         } else {
             long time = System.currentTimeMillis();
-            int[] out = new int[1];
             do {
                 dc1394_software_trigger_get_power(camera, out);
                 if (System.currentTimeMillis() - time > timeout) {
@@ -394,10 +427,12 @@ public class DC1394FrameGrabber extends FrameGrabber {
             throw new Exception("dc1394_capture_dequeue(WAIT) Error " + err + ": Could not capture a frame. (Has start() been called?)");
         }
         // try to poll for more images, to get the most recent one...
+        int numDequeued = 0;
         while (!raw_image[i].isNull()) {
             enqueue();
             enqueue_image = raw_image[i];
             i = (i+1)%2;
+            numDequeued++;
             err = dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_POLL, raw_image[i]);
             if (err != DC1394_SUCCESS) {
                 throw new Exception("dc1394_capture_dequeue(POLL) Error " + err + ": Could not capture a frame.");
@@ -411,7 +446,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
         switch (depth) {
             case 8:  iplDepth = IPL_DEPTH_8U;  break;
             case 16: iplDepth = IPL_DEPTH_16U; break;
-            default: assert (false);
+            default: assert false;
         }
         int stride = frame.stride();
         int size = frame.image_bytes();
@@ -499,7 +534,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 } else if (c        == DC1394_COLOR_FILTER_BGGR) {
                     frame.color_filter(DC1394_COLOR_FILTER_RGGB);
                 } else {
-                    assert(false);
+                    assert false;
                 }
                 // other better methods than "simple" give garbage at 16 bits..
                 err = dc1394_debayer_frames(frame, conv_image, DC1394_BAYER_METHOD_SIMPLE);
@@ -555,8 +590,12 @@ public class DC1394FrameGrabber extends FrameGrabber {
         }
 
         enqueue_image = frame;
-        return_image.timestamp = frame.timestamp();
-//System.out.println(frame.timestamp);
+        timestamp = frame.timestamp();
+        frameNumber += numDequeued;
+//        int[] cycle_timer = { 0 };
+//        long[] local_time = { 0 };
+//        dc1394_read_cycle_timer(camera, cycle_timer, local_time);
+//System.out.println("frame age = " + (local_time[0] - timestamp));
         return return_image;
     }
 }

@@ -75,7 +75,7 @@ public interface ImageTransformerCL extends ImageTransformer {
             int structSize = 4*(4 + dotSize + dotSize*dotSize);
             if (buffer == null || buffer.getCLSize() < structSize*reduceSize) {
                 if (buffer != null) buffer.release();
-                buffer = context.getCLContext().createByteBuffer(structSize*reduceSize, CLBuffer.Mem.READ_WRITE);
+                buffer = context.getCLContext().createByteBuffer(structSize*reduceSize);
                 ByteBuffer byteBuffer = buffer.getBuffer();
                 byteBuffer.position(4*4);             srcDstDot = byteBuffer.asFloatBuffer();
                 byteBuffer.position(4*(4 + dotSize)); dstDstDot = byteBuffer.asFloatBuffer();

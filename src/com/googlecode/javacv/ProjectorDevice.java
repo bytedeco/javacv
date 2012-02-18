@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -70,6 +70,9 @@ public class ProjectorDevice extends ProjectiveDevice {
         int getRefreshRate();
         void setRefreshRate(int refreshRate);
 
+        boolean isUseOpenGL();
+        void setUseOpenGL(boolean useOpenGL);
+
         void addPropertyChangeListener(PropertyChangeListener listener);
         void removePropertyChangeListener(PropertyChangeListener listener);
     }
@@ -86,6 +89,7 @@ public class ProjectorDevice extends ProjectiveDevice {
                 this.imageHeight  = s.imageHeight;
                 this.bitDepth     = s.bitDepth;
                 this.refreshRate  = s.refreshRate;
+                this.useOpenGL    = s.useOpenGL;
             }
         }
 
@@ -155,6 +159,14 @@ public class ProjectorDevice extends ProjectiveDevice {
             this.refreshRate = refreshRate;
         }
 
+        private boolean useOpenGL = false;
+
+        public boolean isUseOpenGL() {
+            return useOpenGL;
+        }
+        public void setUseOpenGL(boolean useOpenGL) {
+            this.useOpenGL = useOpenGL;
+        }
     }
 
     // pouah.. hurray for Scala!
@@ -196,6 +208,9 @@ public class ProjectorDevice extends ProjectiveDevice {
         public void setBitDepth(int bitDepth) { si.setBitDepth(bitDepth); }
         public int getRefreshRate() { return si.getRefreshRate(); }
         public void setRefreshRate(int refreshRate) { si.setRefreshRate(refreshRate); }
+
+        public boolean isUseOpenGL() { return si.isUseOpenGL(); }
+        public void setUseOpenGL(boolean useOpenGL) { si.setUseOpenGL(useOpenGL); }
 
         double brightnessBackground = 0.0, brightnessForeground = 1.0;
 
@@ -251,6 +266,9 @@ public class ProjectorDevice extends ProjectiveDevice {
         public void setBitDepth(int bitDepth) { si.setBitDepth(bitDepth); }
         public int getRefreshRate() { return si.getRefreshRate(); }
         public void setRefreshRate(int refreshRate) { si.setRefreshRate(refreshRate); }
+
+        public boolean isUseOpenGL() { return si.isUseOpenGL(); }
+        public void setUseOpenGL(boolean useOpenGL) { si.setUseOpenGL(useOpenGL); }
     }
 
     private Settings settings;
@@ -274,13 +292,15 @@ public class ProjectorDevice extends ProjectiveDevice {
         }
     }
 
-    public CanvasFrame createCanvasFrame() throws Exception {
+    public CanvasFrame createCanvasFrame() throws CanvasFrame.Exception {
         if (settings.getScreenNumber() < 0) {
             return null;
         }
         DisplayMode d = new DisplayMode(settings.getImageWidth(), settings.getImageHeight(),
                 settings.getBitDepth(), settings.getRefreshRate());
-        CanvasFrame c = new CanvasFrame(settings.getName(), settings.getScreenNumber(), d, settings.getResponseGamma());
+        CanvasFrame c = settings.isUseOpenGL() ? 
+            new GLCanvasFrame(settings.getName(), settings.getScreenNumber(), d, settings.getResponseGamma()) :
+            new   CanvasFrame(settings.getName(), settings.getScreenNumber(), d, settings.getResponseGamma());
         c.setLatency(settings.getLatency());
 
         Dimension size = c.getCanvasSize();
@@ -343,5 +363,4 @@ public class ProjectorDevice extends ProjectiveDevice {
         }
         return devices;
     }
-
 }

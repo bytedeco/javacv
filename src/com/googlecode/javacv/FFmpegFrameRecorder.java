@@ -285,7 +285,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
     public void record(IplImage frame, boolean raw) throws Exception {
         if (video_st == null) {
-            throw new Exception("No video output stream");
+            throw new Exception("No video output stream (Has start() been called?)");
         }
 
         int out_size, ret;

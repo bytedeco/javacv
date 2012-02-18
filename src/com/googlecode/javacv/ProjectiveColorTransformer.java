@@ -20,9 +20,7 @@
 
 package com.googlecode.javacv;
 
-import java.nio.DoubleBuffer;
 import java.util.Arrays;
-import com.googlecode.javacpp.DoublePointer;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.cvkernels.*;
@@ -49,6 +47,8 @@ public class ProjectiveColorTransformer extends ProjectiveTransformer {
 
     protected CvMat X = null;
     protected int numGains = 0, numBiases = 0;
+
+    protected CvMat[] X2 = null;
 
     public CvMat getX() {
         return X;
@@ -118,89 +118,59 @@ public class ProjectiveColorTransformer extends ProjectiveTransformer {
     }
 
     @Override public void transform(Data[] data, CvRect roi, ImageTransformer.Parameters[] parameters, boolean[] inverses) {
-        assert (data.length == parameters.length);
-        boolean allOK = true;
+        assert data.length == parameters.length;
+        if (kernelData == null || kernelData.capacity() < data.length) {
+            kernelData = new KernelData(data.length);
+        }
+        if (H == null || H.length < data.length) {
+            H = new CvMat[data.length];
+            for (int i = 0; i < H.length; i++) {
+                H[i] = CvMat.create(3, 3);
+            }
+        }
+        if (X2 == null || X2.length < data.length) {
+            X2 = new CvMat[data.length];
+            for (int i = 0; i < X2.length; i++) {
+                X2[i] = CvMat.create(4, 4);
+            }
+        }
+
         for (int i = 0; i < data.length; i++) {
-            Data d = data[i];
-            if (d.srcImg != null) {
-                if ((d.transImg != null || d.dstImg != null) &&
-                     d.subImg   == null && d.srcDotImg == null && d.dstDstDot == null) {
-                        IplImage dstImage = d.transImg == null ? d.dstImg : d.transImg;
-                        boolean inverse = inverses == null ? false : inverses[i];
-                        transform(d.srcImg, dstImage, roi, d.pyramidLevel, parameters[i], inverse);
-                        transformColor(dstImage, dstImage, roi, d.pyramidLevel, parameters[i], inverse);
-                } else {
-                    allOK = false;
-                }
-            }
-        }
-        if (!allOK) {
-            class Cache {
-                Cache(int length) {
-                    this.length = length;
-                    kernelData = new KernelData(length);
-                    H = new CvMat[length];
-                    X = new CvMat[length];
-                    dstDstDot = new DoublePointer[length];
-                    dstDstDotBuf = new DoubleBuffer[length];
-                }
-                final int length;
-                final KernelData kernelData;
-                final CvMat[] H, X;
-                final DoublePointer[] dstDstDot;
-                final DoubleBuffer[] dstDstDotBuf;
-            }
-            Cache c = data[0].cache instanceof Cache ? (Cache)data[0].cache : null;
-            if (c == null || c.length != data.length) {
-                data[0].cache = c = new Cache(data.length);
-            }
+            kernelData.position(i);
 
-            for (int i = 0; i < data.length; i++) {
-                c.kernelData.position(i);
+            kernelData.srcImg(data[i].srcImg);
+            kernelData.srcImg2(null);
+            kernelData.subImg(data[i].subImg);
+            kernelData.srcDotImg(data[i].srcDotImg);
+            kernelData.mask(data[i].mask);
+            kernelData.zeroThreshold(data[i].zeroThreshold);
+            kernelData.outlierThreshold(data[i].outlierThreshold);
 
-                c.kernelData.srcImg(data[i].srcImg);
-                c.kernelData.srcImg2(null);
-                c.kernelData.subImg(data[i].subImg);
-                c.kernelData.srcDotImg(data[i].srcDotImg);
-                c.kernelData.mask(data[i].mask);
-                c.kernelData.zeroThreshold(data[i].zeroThreshold);
-                c.kernelData.outlierThreshold(data[i].outlierThreshold);
+            boolean inverse = inverses == null ? false : inverses[i];
+            prepareHomography    (H[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
+            prepareColorTransform(X2[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
 
-                if (c.H[i] == null) { c.H[i] = CvMat.create(3, 3); }
-                if (c.X[i] == null) { c.X[i] = CvMat.create(4, 4); }
-                if (data[i].dstDstDot != null && c.dstDstDot[i] == null) {
-                    c.dstDstDot[i] = new DoublePointer(data[i].dstDstDot.length);
-                    c.dstDstDotBuf[i] = c.dstDstDot[i].asBuffer();
-                }
+            kernelData.H1(H[i]);
+            kernelData.H2(null);
+            kernelData.X(X2[i]);
 
-                boolean inverse = inverses == null ? false : inverses[i];
-                prepareHomography    (c.H[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
-                prepareColorTransform(c.X[i], data[i].pyramidLevel, (Parameters)parameters[i], inverse);
-
-                c.kernelData.H1(c.H[i]);
-                c.kernelData.H2(null);
-                c.kernelData.X (c.X[i]);
-
-                c.kernelData.transImg(data[i].transImg);
-                c.kernelData.dstImg(data[i].dstImg);
-                c.kernelData.dstDstDot(c.dstDstDot[i]);
-            }
-
-            multiWarpColorTransform(c.kernelData.position(0), data.length, roi, getFillColor());
-
-            for (int i = 0; i < data.length; i++) {
-                c.kernelData.position(i);
-                data[i].dstCount        = c.kernelData.dstCount();
-                data[i].dstCountZero    = c.kernelData.dstCountZero();
-                data[i].dstCountOutlier = c.kernelData.dstCountOutlier();
-                data[i].srcDstDot       = c.kernelData.srcDstDot();
-                if (data[i].dstDstDot != null) {
-                    c.dstDstDotBuf[i].position(0);
-                    c.dstDstDotBuf[i].get(data[i].dstDstDot);
-                }
-            }
+            kernelData.transImg(data[i].transImg);
+            kernelData.dstImg(data[i].dstImg);
+            kernelData.dstDstDot(data[i].dstDstDot);
         }
 
+        int fullCapacity = kernelData.capacity();
+        kernelData.capacity(data.length);
+        multiWarpColorTransform(kernelData, roi, getFillColor());
+        kernelData.capacity(fullCapacity);
+
+        for (int i = 0; i < data.length; i++) {
+            kernelData.position(i);
+            data[i].dstCount        = kernelData.dstCount();
+            data[i].dstCountZero    = kernelData.dstCountZero();
+            data[i].dstCountOutlier = kernelData.dstCountOutlier();
+            data[i].srcDstDot       = kernelData.srcDstDot();
+        }
     }
 
     @Override public Parameters createParameters() {

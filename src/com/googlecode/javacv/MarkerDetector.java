@@ -44,46 +44,46 @@ public class MarkerDetector {
     // used for the projector markers... this is because we use binary
     // thresholding while we actually have three levels..
     public static class Settings extends BaseChildSettings {
-        int binarizationWindowMin = 5;
-        int binarizationWindowMax = 63;
-        double binarizationVarianceMultiplier = 1;
-        double binarizationKBlackMarkers = 0.6;
-        double binarizationKWhiteMarkers = 1.0;
+        int binarizeWindowMin = 5;
+        int binarizeWindowMax = 63;
+        double binarizeVarMultiplier = 1;
+        double binarizeKBlackMarkers = 0.6;
+        double binarizeKWhiteMarkers = 1.0;
         int subPixelWindow = 11;
 
-        public int getBinarizationWindowMin() {
-            return binarizationWindowMin;
+        public int getBinarizeWindowMin() {
+            return binarizeWindowMin;
         }
-        public void setBinarizationWindowMin(int binarizationWindowMin) {
-            this.binarizationWindowMin = binarizationWindowMin;
-        }
-
-        public int getBinarizationWindowMax() {
-            return binarizationWindowMax;
-        }
-        public void setBinarizationWindowMax(int binarizationWindowMax) {
-            this.binarizationWindowMax = binarizationWindowMax;
+        public void setBinarizeWindowMin(int binarizeWindowMin) {
+            this.binarizeWindowMin = binarizeWindowMin;
         }
 
-        public double getBinarizationVarianceMultiplier() {
-            return binarizationVarianceMultiplier;
+        public int getBinarizeWindowMax() {
+            return binarizeWindowMax;
         }
-        public void setBinarizationVarianceMultiplier(double binarizationVarianceMultiplier) {
-            this.binarizationVarianceMultiplier = binarizationVarianceMultiplier;
-        }
-
-        public double getBinarizationKBlackMarkers() {
-            return binarizationKBlackMarkers;
-        }
-        public void setBinarizationKBlackMarkers(double binarizationKBlackMarkers) {
-            this.binarizationKBlackMarkers = binarizationKBlackMarkers;
+        public void setBinarizeWindowMax(int binarizeWindowMax) {
+            this.binarizeWindowMax = binarizeWindowMax;
         }
 
-        public double getBinarizationKWhiteMarkers() {
-            return binarizationKWhiteMarkers;
+        public double getBinarizeVarMultiplier() {
+            return binarizeVarMultiplier;
         }
-        public void setBinarizationKWhiteMarkers(double binarizationKWhiteMarkers) {
-            this.binarizationKWhiteMarkers = binarizationKWhiteMarkers;
+        public void setBinarizeVarMultiplier(double binarizeVarMultiplier) {
+            this.binarizeVarMultiplier = binarizeVarMultiplier;
+        }
+
+        public double getBinarizeKBlackMarkers() {
+            return binarizeKBlackMarkers;
+        }
+        public void setBinarizeKBlackMarkers(double binarizeKBlackMarkers) {
+            this.binarizeKBlackMarkers = binarizeKBlackMarkers;
+        }
+
+        public double getBinarizeKWhiteMarkers() {
+            return binarizeKWhiteMarkers;
+        }
+        public void setBinarizeKWhiteMarkers(double binarizeKWhiteMarkers) {
+            this.binarizeKWhiteMarkers = binarizeKWhiteMarkers;
         }
 
         public int getSubPixelWindow() {
@@ -191,9 +191,9 @@ public class MarkerDetector {
             image = tempsrc;
         }
 //long time1 = System.currentTimeMillis();
-        JavaCV.adaptiveBinarization(image, sumimage, sqsumimage, binarized, whiteMarkers,
-                settings.binarizationWindowMin, settings.binarizationWindowMax, settings.binarizationVarianceMultiplier,
-                whiteMarkers ? settings.binarizationKWhiteMarkers : settings.binarizationKBlackMarkers);
+        JavaCV.adaptiveBinarize(image, sumimage, sqsumimage, binarized, whiteMarkers,
+                settings.binarizeWindowMax, settings.binarizeWindowMin, settings.binarizeVarMultiplier,
+                whiteMarkers ? settings.binarizeKWhiteMarkers : settings.binarizeKBlackMarkers);
 //CanvasFrame.global.showImage(binarized, 0.5);
 //CanvasFrame.global.waitKey();
 //long time2 = System.currentTimeMillis();

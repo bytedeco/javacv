@@ -21,6 +21,7 @@
  * Based on avcodec_sample.0.5.0.c
  * http://web.me.com/dhoerl/Home/Tech_Blog/Entries/2009/1/22_Revised_avcodec_sample.c_files/avcodec_sample.0.5.0.c
  * by Martin Böhme, Stephen Dranger, and David Hoerl
+ * as well as ffplay.c that came with FFmpeg 0.6.1 Copyright (c) 2003 Fabrice Bellard
  */
 
 package com.googlecode.javacv;
@@ -28,7 +29,6 @@ package com.googlecode.javacv;
 import java.io.File;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
-import com.googlecode.javacpp.LongPointer;
 import com.googlecode.javacpp.PointerPointer;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -59,7 +59,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
                 } else {
-                    throw loadingException = new Exception(t);
+                    throw loadingException = new Exception("Failed to load " + FFmpegFrameGrabber.class, t);
                 }
             }
         }
@@ -76,11 +76,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         av_register_all();
 
         this.filename = filename;
-
-        this.pFormatCtx    = new AVFormatContext(null);
-        this.packet        = new AVPacket();
-        this.frameFinished = new int[1];
-
     }
     public void release() throws Exception {
         stop();
@@ -103,6 +98,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVPacket        packet;
     private int[]           frameFinished;
     private IplImage        return_image = null;
+
+    private long faulty_pts;
+    private long faulty_dts;
+    private long last_dts_for_fault_detection;
+    private long last_pts_for_fault_detection;
 
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
@@ -144,15 +144,49 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public double getFrameRate() {
-        if (pFormatCtx == null) {
+        if (pStream == null) {
             return super.getFrameRate();
         } else {
-            AVRational r = pFormatCtx.streams(videoStream).time_base();
-            return (double)r.den()/r.num();
+            AVRational r = pStream.r_frame_rate();
+            return (double)r.num()/r.den();
+        }
+    }
+
+    @Override public int getFrameNumber() {
+        return pCodecCtx == null ? super.getFrameNumber() : pCodecCtx.frame_number();
+    }
+    @Override public void setFrameNumber(int frameNumber) throws Exception {
+        if (pCodecCtx == null || pCodecCtx == null) {
+            super.setFrameNumber(frameNumber);
+        } else {
+            if (avformat_seek_file(pFormatCtx, -1, Long.MIN_VALUE, frameNumber, Long.MAX_VALUE, AVSEEK_FLAG_FRAME) < 0) {
+                throw new Exception("Could not seek file to frame number " + frameNumber + ".");
+            }
+            avcodec_flush_buffers(pCodecCtx);
+        }
+    }
+
+    @Override public void setTimestamp(long timestamp) throws Exception {
+        if (pFormatCtx == null || pCodecCtx == null) {
+            super.setTimestamp(timestamp);
+        } else {
+            timestamp = timestamp * AV_TIME_BASE / 1000000;
+            /* add the stream start time */
+            if (pFormatCtx.start_time() != AV_NOPTS_VALUE) {
+                timestamp += pFormatCtx.start_time();
+            }
+            if (avformat_seek_file(pFormatCtx, -1, Long.MIN_VALUE, timestamp, Long.MAX_VALUE, 0) < 0) {
+                throw new Exception("Could not seek file to timestamp " + timestamp + ".");
+            }
+            avcodec_flush_buffers(pCodecCtx);
         }
     }
 
     public void start() throws Exception {
+        this.pFormatCtx    = new AVFormatContext(null);
+        this.packet        = new AVPacket();
+        this.frameFinished = new int[1];
+
         // Open video file
         AVInputFormat f = null;
         if (format != null && format.length() > 0) {
@@ -176,7 +210,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         // Retrieve stream information
         if (av_find_stream_info(pFormatCtx) < 0) {
-           throw new Exception("Could not find stream information.");
+            throw new Exception("Could not find stream information.");
         }
 
         // Dump information about file onto standard error
@@ -257,8 +291,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 break;
 
             default:
-                assert(false);
+                assert false;
         }
+
+        faulty_pts = faulty_dts = last_dts_for_fault_detection = last_pts_for_fault_detection = 0;
     }
 
     public void stop() throws Exception {
@@ -290,17 +326,16 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             pFormatCtx = null;
         }
 
-        if (return_image != null) {
-            return_image.release();
-            return_image = null;
-        }
+        return_image = null;
+        timestamp   = 0;
+        frameNumber = 0;
     }
 
     public void trigger() throws Exception {
         if (pFormatCtx == null || pFormatCtx.isNull()) {
             throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
         }
-        for (int i = 0; i < triggerFlushSize; i++) {
+        for (int i = 0; i < numBuffers+1; i++) {
             if (av_read_frame(pFormatCtx, packet) < 0) {
                 return;
             }
@@ -323,18 +358,28 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             // Is this a packet from the video stream?
             if (packet.stream_index() == videoStream) {
                 // Decode video frame
+                pCodecCtx.reordered_opaque(packet.pts());
                 int len = avcodec_decode_video2(pCodecCtx, pFrame, frameFinished, packet);
 
-                LongPointer opaque = new LongPointer(pFrame.opaque());
-                if (packet.dts() != AV_NOPTS_VALUE) {
+                if (frameFinished[0] != 0) {
+                    if (packet.dts() != AV_NOPTS_VALUE) {
+                        faulty_dts += packet.dts() <= last_dts_for_fault_detection ? 1 : 0;
+                        last_dts_for_fault_detection = packet.dts();
+                    }
+                    if (pFrame.reordered_opaque() != AV_NOPTS_VALUE) {
+                        faulty_pts += pFrame.reordered_opaque() <= last_pts_for_fault_detection ? 1 : 0;
+                        last_pts_for_fault_detection = pFrame.reordered_opaque();
+                    }
+                }
+
+                if (((faulty_pts < faulty_dts) || packet.dts() == AV_NOPTS_VALUE) &&
+                        pFrame.reordered_opaque() != AV_NOPTS_VALUE) {
+                    pts = pFrame.reordered_opaque();
+                } else if (packet.dts() != AV_NOPTS_VALUE) {
                     pts = packet.dts();
-                } else if (!opaque.isNull() && opaque.get() != AV_NOPTS_VALUE) {
-                    pts = opaque.get();
                 } else {
                     pts = 0;
                 }
-                AVRational time_base = pStream.time_base();
-                pts = 1000*pts*time_base.num()/time_base.den();
 
                 // Did we get a video frame?
                 if (len > 0 && frameFinished[0] != 0) {
@@ -353,13 +398,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             return_image.widthStep(pFrameRGB.linesize(0));
                             break;
                         case RAW:
-                            assert (pCodecCtx.width()  == return_image.width() &&
-                                    pCodecCtx.height() == return_image.height());
+                            assert pCodecCtx.width()  == return_image.width() &&
+                                   pCodecCtx.height() == return_image.height();
                             return_image.imageData(pFrame.data(0));
                             return_image.widthStep(pFrame.linesize(0));
                             break;
                         default:
-                            assert (false);
+                            assert false;
                     }
                     return_image.imageSize(return_image.height() * return_image.widthStep());
                     return_image.nChannels(return_image.widthStep() / return_image.width());
@@ -372,7 +417,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_free_packet(packet);
         }
 
-        return_image.timestamp = pts;
+        AVRational time_base = pStream.time_base();
+        timestamp = 1000000*pts*time_base.num()/time_base.den();
         return return_image;
     }
 }

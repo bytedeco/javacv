@@ -21,6 +21,8 @@
 package com.googlecode.javacv;
 
 import cl.eye.CLCamera;
+import java.lang.reflect.Field;
+import sun.misc.Unsafe;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -39,7 +41,7 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  *  have to be considered "read only" and the caller needs to create it's own copy or clone that image.
  *  Calling of release() method for this image shall be avoided.
  *  Based on used resolution the image is in format either 640x480 or 320x240, IPL_DEPTH_8U, 4 channel (color) or 1 channel (gray).
- *  image.timestamp is set to actual value of System.nanoTime() obtained after return from the CL driver.  
+ *  timestamp is set to actual value of System.nanoTime()/1000 obtained after return from the CL driver.
  *  
  *  Typical use case scenario:
  *     create new instance of PS3MiniGrabber
@@ -78,11 +80,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
             try {
                 CLCamera.IsLibraryLoaded();
             } catch (Throwable t) {
-                if (t instanceof Exception) {
-                    throw loadingException = (Exception)t;
-                } else {
-                    throw loadingException = new Exception(t);
-                }
+                throw loadingException = new Exception("Failed to load " + PS3EyeFrameGrabber.class, t);
             }
         }
     }
@@ -102,7 +100,6 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
     //
     protected enum Triggered {NO_TRIGGER, HAS_FRAME, NO_FRAME};
     protected Triggered triggered = Triggered.NO_TRIGGER;
-    protected long timestamp = 0;
 
 
     /** Default grabber, camera idx = 0, color mode, VGA resolution, 60 FPS frame rate.
@@ -140,10 +137,23 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
         }
 
         try {
-            // maybe some new version of CLCamera works without a PApplet...
-            camera = CLCamera.class.newInstance();
-        } catch (InstantiationException e) {
-            camera = (CLCamera)CLCamera.class.getConstructors()[0].newInstance(applet);
+            try {
+                // maybe some new version of CLCamera works without a PApplet...
+                camera = CLCamera.class.newInstance();
+            } catch (Throwable t) {
+                if (applet == null) {
+                    // do some really hacky stuff to create an instance
+                    // without calling the constructor
+                    Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+                    unsafeField.setAccessible(true);
+                    Unsafe unsafe = (Unsafe)unsafeField.get(null);
+                    camera = (CLCamera)unsafe.allocateInstance(CLCamera.class);
+                } else {
+                    camera = (CLCamera)CLCamera.class.getConstructors()[0].newInstance(applet);
+                }
+            }
+        } catch (Throwable t) {
+            throw new Exception("Failed to construct " + PS3EyeFrameGrabber.class, t);
         }
         this.cameraIndex = cameraIndex;
 
@@ -162,8 +172,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
         setTimeout(1 + 1000/framerate);
         setBitsPerPixel(8);
         setTriggerMode(false);
-        setTriggerFlushSize(0);
-        setNumBuffers(0);
+        setNumBuffers(4);
     }
 
     /** 
@@ -190,15 +199,13 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
     }
 
 
-    /** Make IplImage form raw int[] frame data and mark it by timestamp.
+    /** Make IplImage form raw int[] frame data
      *  Note: NO array size checks!!
      * 
      * @param frame int[] image frame data 
-     * @param timestamp  image timestamp
-     * @return internal IplImage set to frame and timestamp
+     * @return internal IplImage set to frame
      */
-    public IplImage makeImage(int[] frame, long timestamp) {
-        image_4ch.timestamp = timestamp;
+    public IplImage makeImage(int[] frame) {
         image_4ch.getIntBuffer().put(ps3_frame);
         return image_4ch;
     }
@@ -216,13 +223,13 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
     }
 
     public void trigger() throws Exception {
-        for (int i = 0; i < triggerFlushSize; i++) {
+        for (int i = 0; i < numBuffers+1; i++) {
             grab_raw();
         }
 
         if ((ps3_frame = grab_raw()) != null) {
             triggered = Triggered.HAS_FRAME;
-            timestamp = System.nanoTime();
+            timestamp = System.nanoTime()/1000;
         }
         else
             triggered = Triggered.NO_FRAME;
@@ -239,7 +246,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
      public IplImage grab_RGB4() {
 
         if (camera.getCameraFrame(ps3_frame, timeout)) {
-            image_4ch.timestamp = System.nanoTime();
+            timestamp = System.nanoTime()/1000;
             image_4ch.getIntBuffer().put(ps3_frame);
             return image_4ch;
         }
@@ -261,7 +268,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
                 break;
             case HAS_FRAME:
                 triggered = Triggered.NO_TRIGGER;
-                img = makeImage(ps3_frame, timestamp);
+                img = makeImage(ps3_frame);
                 break;
             case NO_FRAME:     
                 triggered = Triggered.NO_TRIGGER;

@@ -41,19 +41,21 @@ public class ProjectiveColorTransformerCL extends ProjectiveColorTransformer imp
         this.context = context;
         this.HBuffer = context.getCLContext().createFloatBuffer(dotSize*9,  CLBuffer.Mem.READ_ONLY);
         this.XBuffer = context.getCLContext().createFloatBuffer(dotSize*16, CLBuffer.Mem.READ_ONLY);
-        CLKernel[] kernels = context.buildKernels(
-                JavaCVCL.fastCompilerOptions + " -DDOT_SIZE=" + dotSize,
-                "ImageTransformer.cl:ProjectiveColorTransformer.cl",
-                "transformOne", "transformSub", "transformDot", "reduceOutputData");
-        oneKernel    = kernels[0];
-        subKernel    = kernels[1];
-        dotKernel    = kernels[2];
-        reduceKernel = kernels[3];
+        if (getClass() == ProjectiveColorTransformerCL.class) {
+            CLKernel[] kernels = context.buildKernels(
+                    JavaCVCL.fastCompilerOptions + " -DDOT_SIZE=" + dotSize,
+                    "ImageTransformer.cl:ProjectiveColorTransformer.cl",
+                    "transformOne", "transformSub", "transformDot", "reduceOutputData");
+            oneKernel    = kernels[0];
+            subKernel    = kernels[1];
+            dotKernel    = kernels[2];
+            reduceKernel = kernels[3];
+        }
     }
 
     protected final JavaCVCL context;
     protected final CLBuffer<FloatBuffer> HBuffer, XBuffer;
-    private final CLKernel oneKernel, subKernel, dotKernel, reduceKernel;
+    private CLKernel oneKernel, subKernel, dotKernel, reduceKernel;
 
     public JavaCVCL getContext() {
         return context;

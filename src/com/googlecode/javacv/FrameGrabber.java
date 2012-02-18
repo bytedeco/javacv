@@ -24,6 +24,11 @@ import java.beans.PropertyEditorSupport;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
@@ -66,7 +71,7 @@ public abstract class FrameGrabber {
                     }
                 } catch (Throwable t) { 
                     if (t.getCause() instanceof UnsupportedOperationException) {
-                        mayContainCameras =  true;
+                        mayContainCameras = true;
                     }
                 }
                 if (mayContainCameras) {
@@ -120,12 +125,13 @@ public abstract class FrameGrabber {
     protected int pixelFormat = -1;
     protected double frameRate = 0;
     protected boolean triggerMode = false;
-    protected int triggerFlushSize = 0;
     protected int bpp = 0;
     protected int timeout = 10000;
     protected int numBuffers = 4;
     protected double gamma = 0.0;
     protected boolean deinterlace = false;
+    protected int frameNumber = 0;
+    protected long timestamp = 0;
 
     public String getFormat() {
         return format;
@@ -183,13 +189,6 @@ public abstract class FrameGrabber {
         this.triggerMode = triggerMode;
     }
 
-    public int getTriggerFlushSize() {
-        return triggerFlushSize;
-    }
-    public void setTriggerFlushSize(int triggerFlushSize) {
-        this.triggerFlushSize = triggerFlushSize;
-    }
-
     public int getBitsPerPixel() {
         return bpp;
     }
@@ -225,11 +224,74 @@ public abstract class FrameGrabber {
         this.deinterlace = deinterlace;
     }
 
+    public int getFrameNumber() {
+        return frameNumber;
+    }
+    public void setFrameNumber(int frameNumber) throws Exception {
+        this.frameNumber = frameNumber;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+    public void setTimestamp(long timestamp) throws Exception {
+        this.timestamp = timestamp;
+    }
+
+    public static class Exception extends java.lang.Exception {
+        public Exception(String message) { super(message); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
+    }
+
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void trigger() throws Exception;
     public abstract IplImage grab() throws Exception;
     public abstract void release() throws Exception;
+
+    public void restart() throws Exception {
+        stop();
+        start();
+    }
+    public void flush() throws Exception {
+        for (int i = 0; i < numBuffers+1; i++) {
+            grab();
+        }
+    }
+
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private Future<Void> future = null;
+    private IplImage delayedImage = null;
+    private long delayedTime = 0;
+    public void delayedGrab(final long delayTime) {
+        delayedImage = null;
+        delayedTime = 0;
+        final long start = System.nanoTime()/1000;
+        if (future != null && !future.isDone()) {
+            return;
+        }
+        future = executor.submit(new Callable<Void>() { public Void call() throws Exception {
+            do {
+                delayedImage = grab();
+                delayedTime = System.nanoTime()/1000 - start;
+            } while (delayedTime < delayTime);
+            return null;
+        }});
+    }
+    public long getDelayedTime() throws InterruptedException, ExecutionException {
+        if (future == null) {
+            return 0;
+        }
+        future.get();
+        return delayedTime;
+    }
+    public IplImage getDelayedImage() throws InterruptedException, ExecutionException {
+        if (future == null) {
+            return null;
+        }
+        future.get();
+        return delayedImage;
+    }
 
     public static class Array {
         // declared protected to force users to use createArray(), which
@@ -292,12 +354,12 @@ public abstract class FrameGrabber {
             for (int i = 0; i < frameGrabbers.length; i++) {
                 grabbedImages[i] = frameGrabbers[i].grab();
                 if (grabbedImages[i] != null) {
-                    newestTimestamp = Math.max(newestTimestamp, grabbedImages[i].timestamp);
+                    newestTimestamp = Math.max(newestTimestamp, frameGrabbers[i].getTimestamp());
                 }
             }
             for (int i = 0; i < frameGrabbers.length; i++) {
                 if (grabbedImages[i] != null) {
-                    latencies[i] = newestTimestamp-grabbedImages[i].timestamp;
+                    latencies[i] = newestTimestamp-frameGrabbers[i].getTimestamp();
                 }
             }
             if (bestLatencies == null) {
@@ -327,17 +389,17 @@ public abstract class FrameGrabber {
                     if (frameGrabbers[i].isTriggerMode() || grabbedImages[i] == null) {
                         continue;
                     }
-                    int latency = (int)(newestTimestamp - grabbedImages[i].timestamp);
+                    int latency = (int)(newestTimestamp - frameGrabbers[i].getTimestamp());
                     while (latency-bestLatencies[i] > 0.1*bestLatencies[i]) {
                         grabbedImages[i] = frameGrabbers[i].grab();
                         if (grabbedImages[i] == null) {
                             break;
                         }
-                        latency = (int)(newestTimestamp - grabbedImages[i].timestamp);
+                        latency = (int)(newestTimestamp - frameGrabbers[i].getTimestamp());
                         if (latency < 0) {
                             // woops, a camera seems to have dropped a frame somewhere...
                             // bump up the newestTimestamp
-                            newestTimestamp = grabbedImages[i].timestamp;
+                            newestTimestamp = frameGrabbers[i].getTimestamp();
                             break;
                         }
                     }

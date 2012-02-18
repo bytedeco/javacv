@@ -29,9 +29,27 @@ import java.util.concurrent.Future;
  * @author Samuel Audet
  */
 public class Parallel {
-    public static final int NUM_CORES = Runtime.getRuntime().availableProcessors();
-
     private static final ExecutorService threadPool = Executors.newCachedThreadPool();
+    public static final String NUM_THREADS = "com.googlecode.javacv.numthreads";
+
+    public static int getNumThreads() {
+        try {
+            String s = System.getProperty(NUM_THREADS);
+            if (s != null) {
+                return Integer.valueOf(s);
+            }
+        } catch (NumberFormatException e) {
+            throw new RuntimeException(e);
+        }
+        return getNumCores();
+    }
+    public static void setNumThreads(int numThreads) {
+        System.setProperty(NUM_THREADS, Integer.toString(numThreads));
+    }
+
+    public static int getNumCores() {
+        return Runtime.getRuntime().availableProcessors();
+    }
 
     public static void run(Runnable ... runnables) {
         if (runnables.length == 1) {
@@ -63,11 +81,15 @@ public class Parallel {
         }
     }
 
+    public interface Looper {
+        void loop(int from, int to, int looperID);
+    }
+
     public static void loop(int from, int to, final Looper looper) {
-        loop(from, to, NUM_CORES, looper);
+        loop(from, to, getNumThreads(), looper);
     }
     public static void loop(int from, int to, int numThreads, final Looper looper) {
-        int numLoopers = Math.min(to-from, numThreads);
+        int numLoopers = Math.min(to-from, numThreads > 0 ? numThreads : getNumCores());
         Runnable[] runnables = new Runnable[numLoopers];
         for (int i = 0; i < numLoopers; i++) {
             final int subFrom = (to-from)*i/numLoopers + from;
@@ -80,9 +102,5 @@ public class Parallel {
             };
         }
         run(runnables);
-    }
-
-    public interface Looper {
-        void loop(int from, int to, int looperID);
     }
 }

@@ -154,11 +154,11 @@ public class ProjectiveDevice {
             }
         }
 
-        public boolean isFixLocalLength() {
+        public boolean isFixFocalLength() {
             return (flags & CV_CALIB_FIX_FOCAL_LENGTH) != 0;
         }
-        public void setFixLocalLength(boolean fixLocalLength) {
-            if (fixLocalLength) {
+        public void setFixFocalLength(boolean fixFocalLength) {
+            if (fixFocalLength) {
                 flags |= CV_CALIB_FIX_FOCAL_LENGTH;
             } else {
                 flags &= ~CV_CALIB_FIX_FOCAL_LENGTH;
@@ -569,6 +569,7 @@ public class ProjectiveDevice {
         if (image != null) {
             initUndistortMaps();
             tempImage = IplImage.createIfNotCompatible(tempImage, image);
+            cvResetImageROI(tempImage);
             cvRemap(image, tempImage, undistortMaps1[mapsPyramidLevel], undistortMaps2[mapsPyramidLevel],
                     CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS, CvScalar.ZERO);
             return tempImage;
@@ -731,6 +732,11 @@ public class ProjectiveDevice {
         cvMatMul(R2, R1, H);
 
         return H;
+    }
+
+    public static class Exception extends java.lang.Exception {
+        public Exception(String message) { super(message); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
     }
 
     public static ProjectiveDevice[] read(String filename) throws Exception {

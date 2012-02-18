@@ -71,11 +71,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
             try {
                 Loader.load(com.googlecode.javacv.cpp.PGRFlyCapture.class);
             } catch (Throwable t) {
-                if (t instanceof Exception) {
-                    throw loadingException = (Exception)t;
-                } else {
-                    throw loadingException = new Exception(t);
-                }
+                throw loadingException = new Exception("Failed to load " + FlyCaptureFrameGrabber.class, t);
             }
         }
     }
@@ -119,10 +115,36 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
     private FlyCaptureImage conv_image = new FlyCaptureImage();
     private IplImage temp_image, return_image = null;
     private int[] regOut = new int[1];
+    private float[] outFloat = new float[1];
     private float[] gammaOut = new float[1];
 
     @Override public double getGamma() {
         return gammaOut[0];
+    }
+
+    @Override public int getImageWidth() {
+        return return_image == null ? super.getImageWidth() : return_image.width();
+    }
+
+    @Override public int getImageHeight() {
+        return return_image == null ? super.getImageHeight() : return_image.height();
+    }
+
+    @Override public double getFrameRate() {
+        if (context == null || context.isNull()) {
+            return super.getFrameRate();
+        } else {
+            flycaptureGetCameraAbsProperty(context, FLYCAPTURE_FRAME_RATE, outFloat);
+            return outFloat[0];
+        }
+    }
+
+    @Override public void setImageMode(ImageMode imageMode) {
+        if (imageMode != this.imageMode) {
+            temp_image = null;
+            return_image = null;
+        }
+        super.setImageMode(imageMode);
     }
 
     public void start() throws Exception {
@@ -187,7 +209,11 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureGetTrigger() Error " + error);
         }
-        error = flycaptureSetTrigger(context, triggerMode, iPolarity[0], 7, 0, 0);
+        error = flycaptureSetTrigger(context, triggerMode, iPolarity[0], 7, 14, 0);
+        if (error != FLYCAPTURE_OK) {
+            // try with trigger mode 0 instead
+            error = flycaptureSetTrigger(context, true, iPolarity[0], 7, 0, 0);
+        }
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureSetTrigger() Error " + error);
         }
@@ -263,6 +289,8 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
         temp_image    = null;
         return_image  = null;
+        timestamp   = 0;
+        frameNumber = 0;
     }
 
     public void trigger() throws Exception {
@@ -435,7 +463,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
 
         FlyCaptureTimestamp timeStamp = raw_image.timeStamp();
-        return_image.timestamp = timeStamp.ulSeconds()*1000000 + timeStamp.ulMicroSeconds();
+        timestamp = timeStamp.ulSeconds()*1000000 + timeStamp.ulMicroSeconds();
         return return_image;
     }
 }

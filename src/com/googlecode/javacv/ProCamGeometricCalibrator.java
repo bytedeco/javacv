@@ -108,7 +108,7 @@ public class ProCamGeometricCalibrator {
 
     public static class Settings extends GeometricCalibrator.Settings {
         double detectedProjectorMin = 0.5;
-        boolean addIntersectionOnly = true;
+        boolean useOnlyIntersection = true;
         double prewarpUpdateErrorMax = 0.01;
 
         public double getDetectedProjectorMin() {
@@ -118,11 +118,11 @@ public class ProCamGeometricCalibrator {
             this.detectedProjectorMin = detectedProjectorMin;
         }
 
-        public boolean isAddIntersectionOnly() {
-            return addIntersectionOnly;
+        public boolean isUseOnlyIntersection() {
+            return useOnlyIntersection;
         }
-        public void setAddIntersectionOnly(boolean addIntersectionOnly) {
-            this.addIntersectionOnly = addIntersectionOnly;
+        public void setUseOnlyIntersection(boolean useOnlyIntersection) {
+            this.useOnlyIntersection = useOnlyIntersection;
         }
 
         public double getPrewarpUpdateErrorMax() {
@@ -261,10 +261,10 @@ public class ProCamGeometricCalibrator {
         rmseBoardWarp[cameraNumber] = boardPlane    .getTotalWarp(imagedBoardMarkers,     boardWarp[cameraNumber]);
         rmseProjWarp [cameraNumber] = projectorPlane.getTotalWarp(imagedProjectorMarkers, projWarp[cameraNumber]);
 
-        int size = (cameraCalibrators[cameraNumber].getProjectiveDevice().imageWidth+
-                    cameraCalibrators[cameraNumber].getProjectiveDevice().imageHeight)/2;
-        if (rmseBoardWarp[cameraNumber] <= settings.prewarpUpdateErrorMax*size &&
-                rmseProjWarp[cameraNumber] <= settings.prewarpUpdateErrorMax*size) {
+        int imageSize = (cameraCalibrators[cameraNumber].getProjectiveDevice().imageWidth+
+                         cameraCalibrators[cameraNumber].getProjectiveDevice().imageHeight)/2;
+        if (rmseBoardWarp[cameraNumber] <= settings.prewarpUpdateErrorMax*imageSize &&
+                rmseProjWarp[cameraNumber] <= settings.prewarpUpdateErrorMax*imageSize) {
             updatePrewarp = true;
         } else {
             // not detected accurately enough..
@@ -289,7 +289,8 @@ public class ProCamGeometricCalibrator {
         cvCopy(boardWarp[cameraNumber], prevBoardWarp[cameraNumber]);
 
         // send upstream our recommendation for addition or not of these markers...
-        if (rmsePrev < settings.patternSteadyMax*size && rmseLast > settings.patternMovedMin*size) {
+        if (rmsePrev < settings.patternSteadySize*imageSize &&
+                rmseLast > settings.patternMovedSize*imageSize) {
             return true;
         } else {
             return false;
@@ -311,7 +312,7 @@ public class ProCamGeometricCalibrator {
             Marker[] imagedProjectorMarkers, int cameraNumber) {
         CvMat tempWarp = tempWarp3x3.get();
 
-        if (!settings.addIntersectionOnly) {
+        if (!settings.useOnlyIntersection) {
             cameraCalibrators[cameraNumber].addMarkers(boardPlane.getMarkers(),
                     imagedBoardMarkers);
             allImagedBoardMarkers[cameraNumber].add(imagedBoardMarkers);

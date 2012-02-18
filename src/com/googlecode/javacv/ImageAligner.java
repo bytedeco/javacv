@@ -33,70 +33,52 @@ public interface ImageAligner {
     public class Settings extends BaseChildSettings implements Cloneable {
         public Settings() { }
         public Settings(Settings s) {
-            minPyramidLevel = s.minPyramidLevel;
-            maxPyramidLevel = s.maxPyramidLevel;
-            gammaTgamma     = s.gammaTgamma;
-            tikhonovAlpha   = s.tikhonovAlpha;
-            constrained     = s.constrained;
-            zeroThresholds    = s.zeroThresholds;
-            outlierThresholds = s.outlierThresholds;
+            pyramidLevelMin   = s.pyramidLevelMin;
+            pyramidLevelMax   = s.pyramidLevelMax;
+            thresholdsZero    = s.thresholdsZero;
+            thresholdsOutlier = s.thresholdsOutlier;
+            thresholdsMulRMSE = s.thresholdsMulRMSE;
         }
 
-        int minPyramidLevel  = 0;
-        int maxPyramidLevel  = 4;
-        CvMat gammaTgamma    = null;
-        double tikhonovAlpha = 0;
-        boolean constrained  = false;
-        double[] zeroThresholds    = { 0.04, 0.03, 0.02, 0.01, 0 };
-        double[] outlierThresholds = { 0.1 };
+        int pyramidLevelMin        = 0;
+        int pyramidLevelMax        = 4;
+        double[] thresholdsZero    = { 0.04, 0.03, 0.02, 0.01, 0 };
+        double[] thresholdsOutlier = { 0.2 };
+        boolean thresholdsMulRMSE  = false;
 
-        public int getMinPyramidLevel() {
-            return minPyramidLevel;
+        public int getPyramidLevelMin() {
+            return pyramidLevelMin;
         }
-        public void setMinPyramidLevel(int minPyramidLevel) {
-            this.minPyramidLevel = minPyramidLevel;
+        public void setPyramidLevelMin(int pyramidLevelMin) {
+            this.pyramidLevelMin = pyramidLevelMin;
         }
 
-        public int getMaxPyramidLevel() {
-            return maxPyramidLevel;
+        public int getPyramidLevelMax() {
+            return pyramidLevelMax;
         }
-        public void setMaxPyramidLevel(int maxPyramidLevel) {
-            this.maxPyramidLevel = maxPyramidLevel;
-        }
-
-        public CvMat getGammaTgamma() {
-            return gammaTgamma;
-        }
-        public void setGammaTgamma(CvMat gammaTgamma) {
-            this.gammaTgamma = gammaTgamma;
+        public void setPyramidLevelMax(int pyramidLevelMax) {
+            this.pyramidLevelMax = pyramidLevelMax;
         }
 
-        public double getTikhonovAlpha() {
-            return tikhonovAlpha;
+        public double[] getThresholdsZero() {
+            return thresholdsZero;
         }
-        public void setTikhonovAlpha(double tikhonovAlpha) {
-            this.tikhonovAlpha = tikhonovAlpha;
-        }
-
-//        public boolean isConstrained() {
-//            return constrained;
-//        }
-//        public void setConstrained(boolean constrained) {
-//            this.constrained = constrained;
-//        }
-
-        public double[] getZeroThresholds() {
-            return zeroThresholds;
-        }
-        public void setZeroThresholds(double[] zeroThresholds) {
-            this.zeroThresholds = zeroThresholds;
+        public void setThresholdsZero(double[] thresholdsZero) {
+            this.thresholdsZero = thresholdsZero;
         }
 
-        public double[] getOutlierThresholds() {
-            return outlierThresholds;
+        public double[] getThresholdsOutlier() {
+            return thresholdsOutlier;
         }
-        public void setOutlierThresholds(double[] outlierThresholds) {
-            this.outlierThresholds = outlierThresholds;
+        public void setThresholdsOutlier(double[] thresholdsOutlier) {
+            this.thresholdsOutlier = thresholdsOutlier;
+        }
+
+        public boolean isThresholdsMulRMSE() {
+            return thresholdsMulRMSE;
+        }
+        public void setThresholdsMulRMSE(boolean thresholdsMulRMSE) {
+            this.thresholdsMulRMSE = thresholdsMulRMSE;
         }
 
         @Override public Settings clone() {
@@ -124,6 +106,8 @@ public interface ImageAligner {
     IplImage getMaskImage();
     double getRMSE();
     CvRect getRoi();
+
+    IplImage[] getImages();
 
     boolean iterate(double[] delta);
 }

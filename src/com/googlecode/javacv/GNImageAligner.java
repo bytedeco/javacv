@@ -23,7 +23,6 @@ package com.googlecode.javacv;
 import java.util.Arrays;
 import com.googlecode.javacv.ImageTransformer.Data;
 import com.googlecode.javacv.ImageTransformer.Parameters;
-import com.googlecode.javacv.Parallel.Looper;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -39,26 +38,28 @@ public class GNImageAligner implements ImageAligner {
     }
     public GNImageAligner(ImageTransformer transformer, Parameters initialParameters,
             IplImage template0, double[] roiPts, IplImage target0, Settings settings) {
+        this(transformer, initialParameters);
         setSettings(settings);
 
-        int n = initialParameters.size();
+        final int minLevel = settings.pyramidLevelMin;
+        final int maxLevel = settings.pyramidLevelMax;
 
-        this.template    = new IplImage[settings.maxPyramidLevel+1];
-        this.target      = new IplImage[settings.maxPyramidLevel+1];
-        this.transformed = new IplImage[settings.maxPyramidLevel+1];
-        this.residual    = new IplImage[settings.maxPyramidLevel+1];
-        this.mask        = new IplImage[settings.maxPyramidLevel+1];
+        this.template    = new IplImage[maxLevel+1];
+        this.target      = new IplImage[maxLevel+1];
+        this.transformed = new IplImage[maxLevel+1];
+        this.residual    = new IplImage[maxLevel+1];
+        this.mask        = new IplImage[maxLevel+1];
         int w = template0.width();
         int h = template0.height();
         int c = template0.nChannels();
         int o = template0.origin();
-        for (int i = settings.minPyramidLevel; i <= settings.maxPyramidLevel; i++) {
-            if (i == settings.minPyramidLevel && template0.depth() == IPL_DEPTH_32F) {
+        for (int i = minLevel; i <= maxLevel; i++) {
+            if (i == minLevel && template0.depth() == IPL_DEPTH_32F) {
                 template[i] = template0;
             } else {
                 template[i] = IplImage.create(w, h, IPL_DEPTH_32F, c, o);
             }
-            if (i == settings.minPyramidLevel && target0.depth() == IPL_DEPTH_32F) {
+            if (i == minLevel && target0.depth() == IPL_DEPTH_32F) {
                 target[i] = target0;
             } else {
                 target[i] = IplImage.create(w, h, IPL_DEPTH_32F, c, o);
@@ -69,30 +70,30 @@ public class GNImageAligner implements ImageAligner {
             w /= 2;
             h /= 2;
         }
+
+        this.hessianGradientTransformerData = new Data[n];
+        for (int i = 0; i < n; i++) {
+            hessianGradientTransformerData[i] = new Data(template[pyramidLevel],
+                    transformed[pyramidLevel], residual[pyramidLevel], mask[pyramidLevel],
+                    0, 0, pyramidLevel, null, null, n);
+        }
+        this.residualTransformerData = new Data[] { new Data(template[pyramidLevel],
+                    target[pyramidLevel], null, mask[pyramidLevel],
+                    0, 0, pyramidLevel, transformed[pyramidLevel], residual[pyramidLevel], 1) };
+
+        setConstrained(settings.constrained);
+        setTemplateImage(template0, roiPts);
+        setTargetImage(target0);
+    }
+    protected GNImageAligner(ImageTransformer transformer, Parameters initialParameters) {
+        this.n = initialParameters.size();
+
         this.srcRoiPts = CvMat.create(4, 1, CV_64F, 2);
         this.dstRoiPts = CvMat.create(4, 1, CV_64F, 2);
         this.dstRoiPtsArray = new CvPoint(4);
-        this.roi       = new CvRect();
-
-        this.subroi    = new CvRect[settings.numThreads];
-        for (int i = 0; i < subroi.length; i++) {
-            this.subroi[i] = new CvRect();
-        }
+        this.roi     = new CvRect();
+        this.temproi = new CvRect();
         this.transformer = transformer;
-        this.hessianGradientTransformerData = new Data[settings.numThreads][n];
-        for (int i = 0; i < hessianGradientTransformerData.length; i++) {
-            for (int j = 0; j < hessianGradientTransformerData[i].length; j++) {
-                hessianGradientTransformerData[i][j] = new Data(template[pyramidLevel],
-                        transformed[pyramidLevel], residual[pyramidLevel], mask[pyramidLevel],
-                        0, 0, pyramidLevel, null, null, n);
-            }
-        }
-        this.residualTransformerData = new Data[settings.numThreads][1];
-        for (int i = 0; i < residualTransformerData.length; i++) {
-            residualTransformerData[i][0] = new Data(template[pyramidLevel],
-                    target[pyramidLevel], null, mask[pyramidLevel],
-                    0, 0, pyramidLevel, transformed[pyramidLevel], residual[pyramidLevel], 1);
-        }
 
         this.parameters      = initialParameters.clone();
         this.parametersArray = new Parameters[] { parameters };
@@ -103,7 +104,7 @@ public class GNImageAligner implements ImageAligner {
 
         subspaceParameters = parameters.getSubspace();
         if (subspaceParameters != null) {
-            tempSubspaceParameters = new double[settings.numThreads][];
+            tempSubspaceParameters = new double[Parallel.getNumThreads()][];
             for (int i = 0; i < tempSubspaceParameters.length; i++) {
                 tempSubspaceParameters[i] = subspaceParameters.clone();
             }
@@ -112,39 +113,38 @@ public class GNImageAligner implements ImageAligner {
 //        }
 //        System.out.println();
         }
-
-        setConstrained(settings.constrained);
-        setTemplateImage(template0, roiPts);
-        setTargetImage(target0);
     }
-    protected GNImageAligner() { }
 
     public static class Settings extends ImageAligner.Settings implements Cloneable {
         public Settings() { }
         public Settings(Settings s) {
             super(s);
-            stepScale       = s.stepScale;
+            stepSize        = s.stepSize;
             lineSearch      = s.lineSearch;
             deltaMin        = s.deltaMin;
             deltaMax        = s.deltaMax;
             displacementMax = s.displacementMax;
-            subspaceAlpha   = s.subspaceAlpha;
-            numThreads      = s.numThreads;
+            alphaSubspace   = s.alphaSubspace;
+            alphaTikhonov   = s.alphaTikhonov;
+            gammaTgamma     = s.gammaTgamma;
+            constrained     = s.constrained;
         }
 
-        double stepScale        = 0.1;
-        double[] lineSearch     = {1.0, 0.25};
-        double deltaMin         = 10;
-        double deltaMax         = 300;
-        double displacementMax  = 0.15;
-        double subspaceAlpha    = 0.1;
-        int numThreads = Parallel.NUM_CORES;
+        double stepSize        = 0.1;
+        double[] lineSearch    = {1.0, 0.25};
+        double deltaMin        = 10;
+        double deltaMax        = 300;
+        double displacementMax = 0.2;
+        double alphaSubspace   = 0.1;
+        double alphaTikhonov   = 0;
+        CvMat gammaTgamma      = null;
+        boolean constrained    = false;
 
-        public double getStepScale() {
-            return stepScale;
+        public double getStepSize() {
+            return stepSize;
         }
-        public void setStepScale(double stepScale) {
-            this.stepScale = stepScale;
+        public void setStepSize(double stepSize) {
+            this.stepSize = stepSize;
         }
 
         public double[] getLineSearch() {
@@ -175,19 +175,33 @@ public class GNImageAligner implements ImageAligner {
             this.displacementMax = displacementMax;
         }
 
-        public double getSubspaceAlpha() {
-            return subspaceAlpha;
+        public double getAlphaSubspace() {
+            return alphaSubspace;
         }
-        public void setSubspaceAlpha(double subspaceAlpha) {
-            this.subspaceAlpha = subspaceAlpha;
+        public void setAlphaSubspace(double alphaSubspace) {
+            this.alphaSubspace = alphaSubspace;
         }
 
-        public int getNumThreads() {
-            return numThreads;
+        public double getAlphaTikhonov() {
+            return alphaTikhonov;
         }
-        public void setNumThreads(int numThreads) {
-            this.numThreads = numThreads;
+        public void setAlphaTikhonov(double alphaTikhonov) {
+            this.alphaTikhonov = alphaTikhonov;
         }
+
+        public CvMat getGammaTgamma() {
+            return gammaTgamma;
+        }
+        public void setGammaTgamma(CvMat gammaTgamma) {
+            this.gammaTgamma = gammaTgamma;
+        }
+
+//        public boolean isConstrained() {
+//            return constrained;
+//        }
+//        public void setConstrained(boolean constrained) {
+//            this.constrained = constrained;
+//        }
 
         @Override public Settings clone() {
             return new Settings(this);
@@ -202,12 +216,14 @@ public class GNImageAligner implements ImageAligner {
         this.settings = (Settings)settings;
     }
 
+    protected final int n;
     protected IplImage[] template, target, transformed, residual, mask;
+    protected IplImage[] images = new IplImage[5];
     protected CvMat srcRoiPts, dstRoiPts;
     protected CvPoint dstRoiPtsArray;
-    protected CvRect roi, subroi[];
+    protected CvRect roi, temproi;
     protected ImageTransformer transformer;
-    protected Data[][] hessianGradientTransformerData, residualTransformerData;
+    protected Data[] hessianGradientTransformerData, residualTransformerData;
     protected Parameters parameters, parametersArray[], tempParameters[], priorParameters;
     protected CvMat hessian, gradient, update, prior;
     protected double[] constraintGrad, subspaceResidual, subspaceJacobian[], updateScale;
@@ -225,60 +241,72 @@ public class GNImageAligner implements ImageAligner {
         return template[pyramidLevel];
     }
     public void setTemplateImage(IplImage template0, double[] roiPts) {
+        final int minLevel = settings.pyramidLevelMin;
+        final int maxLevel = settings.pyramidLevelMax;
+
         if (roiPts == null) {
-            int w = template0.width()  << settings.minPyramidLevel;
-            int h = template0.height() << settings.minPyramidLevel;
+            int w = template0.width()  << minLevel;
+            int h = template0.height() << minLevel;
             this.srcRoiPts.put(0.0, 0.0,  w, 0.0,  w, h,  0, h);
         } else {
             this.srcRoiPts.put(roiPts);
         }
 
         if (template0.depth() == IPL_DEPTH_32F) {
-            template[settings.minPyramidLevel] = template0;
+            template[minLevel] = template0;
         } else {
-            cvConvertScale(template0, template[settings.minPyramidLevel], 1.0/template0.highValue(), 0);
+            cvConvertScale(template0, template[minLevel], 1.0/template0.highValue(), 0);
         }
 
-        for (int i = settings.minPyramidLevel+1; i <= settings.maxPyramidLevel; i++) {
+        for (int i = minLevel+1; i <= maxLevel; i++) {
             cvPyrDown(template[i-1], template[i], CV_GAUSSIAN_5x5);
         }
-        setPyramidLevel(settings.maxPyramidLevel);
+        setPyramidLevel(maxLevel);
     }
 
     public IplImage getTargetImage() {
         return target[pyramidLevel];
     }
     public void setTargetImage(IplImage target0) {
+        final int minLevel = settings.pyramidLevelMin;
+        final int maxLevel = settings.pyramidLevelMax;
+
         if (target0.depth() == IPL_DEPTH_32F) {
-            target[settings.minPyramidLevel] = target0;
+            target[minLevel] = target0;
         }
 
         if (settings.displacementMax > 0) {
-            setPyramidLevel(settings.minPyramidLevel);
-            doRoi(settings.displacementMax);
-            int align = 1<<(settings.maxPyramidLevel+1);
-            subroi[0].x(Math.max(0, (int)Math.floor((double)roi.x()/align)*align));
-            subroi[0].y(Math.max(0, (int)Math.floor((double)roi.y()/align)*align));
-            subroi[0].width (Math.min(target0.width(),  (int)Math.ceil((double)roi.width() /align)*align));
-            subroi[0].height(Math.min(target0.height(), (int)Math.ceil((double)roi.height()/align)*align));
-            cvSetImageROI(target0, subroi[0]);
-            cvSetImageROI(target[settings.minPyramidLevel], subroi[0]);
+            transformer.transform(srcRoiPts, dstRoiPts, parameters, false);
+            double[] pts = dstRoiPts.get();
+            for (int i = 0; i < pts.length; i++) {
+                pts[i] /= (1<<minLevel);
+            }
+            int width  = target[minLevel].width();
+            int height = target[minLevel].height();
+            temproi.x(0).y(0).width(width).height(height);
+            int padX = (int)Math.round(settings.displacementMax*width);
+            int padY = (int)Math.round(settings.displacementMax*height);
+            int align = 1<<(maxLevel+1);
+            // add +3 all around because cvPyrDown() needs it for smoothing
+            JavaCV.boundingRect(pts, temproi, padX+3, padY+3, align, align);
+            cvSetImageROI(target0, temproi);
+            cvSetImageROI(target[minLevel], temproi);
         } else {
             cvResetImageROI(target0);
-            cvResetImageROI(target[settings.minPyramidLevel]);
+            cvResetImageROI(target[minLevel]);
         }
 
         if (target0.depth() != IPL_DEPTH_32F) {
-            cvConvertScale(target0, target[settings.minPyramidLevel], 1.0/target0.highValue(), 0);
+            cvConvertScale(target0, target[minLevel], 1.0/target0.highValue(), 0);
             cvResetImageROI(target0);
         }
 
-        for (int i = settings.minPyramidLevel+1; i <= settings.maxPyramidLevel; i++) {
+        for (int i = minLevel+1; i <= maxLevel; i++) {
             IplROI ir = target[i-1].roi();
             if (ir != null) {
-                subroi[0].x(ir.xOffset()/2); subroi[0].width (ir.width() /2);
-                subroi[0].y(ir.yOffset()/2); subroi[0].height(ir.height()/2);
-                cvSetImageROI(target[i], subroi[0]);
+                temproi.x(ir.xOffset()/2); temproi.width (ir.width() /2);
+                temproi.y(ir.yOffset()/2); temproi.height(ir.height()/2);
+                cvSetImageROI(target[i], temproi);
             } else {
                 cvResetImageROI(target[i]);
             }
@@ -290,7 +318,7 @@ public class GNImageAligner implements ImageAligner {
             cvPyrDown(target[i-1], target[i], CV_GAUSSIAN_5x5);
         }
 
-        setPyramidLevel(settings.maxPyramidLevel);
+        setPyramidLevel(maxLevel);
     }
 
     public int getPyramidLevel() {
@@ -311,9 +339,8 @@ public class GNImageAligner implements ImageAligner {
             return;
         }
         settings.constrained = constrained;
-        int n = parameters.size();
         int m = constrained ? n+1 : n;
-        if (subspaceParameters != null && settings.subspaceAlpha != 0.0) {
+        if (subspaceParameters != null && settings.alphaSubspace != 0.0) {
             m += subspaceParameters.length;
         }
         hessian       = CvMat.create(m, m);
@@ -334,7 +361,7 @@ public class GNImageAligner implements ImageAligner {
     public void setParameters(Parameters parameters) {
         this.parameters.set(parameters);
         subspaceParameters = parameters.getSubspace();
-        if (subspaceParameters != null && settings.subspaceAlpha != 0.0) {
+        if (subspaceParameters != null && settings.alphaSubspace != 0.0) {
             for (int i = 0; i < tempSubspaceParameters.length; i++) {
                 tempSubspaceParameters[i] = subspaceParameters.clone();
             }
@@ -350,6 +377,10 @@ public class GNImageAligner implements ImageAligner {
     }
 
     public double[] getTransformedRoiPts() {
+        if (residualUpdateNeeded) {
+            doRoi();
+            doResidual();
+        }
         return dstRoiPts.get();
     }
 
@@ -380,11 +411,15 @@ public class GNImageAligner implements ImageAligner {
     }
 
     public int getPixelCount() {
-        int dstCount = 0;
-        for (Data[] data : residualTransformerData) {
-            dstCount += data[0].dstCount;
+        if (residualUpdateNeeded) {
+            doRoi();
+            doResidual();
         }
-        return dstCount;
+        return residualTransformerData[0].dstCount;
+    }
+
+    public int getOutlierCount() {
+        return hessianGradientTransformerData[0].dstCountOutlier;
     }
 
     public CvRect getRoi() {
@@ -397,9 +432,17 @@ public class GNImageAligner implements ImageAligner {
         return lastLinePosition;
     }
 
+    public IplImage[] getImages() {
+        images[0] = getTemplateImage();
+        images[1] = getTargetImage();
+        images[2] = getTransformedImage();
+        images[3] = getResidualImage();
+        images[4] = getMaskImage();
+        return images;
+    }
+
     public boolean iterate(double[] delta) {
         boolean converged = false;
-        final int n = parameters.size();
         final double prevRMSE = getRMSE();
         final double[] prevParameters = parameters.get();
         final double[] prevSubspaceParameters = subspaceParameters == null ? null : subspaceParameters.clone();
@@ -463,7 +506,7 @@ public class GNImageAligner implements ImageAligner {
             return false;
         } else if (invalid || deltaNorm < settings.deltaMin) {
             trials = 0;
-            if (pyramidLevel > settings.minPyramidLevel) {
+            if (pyramidLevel > settings.pyramidLevelMin) {
                 setPyramidLevel(pyramidLevel-1);
             } else {
                 converged = true;
@@ -471,76 +514,53 @@ public class GNImageAligner implements ImageAligner {
         } else {
             trials = 0;
         }
-
-//long residualTime = System.currentTimeMillis();
-
-//accTime += (residualTime-start);
-//System.out.println("gradientHessianTime = "+ (gradientHessianTime-start) +
-//                 "  solveTime = " + (solveTime-gradientHessianTime) +
-//                 "  residualTime = " + (residualTime-solveTime) +
-//                 "  totalTime = " + (residualTime-start) +
-//                 "  accTime = " + accTime);
-
         return converged;
     }
 
     protected void doHessianGradient(final double[] scale) {
-        final int n = parameters.size();
         final double constraintError = parameters.getConstraintError();
-        final double stepScale = settings.stepScale;
+        final double stepSize = settings.stepSize;
 
         cvSetZero(gradient);
         cvSetZero(hessian);
 
-        Parallel.loop(0, n, settings.numThreads, new Looper() {
+        Parallel.loop(0, n, new Parallel.Looper() {
         public void loop(int from, int to, int looperID) {
 //        for (int i = 0; i < n; i++) {
         for (int i = from; i < to; i++) {
             tempParameters[i].set(parameters);
-            tempParameters[i].set(i, tempParameters[i].get(i) + /*(1<<pyramidLevel)**/stepScale);
+            tempParameters[i].set(i, tempParameters[i].get(i) + /*(1<<pyramidLevel)**/stepSize);
             scale[i] = tempParameters[i].get(i) - parameters.get(i);
             constraintGrad[i] = tempParameters[i].getConstraintError() - constraintError;
         }}});
 
 //        final double adjustedRMSE = (1-prevOutlierRatio)*RMSE;
-        Parallel.loop(0, hessianGradientTransformerData.length, settings.numThreads, new Looper() {
-        public void loop(int from, int to, int looperID) {
-            for (int i = 0; i < n; i++) {
-                Data d = hessianGradientTransformerData[looperID][i];
-                d.srcImg    = template   [pyramidLevel];
-                d.subImg    = transformed[pyramidLevel];
-                d.srcDotImg = residual   [pyramidLevel];
-                d.transImg  = d.dstImg = null;
-
-                d.mask = mask[pyramidLevel];
-                d.zeroThreshold    = /*adjustedRMSE**/settings.zeroThresholds   [Math.min(settings.zeroThresholds   .length-1, pyramidLevel)];
-                d.outlierThreshold = /*adjustedRMSE**/settings.outlierThresholds[Math.min(settings.outlierThresholds.length-1, pyramidLevel)];
-                d.pyramidLevel = pyramidLevel;
+        for (int i = 0; i < n; i++) {
+            Data d = hessianGradientTransformerData[i];
+            d.srcImg    = template   [pyramidLevel];
+            d.subImg    = transformed[pyramidLevel];
+            d.srcDotImg = residual   [pyramidLevel];
+            d.transImg  = null;
+            d.dstImg    = null;
+            d.mask      = mask       [pyramidLevel];
+            d.zeroThreshold    = /*adjustedRMSE**/settings.thresholdsZero   [Math.min(settings.thresholdsZero   .length-1, pyramidLevel)];
+            d.outlierThreshold = /*adjustedRMSE**/settings.thresholdsOutlier[Math.min(settings.thresholdsOutlier.length-1, pyramidLevel)];
+            if (settings.thresholdsMulRMSE) {
+                d.zeroThreshold    *= RMSE; //adjustedRMSE;
+                d.outlierThreshold *= RMSE; //adjustedRMSE;
             }
+            d.pyramidLevel = pyramidLevel;
+        }
+        transformer.transform(hessianGradientTransformerData, roi, tempParameters, null);
 
-            int y1 = roi.y() +  looperID   *roi.height()/hessianGradientTransformerData.length;
-            int y2 = roi.y() + (looperID+1)*roi.height()/hessianGradientTransformerData.length;
-            subroi[looperID].x     (roi.x());
-            subroi[looperID].y     (y1);
-            subroi[looperID].width (roi.width());
-            subroi[looperID].height(y2-y1);
-
-            transformer.transform(hessianGradientTransformerData[looperID], subroi[looperID], tempParameters, null);
-        }});
-
-//        double dstCount = 0;
-//        double dstCountZero = 0;
-//        double dstCountOutlier = 0;
-        for (Data[] data : hessianGradientTransformerData) {
-//            dstCount        += data[0].dstCount;
-//            dstCountZero    += data[0].dstCountZero;
-//            dstCountOutlier += data[0].dstCountOutlier;
-            for (int i = 0; i < n; i++) {
-                Data d = (Data)data[i];
-                gradient.put(i, gradient.get(i) - d.srcDstDot);
-                for (int j = 0; j < n; j++) {
-                    hessian.put(i, j, hessian.get(i, j) + d.dstDstDot[j]);
-                }
+//        double dstCount = hessianGradientTransformerData[0].dstCount;
+//        double dstCountZero = hessianGradientTransformerData[0].dstCountZero;
+//        double dstCountOutlier = hessianGradientTransformerData[0].dstCountOutlier;
+        for (int i = 0; i < n; i++) {
+            Data d = (Data)hessianGradientTransformerData[i];
+            gradient.put(i, gradient.get(i) - d.srcDstDot);
+            for (int j = 0; j < n; j++) {
+                hessian.put(i, j, hessian.get(i, j) + d.dstDstDot.get(j));
             }
         }
 //        prevOutlierRatio = dstCountOutlier/dstCount;
@@ -550,13 +570,12 @@ public class GNImageAligner implements ImageAligner {
     }
 
     protected void doRegularization(final double[] scale) {
-        final int n = parameters.size();
         final double constraintError = parameters.getConstraintError();
-        final double stepScale = settings.stepScale;
+        final double stepSize = settings.stepSize;
 
         // if we have a gamma or an alpha, compute the prior for regularization, but
         // if prioParameters == null, our prior is zero motion, so no need to compute it
-        if ((settings.gammaTgamma != null || settings.tikhonovAlpha != 0) &&
+        if ((settings.gammaTgamma != null || settings.alphaTikhonov != 0) &&
                 prior != null && priorParameters != null) {
             for (int i = 0; i < n; i++) {
                 prior.put(i, parameters.get(i) - priorParameters.get(i));
@@ -588,7 +607,7 @@ public class GNImageAligner implements ImageAligner {
         }
 
         if (subspaceParameters != null && subspaceParameters.length > 0 &&
-                settings.subspaceAlpha != 0.0) {
+                settings.alphaSubspace != 0.0) {
             final int m = subspaceParameters.length;
 //            double[][] subspaceHessian  = new double[n+m][n+m];
 //            double[] subspaceGradient   = new double[n+m];
@@ -596,7 +615,7 @@ public class GNImageAligner implements ImageAligner {
             Arrays.fill(subspaceCorrelated, false);
             tempParameters[0].set(parameters);
             tempParameters[0].setSubspace(subspaceParameters);
-            Parallel.loop(0, n+m, settings.numThreads, new Looper() {
+            Parallel.loop(0, n+m, tempSubspaceParameters.length, new Parallel.Looper() {
             public void loop(int from, int to, int looperID) {
 //            int looperID = 0;
 //            for (int i = 0; i < n+m; i++) {
@@ -606,7 +625,7 @@ public class GNImageAligner implements ImageAligner {
                     subspaceJacobian[i][i] = scale[i];
                 } else {
                     System.arraycopy(subspaceParameters, 0, tempSubspaceParameters[looperID], 0, m);
-                    tempSubspaceParameters[looperID][i-n] += stepScale;
+                    tempSubspaceParameters[looperID][i-n] += stepSize;
                     tempParameters[i-n+1].set(parameters);
                     tempParameters[i-n+1].setSubspace(tempSubspaceParameters[looperID]);
                     scale[i] = tempSubspaceParameters[looperID][i-n] - subspaceParameters[i-n];
@@ -629,10 +648,10 @@ public class GNImageAligner implements ImageAligner {
             }
 //            subspaceRMSE = Math.sqrt(subspaceRMSE/n);
 //System.out.println((float)RMSE + " " + (float)subspaceRMSE);
-            final double K = settings.subspaceAlpha*settings.subspaceAlpha * RMSE*RMSE/
+            final double K = settings.alphaSubspace*settings.alphaSubspace * RMSE*RMSE/
                     subspaceCorrelatedCount;//(subspaceRMSE*subspaceRMSE);
 
-            Parallel.loop(0, n+m, settings.numThreads, new Looper() {
+            Parallel.loop(0, n+m, new Parallel.Looper() {
             public void loop(int from, int to, int looperID) {
 //            int looperID = 0;
 //            for (int i = 0; i < n+m; i++) {
@@ -676,7 +695,7 @@ public class GNImageAligner implements ImageAligner {
                 }
                 double a = 0;
                 if (i == j && i < n) {
-                    a = settings.tikhonovAlpha * settings.tikhonovAlpha;
+                    a = settings.alphaTikhonov * settings.alphaTikhonov;
                 }
                 hessian.put(i, j, h + g + a);
             }
@@ -684,84 +703,49 @@ public class GNImageAligner implements ImageAligner {
     }
 
     protected void doRoi() {
-        doRoi(0);
-    }
-    protected void doRoi(double extraPadding) {
         transformer.transform(srcRoiPts, dstRoiPts, parameters, false);
-        double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE,
-               minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
-        for (int i = 0; i < dstRoiPts.length(); i++) {
-            double x = dstRoiPts.get(2*i  )/(1<<pyramidLevel);
-            double y = dstRoiPts.get(2*i+1)/(1<<pyramidLevel);
-            dstRoiPts.put(2*i  , x);
-            dstRoiPts.put(2*i+1, y);
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
+        double[] pts = dstRoiPts.get();
+        for (int i = 0; i < pts.length; i++) {
+            pts[i] /= (1<<pyramidLevel);
         }
-        cvSetZero(mask[pyramidLevel]);
-        dstRoiPtsArray.put((byte)16, dstRoiPts.get());
-        cvFillConvexPoly(mask[pyramidLevel], dstRoiPtsArray, 4, CvScalar.WHITE, 8, 16);
-        // add +3 all around because cvWarpPerspective() needs it apparently
-        minX = Math.max(0, minX-3-(maxX-minX)*extraPadding);
-        minY = Math.max(0, minY-3-(maxY-minY)*extraPadding);
-        maxX = Math.min(mask[pyramidLevel].width(),  maxX+3+(maxX-minX)*extraPadding);
-        maxY = Math.min(mask[pyramidLevel].height(), maxY+3+(maxY-minY)*extraPadding);
-
-        // there seems to be something funny with memory alignment and
+        roi.x(0).y(0).width(mask[pyramidLevel].width()).height(mask[pyramidLevel].height());
+        // Add +3 all around because cvWarpPerspective() needs it for interpolation,
+        // and there seems to be something funny with memory alignment and
         // ROIs, so let's align our ROI to a 16 byte boundary just in case..
-        roi.x(Math.max(0, (int)Math.floor(minX/16)*16));
-        roi.y(Math.max(0, (int)Math.floor(minY)));
-        roi.width (Math.min(mask[pyramidLevel].width(),  (int)Math.ceil(maxX/16)*16) - roi.x());
-        roi.height(Math.min(mask[pyramidLevel].height(), (int)Math.ceil(maxY))       - roi.y());
-//        roi.x      = 0;
-//        roi.y      = 0;
-//        roi.width  = mask[pyramidLevel].width;
-//        roi.height = mask[pyramidLevel].height;
-
+        JavaCV.boundingRect(pts, roi, 3, 3, 16, 1);
 //System.out.println(roi);
+
+        cvSetZero(mask[pyramidLevel]);
+        dstRoiPtsArray.put((byte)16, pts);
+        cvFillConvexPoly(mask[pyramidLevel], dstRoiPtsArray, 4, CvScalar.WHITE, 8, 16);
     }
 
     protected void doResidual() {
         parameters.getConstraintError();
 //        cvSetZero(transformed[pyramidLevel]);
 //        cvSetZero(residual   [pyramidLevel]);
-        Parallel.loop(0, residualTransformerData.length, settings.numThreads, new Looper() {
-        public void loop(int from, int to, int looperID) {
-            Data d = residualTransformerData[looperID][0];
-            d.srcImg    = template   [pyramidLevel];
-            d.subImg    = target     [pyramidLevel];
-            d.srcDotImg = null;
-            d.transImg  = transformed[pyramidLevel];
-            d.dstImg    = residual   [pyramidLevel];
-
-            d.mask = mask[pyramidLevel];
-            d.zeroThreshold    = 0;
-            d.outlierThreshold = 0;
-            d.pyramidLevel = pyramidLevel;
-
-            int y1 = roi.y() +  looperID   *roi.height()/residualTransformerData.length;
-            int y2 = roi.y() + (looperID+1)*roi.height()/residualTransformerData.length;
-            subroi[looperID].x     (roi.x());
-            subroi[looperID].y     (y1);
-            subroi[looperID].width (roi.width());
-            subroi[looperID].height(y2-y1);
-
-            transformer.transform(residualTransformerData[looperID], subroi[looperID], parametersArray, null);
-        }});
-
-        double dstDstDot = 0, dstCount = 0;
-        for (Data[] data : residualTransformerData) {
-            dstDstDot += data[0].dstDstDot[0];
-            dstCount  += data[0].dstCount;
+        Data d = residualTransformerData[0];
+        d.srcImg    = template   [pyramidLevel];
+        d.subImg    = target     [pyramidLevel];
+        d.srcDotImg = null;
+        d.transImg  = transformed[pyramidLevel];
+        d.dstImg    = residual   [pyramidLevel];
+        d.mask      = mask       [pyramidLevel];
+//        d.zeroThreshold    = 0;
+//        d.outlierThreshold = 0;
+        d.zeroThreshold    = settings.thresholdsZero   [Math.min(settings.thresholdsZero   .length-1, pyramidLevel)];
+        d.outlierThreshold = settings.thresholdsOutlier[Math.min(settings.thresholdsOutlier.length-1, pyramidLevel)];
+        if (settings.thresholdsMulRMSE) {
+            d.zeroThreshold    *= RMSE;
+            d.outlierThreshold *= RMSE;
         }
-        if (dstCount < parameters.size()) {
-            RMSE = Double.NaN;
-        } else {
-            RMSE = Math.sqrt(dstDstDot/dstCount);
-//            RMSE = dstDstDot/dstCount;
-        }
+        d.pyramidLevel = pyramidLevel;
+
+        transformer.transform(residualTransformerData, roi, parametersArray, null);
+
+        double dstDstDot = residualTransformerData[0].dstDstDot.get(0);
+        int dstCount = residualTransformerData[0].dstCount;
+        RMSE = dstCount < n ? Double.NaN : Math.sqrt(dstDstDot/dstCount);
 //        if (Double.isNaN(RMSE)) {
 //System.out.println("dstCount " + dstCount + " RMSE " + RMSE + " " + pyramidLevel);
 //        }

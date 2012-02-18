@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -95,7 +95,7 @@ public class MarkedPlane {
     }
 
     private Marker[] markers = null;
-//    private CvPoint[] tempPts = CvPoint.createArray(4);
+//    private CvPoint tempPts = new CvPoint(4);
 //    private CvMat srcPts, dstPts;
     private CvMat prewarp;//, totalWarp, tempWarp;
 
@@ -150,7 +150,7 @@ public class MarkedPlane {
         if (superPlaneImage != null) {
             cvResize(superPlaneImage, planeImage, CV_INTER_AREA);
         }
-        //highgui.INSTANCE.cvSaveImage("planeImage.png", planeImage);
+        //cvSaveImage("planeImage.png", planeImage);
     }
 
     public IplImage getImage() {

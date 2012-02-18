@@ -37,4 +37,6 @@ public interface ImageAlignerCL extends ImageAligner {
     CLImage2d getTransformedImageCL();
     CLImage2d getResidualImageCL();
     CLImage2d getMaskImageCL();
+
+    CLImage2d[] getImagesCL();
 }

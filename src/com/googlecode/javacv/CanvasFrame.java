@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -56,6 +56,12 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  *
  */
 public class CanvasFrame extends JFrame {
+
+    public static class Exception extends java.lang.Exception {
+        public Exception(String message) { super(message); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
+    }
+
     public static String[] getScreenDescriptions() {
         GraphicsDevice[] screens = getScreenDevices();
         String[] descriptions = new String[screens.length];
@@ -88,7 +94,7 @@ public class CanvasFrame extends JFrame {
         } else {
             try {
                 return ((ICC_ProfileRGB)((ICC_ColorSpace)cs).getProfile()).getGamma(0);
-            } catch (Exception e) { }
+            } catch (RuntimeException e) { }
         }
         return 0.0;
     }
@@ -128,12 +134,11 @@ public class CanvasFrame extends JFrame {
         init(true, displayMode, gamma);
     }
 
-    @Override public void dispose() {
-        bufferStrategy.dispose();
-        super.dispose();
-    }
     private void init(final boolean fullScreen, final DisplayMode displayMode, final double gamma) {
         Runnable r = new Runnable() { public void run() {
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                    addKeyEventDispatcher(keyEventDispatch);
+
             GraphicsDevice gd = getGraphicsConfiguration().getDevice();
             DisplayMode d = gd.getDisplayMode(), d2 = null;
             if (displayMode != null && d != null) {
@@ -149,53 +154,44 @@ public class CanvasFrame extends JFrame {
                 getRootPane().setWindowDecorationStyle(JRootPane.NONE);
                 setResizable(false);
                 gd.setFullScreenWindow(CanvasFrame.this);
+            } else {
+                setLocationByPlatform(true);
             }
             if (d2 != null && !d2.equals(d)) {
                 gd.setDisplayMode(d2);
             }
             double g = gamma == 0.0 ? getGamma(gd) : gamma;
-            invgamma = g == 0.0 ? 1.0 : 1.0/g;
+            inverseGamma = g == 0.0 ? 1.0 : 1.0/g;
 
-            // must be called after the fullscreen stuff, but before
-            // getting our BufferStrategy
+            // Must be called after the fullscreen stuff, but before
+            // getting our BufferStrategy or even creating our Canvas
             setVisible(true);
 
-            canvas = new Canvas() {
-                @Override public void paint(Graphics g) {
-                    // Try to redraw the front buffer when the OS says it has stomped
-                    // on it, using the back buffer. Calling bufferStrategy.show() here
-                    // sometimes throws NullPointerException or IllegalStateException,
-                    // but otherwise seems to work fine.
-                    try {
-                        bufferStrategy.show();
-                    } catch (NullPointerException e) {
-                    } catch (IllegalStateException e) { }
-                }
-            };
-            if (fullScreen) {
-                canvas.setSize(getSize());
-                needInitialResize = false;
-            } else {
-                needInitialResize = true;
-            }
-            getContentPane().add(canvas);
-            canvas.setVisible(true);
-            canvas.createBufferStrategy(2);
-            //canvas.setIgnoreRepaint(true);
-            bufferStrategy = canvas.getBufferStrategy();
-
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().
-                    addKeyEventDispatcher(new KeyEventDispatcher() {
-                public boolean dispatchKeyEvent(KeyEvent e) {
-                    if (e.getID() == KeyEvent.KEY_PRESSED) {
-                        synchronized (CanvasFrame.this) {
-                            keyEvent = e;
-                            CanvasFrame.this.notify();
-                        }
+            if (CanvasFrame.this.getClass() == CanvasFrame.class) {
+                canvas = new Canvas() {
+                    @Override public void paint(Graphics g) {
+                        // Try to redraw the front buffer when the OS says it has stomped
+                        // on it, using the back buffer. Calling bufferStrategy.show() here
+                        // sometimes throws NullPointerException or IllegalStateException,
+                        // but otherwise seems to work fine.
+                        try {
+                            bufferStrategy.show();
+                        } catch (NullPointerException e) {
+                        } catch (IllegalStateException e) { }
                     }
-                    return false;
+                };
+                if (fullScreen) {
+                    canvas.setSize(getSize());
+                    needInitialResize = false;
+                } else {
+                    needInitialResize = true;
                 }
-            });
+                getContentPane().add(canvas);
+                canvas.setVisible(true);
+                canvas.createBufferStrategy(2);
+                //canvas.setIgnoreRepaint(true);
+                bufferStrategy = canvas.getBufferStrategy();
+            }
         }};
 
         if (EventQueue.isDispatchThread()) {
@@ -203,28 +199,37 @@ public class CanvasFrame extends JFrame {
         } else {
             try {
                 EventQueue.invokeAndWait(r);
-            } catch (Exception ex) { }
+            } catch (java.lang.Exception ex) { }
         }
-    }
-
-    public DisplayMode getDisplayMode() {
-        return getGraphicsConfiguration().getDevice().getDisplayMode();
     }
 
     // used for example as debugging console...
     public static CanvasFrame global = null;
 
-    // maximum is 60 ms on Metacity and Windows XP, and 90 ms on Compiz Fusion,
-    // but set the default to twice as much for safety...
-    public static final long DEFAULT_LATENCY = 120;
+    // Latency is about 60 ms on Metacity and Windows XP, and 90 ms on Compiz Fusion,
+    // but we set the default to twice as much to take into account the roundtrip
+    // camera latency as well, just to be sure
+    public static final long DEFAULT_LATENCY = 200;
     private long latency = DEFAULT_LATENCY;
 
     private KeyEvent keyEvent = null;
+    private KeyEventDispatcher keyEventDispatch = new KeyEventDispatcher() {
+        public boolean dispatchKeyEvent(KeyEvent e) {
+            if (e.getID() == KeyEvent.KEY_PRESSED) {
+                synchronized (CanvasFrame.this) {
+                    keyEvent = e;
+                    CanvasFrame.this.notify();
+                }
+            }
+            return false;
+        }
+    };
 
-    private Canvas canvas = null;
-    private boolean needInitialResize = false;
+    protected Canvas canvas = null;
+    protected boolean needInitialResize = false;
+    protected double initialScale = 1.0;
+    protected double inverseGamma = 1.0;
     private BufferStrategy bufferStrategy = null;
-    private double invgamma;
 
     public long getLatency() {
         // if there exists some way to estimate the latency in real time,
@@ -234,20 +239,16 @@ public class CanvasFrame extends JFrame {
     public void setLatency(long latency) {
         this.latency = latency;
     }
-    public void waitLatency() {
-        try {
-            Thread.sleep(getLatency());
-        } catch (InterruptedException ex) { }
+    public void waitLatency() throws InterruptedException {
+        Thread.sleep(getLatency());
     }
 
-    public KeyEvent waitKey() {
+    public KeyEvent waitKey() throws InterruptedException {
         return waitKey(0);
     }
-    public synchronized KeyEvent waitKey(int delay) {
-        try {
-            keyEvent = null;
-            wait(delay);
-        } catch (InterruptedException ex) { }
+    public synchronized KeyEvent waitKey(int delay) throws InterruptedException {
+        keyEvent = null;
+        wait(delay);
         KeyEvent e = keyEvent;
         keyEvent = null;
         return e;
@@ -260,6 +261,47 @@ public class CanvasFrame extends JFrame {
         return bufferStrategy;
     }
 
+    public Dimension getCanvasSize() {
+        return canvas.getSize();
+    }
+    public void setCanvasSize(final int width, final int height) {
+        Dimension d = getCanvasSize();
+        if (d.width == width && d.height == height) {
+            return;
+        }
+
+        Runnable r = new Runnable() { public void run() {
+            // There is apparently a bug in Java code for Linux, and what happens goes like this:
+            // 1. Canvas gets resized, checks the visible area (has not changed) and updates
+            // BufferStrategy with the same size. 2. pack() resizes the frame and changes
+            // the visible area 3. We call Canvas.setSize() with different dimensions, to make
+            // it check the visible area and reallocate the BufferStrategy almost correctly
+            // 4. Finally, we resize the Canvas to the desired size... phew!
+            setExtendedState(NORMAL); // force unmaximization
+            canvas.setSize(width, height);
+            pack();
+            canvas.setSize(width+1, height+1);
+            canvas.setSize(width, height);
+            needInitialResize = false;
+        }};
+
+        if (EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            try {
+                EventQueue.invokeAndWait(r);
+            } catch (java.lang.Exception ex) { }
+        }
+    }
+
+    public double getCanvasScale() {
+        return initialScale;
+    }
+    public void setCanvasScale(double initialScale) {
+        this.initialScale = initialScale;
+        this.needInitialResize = true;
+    }
+
     public Graphics2D createGraphics() {
         return (Graphics2D)bufferStrategy.getDrawGraphics();
     }
@@ -268,83 +310,38 @@ public class CanvasFrame extends JFrame {
         bufferStrategy.show();
     }
 
-    public Dimension getCanvasSize() {
-        return canvas.getSize();
+    public void showColor(CvScalar color) {
+        showColor(new Color((int)color.red(), (int)color.green(), (int)color.blue()));
     }
-    public void setCanvasSize(int width, int height) {
-        // there is apparently a bug in Java code for Linux, and what happens goes like this:
-        // 1. Canvas gets resized, checks the visible area (has not changed) and updates
-        // BufferStrategy with the same size. 2. pack() resizes the frame and changes
-        // the visible area 3. We call Canvas.setSize() with different dimensions, to make
-        // it check the visible area and reallocate the BufferStrategy almost correctly
-        // 4. We resize the Canvas to the desired size... pff..
-        setExtendedState(NORMAL); // force unmaximization.. 
-        canvas.setSize(width, height);
-        pack();
-        canvas.setSize(width+1, height+1);
-        canvas.setSize(width, height);
-        needInitialResize = false;
-    }
-
-    public void showImage(Image image, final int w, final int h) {
-        if (image == null) {
-            return;
-        } else if(isResizable() && needInitialResize) {
-            if (EventQueue.isDispatchThread()) {
-                setCanvasSize(w, h);
-            } else {
-                try {
-                    EventQueue.invokeAndWait(new Runnable() {
-                        public void run() {
-                            setCanvasSize(w, h);
-                        }
-                    });
-                } catch (Exception ex) { }
-            }
-        }
-        Graphics2D g = createGraphics();
-        g.drawImage(image, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
-        releaseGraphics(g);
-    }
-    public void showImage(Image image, double scale) {
-        if (image == null)
-            return;
-        int w = (int)Math.round(image.getWidth (null)*scale);
-        int h = (int)Math.round(image.getHeight(null)*scale);
-        showImage(image, w, h);
-    }
-    public void showImage(Image image) {
-        showImage(image, 1.0);
-    }
-
-    // Java2D will do gamma correction for TYPE_CUSTOM BufferedImage, but
-    // not for the standard types, so we need to do it manually...
-    public void showImage(IplImage image, int w, int h) {
-        showImage(image.getBufferedImage(image.getBufferedImageType() ==
-                BufferedImage.TYPE_CUSTOM ? 1.0 : invgamma), w, h);
-    }
-    public void showImage(IplImage image, double scale) {
-        showImage(image.getBufferedImage(image.getBufferedImageType() ==
-                BufferedImage.TYPE_CUSTOM ? 1.0 : invgamma), scale);
-    }
-    public void showImage(IplImage image) {
-        showImage(image.getBufferedImage(image.getBufferedImageType() ==
-                BufferedImage.TYPE_CUSTOM ? 1.0 : invgamma));
-    }
-
     public void showColor(Color color) {
         Graphics2D g = createGraphics();
         g.setColor(color);
         g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         releaseGraphics(g);
     }
-    public void showColor(CvScalar color) {
-        showColor(new Color((int)color.red(), (int)color.green(), (int)color.blue()));
+
+    // Java2D will do gamma correction for TYPE_CUSTOM BufferedImage, but
+    // not for the standard types, so we need to do it manually.
+    public void showImage(IplImage image) {
+        showImage(image.getBufferedImage(image.getBufferedImageType() ==
+                BufferedImage.TYPE_CUSTOM ? 1.0 : inverseGamma));
+    }
+    public void showImage(Image image) {
+        if (image == null) {
+            return;
+        } else if (isResizable() && needInitialResize) {
+            int w = (int)Math.round(image.getWidth (null)*initialScale);
+            int h = (int)Math.round(image.getHeight(null)*initialScale);
+            setCanvasSize(w, h);
+        }
+        Graphics2D g = createGraphics();
+        g.drawImage(image, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
+        releaseGraphics(g);
     }
 
-    // this should not be called from the event dispatch thread, but if it is,
-    // it should still work... it should simply be slower as it will timeout
-    // waiting for the moved event
+    // This should not be called from the event dispatch thread (EDT),
+    // but if it is, it should not totally crash... In the worst case,
+    // it will simply timeout waiting for the moved events.
     public static void tile(final CanvasFrame[] frames) {
 
         class MovedListener extends ComponentAdapter {
@@ -376,7 +373,7 @@ public class CanvasFrame extends JFrame {
             final int y = canvasY;
             try {
                 movedListener.moved = false;
-                EventQueue.invokeAndWait(new Runnable() {
+                EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         frames[n].addComponentListener(movedListener);
                         frames[n].setLocation(x, y);
@@ -393,12 +390,12 @@ public class CanvasFrame extends JFrame {
                     }
                     count++;
                 }
-                EventQueue.invokeAndWait(new Runnable() {
+                EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         frames[n].removeComponentListener(movedListener);
                     }
                 });
-            } catch (Exception ex) { }
+            } catch (java.lang.Exception ex) { }
             canvasX = frames[i].getX()+frames[i].getWidth();
             canvasMaxY = Math.max(canvasMaxY, frames[i].getY()+frames[i].getHeight());
             if ((i+1)%canvasCols == 0) {
@@ -407,5 +404,4 @@ public class CanvasFrame extends JFrame {
             }
         }
     }
-
 }

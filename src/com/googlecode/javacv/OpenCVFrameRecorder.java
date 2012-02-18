@@ -72,7 +72,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
                 throw new Exception("cvWriteFrame(): Could not record frame");
             }
         } else {
-            throw new Exception("Cannot record: There is no writer");
+            throw new Exception("Cannot record: There is no writer (Has start() been called?)");
         }
     }
 }

@@ -261,14 +261,26 @@ public class opencv_highgui {
     public static CvMat cvLoadImageM(String filename)   { return cvLoadImageM(filename, CV_LOAD_IMAGE_COLOR); }
     public static native CvMat cvLoadImageM(String filename, int iscolor/*=CV_LOAD_IMAGE_COLOR*/);
 
-    public static IplImage cvLoadImageRGBA(String filename) {
-        IplImage imageRGB = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
-        if (imageRGB == null) {
+    public static IplImage cvLoadImageBGRA(String filename) {
+        IplImage imageBGR = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
+        if (imageBGR == null) {
             return null;
         } else {
-            IplImage imageRGBA = cvCreateImage(cvGetSize(imageRGB), imageRGB.depth(), 4);
-            opencv_imgproc.cvCvtColor(imageRGB, imageRGBA, opencv_imgproc.CV_RGB2RGBA);
-            cvReleaseImage(imageRGB);
+            IplImage imageBGRA = cvCreateImage(cvGetSize(imageBGR), imageBGR.depth(), 4);
+            opencv_imgproc.cvCvtColor(imageBGR, imageBGRA, opencv_imgproc.CV_BGR2BGRA);
+            cvReleaseImage(imageBGR);
+            return imageBGRA;
+        }
+    }
+
+    public static IplImage cvLoadImageRGBA(String filename) {
+        IplImage imageBGR = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
+        if (imageBGR == null) {
+            return null;
+        } else {
+            IplImage imageRGBA = cvCreateImage(cvGetSize(imageBGR), imageBGR.depth(), 4);
+            opencv_imgproc.cvCvtColor(imageBGR, imageRGBA, opencv_imgproc.CV_BGR2RGBA);
+            cvReleaseImage(imageBGR);
             return imageRGBA;
         }
     }

@@ -51,11 +51,7 @@ public class VideoInputFrameGrabber extends FrameGrabber {
             try {
                 Loader.load(com.googlecode.javacv.cpp.videoInputLib.class);
             } catch (Throwable t) {
-                if (t instanceof Exception) {
-                    throw loadingException = (Exception)t;
-                } else {
-                    throw loadingException = new Exception(t);
-                }
+                throw loadingException = new Exception("Failed to load " + VideoInputFrameGrabber.class, t);
             }
         }
     }
@@ -83,6 +79,14 @@ public class VideoInputFrameGrabber extends FrameGrabber {
         } else {
             return gamma;
         }
+    }
+
+    @Override public int getImageWidth() {
+        return myVideoInput == null ? super.getImageWidth() : myVideoInput.getWidth(deviceNumber);
+    }
+
+    @Override public int getImageHeight() {
+        return myVideoInput == null ? super.getImageHeight() : myVideoInput.getHeight(deviceNumber);
     }
 
     public void start() throws Exception {
@@ -137,7 +141,7 @@ public class VideoInputFrameGrabber extends FrameGrabber {
             bgrImageData = bgrImage.imageData();
         }
 
-        for (int i = 0; i < triggerFlushSize; i++) {
+        for (int i = 0; i < numBuffers+1; i++) {
             myVideoInput.getPixels(deviceNumber, bgrImageData, false, true);
         }
     }
@@ -155,16 +159,15 @@ public class VideoInputFrameGrabber extends FrameGrabber {
         if (!myVideoInput.getPixels(deviceNumber, bgrImageData, false, true)) {
             throw new Exception("videoInput.getPixels() Error: Could not get pixels.");
         }
+        timestamp = System.nanoTime()/1000;
 
         if (imageMode == ImageMode.GRAY) {
             if (grayImage == null) {
                 grayImage = IplImage.create(w, h, IPL_DEPTH_8U, 1);
             }
             cvCvtColor(bgrImage, grayImage, CV_BGR2GRAY);
-            //grayImage.timestamp(???);
             return grayImage;
         } else {
-            //bgrImage.timestamp(???);
             return bgrImage;
         }
     }

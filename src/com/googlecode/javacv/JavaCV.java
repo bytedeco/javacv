@@ -26,7 +26,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
-import com.googlecode.javacv.Parallel.Looper;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -41,6 +40,47 @@ public class JavaCV {
             SQRT2 = 1.41421356237309504880,
             FLT_EPSILON = 1.19209290e-7F,
             DBL_EPSILON = 2.2204460492503131e-16;
+
+    // returns the distance^2 between the line (x1, y1) (x2, y2) and the point (x3, y3)
+    double distToLine(double x1, double y1, double x2, double y2, double x3, double y3) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double d2 = dx*dx + dy*dy;
+        double u = ((x3 - x1)*dx + (y3 - y1)*dy) / d2;
+
+        double x = x1 + u*dx;
+        double y = y1 + u*dy;
+
+        dx = x - x3;
+        dy = y - y3;
+        return dx*dx + dy*dy;
+    }
+
+    // Similar to cvBoundingRect(), but can also pad the output with some extra
+    // pixels, useful to use as ROI for operations with interpolation. Further
+    // aligns the region to specified boundaries, for easier vectorization and
+    // subsampling, and also uses on input the rect argument as a maximum boundary.
+    public static CvRect boundingRect(double[] pts, CvRect rect,
+            int padX, int padY, int alignX, int alignY) {
+        double minX = pts[0];
+        double minY = pts[1];
+        double maxX = pts[0];
+        double maxY = pts[1];
+        for (int i = 1; i < pts.length/2; i++) {
+            double x = pts[2*i  ];
+            double y = pts[2*i+1];
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+        }
+        int x = (int)Math.floor(Math.max(rect.x(), minX-padX)/alignX)*alignX;
+        int y = (int)Math.floor(Math.max(rect.y(), minY-padY)/alignY)*alignY;
+        int width  = (int)Math.ceil(Math.min(rect.width(),  maxX+padX)/alignX)*alignX - x;
+        int height = (int)Math.ceil(Math.min(rect.height(), maxY+padY)/alignY)*alignY - y;
+
+        return rect.x(x).y(y).width(Math.max(0, width)).height(Math.max(0, height));
+    }
 
     // this is basically cvGetPerspectiveTransform() using CV_LU instead of
     // CV_SVD, because the latter gives inaccurate results...
@@ -311,111 +351,112 @@ public class JavaCV {
         return new double[] { a, b };
     }
 
-    public static void adaptiveBinarization(final IplImage src, final IplImage sumimage, 
-            final IplImage sqsumimage, final IplImage dst, final boolean invert,
-            final int minwindow, final int maxwindow, final double varmultiplier, final double k) {
-        final int w = src.width();
-        final int h = src.height();
-        final int srcdepth = src.depth();
-//        final IplImage graysrc;
-//        if (src.nChannels() > 1) {
-//            cvCvtColor(src, dst, CV_BGR2GRAY);
-//            graysrc = dst;
-//        } else {
-//            graysrc = src;
-//        }
+    public static void adaptiveBinarize(IplImage srcImage, final IplImage sumImage,
+            final IplImage sqSumImage, final IplImage dstImage, final boolean invert,
+            final int windowMax, final int windowMin, final double varMultiplier, final double k) {
+        final int w = srcImage.width();
+        final int h = srcImage.height();
+        final int srcChannels = srcImage.nChannels();
+        final int srcDepth = srcImage.depth();
+        final int dstDepth = dstImage.depth();
+
+        if (srcChannels > 1 && dstDepth == IPL_DEPTH_8U) {
+            cvCvtColor(srcImage, dstImage, srcChannels == 4 ? CV_RGBA2GRAY : CV_BGR2GRAY);
+            srcImage = dstImage;
+        }
+
+        final ByteBuffer srcBuf = srcImage.getByteBuffer();
+        final ByteBuffer dstBuf = dstImage.getByteBuffer();
+        final DoubleBuffer sumBuf = sumImage.getDoubleBuffer();
+        final DoubleBuffer sqSumBuf = sqSumImage.getDoubleBuffer();
+        final int srcStep = srcImage.widthStep();
+        final int dstStep = dstImage.widthStep();
+        final int sumStep = sumImage.widthStep();
+        final int sqSumStep = sqSumImage.widthStep();
 
         // compute integral images
-        cvIntegral(src, sumimage, sqsumimage, null);
-        final DoubleBuffer sumbuf = sumimage.getByteBuffer().asDoubleBuffer();
-        final DoubleBuffer sqsumbuf = sqsumimage.getByteBuffer().asDoubleBuffer();
-        final int sumstep = sumimage.widthStep();
-        final int sqsumstep = sqsumimage.widthStep();
-        final ByteBuffer srcbuf = src.getByteBuffer();
-        final ByteBuffer dstbuf = dst.getByteBuffer();
-        final int srcstep = src.widthStep();
-        final int dststep = dst.widthStep();
+        cvIntegral(srcImage, sumImage, sqSumImage, null);
 
         // try to detect a reasonable maximum and minimum intensity
         // for thresholds instead of simply 0 and 255...
-        double totalmean = sumbuf.get((h-1)*sumstep/8 + (w-1)) -
-                           sumbuf.get((h-1)*sumstep/8) -
-                           sumbuf.get(w-1) + sumbuf.get(0);
-        totalmean /= w*h;
-        double totalsqmean = sqsumbuf.get((h-1)*sqsumstep/8 + (w-1)) -
-                             sqsumbuf.get((h-1)*sqsumstep/8) -
-                             sqsumbuf.get(w-1) + sqsumbuf.get(0);
-        totalsqmean /= w*h;
-        double totalvar = totalsqmean - totalmean*totalmean;
-//double totaldev = Math.sqrt(totalvar);
-//System.out.println(totaldev);
-        final double targetvar = totalvar*varmultiplier;
+        double totalMean = sumBuf.get((h-1)*sumStep/8 + (w-1)) -
+                           sumBuf.get((h-1)*sumStep/8) -
+                           sumBuf.get(w-1) + sumBuf.get(0);
+        totalMean /= w*h;
+        double totalSqMean = sqSumBuf.get((h-1)*sqSumStep/8 + (w-1)) -
+                             sqSumBuf.get((h-1)*sqSumStep/8) -
+                             sqSumBuf.get(w-1) + sqSumBuf.get(0);
+        totalSqMean /= w*h;
+        double totalVar = totalSqMean - totalMean*totalMean;
+//double totalDev = Math.sqrt(totalVar);
+//System.out.println(totalDev);
+        final double targetVar = totalVar*varMultiplier;
 
         //for (int y = 0; y < h; y++) {
-        Parallel.loop(0, h, new Looper() {
+        Parallel.loop(0, h, new Parallel.Looper() {
         public void loop(int from, int to, int looperID) {
             for (int y = from; y < to; y++) {
                 for (int x = 0; x < w; x++) {
-                    double var = 0, mean = 0, sqmean = 0;
-                    int upperlimit = maxwindow;
-                    int lowerlimit = minwindow;
-                    int window = upperlimit; // start with maxwindow
-                    while (upperlimit - lowerlimit > 2) {
+                    double var = 0, mean = 0, sqMean = 0;
+                    int upperLimit = windowMax;
+                    int lowerLimit = windowMin;
+                    int window = upperLimit; // start with windowMax
+                    while (upperLimit - lowerLimit > 2) {
                         int x1 = Math.max(x-window/2, 0);
                         int x2 = Math.min(x+window/2+1, w);
 
                         int y1 = Math.max(y-window/2, 0);
                         int y2 = Math.min(y+window/2+1, h);
 
-                        mean = sumbuf.get(y2*sumstep/8 + x2) -
-                               sumbuf.get(y2*sumstep/8 + x1) -
-                               sumbuf.get(y1*sumstep/8 + x2) +
-                               sumbuf.get(y1*sumstep/8 + x1);
+                        mean = sumBuf.get(y2*sumStep/8 + x2) -
+                               sumBuf.get(y2*sumStep/8 + x1) -
+                               sumBuf.get(y1*sumStep/8 + x2) +
+                               sumBuf.get(y1*sumStep/8 + x1);
                         mean /= window*window;
-                        sqmean = sqsumbuf.get(y2*sqsumstep/8 + x2) -
-                                           sqsumbuf.get(y2*sqsumstep/8 + x1) -
-                                           sqsumbuf.get(y1*sqsumstep/8 + x2) +
-                                           sqsumbuf.get(y1*sqsumstep/8 + x1);
-                        sqmean /= window*window;
-                        var = sqmean - mean*mean;
+                        sqMean = sqSumBuf.get(y2*sqSumStep/8 + x2) -
+                                           sqSumBuf.get(y2*sqSumStep/8 + x1) -
+                                           sqSumBuf.get(y1*sqSumStep/8 + x2) +
+                                           sqSumBuf.get(y1*sqSumStep/8 + x1);
+                        sqMean /= window*window;
+                        var = sqMean - mean*mean;
 
                         // if we're at maximum window size, but variance is
                         // too low anyway, let's break out immediately
-                        if (window == upperlimit && var < targetvar) {
+                        if (window == upperLimit && var < targetVar) {
                             break;
                         }
 
                         // otherwise, start binary search
-                        if (var > targetvar) {
-                            upperlimit = window;
+                        if (var > targetVar) {
+                            upperLimit = window;
                         } else {
-                            lowerlimit = window;
+                            lowerLimit = window;
                         }
 
-                        window = lowerlimit   + (upperlimit-lowerlimit)/2;
+                        window = lowerLimit   + (upperLimit-lowerLimit)/2;
                         window = (window/2)*2 + 1;
                     }
 
                     double value = 0;
-                    if (srcdepth == IPL_DEPTH_8U) {
-                        value = srcbuf.get(y*srcstep       + x) & 0xFF;
-                    } else if (srcdepth == IPL_DEPTH_32F) {
-                        value = srcbuf.getFloat(y*srcstep  + 4*x);
-                    } else if (srcdepth == IPL_DEPTH_64F) {
-                        value = srcbuf.getDouble(y*srcstep + 8*x);
+                    if (srcDepth == IPL_DEPTH_8U) {
+                        value = srcBuf.get(y*srcStep       +   x) & 0xFF;
+                    } else if (srcDepth == IPL_DEPTH_32F) {
+                        value = srcBuf.getFloat(y*srcStep  + 4*x);
+                    } else if (srcDepth == IPL_DEPTH_64F) {
+                        value = srcBuf.getDouble(y*srcStep + 8*x);
                     } else {
-                        //cvIntegral() does not support other image types, so we
-                        //should not be able to get here...
-                        assert(false);
+                        // cvIntegral() does not support other image types,
+                        // so we should not be able to get here.
+                        assert false;
                     }
                     if (invert) {
                         //double threshold = 255 - (255 - mean) * (1 + 0.1*(Math.sqrt(var)/128 - 1));
                         double threshold = 255 - (255 - mean) * k;
-                        dstbuf.put(y*dststep + x, (value < threshold ? (byte)0xFF : (byte)0x00));
+                        dstBuf.put(y*dstStep + x, (value < threshold ? (byte)0xFF : (byte)0x00));
                     } else {
                         //double threshold = mean * (1 + k*(Math.sqrt(var)/128 - 1));
                         double threshold = mean * k;
-                        dstbuf.put(y*dststep + x, (value > threshold ? (byte)0xFF : (byte)0x00));
+                        dstBuf.put(y*dstStep + x, (value > threshold ? (byte)0xFF : (byte)0x00));
                     }
                 }
             }
@@ -631,9 +672,8 @@ public class JavaCV {
         }
     }
 
-    // clamps image intensities between min and max...
-    public static void minMaxS(IplImage src, double min, double max, IplImage dst) {
-
+    // Clamps image intensities between min and max.
+    public static void clamp(IplImage src, IplImage dst, double min, double max) {
         switch (src.depth()) {
             case IPL_DEPTH_8U: {
                 ByteBuffer sb = src.getByteBuffer();
@@ -641,52 +681,58 @@ public class JavaCV {
                 for (int i = 0; i < sb.capacity(); i++) {
                     db.put(i, (byte)Math.max(Math.min(sb.get(i) & 0xFF,max),min));
                 }
-                break; }
+                break;
+            }
             case IPL_DEPTH_16U: {
-                ShortBuffer sb = src.getByteBuffer().asShortBuffer();
-                ShortBuffer db = dst.getByteBuffer().asShortBuffer();
+                ShortBuffer sb = src.getShortBuffer();
+                ShortBuffer db = dst.getShortBuffer();
                 for (int i = 0; i < sb.capacity(); i++) {
                     db.put(i, (short)Math.max(Math.min(sb.get(i) & 0xFFFF,max),min));
                 }
-                break; }
+                break;
+            }
             case IPL_DEPTH_32F: {
-                FloatBuffer sb = src.getByteBuffer().asFloatBuffer();
-                FloatBuffer db = dst.getByteBuffer().asFloatBuffer();
+                FloatBuffer sb = src.getFloatBuffer();
+                FloatBuffer db = dst.getFloatBuffer();
                 for (int i = 0; i < sb.capacity(); i++) {
                     db.put(i, (float)Math.max(Math.min(sb.get(i),max),min));
                 }
-                break; }
+                break;
+            }
             case IPL_DEPTH_8S: {
                 ByteBuffer sb = src.getByteBuffer();
                 ByteBuffer db = dst.getByteBuffer();
                 for (int i = 0; i < sb.capacity(); i++) {
                     db.put(i, (byte)Math.max(Math.min(sb.get(i),max),min));
                 }
-                break; }
+                break;
+            }
             case IPL_DEPTH_16S: {
-                ShortBuffer sb = src.getByteBuffer().asShortBuffer();
-                ShortBuffer db = dst.getByteBuffer().asShortBuffer();
+                ShortBuffer sb = src.getShortBuffer();
+                ShortBuffer db = dst.getShortBuffer();
                 for (int i = 0; i < sb.capacity(); i++) {
                     db.put(i, (short)Math.max(Math.min(sb.get(i),max),min));
                 }
-                break; }
+                break;
+            }
             case IPL_DEPTH_32S: {
-                IntBuffer sb = src.getByteBuffer().asIntBuffer();
-                IntBuffer db = dst.getByteBuffer().asIntBuffer();
+                IntBuffer sb = src.getIntBuffer();
+                IntBuffer db = dst.getIntBuffer();
                 for (int i = 0; i < sb.capacity(); i++) {
                     db.put(i, (int)Math.max(Math.min(sb.get(i),max),min));
                 }
-                break; }
+                break;
+            }
             case IPL_DEPTH_64F: {
-                DoubleBuffer sb = src.getByteBuffer().asDoubleBuffer();
-                DoubleBuffer db = dst.getByteBuffer().asDoubleBuffer();
+                DoubleBuffer sb = src.getDoubleBuffer();
+                DoubleBuffer db = dst.getDoubleBuffer();
                 for (int i = 0; i < sb.capacity(); i++) {
                     db.put(i, Math.max(Math.min(sb.get(i),max),min));
                 }
-                break; }
+                break;
+            }
             default: assert(false);
         }
-
     }
 
     // vector norm
@@ -797,18 +843,6 @@ public class JavaCV {
             cond = norm(A, p)*norm(Ainv, p);
         }
         return cond;
-    }
-
-    public static double randn(CvRNG state, double sigma) {
-        return randn(state, cvRealScalar(sigma));
-    }
-    private static ThreadLocal<CvMat>
-            values1x1 = CvMat.createThreadLocal(1, 1);
-    public static double randn(CvRNG state, CvScalar sigma) {
-        CvMat values = values1x1.get();
-        cvRandArr(state, values, CV_RAND_NORMAL, CvScalar.ZERO, sigma);
-        double res = values.get(0);
-        return res;
     }
 
     public static double median(double[] doubles) {

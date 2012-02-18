@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -23,6 +23,8 @@ package com.googlecode.javacv;
 import com.googlecode.javacpp.Pointer;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -33,19 +35,19 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 public class JavaCvErrorCallback extends CvErrorCallback {
 
-    public JavaCvErrorCallback(boolean showDialog, Component parent, int rc) {
-        this.parent = parent;
-        this.showDialog = showDialog;
-        this.rc = rc;
-    }
-    public JavaCvErrorCallback(boolean showDialog, Component parent) {
-        this(showDialog, parent, 0);
+    public JavaCvErrorCallback() {
+        this(false);
     }
     public JavaCvErrorCallback(boolean showDialog) {
         this(showDialog, null);
     }
-    public JavaCvErrorCallback() {
-        this(false);
+    public JavaCvErrorCallback(boolean showDialog, Component parent) {
+        this(showDialog, parent, 0);
+    }
+    public JavaCvErrorCallback(boolean showDialog, Component parent, int rc) {
+        this.parent = parent;
+        this.showDialog = showDialog;
+        this.rc = rc;
     }
 
     private long lastErrorTime = 0;
@@ -59,24 +61,19 @@ public class JavaCvErrorCallback extends CvErrorCallback {
         final String message = cvErrorStr(status) +
                 " (" + err_msg + ")\nin function " +
                 func_name + ", " + file_name + "(" + line + ")";
-        System.err.println(title + ": " + message);
-        Thread.dumpStack();
+        Logger.getLogger(JavaCvErrorCallback.class.getName()).log(Level.SEVERE,
+                title + ": " + message, new Exception("Strack trace"));
         if (showDialog) {
-            // no more than 1 dialog per second since we cannot stop OpenCV
+            // Show no more than 1 dialog per second since we cannot stop OpenCV
             // from processing and throwing more errors. Maybe in the future
-            // when JNA allows us to throw Exceptions across...
-            if (System.currentTimeMillis()-lastErrorTime > 1000) {
-                if (EventQueue.isDispatchThread()) {
-                    JOptionPane.showMessageDialog(parent, message,
-                            title, JOptionPane.ERROR_MESSAGE);
-                } else try {
-                    EventQueue.invokeAndWait(new Runnable() {
-                        public void run() {
-                            JOptionPane.showMessageDialog(parent, message,
-                                    title, JOptionPane.ERROR_MESSAGE);
-                        }
-                    });
-                } catch (Exception ex) { }
+            // when JavaCPP allows us to throw Exceptions across...
+            if (System.currentTimeMillis() - lastErrorTime > 1000) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        JOptionPane.showMessageDialog(parent, message,
+                                title, JOptionPane.ERROR_MESSAGE);
+                    }
+                });
             }
             lastErrorTime = System.currentTimeMillis();
         }

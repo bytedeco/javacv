@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -73,9 +73,10 @@ import static com.googlecode.javacpp.Loader.*;
  *
  * @author Samuel Audet
  */
-@Platform(value="windows", include="<videoInput.cpp>", link={"ole32", "oleaut32", "amstrmid", "strmiids", "uuid"},
-    includepath={"../videoInput0.1995/videoInputSrcAndDemos/libs/videoInput/",
-                 "../videoInput0.1995/videoInputSrcAndDemos/libs/DShow/Include/"})
+@Platform(value="windows", define="VI_COM_MULTI_THREADED", include="<videoInput.cpp>",
+          includepath={"../videoInput0.1995/videoInputSrcAndDemos/libs/videoInput/",
+                       "../videoInput0.1995/videoInputSrcAndDemos/libs/DShow/Include/"},
+          link={"ole32", "oleaut32", "amstrmid", "strmiids", "uuid"})
 public class videoInputLib {
     static { load(); }
 

@@ -20,11 +20,11 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.Loader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
@@ -33,31 +33,36 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  * @author Samuel Audet
  */
 public class HandMouse {
-    public HandMouse(ImageAligner aligner) {
-        this(aligner, new Settings());
+    public HandMouse() {
+        this(new Settings());
     }
-    public HandMouse(ImageAligner aligner, Settings settings) {
-        this.aligner = aligner;
+    public HandMouse(Settings settings) {
         setSettings(settings);
     }
 
     public static class Settings extends BaseChildSettings {
         public Settings() { }
         public Settings(Settings s) {
-            s.mopIterations  = mopIterations;
-            s.clickSteadyMax = clickSteadyMax;
-            s.areaMin        = areaMin;
-            s.areaMax        = areaMax;
+            s.mopIterations   = mopIterations;
+            s.clickSteadySize = clickSteadySize;
+            s.clickSteadyTime = clickSteadyTime;
+            s.edgeAreaMin     = edgeAreaMin;
+            s.edgeAreaMax     = edgeAreaMax;
+            s.thresholdHigh   = thresholdHigh;
+            s.thresholdLow    = thresholdLow;
+            s.brightnessMin   = brightnessMin;
+            s.updateAlpha     = updateAlpha;
         }
 
-        int mopIterations     = 1;
-        double clickSteadyMax = 0.005;
-        double areaMin        = 0.001;
-        double areaMax        = 0.1;
-        int pyramidLevel      = 2;
-        double thresholdHigh  = 0.5;
-        double thresholdLow   = 0.25;
-        double lightnessMin   = 0.1;
+        int    mopIterations   = 1;
+        double clickSteadySize = 0.05;
+        long   clickSteadyTime = 250;
+        double edgeAreaMin     = 0.001;
+        double edgeAreaMax     = 0.1;
+        double thresholdHigh   = 0.5;
+        double thresholdLow    = 0.25;
+        double brightnessMin   = 0.1;
+        double updateAlpha     = 0.5;
 
         public int getMopIterations() {
             return mopIterations;
@@ -66,32 +71,32 @@ public class HandMouse {
             this.mopIterations = mopIterations;
         }
 
-        public double getClickSteadyMax() {
-            return clickSteadyMax;
+        public double getClickSteadySize() {
+            return clickSteadySize;
         }
-        public void setClickSteadyMax(double clickSteadyMax) {
-            this.clickSteadyMax = clickSteadyMax;
-        }
-
-        public double getAreaMin() {
-            return areaMin;
-        }
-        public void setAreaMin(double areaMin) {
-            this.areaMin = areaMin;
+        public void setClickSteadySize(double clickSteadySize) {
+            this.clickSteadySize = clickSteadySize;
         }
 
-        public double getAreaMax() {
-            return areaMax;
+        public long getClickSteadyTime() {
+            return clickSteadyTime;
         }
-        public void setAreaMax(double areaMax) {
-            this.areaMax = areaMax;
+        public void setClickSteadyTime(long clickSteadyTime) {
+            this.clickSteadyTime = clickSteadyTime;
         }
 
-        public int getPyramidLevel() {
-            return pyramidLevel;
+        public double getEdgeAreaMin() {
+            return edgeAreaMin;
         }
-        public void setPyramidLevel(int pyramidLevel) {
-            this.pyramidLevel = pyramidLevel;
+        public void setEdgeAreaMin(double edgeAreaMin) {
+            this.edgeAreaMin = edgeAreaMin;
+        }
+
+        public double getEdgeAreaMax() {
+            return edgeAreaMax;
+        }
+        public void setEdgeAreaMax(double edgeAreaMax) {
+            this.edgeAreaMax = edgeAreaMax;
         }
 
         public double getThresholdHigh() {
@@ -108,11 +113,18 @@ public class HandMouse {
             this.thresholdLow = thresholdLow;
         }
 
-        public double getLightnessMin() {
-            return lightnessMin;
+        public double getBrightnessMin() {
+            return brightnessMin;
         }
-        public void setLightnessMin(double lightnessMin) {
-            this.lightnessMin = lightnessMin;
+        public void setBrightnessMin(double brightnessMin) {
+            this.brightnessMin = brightnessMin;
+        }
+
+        public double getUpdateAlpha() {
+            return updateAlpha;
+        }
+        public void setUpdateAlpha(double updateAlpha) {
+            this.updateAlpha = updateAlpha;
         }
     }
 
@@ -124,278 +136,251 @@ public class HandMouse {
         this.settings = settings;
     }
 
-    private ImageAligner aligner;
-    private IplImage thresholdedImage = null;
+    private IplImage relativeResidual = null, binaryImage = null;
+    private CvRect roi = null;
     private CvMemStorage storage = CvMemStorage.create();
-    private CvPoint roiPoints = null, contourPoints = null;
-    private int roiPointsSize = 0, contourPointsSize = 0;
+    private int contourPointsSize = 0;
+    private CvPoint contourPoints = null;
     private IntBuffer contourPointsBuffer = null;
     private CvMoments moments = new CvMoments();
-    private double tipX = -1, tipY = -1, prevTipX = tipX, prevTipY = tipY;
+    private double edgeX = 0, edgeY = 0, centerX = 0, centerY = 0;
+    private double imageTipX = -1, tipX = -1, prevTipX = -1;
+    private double imageTipY = -1, tipY = -1, prevTipY = -1;
+    private long tipTime = 0, prevTipTime = 0;
     private CvPoint pt1 = new CvPoint(), pt2 = new CvPoint();
+    private boolean imageUpdateNeeded = false;
 
-    public void update() {
-        update(null);
+    public void reset() {
+        tipX = tipY = prevTipX = prevTipY = -1;
     }
-    public void update(IplImage[] intermediate) {
-        if (aligner.getPyramidLevel() != settings.pyramidLevel) {
-            aligner.setPyramidLevel(settings.pyramidLevel);
-        }
+
+    public void update(IplImage[] images, int pyramidLevel, CvRect roi, double[] roiPts) {
+        this.roi = roi;
 //        double RMSE = aligner.getRMSE()*((GNImageAligner)aligner).prevOutlierRatio;
 //        double threshold = RMSE*settings.threshold;
 //        double threshold2 = RMSE*settings.threshold2;//threshold*threshold;
 
-        IplImage roiMask  = aligner.getMaskImage();
-        IplImage residual = aligner.getResidualImage();
-        IplImage target   = aligner.getTargetImage();
-        IplImage transformed = aligner.getTransformedImage();
-        int width    = residual.width();
-        int height   = residual.height();
+        IplImage target      = images[1];
+        IplImage transformed = images[2];
+        IplImage residual    = images[3];
+        IplImage mask        = images[4];
+        int width    = roi.width();
+        int height   = roi.height();
         int channels = residual.nChannels();
-        thresholdedImage = IplImage.createIfNotCompatible(thresholdedImage, roiMask);
-        cvResetImageROI(thresholdedImage);
+        relativeResidual = IplImage.createIfNotCompatible(relativeResidual, mask);
+        binaryImage      = IplImage.createIfNotCompatible(binaryImage,      mask);
+        cvResetImageROI(relativeResidual);
+        cvResetImageROI(binaryImage);
 
-        ByteBuffer roiMaskBuf = roiMask.getByteBuffer();
+        double brightnessMin = (channels > 3 ? 3 : channels)*settings.brightnessMin;
+        double contourEdgeAreaMax = (width+height)/2*width*height*settings.edgeAreaMax;
+        double contourEdgeAreaMin = (width+height)/2*width*height*settings.edgeAreaMin;
+        ByteBuffer maskBuf = mask.getByteBuffer();
         FloatBuffer residualBuf = residual.getFloatBuffer();
         FloatBuffer targetBuf = target.getFloatBuffer();
         FloatBuffer transformedBuf = transformed.getFloatBuffer();
-        ByteBuffer thresholdedBuf = thresholdedImage.getByteBuffer();
-        while (roiMaskBuf.hasRemaining() && residualBuf.hasRemaining() &&
+        ByteBuffer relResBuf = relativeResidual.getByteBuffer();
+        while (maskBuf.hasRemaining() && residualBuf.hasRemaining() &&
                 targetBuf.hasRemaining() && transformedBuf.hasRemaining() &&
-                thresholdedBuf.hasRemaining()) {
-            byte m = roiMaskBuf.get();
+                relResBuf.hasRemaining()) {
+            byte m = maskBuf.get();
             if (m == 0) {
                 residualBuf.position(residualBuf.position() + channels);
                 targetBuf.position(targetBuf.position() + channels);
                 transformedBuf.position(transformedBuf.position() + channels);
-                thresholdedBuf.put((byte)0);
+                relResBuf.put((byte)0);
             } else {
                 double relativeNorm = 0;
-                double lightness = 0;
+                double brightness = 0;
                 for (int z = 0; z < channels; z++) {
                     float r = Math.abs(residualBuf.get());
                     float c = targetBuf.get();
                     float t = transformedBuf.get();
-                    lightness += Math.max(c,t);
-                    relativeNorm = Math.max(r/Math.max(c,t), relativeNorm);
+                    if (z < 3) {
+                        float maxct = Math.max(c,t);
+                        brightness += maxct;
+                        relativeNorm = Math.max(r/maxct, relativeNorm);
+                    } // ignore alpha channel
                 }
-                if (lightness < channels*settings.lightnessMin) {
-                    thresholdedBuf.put((byte)0);
+                if (brightness < brightnessMin) {
+                    relResBuf.put((byte)0);
                 } else {
-                    thresholdedBuf.put((byte)Math.round(255 / settings.thresholdHigh *
+                    relResBuf.put((byte)Math.round(255 / settings.thresholdHigh *
                             Math.min(relativeNorm, settings.thresholdHigh)));
                 }
-
-//                double mae = 0;
-//                for (int z = 0; z < channels; z++) {
-//                    mae += Math.abs(res.get());
-//                }
-//                out.put((byte)Math.round(mae * 255.0 / channels));
-//                //out.put(mae < threshold*channels ? (byte)0 : (byte)255);
-
-//                byte val = 0;
-//                for (int z = 0; z < channels; z++) {
-//                    float c = cam.get();
-//                    float r = Math.abs(res.get());
-//                    val |= r < c*threshold ? 0 : 255;
-//                }
-//                out.put(val);
-
-//                double cam2 = 0;
-//                double res2 = 0;
-//                for (int z = 0; z < channels; z++) {
-//                    float c = cam.get();
-//                    float r = res.get();
-//                    cam2 += c*c;
-//                    res2 += r*r;
-//                }
-//                out.put((byte)(res2 < cam2*outlierThreshold2 ? 0 : 255));
             }
         }
 
-        if (intermediate != null && intermediate[0] != null) {
-            cvCopy(thresholdedImage, intermediate[0]);
-        }
-
-        JavaCV.hysteresisThreshold(thresholdedImage, thresholdedImage, 
+        JavaCV.hysteresisThreshold(relativeResidual, binaryImage,
                 255, 255*settings.thresholdLow/settings.thresholdHigh, 255);
 
-        if (intermediate != null && intermediate[1] != null) {
-            cvResetImageROI(intermediate[1]);
-            cvCopy(thresholdedImage, intermediate[1]);
-        }
-
-        CvRect roi = aligner.getRoi();
         int roiX = roi.x(), roiY = roi.y();
-        cvSetImageROI(thresholdedImage, roi);
+        cvSetImageROI(binaryImage, roi);
 
-        cvMorphologyEx(thresholdedImage, thresholdedImage, null, null, CV_MOP_OPEN,  settings.mopIterations);
-        cvMorphologyEx(thresholdedImage, thresholdedImage, null, null, CV_MOP_CLOSE, settings.mopIterations);
-        cvDilate(thresholdedImage, thresholdedImage, null, 1);
-
-        double[] roiPts = aligner.getTransformedRoiPts();
-        for (int i = 0; i < roiPts.length/2; i++) {
-            roiPts[2*i    ] -= roiX;
-            roiPts[2*i + 1] -= roiY;
+        if (settings.mopIterations > 0) {
+            cvMorphologyEx(binaryImage, binaryImage, null, null, CV_MOP_OPEN,  settings.mopIterations);
+            cvMorphologyEx(binaryImage, binaryImage, null, null, CV_MOP_CLOSE, settings.mopIterations);
         }
-        if (roiPoints == null || roiPointsSize < roiPts.length/2) {
-            roiPoints = new CvPoint(roiPts.length/2);
-            roiPointsSize = roiPts.length/2;
-        }
-        roiPoints.put((byte)16, roiPts);
         CvSeq contour = new CvContour(null);
-        cvFindContours(thresholdedImage, storage, contour, sizeof(CvContour.class),
-                CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+        cvFindContours(binaryImage, storage, contour, Loader.sizeof(CvContour.class),
+                CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
         double largestContourEdgeArea = 0;
         CvSeq largestContour = null;
-        double edgeX = 0, edgeY = 0;
         while (contour != null && !contour.isNull()) {
-            double contourArea = Math.abs((cvContourArea(contour, CV_WHOLE_SEQ, 0)));
-            if (contourArea < settings.areaMin*width*height ||
-                    contourArea > settings.areaMax*width*height) {
-                contour = contour.h_next();
-                continue;
-            }
-
-            int total = contour.total();
-            if (contourPoints == null || contourPointsSize < total) {
-                contourPoints = new CvPoint(total);
-                contourPointsSize = total;
+            contourPointsSize = contour.total();
+            if (contourPoints == null || contourPoints.capacity() < contourPointsSize) {
+                contourPoints = new CvPoint(contourPointsSize);
                 contourPointsBuffer = contourPoints.asByteBuffer().asIntBuffer();
             }
-            cvCvtSeqToArray(contour, contourPoints.position(0), CV_WHOLE_SEQ);
+            cvCvtSeqToArray(contour, contourPoints.position(0));
 
-            cvSetZero(thresholdedImage);
-            cvFillPoly(thresholdedImage, contourPoints, new int[] { total }, 1, CvScalar.WHITE, 8, 0);
-            cvFillPoly(thresholdedImage, roiPoints, new int[] { roiPointsSize }, 1, CvScalar.BLACK, 8, 16);
+            double[] edgePts = new double[roiPts.length];
+            for (int i = 0; i < roiPts.length/2; i++) {
+                edgePts[2*i    ] = roiPts[2*i    ]/(1<<pyramidLevel) - roiX;
+                edgePts[2*i + 1] = roiPts[2*i + 1]/(1<<pyramidLevel) - roiY;
+            }
 
-            double contourEdgeArea = cvCountNonZero(thresholdedImage)*contourArea;
-            if (contourEdgeArea > largestContourEdgeArea) {
+            double m00 = 0, m10 = 0, m01 = 0;
+            for (int i = 0; i < contourPointsSize; i++) {
+                int x = contourPointsBuffer.get(2*i    ),
+                    y = contourPointsBuffer.get(2*i + 1);
+                for (int j = 0; j < roiPts.length/2; j++) {
+                    double x1 = edgePts[ 2*j                     ],
+                           y1 = edgePts[ 2*j + 1                 ],
+                           x2 = edgePts[(2*j + 2) % edgePts.length],
+                           y2 = edgePts[(2*j + 3) % edgePts.length];
+                    double dx = x2 - x1;
+                    double dy = y2 - y1;
+                    double d2 = dx*dx + dy*dy;
+                    double u = ((x - x1)*dx + (y - y1)*dy) / d2;
+
+                    double px = x1 + u*dx;
+                    double py = y1 + u*dy;
+
+                    dx = px - x;
+                    dy = py - y;
+                    d2 = dx*dx + dy*dy;
+                    if (d2 < 1) {
+                        m00 += 1;
+                        m10 += x;
+                        m01 += y;
+                        break;
+                    }
+                }
+            }
+            double contourEdgeArea = m00*Math.abs(cvContourArea(contour, CV_WHOLE_SEQ, 0));
+            if (contourEdgeArea > contourEdgeAreaMin && contourEdgeArea < contourEdgeAreaMax &&
+                    contourEdgeArea > largestContourEdgeArea) {
                 largestContourEdgeArea = contourEdgeArea;
                 largestContour = contour;
 
-                cvMoments(thresholdedImage, moments, 0);
-                double inv_m00 = 1 / moments.m00();
-                edgeX = moments.m10() * inv_m00;
-                edgeY = moments.m01() * inv_m00;
+                double inv_m00 = 1 / m00;
+                edgeX = m10 * inv_m00;
+                edgeY = m01 * inv_m00;
             }
-
-
-//            boolean intersects = false;
-//intersection:
-//            for (int i = 0; i < roiPts.length/2-1; i++) {
-//                for (int j = 0; j < total-1; j++) {
-//                    double x1 = roiPts[2*i  ], y1 = roiPts[2*i+1],
-//                           x2 = roiPts[2*i+2], y2 = roiPts[2*i+3];
-//                    int x3 = point.position(j  ).x(), y3 = point.y(),
-//                        x4 = point.position(j+1).x(), y4 = point.y();
-//                    double d = (y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1);
-//                    double ua = ((x4 - x3)*(y1 - y3) - (y4 - y3)*(x1 - x3))/d;
-//                    double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3))/d;
-//                    if (ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1) {
-//                        intersects = true;
-//                        break intersection;
-//                    }
-//                }
-//            }
-//
-//            if (intersects) {
-//                double contourArea = cvContourArea(contour, CV_WHOLE_SEQ, 0);
-//                if (contourArea > largestContourArea) {
-//                    largestContour     = contour;
-//                    largestContourArea = contourArea;
-//                }
-//            }
-
             contour = contour.h_next();
         }
 
         if (isClick()) {
             prevTipX = -1;
             prevTipY = -1;
-        } else {
+            prevTipTime = 0;
+        } else if (!isSteady()) {
             prevTipX = tipX;
             prevTipY = tipY;
+            prevTipTime = System.currentTimeMillis();
         }
 
         if (largestContour == null) {
             tipX = -1;
             tipY = -1;
+            tipTime = 0;
+            imageUpdateNeeded = false;
         } else {
             cvMoments(largestContour, moments, 0);
             double inv_m00 = 1 / moments.m00();
-            double centerX = moments.m10() * inv_m00;
-            double centerY = moments.m01() * inv_m00;
+            centerX = moments.m10() * inv_m00;
+            centerY = moments.m01() * inv_m00;
 
-            int total = largestContour.total();
-            cvCvtSeqToArray(largestContour, contourPoints.position(0), CV_WHOLE_SEQ);
+            contourPointsSize = largestContour.total();
+            cvCvtSeqToArray(largestContour, contourPoints.position(0));
 
             double tipDist2 = 0;
-            for (int i = 0; i < total; i++) {
+            int tipIndex = 0;
+            for (int i = 0; i < contourPointsSize; i++) {
                 int x = contourPointsBuffer.get(2*i    ),
                     y = contourPointsBuffer.get(2*i + 1);
                 double dx = centerX - edgeX;
                 double dy = centerY - edgeY;
                 double d2 = dx*dx + dy*dy;
-                double u = ((x - edgeX) * (centerX - edgeX) + (y - edgeY) * (centerY - edgeY)) / d2;
+                double u = ((x - edgeX)*dx + (y - edgeY)*dy) / d2;
 
-                double px = edgeX + u * (centerX - edgeX);
-                double py = edgeY + u * (centerY - edgeY);
+                double px = edgeX + u*dx;
+                double py = edgeY + u*dy;
 
                 dx = px - edgeX;
                 dy = py - edgeY;
                 d2 = dx*dx + dy*dy;
                 if (d2 > tipDist2) {
-                    tipX = x;
-                    tipY = y;
+                    tipIndex = i;
                     tipDist2 = d2;
                 }
             }
-
-            if (intermediate != null && intermediate[1] != null) {
-                cvSetImageROI(intermediate[1], roi);
-                cvCopy(intermediate[1], thresholdedImage);
-            } else {
-                cvSetZero(thresholdedImage);
-                cvFillPoly(thresholdedImage, contourPoints, new int[] { total }, 1, CvScalar.WHITE, 8, 0);
-            }
-
-            pt1.put((byte)16, edgeX, edgeY);
-            cvCircle(thresholdedImage, pt1, 5<<16, CvScalar.GRAY, 2, 8, 16);
-
-            pt1.put((byte)16, centerX-5, centerY-5); pt2.put((byte)16, centerX+5, centerY+5);
-            cvRectangle(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
-
-            pt1.put((byte)16, tipX-5, tipY-5); pt2.put((byte)16, tipX+5, tipY+5);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
-            pt1.put((byte)16, tipX-5, tipY+5); pt2.put((byte)16, tipX+5, tipY-5);
-            cvLine(thresholdedImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
-
-            tipX = (tipX+roiX)*(1<<settings.pyramidLevel);
-            tipY = (tipY+roiY)*(1<<settings.pyramidLevel);
-            cvResetImageROI(thresholdedImage);
+            double a = imageTipX < 0 || imageTipY < 0 ? 1.0 : settings.updateAlpha;
+            imageTipX = a*contourPointsBuffer.get(2*tipIndex    ) + (1-a)*imageTipX;
+            imageTipY = a*contourPointsBuffer.get(2*tipIndex + 1) + (1-a)*imageTipY;
+            tipX = (imageTipX+roiX)*(1<<pyramidLevel);
+            tipY = (imageTipY+roiY)*(1<<pyramidLevel);
+            tipTime = System.currentTimeMillis();
+            imageUpdateNeeded = true;
         }
 
         cvClearMemStorage(storage);
     }
 
-    public IplImage getImage() {
-        return thresholdedImage;
+    public IplImage getRelativeResidual() {
+        return relativeResidual;
     }
+    public IplImage getResultImage() {
+        if (imageUpdateNeeded) {
+            cvSetZero(binaryImage);
+            cvFillPoly(binaryImage, contourPoints, new int[] { contourPointsSize }, 1, CvScalar.WHITE, 8, 0);
+
+            pt1.put((byte)16, edgeX, edgeY);
+            cvCircle(binaryImage, pt1, 5<<16, CvScalar.GRAY, 2, 8, 16);
+
+            pt1.put((byte)16, centerX-5, centerY-5); pt2.put((byte)16, centerX+5, centerY+5);
+            cvRectangle(binaryImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
+
+            pt1.put((byte)16, imageTipX-5, imageTipY-5); pt2.put((byte)16, imageTipX+5, imageTipY+5);
+            cvLine(binaryImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
+            pt1.put((byte)16, imageTipX-5, imageTipY+5); pt2.put((byte)16, imageTipX+5, imageTipY-5);
+            cvLine(binaryImage, pt1, pt2, CvScalar.GRAY, 2, 8, 16);
+
+            cvResetImageROI(binaryImage);
+            imageUpdateNeeded = false;
+        }
+        return binaryImage;
+    }
+
     public double getX() {
         return tipX;
     }
     public double getY() {
         return tipY;
     }
-    public boolean isClick() {
-        if (tipX < 0 || tipY < 0 || prevTipX < 0 || prevTipY < 0) {
-            return false;
+
+    public boolean isSteady() {
+        if (tipX >= 0 && tipY >= 0 && prevTipX >= 0 && prevTipY >= 0) {
+            double dx = tipX - prevTipX;
+            double dy = tipY - prevTipY;
+            int imageSize = (roi.width() + roi.height())/2;
+            double steadySize = settings.clickSteadySize*imageSize;
+            return dx*dx + dy*dy < steadySize*steadySize;
         }
-        double dx = tipX - prevTipX;
-        double dy = tipY - prevTipY;
-        int size = (thresholdedImage.width() + thresholdedImage.height())/2;
-        double max = settings.clickSteadyMax*size;
-        return dx*dx + dy*dy < max*max;
+        return false;
+    }
+    public boolean isClick() {
+        return isSteady() && tipTime - prevTipTime > settings.clickSteadyTime;
     }
 }

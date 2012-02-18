@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from libfreenect.h and libfreenect_sync.h from the
- * master branch package OpenKinect-libfreenect-4a159f8, which was covered
+ * master branch package OpenKinect-libfreenect-v0.1.2-1-ge1365de, covered
  * by the following copyright notice:
  *
  * This file is part of the OpenKinect Project. http://www.openkinect.org
@@ -90,7 +90,10 @@
 
 package com.googlecode.javacv.cpp;
 
+import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.FunctionPointer;
+import com.googlecode.javacpp.IntPointer;
+import com.googlecode.javacpp.ShortPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
 import com.googlecode.javacpp.annotation.ByVal;
@@ -106,20 +109,55 @@ import static com.googlecode.javacpp.Loader.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(value={"linux", "macosx"}, include={"<libfreenect.h>", "<libfreenect_sync.h>"}, link={"freenect", "freenect_sync"},
+    @Platform(value={"linux", "macosx"}, include={"<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>"}, link={"freenect", "freenect_sync"},
         includepath  ={"/opt/local/include/libfreenect/", "/usr/local/include/libfreenect/", "/opt/local/include/", "/usr/include/libfreenect/"},
         linkpath     ={"/opt/local/lib/", "/opt/local/lib64/", "/usr/local/lib/", "/usr/local/lib64/"}) ,
-    @Platform(value="windows", include={"<libfreenect.h>", "<libfreenect_sync.h>", "<libfreenect_sync.c>"}, link={"freenect", "pthreadVC2"},
+    @Platform(value="windows", include={"<WinSock2.h>", "<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>", "<libfreenect_sync.c>"}, link={"freenect", "pthreadVC2"},
         includepath  ={"C:/libfreenect/include/", "C:/libfreenect/wrappers/c_sync/", "C:/pthreads-w32-2-8-0-release/",
-            "C:/pthreads.2/", "C:/Pre-built.2/include/", "src/com/googlecode/javacv/cpp/"},
+                       "C:/pthreads.2/", "C:/Pre-built.2/include/", "src/com/googlecode/javacv/cpp/"},
         linkpath     ={"C:/libfreenect/lib/", "C:/pthreads-w32-2-8-0-release/", "C:/pthreads.2/", "C:/Pre-built.2/lib/"}) })
 public class freenect {
     static { load(); }
+
+    public static class timeval extends Pointer {
+        static { load(); }
+        public timeval() { allocate(); }
+        public timeval(int size) { allocateArray(size); }
+        public timeval(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native long tv_sec();  public native timeval tv_sec (long tv_sec);
+        public native long tv_usec(); public native timeval tv_usec(long tv_usec);
+    }
 
     // #include "libfreenect.h"
     public static final int 
             FREENECT_COUNTS_PER_G = 819,
 
+            FREENECT_DEPTH_MM_MAX_VALUE = 10000,
+            FREENECT_DEPTH_MM_NO_VALUE = 0,
+            FREENECT_DEPTH_RAW_MAX_VALUE = 2048,
+            FREENECT_DEPTH_RAW_NO_VALUE = 2047,
+
+            // enum freenect_device_flags
+            FREENECT_DEVICE_CAMERA = 0x02,
+            FREENECT_DEVICE_AUDIO  = 0x04;
+
+    public static class freenect_device_attributes extends Pointer {
+        static { load(); }
+        public freenect_device_attributes() { allocate(); }
+        public freenect_device_attributes(int size) { allocateArray(size); }
+        public freenect_device_attributes(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native freenect_device_attributes next(); public native freenect_device_attributes next(freenect_device_attributes next);
+        @Cast("const char*")
+        public native BytePointer camera_serial();       public native freenect_device_attributes camera_serial(BytePointer camera_serial);
+    }
+
+    public static final int
     // enum freenect_resolution
             FREENECT_RESOLUTION_LOW    = 0,
             FREENECT_RESOLUTION_MEDIUM = 1,
@@ -138,7 +176,9 @@ public class freenect {
             FREENECT_DEPTH_11BIT        = 0,
             FREENECT_DEPTH_10BIT        = 1,
             FREENECT_DEPTH_11BIT_PACKED = 2,
-            FREENECT_DEPTH_10BIT_PACKED = 3;
+            FREENECT_DEPTH_10BIT_PACKED = 3,
+            FREENECT_DEPTH_REGISTERED   = 4,
+            FREENECT_DEPTH_MM           = 5;
 
     public static class freenect_frame_mode extends Pointer {
         static { load(); }
@@ -237,8 +277,15 @@ public class freenect {
     public static native void freenect_set_log_callback(freenect_context ctx, freenect_log_cb cb);
 
     public static native int freenect_process_events(freenect_context ctx);
+    public static native int freenect_process_events_timeout(freenect_context ctx, timeval timeout);
     public static native int freenect_num_devices(freenect_context ctx);
+    public static native int freenect_list_device_attributes(freenect_context ctx, @ByPtrPtr freenect_device_attributes attribute_list);
+    public static native void freenect_free_device_attributes(freenect_device_attributes attribute_list);
+    public static native int freenect_supported_subdevices();
+    public static native void freenect_select_subdevices(freenect_context ctx, @Cast("freenect_device_flags") int subdevs);
     public static native int freenect_open_device(freenect_context ctx, @ByPtrPtr freenect_device dev, int index);
+    public static native int freenect_open_device_by_camera_serial(freenect_context ctx, @ByPtrPtr freenect_device dev, String camera_serial);
+    public static native int freenect_open_device_by_camera_serial(freenect_context ctx, @ByPtrPtr freenect_device dev, @Cast("char*") BytePointer camera_serial);
     public static native int freenect_close_device(freenect_device dev);
     public static native void freenect_set_user(freenect_device dev, Pointer user);
     public static native Pointer freenect_get_user(freenect_device dev);
@@ -288,6 +335,112 @@ public class freenect {
     public static native @ByVal freenect_frame_mode freenect_find_depth_mode(
             @Cast("freenect_resolution") int res, @Cast("freenect_depth_format") int fmt);
     public static native int freenect_set_depth_mode(freenect_device dev, @ByVal freenect_frame_mode mode);
+
+    // #include "libfreenect-registration.h"
+    public static class freenect_reg_info extends Pointer {
+        static { load(); }
+        public freenect_reg_info() { allocate(); }
+        public freenect_reg_info(int size) { allocateArray(size); }
+        public freenect_reg_info(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native int dx_center(); public native freenect_reg_info dx_center(int dx_center);
+
+        public native int ax();        public native freenect_reg_info ax(int ax);
+        public native int bx();        public native freenect_reg_info bx(int bx);
+        public native int cx();        public native freenect_reg_info cx(int cx);
+        public native int dx();        public native freenect_reg_info dx(int dx);
+
+        public native int dx_start();  public native freenect_reg_info dx_start(int dx_start);
+
+        public native int ay();        public native freenect_reg_info ay(int ay);
+        public native int by();        public native freenect_reg_info by(int by);
+        public native int cy();        public native freenect_reg_info cy(int cy);
+        public native int dy();        public native freenect_reg_info dy(int dy);
+
+        public native int dy_start();  public native freenect_reg_info dy_start(int dy_start);
+
+        public native int dx_beta_start(); public native freenect_reg_info dx_beta_start(int dx_beta_start);
+        public native int dy_beta_start(); public native freenect_reg_info dy_beta_start(int dy_beta_start);
+
+        public native int rollout_blank(); public native freenect_reg_info rollout_blank(int rollout_blank);
+        public native int rollout_size();  public native freenect_reg_info rollout_size(int rollout_size);
+
+        public native int dx_beta_inc();   public native freenect_reg_info dx_beta_inc(int dx_beta_inc);
+        public native int dy_beta_inc();   public native freenect_reg_info dy_beta_inc(int dy_beta_inc);
+
+        public native int dxdx_start();    public native freenect_reg_info dxdx_start(int dxdx_start);
+        public native int dxdy_start();    public native freenect_reg_info dxdy_start(int dxdy_start);
+        public native int dydx_start();    public native freenect_reg_info dydx_start(int dydx_start);
+        public native int dydy_start();    public native freenect_reg_info dydy_start(int dydy_start);
+
+        public native int dxdxdx_start();  public native freenect_reg_info dxdxdx_start(int dxdxdx_start);
+        public native int dydxdx_start();  public native freenect_reg_info dydxdx_start(int dydxdx_start);
+        public native int dxdxdy_start();  public native freenect_reg_info dxdxdy_start(int dxdxdy_start);
+        public native int dydxdy_start();  public native freenect_reg_info dydxdy_start(int dydxdy_start);
+
+        public native int back_comp1();    public native freenect_reg_info back_comp1(int back_comp1);
+
+        public native int dydydx_start();  public native freenect_reg_info dydydx_start(int dydydx_start);
+
+        public native int back_comp2();    public native freenect_reg_info back_comp2(int back_comp2);
+
+        public native int dydydy_start();  public native freenect_reg_info dydydy_start(int dydydy_start);
+    }
+
+    public static class freenect_reg_pad_info extends Pointer {
+        static { load(); }
+        public freenect_reg_pad_info() { allocate(); }
+        public freenect_reg_pad_info(int size) { allocateArray(size); }
+        public freenect_reg_pad_info(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native short start_lines();    public native freenect_reg_pad_info start_lines(short start_lines);
+        public native short end_lines();      public native freenect_reg_pad_info end_lines(short end_lines);
+        public native short cropping_lines(); public native freenect_reg_pad_info cropping_lines(short cropping_lines);
+    }
+
+    public static class freenect_zero_plane_info extends Pointer {
+        static { load(); }
+        public freenect_zero_plane_info() { allocate(); }
+        public freenect_zero_plane_info(int size) { allocateArray(size); }
+        public freenect_zero_plane_info(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native float dcmos_emitter_dist();   public native freenect_zero_plane_info dcmos_emitter_dist(float dcmos_emitter_dist);
+        public native float dcmos_rcmos_dist();     public native freenect_zero_plane_info dcmos_rcmos_dist(float dcmos_rcmos_dist);
+        public native float reference_distance();   public native freenect_zero_plane_info reference_distance(float reference_distance);
+        public native float reference_pixel_size(); public native freenect_zero_plane_info reference_pixel_size(float reference_pixel_size);
+    }
+
+    public static class freenect_registration extends Pointer {
+        static { load(); }
+        public freenect_registration() { allocate(); }
+        public freenect_registration(int size) { allocateArray(size); }
+        public freenect_registration(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native @ByVal freenect_reg_info        reg_info();        public native freenect_registration reg_info(freenect_reg_info reg_info);
+        public native @ByVal freenect_reg_pad_info    reg_pad_info();    public native freenect_registration reg_pad_info(freenect_reg_pad_info reg_pad_info);
+        public native @ByVal freenect_zero_plane_info zero_plane_info(); public native freenect_registration zero_plane_info(freenect_zero_plane_info zero_plane_info);
+
+        public native double const_shift();            public native freenect_registration const_shift(double const_shift);
+
+        @Cast("uint16_t*")
+        public native ShortPointer raw_to_mm_shift();  public native freenect_registration raw_to_mm_shift(ShortPointer raw_to_mm_shift);
+        public native IntPointer depth_to_rgb_shift(); public native freenect_registration depth_to_rgb_shift(IntPointer depth_to_rgb_shift);
+        @Cast("int32_t(*)[2]")
+        public native IntPointer registration_table(); public native freenect_registration registration_table(IntPointer registration_table);
+    }
+
+    public static native @ByVal freenect_registration freenect_copy_registration(freenect_device dev);
+    public static native int freenect_destroy_registration(freenect_registration reg);
+    public static native void freenect_camera_to_world(freenect_device dev,
+            int cx, int cy, int wz, double[] wx, double[] wy);
 
     // #include "libfreenect_sync.h"
     public static native int freenect_sync_get_video(@ByPtrPtr Pointer video,

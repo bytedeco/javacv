@@ -40,7 +40,7 @@ public abstract class FrameRecorder {
         for (Class<? extends FrameRecorder> c : list) {
             try {
                 c.getMethod("tryLoad").invoke(null);
-            } catch (Exception ex) { }
+            } catch (Throwable t) { }
         }
     }
 
@@ -96,6 +96,11 @@ public abstract class FrameRecorder {
     }
     public void setFrameRate(double frameRate) {
         this.frameRate = frameRate;
+    }
+
+    public static class Exception extends java.lang.Exception {
+        public Exception(String message) { super(message); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
     }
 
     public abstract void start() throws Exception;

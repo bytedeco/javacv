@@ -3,9 +3,9 @@
 ==Introduction==
 JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: [http://opencv.willowgarage.com/ OpenCV], [http://www.ffmpeg.org/ FFmpeg], [http://damien.douxchamps.net/ieee1394/libdc1394/ libdc1394], [http://www.ptgrey.com/products/pgrflycapture/ PGR FlyCapture], [http://openkinect.org/ OpenKinect], [http://muonics.net/school/spring05/videoInput/ videoInput], and [http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php ARToolKitPlus]. The following classes, found under the `com.googlecode.javacv.cpp` package namespace, expose their complete APIs: `opencv_core`, `opencv_imgproc`, `opencv_video`, `opencv_flann`, `opencv_features2d`, `opencv_calib3d`, `opencv_objdetect`, `opencv_highgui`, `opencv_legacy`, `opencv_ml`, `opencv_contrib`, `avutil`, `avcodec`, `avformat`, `avdevice`, `avfilter`, `postproc`, `swscale`, `dc1394`, `PGRFlyCapture`, `freenect`, `videoInputLib`, and `ARToolKitPlus`, respectively. Moreover, utility classes make it easy to use their functionality on the Java platform, including Android.
 
-JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL`, i.e.: `JavaCVCL`, etc.
+JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL`, i.e.: `JavaCVCL`, etc. except for `GLCanvasFrame`.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV] section below as well as the sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
+To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
 
 I will continue to add all code that I am developing for my doctoral research as I go.
 
@@ -43,8 +43,8 @@ Please keep me informed of any updates or fixes you make to the code so that I m
 And feel free to ask questions on [http://groups.google.com/group/javacv the mailing list] if you encounter any problems with the software! I am sure it is far from perfect...
 
 
-==Quick Start for OpenCV==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directory or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+==Quick Start for OpenCV and FFmpeg==
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directory or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -58,11 +58,11 @@ Eclipse (Android 2.2 or newer):
  * Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
  * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
- * Extract directly all the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.3.1-android-arm.zip` in the newly created "libs/armeabi" folder, without creating any new subdirectories.
+ * Extract directly all the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.3.1-android-arm.zip` and `ffmpeg-0.7.11-android-arm.zip` in the newly created "libs/armeabi" folder, without creating any new subdirectories.
  * Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
  * Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
-After that, the wrapper classes for OpenCV can automatically access all of its C/C++ API. The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
+After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs. The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -81,7 +81,7 @@ public class Smoother {
 }
 }}}
 
-JavaCV also comes with helper classes and methods on top of OpenCV to facilitate its integration to the Java platform. Here is a small demo program demonstrating the most frequently useful parts:
+JavaCV also comes with helper classes and methods on top of OpenCV and FFmpeg to facilitate their integration to the Java platform. Here is a small demo program demonstrating the most frequently useful parts:
 
 {{{
 import com.googlecode.javacpp.Loader;
@@ -147,6 +147,7 @@ public class Demo {
 
         // Objects allocated with a create*() or clone() factory method are automatically released
         // by the garbage collector, but may still be explicitly released by calling release().
+        // You shall NOT call cvReleaseImage(), cvReleaseMemStorage(), etc. on objects allocated this way.
         CvMemStorage storage = CvMemStorage.create();
 
         // We can allocate native arrays using constructors taking an integer as argument.
@@ -157,6 +158,8 @@ public class Demo {
         recorder.start();
 
         while (frame.isVisible() && (grabbedImage = grabber.grab()) != null) {
+            cvClearMemStorage(storage);
+
             // Let's try to detect some faces! but we need a grayscale image...
             cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
             CvSeq faces = cvHaarDetectObjects(grayImage, classifier, storage,
@@ -194,8 +197,6 @@ public class Demo {
 
             frame.showImage(rotatedImage);
             recorder.record(rotatedImage);
-
-            cvClearMemStorage(storage);
         }
         recorder.stop();
         grabber.stop();
@@ -210,6 +211,30 @@ I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Instit
 
 
 ==Changes==
+===February 18, 2012===
+ * Added `GLCanvasFrame` to show OpenGL renderbuffers on screen, plus a new factory method `JavaCVCL.createCLGLImageFrom()` to create compatible ones from `IplImage` objects, as well as more user-friendly `getGLContext()`, `getGL()` and `getGL2()` methods
+ * Fixed various things of the original `CanvasFrame`, and `JavaCV.createCLImage()` and `createIplImage()`, also appending `From` to their names 
+ * New `createPinnedBuffer()` and `createPinnedIplImage()` factory methods in `JavaCVCL` to allocate page-locked memory for faster CPU<->GPU transfers, but it does not seem to work for OpenCL image objects, only linear buffer objects :(
+ * Fixed and enhanced `GNImageAlignerCL` and `ProjectorDevice` (its `useOpenGL` property) to support fully OpenCL and OpenGL acceleration
+ * Refactored `Parallel` a bit so that we may set the number of threads it uses via its static `numThreads` property or the "com.googlecode.javacv.numthreads" system property, which defaults to `Parallel.getNumCores() = Runtime.getRuntime().availableProcessors()`
+ * Cleaned up and renamed some methods in `JavaCV`, while adding `boundingRect()`, functionally similar to `cvBoundingRect`, but better adapted to compute a properly aligned and padded ROI
+ * Inserted a couple of missing `allocate()` inside `opencv_flann`
+ * Updated `ObjectFinder` with a `Settings.useFLANN` property to let it use FLANN via OpenCV
+ * Cleaned up and optimized `HandMouse`
+ * `CanvasFrame`, `FrameGrabber`, `FrameRecorder`, and `ProjectiveDevice` objects now throw `Exception` objects of a nested class instead of the too generic `java.lang.Exception` one
+ * Moved parallel execution of `cvkernels.multiWarpColorTransform()`, modifying `ImageTransformer` classes, from `GNImageAligner` into `cvkernels`, which now also supports other image types than `float`
+ * Renamed some `Settings` properties here and there to correct typos and reflect better their meanings
+ * Updated `freenect` to reflect the latest changes of OpenKinect's master branch
+ * FFmpeg and other libraries did not work under Android when compiled with the latest NDK, r7 (issue #147): Fixed in JavaCPP
+ * Moved `IplImage.timestamp` to `FrameGrabber`, also adding a `frameNumber` property, both allowing to seek within streams too
+ * Removed `triggerFlushSize` property from `CameraDevice` and `FrameGrabber`, instead relying on the `numBuffers` property to decide the required size of a buffer flush
+ * Corrected the logic behind `FFmpegFrameGrabber.getFrameRate()` and `getTimestamp()` (issue #151)
+ * Created a `BufferRing` class for convenient circular rings of large buffers that require manual release of resources, such as OpenCL memory
+ * Added a few more useful methods to `FrameGrabber`, including `restart()`, `flush()`, and `delayedGrab()` (to be used in conjunction with `getDelayedTime()` and `getDelayedImage()`)
+ * Inserted `cvLoadImageBGRA()` and `cvLoadImageRGBA()` methods into `opencv_highgui` to load color images compatible with OpenCL more easily
+ * `JavaCvErrorCallback` now outputs messages to `Logger` instead of `System.err`
+ * Defined `VI_COM_MULTI_THREADED` for `videoInput`, allowing it to run on multiple threads if needed
+
 ===January 8, 2012===
  * JavaCV should now have an easier time automatically finding libraries inside standard directories such as `/usr/local/lib/`, `/opt/local/lib/`, and `C:\opencv\`, even when they are not part of the system configuration or PATH (issue #127)
  * Renamed `set()` and `fill()` methods to `put()` inside `CvPoint*` classes, for better naming consistency
