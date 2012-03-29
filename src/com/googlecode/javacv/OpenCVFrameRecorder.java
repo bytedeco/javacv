@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -21,6 +21,7 @@
 package com.googlecode.javacv;
 
 import com.googlecode.javacpp.Loader;
+import java.io.File;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
@@ -30,6 +31,23 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
  * @author Samuel Audet
  */
 public class OpenCVFrameRecorder extends FrameRecorder {
+
+    private static Exception loadingException = null;
+    public static void tryLoad() throws Exception {
+        if (loadingException != null) {
+            throw loadingException;
+        } else {
+            try {
+                Loader.load(com.googlecode.javacv.cpp.opencv_highgui.class);
+            } catch (Throwable t) {
+                throw loadingException = new Exception("Failed to load " + OpenCVFrameRecorder.class, t);
+            }
+        }
+    }
+
+    public OpenCVFrameRecorder(File file, int imageWidth, int imageHeight) {
+        this(file.getAbsolutePath(), imageWidth, imageHeight);
+    }
     public OpenCVFrameRecorder(String filename, int imageWidth, int imageHeight) {
         this.filename    = filename;
         this.imageWidth  = imageWidth;

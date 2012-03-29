@@ -116,7 +116,6 @@ public class opencv_flann {
             FLANN_DIST_KL                = 8;
 
     @Name("std::vector<std::string>") 
-    @com.googlecode.javacpp.annotation.Index
     public static class StringVector extends Pointer {
         static { load(); }
         public StringVector()       { allocate();  }
@@ -128,6 +127,7 @@ public class opencv_flann {
         public native long size();
         public native void resize(@Cast("size_t") long n);
 
+        @com.googlecode.javacpp.annotation.Index
         @ByRef public native String get(@Cast("size_t") long i);
         public native StringVector put(@Cast("size_t") long i, String value);
     }

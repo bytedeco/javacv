@@ -257,6 +257,10 @@ public class opencv_features2d {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public DefaultRngAuto position(int position) {
+            return (DefaultRngAuto)super.position(position);
+        }
+
         @MemberGetter public native long old_state();
     }
 
@@ -268,6 +272,10 @@ public class opencv_features2d {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvAffinePose position(int position) {
+            return (CvAffinePose)super.position(position);
+        }
+
         public native float phi();     public native CvAffinePose phi(float phi);
         public native float theta();   public native CvAffinePose theta(float theta);
         public native float lambda1(); public native CvAffinePose lambda1(float lambda1);
@@ -277,7 +285,7 @@ public class opencv_features2d {
     @NoOffset @Namespace("cv") public static class KeyPoint extends Pointer {
         static { load(); }
         public KeyPoint() { allocate(); }
-        public KeyPoint(Pointer p) { super(p); }
+        public KeyPoint(int size) { allocateArray(size); }
         public KeyPoint(CvPoint2D32f _pt, float _size, float _angle/*=-1*/,
                 float _response/*=0*/, int _octave/*=0*/, int _class_id/*=-1*/) {
             allocate(_pt, _size, _angle, _response, _octave, _class_id);
@@ -286,11 +294,17 @@ public class opencv_features2d {
                 float _response/*=0*/, int _octave/*=0*/, int _class_id/*=-1*/) {
             allocate(x, y, _size, _angle, _response, _octave, _class_id);
         }
+        public KeyPoint(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(@ByRef CvPoint2D32f _pt, float _size, float _angle/*=-1*/,
                 float _response/*=0*/, int _octave/*=0*/, int _class_id/*=-1*/);
         private native void allocate(float x, float y, float _size, float _angle/*=-1*/,
                 float _response/*=0*/, int _octave/*=0*/, int _class_id/*=-1*/);
+        private native void allocateArray(int size);
+
+        @Override public KeyPoint position(int position) {
+            return (KeyPoint)super.position(position);
+        }
 
         public native long hash();
 
@@ -303,8 +317,9 @@ public class opencv_features2d {
 
         public static native float overlap(@ByRef KeyPoint kp1, @ByRef KeyPoint kp2);
 
-        @ByVal
-        public native CvPoint2D32f pt(); public native KeyPoint pt(CvPoint2D32f pt);
+        public native @ByVal CvPoint2D32f pt();   public native KeyPoint pt(CvPoint2D32f pt);
+        public native @Name("pt.x") float pt_x(); public native KeyPoint pt_x(float x);
+        public native @Name("pt.y") float pt_y(); public native KeyPoint pt_y(float y);
         public native float size();      public native KeyPoint size(float size);
         public native float angle();     public native KeyPoint angle(float angle);
         public native float response();  public native KeyPoint response(float response);
@@ -681,6 +696,10 @@ public class opencv_features2d {
         private native void allocate(int x, int y, IplImage image);
         private native void allocateArray(int size);
 
+        @Override public BaseKeypoint position(int position) {
+            return (BaseKeypoint)super.position(position);
+        }
+
         public native int x();          public native BaseKeypoint x(int x);
         public native int y();          public native BaseKeypoint y(int y);
         public native IplImage image(); public native BaseKeypoint image(IplImage image);
@@ -697,8 +716,14 @@ public class opencv_features2d {
         public static native float GET_UPPER_QUANT_PERC();
 
         public RandomizedTree() { allocate(); }
+        public RandomizedTree(int size) { allocateArray(size); }
         public RandomizedTree(Pointer p) { super(p); }
         private native void allocate();
+        private native void allocateArray(int size);
+
+        @Override public RandomizedTree position(int position) {
+            return (RandomizedTree)super.position(position);
+        }
 
         public native void train(@Adapter("VectorAdapter<cv::BaseKeypoint>") BaseKeypoint base_set,
                 @Adapter("RNGAdapter") CvRNG rng, int depth, int views, @Cast("size_t") long reduced_num_dim, int num_quant_bits);
@@ -993,7 +1018,7 @@ public class opencv_features2d {
     }
 
 
-    @Name("std::vector<std::vector<cv::KeyPoint> >") @Index
+    @Name("std::vector<std::vector<cv::KeyPoint> >")
     public static class KeyPointVectorVector extends Pointer {
         static { load(); }
         public KeyPointVectorVector()       { allocate();  }
@@ -1007,7 +1032,7 @@ public class opencv_features2d {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByRef public native KeyPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index @ByRef public native KeyPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native KeyPointVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, KeyPoint value);
     }
 
@@ -1071,6 +1096,10 @@ public class opencv_features2d {
             private native void allocate(int maxCorners/*=1000*/, double qualityLevel/*=0.01*/, double minDistance/*=1.*/,
                     int blockSize/*=3*/, @Cast("bool") boolean useHarrisDetector/*=false*/, double k/*=0.04*/);
             private native void allocateArray(int size);
+
+            @Override public Params position(int position) {
+                return (Params)super.position(position);
+            }
 
             public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
             public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -1226,6 +1255,10 @@ public class opencv_features2d {
             private native void allocate();
             private native void allocateArray(int size);
 
+            @Override public Params position(int position) {
+                return (Params)super.position(position);
+            }
+
             public native float thresholdStep();         public native Params thresholdStep(float thresholdStep);
             public native float minThreshold();          public native Params minThreshold(float minThreshold);
             public native float maxThreshold();          public native Params maxThreshold(float maxThreshold);
@@ -1286,6 +1319,10 @@ public class opencv_features2d {
             private native void allocate(float initFeatureScale/*=1.f*/, int featureScaleLevels/*=1*/, float featureScaleMul/*=0.1f*/,
                     int initXyStep/*=6*/, int initImgBound/*=0*/, @Cast("bool") boolean varyXyStepWithScale/*=true*/, @Cast("bool") boolean varyImgBoundWithScale/*=false*/);
             private native void allocateArray(int size);
+
+            @Override public Params position(int position) {
+                return (Params)super.position(position);
+            }
 
             public native float initFeatureScale();        public native Params initFeatureScale(float initFeatureScale);
             public native int featureScaleLevels();        public native Params featureScaleLevels(int featureScaleLevels);
@@ -1694,9 +1731,16 @@ public class opencv_features2d {
         public DMatch(int _queryIdx, int _trainIdx, int _imgIdx, float _distance) {
             allocate(_queryIdx, _trainIdx, _imgIdx, _distance);
         }
+        public DMatch(int size) { allocateArray(size); }
+        public DMatch(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(int _queryIdx, int _trainIdx, float _distance);
         private native void allocate(int _queryIdx, int _trainIdx, int _imgIdx, float _distance);
+        private native void allocateArray(int size);
+
+        @Override public DMatch position(int position) {
+            return (DMatch)super.position(position);
+        }
 
         public native int queryIdx();   public native DMatch queryIdx(int queryIdx);
         public native int trainIdx();   public native DMatch trainIdx(int trainIdx);
@@ -1707,7 +1751,7 @@ public class opencv_features2d {
         public native @Name("operator<") boolean compare(@ByRef DMatch m);
     }
 
-    @Name("std::vector<std::vector<cv::DMatch> >") @Index
+    @Name("std::vector<std::vector<cv::DMatch> >")
     public static class DMatchVectorVector extends Pointer {
         static { load(); }
         public DMatchVectorVector()       { allocate();  }
@@ -1721,7 +1765,7 @@ public class opencv_features2d {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByRef public native DMatch get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index @ByRef public native DMatch get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native DMatchVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, DMatch value);
     }
 
@@ -2019,6 +2063,10 @@ public class opencv_features2d {
                     float minScale/*=GET_MIN_SCALE()*/, float maxScale/*=GET_MAX_SCALE()*/, float stepScale/*=GET_STEP_SCALE()*/);
             private native void allocateArray(int size);
 
+            @Override public Params position(int position) {
+                return (Params)super.position(position);
+            }
+
             public native int poseCount();                 public native Params poseCount(int poseCount);
             public native @ByVal CvSize patchSize();       public native Params patchSize(CvSize patchSize);
             public native @ByRef String pcaFilename();     public native Params pcaFilename(String pcaFilename);
@@ -2083,6 +2131,10 @@ public class opencv_features2d {
                 @ByRef PatchGenerator patchGenerator/*=PatchGenerator()*/);
             private native void allocate(String filename);
             private native void allocateArray(int size);
+
+            @Override public Params position(int position) {
+                return (Params)super.position(position);
+            }
 
             public native int nclasses();          public native Params nclasses(int nclasses);
             public native int patchSize();         public native Params patchSize(int patchSize);

@@ -20,6 +20,7 @@
 
 package com.googlecode.javacv;
 
+import com.jogamp.common.os.Platform;
 import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLEventList;
 import com.jogamp.opencl.CLImage2d;
@@ -44,7 +45,9 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
         super(referencePoints, camera, projector, n);
         final int dotSize = createParameters().size();
         this.context  = context;
-        this.H1Buffer = context.getCLContext().createFloatBuffer(dotSize*9,  CLBuffer.Mem.READ_ONLY);
+        this.nullSize = Platform.is32Bit() ? 4 : 8;
+        this.H1Buffer = surfaceTransformer == null ? null :
+                        context.getCLContext().createFloatBuffer(dotSize*9,  CLBuffer.Mem.READ_ONLY);
         this.H2Buffer = context.getCLContext().createFloatBuffer(dotSize*9,  CLBuffer.Mem.READ_ONLY);
         this.XBuffer  = context.getCLContext().createFloatBuffer(dotSize*16, CLBuffer.Mem.READ_ONLY);
         if (getClass() == ProCamTransformerCL.class) {
@@ -58,16 +61,6 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
             dotKernel    = kernels[2];
             reduceKernel = kernels[3];
         }
-
-        this.surfaceTransformer = new ProjectiveColorTransformerCL(context,
-                camera.cameraMatrix, camera.cameraMatrix, null, null, n,
-                referencePoints, null, null, 3, 0);
-        this.projectorTransformer = new ProjectiveColorTransformerCL(context,
-                camera.cameraMatrix, projector.cameraMatrix,
-                projector.R, projector.T, null,
-                new double[] { 0, 0,  camera.imageWidth/2, camera.imageHeight,  camera.imageWidth, 0 },
-                new double[] { 0, 0,  projector.imageWidth/2, projector.imageHeight,  projector.imageWidth, 0 },
-                projector.colorMixingMatrix, 1, 3);
     }
 
     private static final ThreadLocal<CvMat>
@@ -76,6 +69,7 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
             X4x4  = CvMat.createThreadLocal(4, 4);
 
     protected final JavaCVCL context;
+    protected final int nullSize;
     protected final CLBuffer<FloatBuffer> H1Buffer, H2Buffer, XBuffer;
     protected CLImage2d[] projectorImageCL = null, surfaceImageCL = null;
     private CLKernel oneKernel, subKernel, dotKernel, reduceKernel;
@@ -130,23 +124,28 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
 
     protected void prepareTransforms(CLBuffer H1Buffer, CLBuffer H2Buffer, CLBuffer XBuffer,
             int pyramidLevel, ImageTransformer.Parameters[] parameters) {
-        FloatBuffer floatH1 = (FloatBuffer)H1Buffer.getBuffer().rewind();
+        FloatBuffer floatH1 = surfaceTransformer == null ? null : (FloatBuffer)H1Buffer.getBuffer().rewind();
         FloatBuffer floatH2 = (FloatBuffer)H2Buffer.getBuffer().rewind();
         FloatBuffer floatX  = (FloatBuffer) XBuffer.getBuffer().rewind();
         CvMat H1 = H13x3.get();
         CvMat H2 = H23x3.get();
         CvMat X  = X4x4.get();
         for (int i = 0; i < parameters.length; i++) {
-            prepareTransforms(H1, H2, X, pyramidLevel, (ProCamTransformer.Parameters)parameters[i]);
+            prepareTransforms(surfaceTransformer == null ? null : H1,
+                    H2, X, pyramidLevel, (ProCamTransformer.Parameters)parameters[i]);
             for (int j = 0; j < 9; j++) {
-                floatH1.put((float)H1.get(j));
+                if (surfaceTransformer != null) {
+                    floatH1.put((float)H1.get(j));
+                }
                 floatH2.put((float)H2.get(j));
             }
             for (int j = 0; j < 16; j++) {
                 floatX.put((float)X.get(j));
             }
         }
-        floatH1.rewind();
+        if (surfaceTransformer != null) {
+            floatH1.rewind();
+        }
         floatH2.rewind();
         floatX.rewind();
     }
@@ -177,7 +176,9 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
         CLEventList list = new CLEventList(1);
 
         // setup kernel
-        context.writeBuffer(H1Buffer, false); // upload H1
+        if (surfaceTransformer != null) {
+            context.writeBuffer(H1Buffer, false); // upload H1
+        }
         context.writeBuffer(H2Buffer, false); // upload H2
         context.writeBuffer(XBuffer, false); // upload X
         if (inputData.autoWrite) {
@@ -187,18 +188,17 @@ public class ProCamTransformerCL extends ProCamTransformer implements ImageTrans
         CLKernel kernel = null;
         if (subImg == null) {
             assert parameters.length == 1;
-            kernel = oneKernel.putArg(srcImg2).putArg(srcImg).putArg(dstImg == null ? transImg : dstImg).putArg(maskImg)
-                    .putArg(H2Buffer).putArg(H1Buffer).putArg(XBuffer).putArg(inputBuffer).putArg(outputBuffer).rewind();
+            kernel = oneKernel.putArg(srcImg2).putArg(srcImg).putArg(dstImg == null ? transImg : dstImg).putArg(maskImg).putArg(H2Buffer);
         } else if (srcDotImg == null) {
             assert parameters.length == 1;
-            kernel = subKernel.putArg(srcImg2).putArg(srcImg).putArg(subImg).putArg(transImg).putArg(dstImg).putArg(maskImg)
-                    .putArg(H2Buffer).putArg(H1Buffer).putArg(XBuffer).putArg(inputBuffer).putArg(outputBuffer).rewind();
+            kernel = subKernel.putArg(srcImg2).putArg(srcImg).putArg(subImg).putArg(transImg).putArg(dstImg).putArg(maskImg).putArg(H2Buffer);
         } else {
             assert parameters.length == dotSize;
-            kernel = dotKernel.putArg(srcImg2).putArg(srcImg).putArg(subImg).putArg(srcDotImg).putArg(maskImg)
-                    .putArg(H2Buffer).putArg(H1Buffer).putArg(XBuffer).putArg(inputBuffer).putArg(outputBuffer).rewind();
+            kernel = dotKernel.putArg(srcImg2).putArg(srcImg).putArg(subImg).putArg(srcDotImg).putArg(maskImg).putArg(H2Buffer);
 //System.out.println(kernel.getWorkGroupSize(context.getCLCommandQueue().getDevice()));
         }
+        if (H1Buffer != null) { kernel.putArg(H1Buffer); } else { kernel.putNullArg(nullSize); }
+        kernel.putArg(XBuffer).putArg(inputBuffer).putArg(outputBuffer).rewind();
         context.executeKernel(kernel, inputData.roiX, 0, 0,
                 globalSize, 1, parameters.length,
                 localSize, 1, parameters.length, list); // execute program

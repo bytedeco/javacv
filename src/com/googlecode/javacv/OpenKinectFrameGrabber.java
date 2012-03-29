@@ -20,16 +20,16 @@
 
 package com.googlecode.javacv;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.Loader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 
+import static com.googlecode.javacv.cpp.freenect.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.freenect.*;
 
 /**
  *

@@ -20,9 +20,9 @@
 
 package com.googlecode.javacv;
 
-import java.util.Arrays;
 import com.googlecode.javacv.ImageTransformer.Data;
 import com.googlecode.javacv.ImageTransformer.Parameters;
+import java.util.Arrays;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -49,17 +49,17 @@ public class GNImageAligner implements ImageAligner {
         this.transformed = new IplImage[maxLevel+1];
         this.residual    = new IplImage[maxLevel+1];
         this.mask        = new IplImage[maxLevel+1];
-        int w = template0.width();
-        int h = template0.height();
-        int c = template0.nChannels();
-        int o = template0.origin();
+        int w = template0 != null ? template0.width()     : target0.width();
+        int h = template0 != null ? template0.height()    : target0.height();
+        int c = template0 != null ? template0.nChannels() : target0.nChannels();
+        int o = template0 != null ? template0.origin()    : target0.origin();
         for (int i = minLevel; i <= maxLevel; i++) {
-            if (i == minLevel && template0.depth() == IPL_DEPTH_32F) {
+            if (i == minLevel && (template0 != null && template0.depth() == IPL_DEPTH_32F)) {
                 template[i] = template0;
             } else {
                 template[i] = IplImage.create(w, h, IPL_DEPTH_32F, c, o);
             }
-            if (i == minLevel && target0.depth() == IPL_DEPTH_32F) {
+            if (i == minLevel && (target0 != null && target0.depth() == IPL_DEPTH_32F)) {
                 target[i] = target0;
             } else {
                 target[i] = IplImage.create(w, h, IPL_DEPTH_32F, c, o);
@@ -244,12 +244,16 @@ public class GNImageAligner implements ImageAligner {
         final int minLevel = settings.pyramidLevelMin;
         final int maxLevel = settings.pyramidLevelMax;
 
-        if (roiPts == null) {
+        if (roiPts == null && template0 != null) {
             int w = template0.width()  << minLevel;
             int h = template0.height() << minLevel;
             this.srcRoiPts.put(0.0, 0.0,  w, 0.0,  w, h,  0, h);
-        } else {
+        } else if (roiPts != null) {
             this.srcRoiPts.put(roiPts);
+        }
+
+        if (template0 == null) {
+            return;
         }
 
         if (template0.depth() == IPL_DEPTH_32F) {
@@ -270,6 +274,10 @@ public class GNImageAligner implements ImageAligner {
     public void setTargetImage(IplImage target0) {
         final int minLevel = settings.pyramidLevelMin;
         final int maxLevel = settings.pyramidLevelMax;
+
+        if (target0 == null) {
+            return;
+        }
 
         if (target0.depth() == IPL_DEPTH_32F) {
             target[minLevel] = target0;

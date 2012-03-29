@@ -47,16 +47,15 @@
 
 package com.googlecode.javacv;
 
-import java.io.File;
-import java.nio.ByteOrder;
 import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.PointerPointer;
+import java.io.File;
 
-import static com.googlecode.javacpp.Loader.*;
-import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.avcodec.*;
 import static com.googlecode.javacv.cpp.avformat.*;
 import static com.googlecode.javacv.cpp.avutil.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.swscale.*;
 
 /**
@@ -64,6 +63,26 @@ import static com.googlecode.javacv.cpp.swscale.*;
  * @author Samuel Audet
  */
 public class FFmpegFrameRecorder extends FrameRecorder {
+
+    private static Exception loadingException = null;
+    public static void tryLoad() throws Exception {
+        if (loadingException != null) {
+            throw loadingException;
+        } else {
+            try {
+                Loader.load(com.googlecode.javacv.cpp.avutil.class);
+                Loader.load(com.googlecode.javacv.cpp.avcodec.class);
+                Loader.load(com.googlecode.javacv.cpp.avformat.class);
+                Loader.load(com.googlecode.javacv.cpp.swscale.class);
+            } catch (Throwable t) {
+                if (t instanceof Exception) {
+                    throw loadingException = (Exception)t;
+                } else {
+                    throw loadingException = new Exception("Failed to load " + FFmpegFrameRecorder.class, t);
+                }
+            }
+        }
+    }
 
     public FFmpegFrameRecorder(File file, int imageWidth, int imageHeight) {
         this(file.getAbsolutePath(), imageWidth, imageHeight);
@@ -135,7 +154,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         c = video_st.codec();
-        c.codec_id(codecID); //oformat.video_codec();
+        c.codec_id(codecID == CODEC_ID_NONE ? oformat.video_codec() : codecID);
         c.codec_type(CODEC_TYPE_VIDEO);
 
         /* put sample parameters */
@@ -281,9 +300,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public void record(IplImage frame) throws Exception {
-        record(frame, false);
+        record(frame, PIX_FMT_NONE);
     }
-    public void record(IplImage frame, boolean raw) throws Exception {
+    public void record(IplImage frame, int pixelFormat) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Has start() been called?)");
         }
@@ -295,38 +314,48 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                frames if using B frames, so we get the last frames by
                passing the same picture again */
         } else {
-            int pix_fmt = -1;
-            int depth = frame.depth();
-            int channels = frame.nChannels();
-            if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 3) {
-                pix_fmt = PIX_FMT_BGR24;
-            } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 1) {
-                pix_fmt = PIX_FMT_GRAY8;
-            } else if ((depth == IPL_DEPTH_16U || depth == IPL_DEPTH_16S) && channels == 1) {
-                pix_fmt = (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) ? 
-                    PIX_FMT_GRAY16BE : PIX_FMT_GRAY16LE;
-            } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 4) {
-                pix_fmt = PIX_FMT_RGBA;
-            } else if (!raw) {
-                throw new Exception("Unsupported image format: depth=" + depth + ", channels=" + channels);
+            int width = frame.width();
+            int height = frame.height();
+            int step = frame.widthStep();
+            BytePointer data = frame.imageData();
+
+            if (pixelFormat == PIX_FMT_NONE) {
+                int depth = frame.depth();
+                int channels = frame.nChannels();
+                if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 3) {
+                    pixelFormat = PIX_FMT_BGR24;
+                } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 1) {
+                    pixelFormat = PIX_FMT_GRAY8;
+                } else if ((depth == IPL_DEPTH_16U || depth == IPL_DEPTH_16S) && channels == 1) {
+                    pixelFormat = AV_HAVE_BIGENDIAN() ? PIX_FMT_GRAY16BE : PIX_FMT_GRAY16LE;
+                } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 4) {
+                    pixelFormat = PIX_FMT_RGBA;
+                } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 2) {
+                    pixelFormat = PIX_FMT_NV21; // Android's camera capture format
+                    step = width;
+                } else {
+                    throw new Exception("Could not guess pixel format of image: depth=" + depth + ", channels=" + channels);
+                }
             }
 
-            if (c.pix_fmt() != pix_fmt && !raw) {
+            if (c.pix_fmt() != pixelFormat) {
                 /* convert to the codec pixel format if needed */
                 if (img_convert_ctx == null) {
-                    img_convert_ctx = sws_getContext(frame.width(), frame.height(), pix_fmt,
-                            c.width(), c.height(), c.pix_fmt(), SWS_BICUBIC, null, null, null);
+                    img_convert_ctx = sws_getContext(width, height, pixelFormat,
+                            c.width(), c.height(), c.pix_fmt(), SWS_BILINEAR, null, null, null);
                     if (img_convert_ctx == null) {
                         throw new Exception("Cannot initialize the conversion context");
                     }
                 }
-                tempPicture.data(0, frame.imageData());
-                tempPicture.linesize(0, frame.widthStep());
+                avpicture_fill(tempPicture, data, pixelFormat, width, height);
+                //tempPicture.data(0, data);
+                tempPicture.linesize(0, step);
                 sws_scale(img_convert_ctx, new PointerPointer(tempPicture), tempPicture.linesize(),
                           0, c.height(), new PointerPointer(picture), picture.linesize());
             } else {
-                picture.data(0, frame.imageData());
-                picture.linesize(0, frame.widthStep());
+                avpicture_fill(picture, data, c.pix_fmt(), c.width(), c.height());
+                //picture.data(0, data);
+                picture.linesize(0, step);
             }
         }
 
@@ -339,7 +368,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             pkt.flags(pkt.flags() | PKT_FLAG_KEY);
             pkt.stream_index(video_st.index());
             pkt.data(new BytePointer(picture));
-            pkt.size(sizeof(AVPicture.class));
+            pkt.size(Loader.sizeof(AVPicture.class));
 
             ret = av_write_frame(oc, pkt);
         } else {

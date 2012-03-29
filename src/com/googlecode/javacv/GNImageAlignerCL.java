@@ -20,9 +20,9 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacv.ImageTransformer.Parameters;
 import com.googlecode.javacv.ImageTransformerCL.InputData;
 import com.googlecode.javacv.ImageTransformerCL.OutputData;
-import com.googlecode.javacv.ImageTransformer.Parameters;
 import com.jogamp.opencl.CLImage2d;
 import com.jogamp.opencl.CLImageFormat;
 import com.jogamp.opencl.gl.CLGLContext;
@@ -63,8 +63,8 @@ public class GNImageAlignerCL extends GNImageAligner implements ImageAlignerCL {
         this.maskCL        = new CLGLImage2d[maxLevel+1];
         this.maskrb        = new int[maxLevel+1];
         this.maskfb        = new int[maxLevel+1];
-        int w = template0.width;
-        int h = template0.height;
+        int w = template0 != null ? template0.width  : target0.width;
+        int h = template0 != null ? template0.height : target0.height;
         CLGLContext c = context.getCLGLContext();
 //        GLContext glContext = c.getGLContext();
 //        glContext.makeCurrent();
@@ -73,8 +73,8 @@ public class GNImageAlignerCL extends GNImageAligner implements ImageAlignerCL {
         gl.glGenFramebuffers(maxLevel+1, maskfb, 0);
         CLImageFormat f = new CLImageFormat(CLImageFormat.ChannelOrder.RGBA, CLImageFormat.ChannelType.FLOAT);
         for (int i = minLevel; i <= maxLevel; i++) {
-            templateCL   [i] = i == minLevel ? template0 : c.createImage2d(w, h, f);
-            targetCL     [i] = i == minLevel ? target0   : c.createImage2d(w, h, f);
+            templateCL   [i] = i == minLevel && template0 != null ? template0 : c.createImage2d(w, h, f);
+            targetCL     [i] = i == minLevel && target0   != null ? target0   : c.createImage2d(w, h, f);
             transformedCL[i] = c.createImage2d(w, h, f);
             residualCL   [i] = c.createImage2d(w, h, f);
             gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, maskrb[i]);
@@ -238,12 +238,16 @@ public class GNImageAlignerCL extends GNImageAligner implements ImageAlignerCL {
         final int minLevel = settings.pyramidLevelMin;
         final int maxLevel = settings.pyramidLevelMax;
 
-        if (roiPts == null) {
+        if (roiPts == null && template0 != null) {
             int w = template0.width  << minLevel;
             int h = template0.height << minLevel;
             this.srcRoiPts.put(0.0, 0.0,  w, 0.0,  w, h,  0, h);
         } else {
             this.srcRoiPts.put(roiPts);
+        }
+
+        if (template0 == null) {
+            return;
         }
 
 //        if (templateCL == null || templateCL.length != settings.pyramidLevels) {

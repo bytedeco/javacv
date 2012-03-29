@@ -21,6 +21,8 @@
 package com.googlecode.javacv;
 
 import java.beans.PropertyEditorSupport;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
@@ -57,11 +59,9 @@ public abstract class FrameGrabber {
         }
     }
     public static Class<? extends FrameGrabber> getDefault() {
-        Class<? extends FrameGrabber> c = null;
         // select first frame grabber that can load and that may have some cameras..
-        for (int i = 0; i < FrameGrabber.list.size(); i++) {
+        for (Class<? extends FrameGrabber> c : FrameGrabber.list) {
             try {
-                c = FrameGrabber.list.get(i);
                 c.getMethod("tryLoad").invoke(null);
                 boolean mayContainCameras = false;
                 try {
@@ -75,11 +75,70 @@ public abstract class FrameGrabber {
                     }
                 }
                 if (mayContainCameras) {
-                    break;
+                    return c;
                 }
             } catch (Throwable t) { }
         }
-        return c;
+        return null;
+    }
+    public static Class<? extends FrameGrabber> get(String className) throws Exception {
+        className = FrameGrabber.class.getPackage().getName() + "." + className;
+        try {
+            return Class.forName(className).asSubclass(FrameGrabber.class);
+        } catch (ClassNotFoundException e) {
+            String className2 = className + "FrameGrabber";
+            try {
+                return Class.forName(className2).asSubclass(FrameGrabber.class);
+            } catch (ClassNotFoundException ex) {
+                throw new Exception("Could not get FrameGrabber class for " + className + " or " + className2, e);
+            }
+        }
+    }
+
+    public static FrameGrabber create(Class<? extends FrameGrabber> c, Class p, Object o) throws Exception {
+        Throwable cause = null;
+        try {
+            return c.getConstructor(p).newInstance(o);
+        } catch (InstantiationException ex) {
+            cause = ex;
+        } catch (IllegalAccessException ex) {
+            cause = ex;
+        } catch (IllegalArgumentException ex) {
+            cause = ex;
+        } catch (NoSuchMethodException ex) {
+            cause = ex;
+        } catch (InvocationTargetException ex) {
+            cause = ex;
+        }
+        throw new Exception("Could not create new " + c.getSimpleName() + "(" + o + ")", cause);
+    }
+
+    public static FrameGrabber createDefault(File deviceFile) throws Exception {
+        return create(getDefault(), File.class, deviceFile);
+    }
+    public static FrameGrabber createDefault(String devicePath) throws Exception {
+        return create(getDefault(), String.class, devicePath);
+    }
+    public static FrameGrabber createDefault(int deviceNumber) throws Exception {
+        try {
+            return create(getDefault(), int.class, deviceNumber);
+        } catch (Exception ex) {
+            return create(getDefault(), Integer.class, deviceNumber);
+        }
+    }
+
+    public static FrameGrabber create(String className, File deviceFile) throws Exception {
+        return create(get(className), File.class, deviceFile);
+    }
+    public static FrameGrabber create(String className, String devicePath) throws Exception {
+        return create(get(className), String.class, devicePath);
+    }
+    public static FrameGrabber create(String className, int deviceNumber) throws Exception {
+        try {
+            return create(get(className), int.class, deviceNumber);
+        } catch (Exception ex) {
+            return create(get(className), Integer.class, deviceNumber);
+        }
     }
 
     public static class PropertyEditor extends PropertyEditorSupport {
@@ -236,6 +295,13 @@ public abstract class FrameGrabber {
     }
     public void setTimestamp(long timestamp) throws Exception {
         this.timestamp = timestamp;
+    }
+
+    public int getLengthInFrames() {
+        return 0;
+    }
+    public long getLengthInTime() {
+        return 0;
     }
 
     public static class Exception extends java.lang.Exception {

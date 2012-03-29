@@ -26,10 +26,10 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
    * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-0.7.1-win32-shared.7z
    * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-0.7.1-win64-shared.7z
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
- * libdc1394 2.1.x (Linux and Mac OS X)  http://sourceforge.net/projects/libdc1394/files/
+ * libdc1394 2.1.x or 2.2.x  http://sourceforge.net/projects/libdc1394/files/
  * PGR FlyCapture 1.7~2.2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * OpenKinect  http://openkinect.org/
- * CL Eye Platform SDK  http://codelaboratories.com/downloads/
+ * CL Eye Platform SDK (Windows only)  http://codelaboratories.com/downloads/
  * Android SDK API 8 or newer  http://developer.android.com/sdk/
  * JOCL and JOGL from JogAmp  http://jogamp.org/
 
@@ -112,20 +112,17 @@ public class Demo {
             System.exit(1);
         }
 
-        // CanvasFrame is a JFrame containing a Canvas component, which is hardware accelerated.
-        // It can also switch into full-screen mode when called with a screenNumber.
-        CanvasFrame frame = new CanvasFrame("Some Title");
-
-        // OpenCVFrameGrabber uses opencv_highgui, but other more versatile FrameGrabbers
-        // include DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber,
+        // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_highgui),
+        // DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber,
         // PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
-        FrameGrabber grabber = new OpenCVFrameGrabber(0);
+        FrameGrabber grabber = FrameGrabber.createDefault(0);
         grabber.start();
 
         // FAQ about IplImage:
         // - For custom raw processing of data, getByteBuffer() returns an NIO direct
-        //   buffer wrapped around the memory pointed by imageData.
-        // - To get a BufferedImage from an IplImage, you may call getBufferedImage().
+        //   buffer wrapped around the memory pointed by imageData, and under Android we can
+        //   also use that Buffer with Bitmap.copyPixelsFromBuffer() and copyPixelsToBuffer().
+        // - To get a BufferedImage from an IplImage, we may call getBufferedImage().
         // - The createFrom() factory method can construct an IplImage from a BufferedImage.
         // - There are also a few copy*() methods for BufferedImage<->IplImage data transfers.
         IplImage grabbedImage = grabber.grab();
@@ -133,6 +130,20 @@ public class Demo {
         int height = grabbedImage.height();
         IplImage grayImage    = IplImage.create(width, height, IPL_DEPTH_8U, 1);
         IplImage rotatedImage = grabbedImage.clone();
+
+        // Objects allocated with a create*() or clone() factory method are automatically released
+        // by the garbage collector, but may still be explicitly released by calling release().
+        // You shall NOT call cvReleaseImage(), cvReleaseMemStorage(), etc. on objects allocated this way.
+        CvMemStorage storage = CvMemStorage.create();
+
+        // The OpenCVFrameRecorder class simply uses the CvVideoWriter of opencv_highgui,
+        // but FFmpegFrameRecorder also exists as a more versatile alternative.
+        FrameRecorder recorder = FrameRecorder.createDefault("output.avi", width, height);
+        recorder.start();
+
+        // CanvasFrame is a JFrame containing a Canvas component, which is hardware accelerated.
+        // It can also switch into full-screen mode when called with a screenNumber.
+        CanvasFrame frame = new CanvasFrame("Some Title", CanvasFrame.getDefaultGamma()/grabber.getGamma());
 
         // Let's create some random 3D rotation...
         CvMat randomR = CvMat.create(3, 3), randomAxis = CvMat.create(3, 1);
@@ -145,17 +156,8 @@ public class Demo {
         randomR.put(2, 0, randomR.get(2, 0)/f); randomR.put(2, 1, randomR.get(2, 1)/f);
         System.out.println(randomR);
 
-        // Objects allocated with a create*() or clone() factory method are automatically released
-        // by the garbage collector, but may still be explicitly released by calling release().
-        // You shall NOT call cvReleaseImage(), cvReleaseMemStorage(), etc. on objects allocated this way.
-        CvMemStorage storage = CvMemStorage.create();
-
         // We can allocate native arrays using constructors taking an integer as argument.
         CvPoint hatPoints = new CvPoint(3);
-
-        // Again, FFmpegFrameRecorder also exists as a more versatile alternative.
-        FrameRecorder recorder = new OpenCVFrameRecorder("output.avi", width, height);
-        recorder.start();
 
         while (frame.isVisible() && (grabbedImage = grabber.grab()) != null) {
             cvClearMemStorage(storage);
@@ -198,19 +200,30 @@ public class Demo {
             frame.showImage(rotatedImage);
             recorder.record(rotatedImage);
         }
+        frame.dispose();
         recorder.stop();
         grabber.stop();
-        frame.dispose();
     }
 }
 }}}
 
 
 ==Acknowledgments==
-I am currently an active member of the Okutomi & Tanaka Laboratory, Tokyo Institute of Technology, supported by a scholarship from the Ministry of Education, Culture, Sports, Science and Technology (MEXT) of the Japanese Government.
+This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute of Technology, where I was supported by a generous scholarship from the Ministry of Education, Culture, Sports, Science and Technology (MEXT) of the Japanese Government. I extend my gratitude further to all who have reported bugs, donated code, or made suggestions for improvements!
 
 
 ==Changes==
+===March 29, 2012===
+ * Added missing array allocators and `position()` methods to `KDTree.Node`, `DefaultRngAuto`, `CvAffinePose`, `KeyPoint`, `BaseKeypoint`, `ReferenceTrees`, `DMatch`, `*.Params`, `CvFuzzy*`, `Octree.Node`, `CvDefParam`, `Cv*Blob*`, `Cv*Track*`, `CvDrawShape`, `CvVectors`, `CvParamGrid`, `Cv*Params`, `CvSVM*`, `CvPair16u32s`, `CvDTree*`  `CvTrainTestSplit`, `CvMLData`, `FeatureEvaluator`, and `*DataMatrixCode`
+ * Increased versatility of `IplImage.createFrom()`, `copyFrom()`, `copyTo()`, `getBufferedImage()` by providing a `flipChannels` parameter, whose effect was previously mistakenly forced onto four-channel images of byte values only (issue #163)
+ * Fixed a couple of things with `CvMat.get()/put()` (issue #167)
+ * In addition to an `IplImage`, we may now specify the pixel format of the data when calling `FFmpegFrameRecorder.record()`, but otherwise when `IplImage.nChannels == 2`, it assumes `PIX_FMT_NV21`, allowing for easy and efficient encoding of data captured from the camera on Android (issue #160), image objects we can also convert to RGB using `cvCvtColor()` with `CV_YUV420sp2BGR`
+ * Fixed seeking capabilities of `FFmpegFrameGrabber` (issue #162) and added `getLengthInFrames()` and `getLengthInTime()` methods to query the duration of streams, when known
+ * Enhanced `IplImage.clone()` and `create*Compatible()` with cloning of their `BufferedImage` to make it easier to keep color components in the right order (issue #163)
+ * Refactored `FrameGrabber` and `FrameRecorder` a bit to accommodate new `createDefault(...)` and `create(String className, ...)` factory methods, offering to users an easier selection method to work around limitations of some APIs (issue #70)
+ * Adjusted `GNImageAligner`, `ProCamTransformer`, etc. to support alignment of only the projector display on textureless surface planes
+ * Renamed a few more `Settings` properties to reflect better their meanings
+
 ===February 18, 2012===
  * Added `GLCanvasFrame` to show OpenGL renderbuffers on screen, plus a new factory method `JavaCVCL.createCLGLImageFrom()` to create compatible ones from `IplImage` objects, as well as more user-friendly `getGLContext()`, `getGL()` and `getGL2()` methods
  * Fixed various things of the original `CanvasFrame`, and `JavaCV.createCLImage()` and `createIplImage()`, also appending `From` to their names 

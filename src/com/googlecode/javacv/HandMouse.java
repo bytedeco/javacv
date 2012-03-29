@@ -260,7 +260,7 @@ public class HandMouse {
                     dx = px - x;
                     dy = py - y;
                     d2 = dx*dx + dy*dy;
-                    if (d2 < 1) {
+                    if (d2 < 2) {
                         m00 += 1;
                         m10 += x;
                         m01 += y;

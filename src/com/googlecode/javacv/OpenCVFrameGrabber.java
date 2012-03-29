@@ -20,12 +20,12 @@
 
 package com.googlecode.javacv;
 
-import java.io.File;
 import com.googlecode.javacpp.Loader;
+import java.io.File;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 /**
  *
@@ -95,11 +95,19 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getImageWidth() {
-        return return_image == null ? super.getImageWidth() : return_image.width();
+        if (return_image != null) {
+            return return_image.width();
+        } else {
+            return capture == null ? super.getImageWidth() : (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
+        }
     }
 
     @Override public int getImageHeight() {
-        return return_image == null ? super.getImageHeight() : return_image.height();
+        if (return_image != null) {
+            return return_image.height();
+        } else {
+            return capture == null ? super.getImageHeight() : (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
+        }
     }
 
     @Override public int getPixelFormat() {
@@ -143,6 +151,14 @@ public class OpenCVFrameGrabber extends FrameGrabber {
                 throw new Exception("cvSetCaptureProperty() Error: Could not set CV_CAP_PROP_POS_MSEC to " + timestamp/1000.0 + ".");
             }
         }
+    }
+
+    @Override public int getLengthInFrames() {
+        return capture == null ? super.getLengthInFrames() :
+                (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_COUNT);
+    }
+    @Override public long getLengthInTime() {
+        return Math.round(getLengthInFrames() * 1000000 / getFrameRate());
     }
 
     public void start() throws Exception {

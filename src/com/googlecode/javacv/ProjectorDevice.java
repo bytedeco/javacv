@@ -20,10 +20,10 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.Pointer;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.beans.PropertyChangeListener;
-import com.googlecode.javacpp.Pointer;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 

@@ -20,6 +20,9 @@
 
 package com.googlecode.javacv;
 
+import com.jogamp.opencl.CLImage2d;
+import com.jogamp.opencl.gl.CLGLImage2d;
+import com.jogamp.opengl.util.Gamma;
 import java.awt.Color;
 import java.awt.DisplayMode;
 import java.awt.EventQueue;
@@ -39,7 +42,6 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilitiesImmutable;
@@ -47,9 +49,6 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
-import com.jogamp.opencl.CLImage2d;
-import com.jogamp.opencl.gl.CLGLImage2d;
-import com.jogamp.opengl.util.Gamma;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
@@ -215,6 +214,12 @@ public class GLCanvasFrame extends CanvasFrame {
     }
 
     @Override public void showImage(IplImage image) {
+        showImage(image, false);
+    }
+    @Override public void showImage(IplImage image, boolean flipChannels) {
+        if (flipChannels) {
+            throw new RuntimeException("GLCanvasFrame does not support channel flipping.");
+        }
         if (image == null) {
             return;
         }
@@ -244,7 +249,7 @@ public class GLCanvasFrame extends CanvasFrame {
     }
     @Override public void showImage(Image image) {
         if (!(image instanceof BufferedImage)) {
-            throw new RuntimeException("GLCanvasFrame does not support " + image);
+            throw new RuntimeException("GLCanvasFrame does not support " + image + ", BufferedImage required.");
         }
         showImage((BufferedImage)image);
     }

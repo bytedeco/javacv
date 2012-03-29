@@ -20,10 +20,10 @@
 
 package com.googlecode.javacv;
 
+import static com.googlecode.javacv.cpp.cvkernels.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.opencv_calib3d.*;
-import static com.googlecode.javacv.cpp.cvkernels.*;
 
 /**
  *
@@ -39,17 +39,26 @@ public class ProCamTransformer implements ImageTransformer {
         this.camera = camera;
         this.projector = projector;
 
-        this.surfaceTransformer = new ProjectiveColorTransformer(
-                camera.cameraMatrix, camera.cameraMatrix, null, null, n,
-                referencePoints, null, null, 3, 0);
-        this.projectorTransformer = new ProjectiveColorTransformer(
-                camera.cameraMatrix, projector.cameraMatrix,
-                projector.R, projector.T, null,
-                new double[] { 0, 0,  camera.imageWidth/2, camera.imageHeight,  camera.imageWidth, 0 },
-                new double[] { 0, 0,  projector.imageWidth/2, projector.imageHeight,  projector.imageWidth, 0 },
-                projector.colorMixingMatrix, 1, 3);
-
+        if (referencePoints != null) {
+            this.surfaceTransformer = new ProjectiveColorTransformer(
+                    camera.cameraMatrix, camera.cameraMatrix, null, null, n,
+                    referencePoints, null, null, 3, 0);
+        }
+        double[] referencePoints1 = { 0, 0,  camera.imageWidth/2, camera.imageHeight,  camera.imageWidth, 0 };
+        double[] referencePoints2 = { 0, 0,  projector.imageWidth/2, projector.imageHeight,  projector.imageWidth, 0 };
         if (n != null) {
+            invCameraMatrix = CvMat.create(3, 3);
+            cvInvert(camera.cameraMatrix, invCameraMatrix);
+            JavaCV.perspectiveTransform(referencePoints2, referencePoints1,
+                    invCameraMatrix, projector.cameraMatrix, projector.R, projector.T, n, true);
+        }
+        this.projectorTransformer = new ProjectiveColorTransformer(
+                camera.cameraMatrix, projector.cameraMatrix, projector.R, projector.T, null,
+                referencePoints1, referencePoints2, projector.colorMixingMatrix,
+                /*surfaceTransformer == null ? 3 : */1, 3);
+//        CvMat n2 = createParameters().getN();
+
+        if (referencePoints != null && n != null) {
             frontoParallelH = camera.getFrontoParallelH(referencePoints, n, CvMat.create(3, 3));
             invFrontoParallelH = frontoParallelH.clone();
             cvInvert(frontoParallelH, invFrontoParallelH);
@@ -64,11 +73,19 @@ public class ProCamTransformer implements ImageTransformer {
     protected CvScalar fillColor = cvScalar(0.0, 0.0, 0.0, 1.0);
     protected CvRect roi = new CvRect();
     protected CvMat frontoParallelH = null, invFrontoParallelH = null;
+    protected CvMat invCameraMatrix = null;
 
     protected KernelData kernelData = null;
     protected CvMat[] H1 = null;
     protected CvMat[] H2 = null;
     protected CvMat[] X = null;
+
+    public int getNumGains() {
+        return projectorTransformer.getNumGains();
+    }
+    public int getNumBiases() {
+        return projectorTransformer.getNumBiases();
+    }
 
     public CvScalar getFillColor() {
         return fillColor;
@@ -171,16 +188,20 @@ public class ProCamTransformer implements ImageTransformer {
         ProjectiveColorTransformer.Parameters cameraParameters    = p.getSurfaceParameters();
         ProjectiveColorTransformer.Parameters projectorParameters = p.getProjectorParameters();
 
-        cvInvert(cameraParameters.getH(), H1);
+        if (surfaceTransformer != null) {
+            cvInvert(cameraParameters.getH(), H1);
+        }
         cvInvert(projectorParameters.getH(), H2);
 
         // adjust the scale of the transformation based on the pyramid level
         if (pyramidLevel > 0) {
             int scale = 1<<pyramidLevel;
-            H1.put(2, H1.get(2)/scale);
-            H1.put(5, H1.get(5)/scale);
-            H1.put(6, H1.get(6)*scale);
-            H1.put(7, H1.get(7)*scale);
+            if (surfaceTransformer != null) {
+                H1.put(2, H1.get(2)/scale);
+                H1.put(5, H1.get(5)/scale);
+                H1.put(6, H1.get(6)*scale);
+                H1.put(7, H1.get(7)*scale);
+            }
 
             H2.put(2, H2.get(2)/scale);
             H2.put(5, H2.get(5)/scale);
@@ -218,18 +239,28 @@ public class ProCamTransformer implements ImageTransformer {
 
 //        Parallel.run(new Runnable() { public void run() {
             // warp the template image
+        if (surfaceTransformer != null) {
             surfaceTransformer.transform(srcImage, p.tempImage[pyramidLevel], roi, pyramidLevel, cameraParameters, false);
+        }
 //        }}, new Runnable() { public void run() {
             // warp the projector image
             projectorTransformer.transform(projectorImage[pyramidLevel], dstImage, roi, pyramidLevel, projectorParameters, false);
 //        }});
 
         // multiply projector image with template image
-        cvMul(dstImage, p.tempImage[pyramidLevel], dstImage, 1/dstImage.highValue());
+        if (surfaceTransformer != null) {
+            cvMul(dstImage, p.tempImage[pyramidLevel], dstImage, 1/dstImage.highValue());
+        } else {
+            cvCopy(p.tempImage[pyramidLevel], dstImage);
+        }
     }
 
     public void transform(CvMat srcPts, CvMat dstPts, ImageTransformer.Parameters parameters, boolean inverse) {
-        surfaceTransformer.transform(srcPts, dstPts, ((Parameters)parameters).surfaceParameters, inverse);
+        if (surfaceTransformer != null) {
+            surfaceTransformer.transform(srcPts, dstPts, ((Parameters)parameters).surfaceParameters, inverse);
+        } else if (dstPts != srcPts) {
+            dstPts.put(srcPts);
+        }
     }
 
     public void transform(Data[] data, CvRect roi, ImageTransformer.Parameters[] parameters, boolean[] inverses) {
@@ -237,7 +268,7 @@ public class ProCamTransformer implements ImageTransformer {
         if (kernelData == null || kernelData.capacity() < data.length) {
             kernelData = new KernelData(data.length);
         }
-        if (H1 == null || H1.length < data.length) {
+        if ((H1 == null || H1.length < data.length) && surfaceTransformer != null) {
             H1 = new CvMat[data.length];
             for (int i = 0; i < H1.length; i++) {
                 H1[i] = CvMat.create(3, 3);
@@ -259,18 +290,22 @@ public class ProCamTransformer implements ImageTransformer {
         for (int i = 0; i < data.length; i++) {
             kernelData.position(i);
 
-            kernelData.srcImg2(data[i].srcImg);
             kernelData.srcImg(projectorImage[data[i].pyramidLevel]);
+            kernelData.srcImg2(surfaceTransformer == null ? null : data[i].srcImg);
             kernelData.subImg(data[i].subImg);
             kernelData.srcDotImg(data[i].srcDotImg);
             kernelData.mask(data[i].mask);
             kernelData.zeroThreshold(data[i].zeroThreshold);
             kernelData.outlierThreshold(data[i].outlierThreshold);
 
-            prepareTransforms(H1[i], H2[i], X[i], data[i].pyramidLevel, (Parameters)parameters[i]);
+            if (inverses != null && inverses[i]) {
+                throw new UnsupportedOperationException("Inverse transform not supported.");
+            }
+            prepareTransforms(surfaceTransformer == null ? null : H1[i],
+                    H2[i], X[i], data[i].pyramidLevel, (Parameters)parameters[i]);
 
             kernelData.H1(H2[i]);
-            kernelData.H2(H1[i]);
+            kernelData.H2(surfaceTransformer == null ? null : H1[i]);
             kernelData.X (X [i]);
 
             kernelData.transImg(data[i].transImg);
@@ -324,7 +359,8 @@ public class ProCamTransformer implements ImageTransformer {
         }
 
         private int getSizeForSurface() {
-            return surfaceParameters.size() - surfaceTransformer.getNumGains() - surfaceTransformer.getNumBiases();
+            return surfaceTransformer == null ? 0 : surfaceParameters.size() -
+                   surfaceTransformer.getNumGains() - surfaceTransformer.getNumBiases();
         }
         private int getSizeForProjector() {
             return projectorParameters.size();
@@ -360,17 +396,18 @@ public class ProCamTransformer implements ImageTransformer {
         }
         public void set(ImageTransformer.Parameters p) {
             Parameters pcp = (Parameters)p;
-            surfaceParameters.set(pcp.getSurfaceParameters());
+            if (surfaceTransformer != null) {
+                surfaceParameters.set(pcp.getSurfaceParameters());
+                surfaceParameters.resetColor(false);
+            }
             projectorParameters.set(pcp.getProjectorParameters());
-
-            surfaceParameters.resetColor(false);
         }
         public void reset(boolean asIdentity) {
             reset(null, null);
         }
         public void reset(ProjectiveColorTransformer.Parameters surfaceParameters,
                           ProjectiveColorTransformer.Parameters projectorParameters) {
-            if (surfaceParameters == null) {
+            if (surfaceParameters == null && surfaceTransformer != null) {
                 surfaceParameters = surfaceTransformer.createParameters();
             }
             if (projectorParameters == null) {
@@ -399,7 +436,7 @@ public class ProCamTransformer implements ImageTransformer {
 //            return false;
 //        }
         public double getConstraintError() {
-            double error = surfaceParameters.getConstraintError();
+            double error = surfaceTransformer == null ? 0 : surfaceParameters.getConstraintError();
             projectorParameters.update();
             return error;
         }
@@ -481,7 +518,7 @@ public class ProCamTransformer implements ImageTransformer {
             return p;
         }
 
-        public CvMat getSrcN() {
+        public CvMat getN() {
             double[] src = projectorTransformer.getReferencePoints2();
             double[] dst = projectorTransformer.getReferencePoints1().clone();
             dst[0] = projectorParameters.get(0);
@@ -498,8 +535,17 @@ public class ProCamTransformer implements ImageTransformer {
             double d = 1 + cvDotProduct(n, projectorTransformer.getT());
             cvGEMM(R, n, 1/d,  null, 0,  n, 0);
 
+            return n;
+        }
+
+        public CvMat getN0() {
+            n = getN();
+            if (surfaceTransformer == null) {
+                return n;
+            }
+
             // remove projective effect of the current n,
-            // leaving only the effect of the "source" n
+            // leaving only the effect of n0
             camera.getFrontoParallelH(surfaceParameters.get(), n, R);
             cvInvert(surfaceParameters.getH(), H);
             cvMatMul(H, surfaceTransformer.getK2(), H);
@@ -508,7 +554,7 @@ public class ProCamTransformer implements ImageTransformer {
 
             JavaCV.HtoRt(H, R, t);
 
-            // compute "source" n, rotation from the z-axis
+            // compute n0, as a rotation from the z-axis
             cvGEMM(R, t, 1,  null, 0,  t, CV_GEMM_A_T);
             double scale = 1/t.get(2);
             n.put(0.0, 0.0, 1.0);
@@ -519,13 +565,17 @@ public class ProCamTransformer implements ImageTransformer {
 
         @Override public Parameters clone() {
             Parameters p = new Parameters();
-            p.surfaceParameters   = surfaceParameters.clone();
+            p.surfaceParameters   = surfaceParameters == null ? null : surfaceParameters.clone();
             p.projectorParameters = projectorParameters.clone();
             return p;
         }
 
         @Override public String toString() {
-            return surfaceParameters.toString() + projectorParameters.toString();
+            if (surfaceParameters != null) {
+                return surfaceParameters.toString() + projectorParameters.toString();
+            } else {
+                return projectorParameters.toString();
+            }
         }
     }
 }

@@ -162,16 +162,18 @@ public class ReflectanceInitializer {
     }
 
     public CvMat initializePlaneParameters(IplImage reflectance, IplImage cameraImage,
-            double[] roiPts, double[] gainAmbientLight) {
-        ProCamTransformer transformer = new ProCamTransformer(roiPts, cameraDevice, projectorDevice, null);
+            double[] referencePoints, double[] roiPts, double[] gainAmbientLight) {
+        ProCamTransformer transformer = new ProCamTransformer(referencePoints, cameraDevice, projectorDevice, null);
         transformer.setProjectorImage(projectorImages[2], 0, alignerSettings.pyramidLevelMax);
 
         ProCamTransformer.Parameters parameters = transformer.createParameters();
 //        parameters.set(8,  0);
 //        parameters.set(9,  0);
 //        parameters.set(10, -1/cameraDevice.getSettings().nominalDistance);
-        for (int i = 0; i < gainAmbientLight.length; i++) {
-            parameters.set(11+i, gainAmbientLight[i]);
+        final int gainAmbientLightStart = parameters.size() - gainAmbientLight.length;
+        final int gainAmbientLightEnd   = parameters.size();
+        for (int i = gainAmbientLightStart; i < gainAmbientLightEnd; i++) {
+            parameters.set(i, gainAmbientLight[i-gainAmbientLightStart]);
         }
         ImageAligner aligner = new GNImageAligner(transformer, parameters,
                 reflectance, roiPts, cameraImage, alignerSettings);
@@ -191,6 +193,6 @@ public class ReflectanceInitializer {
         Logger.getLogger(ReflectanceInitializer.class.getName()).info(
             "iteratingTime = " + (System.currentTimeMillis()-iterationsStartTime) +
                 "  iterations = " + iterations + "  objectiveRMSE = " + (float)aligner.getRMSE());
-        return parameters.getSrcN();
+        return parameters.getN0();
     }
 }

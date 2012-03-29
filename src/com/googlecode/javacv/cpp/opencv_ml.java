@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -110,6 +110,10 @@ public class opencv_ml {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvVectors position(int position) {
+            return (CvVectors)super.position(position);
+        }
+
         public native int type();       public native CvVectors type(int type);
         public native int dims();       public native CvVectors dims(int dims);
         public native int count();      public native CvVectors count(int count);
@@ -187,6 +191,10 @@ public class opencv_ml {
         private native void allocate();
         private native void allocate(double _min_val, double _max_val, double log_step);
         private native void allocateArray(int size);
+
+        @Override public CvParamGrid position(int position) {
+            return (CvParamGrid)super.position(position);
+        }
 
         public static final int SVM_C=0, SVM_GAMMA=1, SVM_P=2, SVM_NU=3, SVM_COEF=4, SVM_DEGREE=5;
 
@@ -282,6 +290,10 @@ public class opencv_ml {
                  double Cvalue, double _nu, double _p, CvMat _class_weights, @ByVal CvTermCriteria _term_crit);
         private native void allocateArray(int size);
 
+        @Override public CvSVMParams position(int position) {
+            return (CvSVMParams)super.position(position);
+        }
+
         public native int    svm_type();          public native CvSVMParams svm_type(int svm_type);
         public native int    kernel_type();       public native CvSVMParams kernel_type(int kernel_type);
         public native double degree();            public native CvSVMParams degree(double degree);
@@ -311,6 +323,10 @@ public class opencv_ml {
         private native void allocate();
         private native void allocate(CvSVMParams params, Calc _calc_func);
         private native void allocateArray(int size);
+
+        @Override public CvSVMKernel position(int position) {
+            return (CvSVMKernel)super.position(position);
+        }
 
         public native void clear();
         public native void calc(int vcount, int n,  @Cast("const float**")
@@ -345,6 +361,10 @@ public class opencv_ml {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvSVMKernelRow position(int position) {
+            return (CvSVMKernelRow)super.position(position);
+        }
+
         public native CvSVMKernelRow prev(); public native CvSVMKernelRow prev(CvSVMKernelRow prev);
         public native CvSVMKernelRow next(); public native CvSVMKernelRow next(CvSVMKernelRow next);
         public native FloatPointer data();   public native CvSVMKernelRow data(FloatPointer data);
@@ -357,6 +377,10 @@ public class opencv_ml {
         public CvSVMSolutionInfo(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvSVMSolutionInfo position(int position) {
+            return (CvSVMSolutionInfo)super.position(position);
+        }
 
         public native double obj();           public native CvSVMSolutionInfo obj(double obj);
         public native double rho();           public native CvSVMSolutionInfo rho(double rho);
@@ -476,6 +500,10 @@ public class opencv_ml {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvSVMDecisionFunc position(int position) {
+            return (CvSVMDecisionFunc)super.position(position);
+        }
+
         public native double rho();          public native CvSVMDecisionFunc rho(double rho);
         public native int sv_count();        public native CvSVMDecisionFunc sv_count(int sv_count);
         public native DoublePointer alpha(); public native CvSVMDecisionFunc alpha(DoublePointer alpha);
@@ -571,6 +599,10 @@ public class opencv_ml {
                 CvMat probs/*=null*/, CvMat weights/*=null*/, CvMat means/*=null*/, @Const CvMatArray covs/*=null*/);
         private native void allocateArray(int size);
 
+        @Override public CvEMParams position(int position) {
+            return (CvEMParams)super.position(position);
+        }
+
         public native int nclusters();            public native CvEMParams nclusters(int nclusters);
         public native int cov_mat_type();         public native CvEMParams cov_mat_type(int cov_mat_type);
         public native int start_step();           public native CvEMParams start_step(int start_step);
@@ -656,6 +688,10 @@ public class opencv_ml {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvPair16u32s position(int position) {
+            return (CvPair16u32s)super.position(position);
+        }
+
         @Cast("unsigned short*")
         public native ShortPointer u(); public native CvPair16u32s u(ShortPointer u);
         public native IntPointer i();   public native CvPair16u32s i(IntPointer i);
@@ -670,6 +706,10 @@ public class opencv_ml {
         public CvDTreeSplit(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvDTreeSplit position(int position) {
+            return (CvDTreeSplit)super.position(position);
+        }
 
         public native int var_idx();            public native CvDTreeSplit var_idx(int var_idx);
         public native int condensed_idx();      public native CvDTreeSplit condensed_idx(int condensed_idx);
@@ -690,6 +730,10 @@ public class opencv_ml {
         public CvDTreeNode(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvDTreeNode position(int position) {
+            return (CvDTreeNode)super.position(position);
+        }
 
         public native int class_idx();              public native CvDTreeNode class_idx(int class_idx);
         public native int Tn();                     public native CvDTreeNode Tn(int Tn);
@@ -736,6 +780,10 @@ public class opencv_ml {
         private native void allocate(int max_depth, int min_sample_count, float regression_accuracy, boolean use_surrogates,
                 int max_categories, int cv_folds, boolean use_1se_rule, boolean truncate_pruned_tree, float[] priors);
         private native void allocateArray(int size);
+
+        @Override public CvDTreeParams position(int position) {
+            return (CvDTreeParams)super.position(position);
+        }
 
         public native int max_categories();           public native CvDTreeParams max_categories(int max_categories);
         public native int max_depth();                public native CvDTreeParams max_depth(int max_depth);
@@ -962,6 +1010,10 @@ public class opencv_ml {
                 int max_num_of_trees_in_the_forest, float forest_accuracy, int termcrit_type);
         private native void allocateArray(int size);
 
+        @Override public CvRTParams position(int position) {
+            return (CvRTParams)super.position(position);
+        }
+
         public native boolean calc_var_importance();     public native CvRTParams calc_var_importance(boolean calc_var_importance);
         public native int nactive_vars();                public native CvRTParams nactive_vars(int nactive_vars);
         public native @ByRef CvTermCriteria term_crit(); public native CvRTParams term_crit(CvTermCriteria term_crit);
@@ -1083,6 +1135,10 @@ public class opencv_ml {
         private native void allocate(int boost_type, int weak_count, double weight_trim_rate,
                 int max_depth, boolean use_surrogates, float[] priors);
         private native void allocateArray(int size);
+
+        @Override public CvBoostParams position(int position) {
+            return (CvBoostParams)super.position(position);
+        }
 
         public native int boost_type();          public native CvBoostParams boost_type(int boost_type);
         public native int weak_count();          public native CvBoostParams weak_count(int weak_count);
@@ -1207,6 +1263,10 @@ public class opencv_ml {
         float subsample_portion, int max_depth, boolean use_surrogates);
         private native void allocateArray(int size);
 
+        @Override public CvGBTreesParams position(int position) {
+            return (CvGBTreesParams)super.position(position);
+        }
+
         public native int weak_count();          public native CvGBTreesParams weak_count(int weak_count);
         public native int loss_function_type();  public native CvGBTreesParams loss_function_type(int loss_function_type);
         public native float subsample_portion(); public native CvGBTreesParams subsample_portion(float subsample_portion);
@@ -1289,6 +1349,10 @@ public class opencv_ml {
         private native void allocate(@ByVal CvTermCriteria term_crit, int train_method, double param1, double param2/*=0*/);
         private native void allocateArray(int size);
 
+        @Override public CvANN_MLP_TrainParams position(int position) {
+            return (CvANN_MLP_TrainParams)super.position(position);
+        }
+
         public static final int BACKPROP=0, RPROP=1;
 
         @ByRef
@@ -1310,13 +1374,13 @@ public class opencv_ml {
         static { Loader.load(); }
         public CvANN_MLP() { allocate(); }
         public CvANN_MLP(CvMat layerSizes, int activateFunc/*=CvANN_MLP::SIGMOID_SYM*/,
-                double fparam1/*=0, double fparam2/*=0*/) {
-            allocate(layerSizes, activateFunc, fparam1);
+                double fparam1/*=0*/, double fparam2/*=0*/) {
+            allocate(layerSizes, activateFunc, fparam1, fparam2);
         }
         public CvANN_MLP(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(CvMat layerSizes, int activateFunc/*=CvANN_MLP::SIGMOID_SYM*/,
-                double fparam1/*=0, double fparam2/*=0*/);
+                double fparam1/*=0*/, double fparam2/*=0*/);
 
         public native void create(CvMat layerSizes, int activateFunc/*=CvANN_MLP::SIGMOID_SYM*/,
                 double fparam1/*=0, double fparam2/*=0*/);
@@ -1400,6 +1464,10 @@ public class opencv_ml {
         private native void allocate(float train_sample_portion, boolean mix/*=true*/);
         private native void allocateArray(int size);
 
+        @Override public CvTrainTestSplit position(int position) {
+            return (CvTrainTestSplit)super.position(position);
+        }
+
         @Name("train_sample_part.count")
         public native int train_sample_part_count();     public native CvTrainTestSplit train_sample_part_count(int train_sample_part_count);
         @Name("train_sample_part.portion")
@@ -1409,7 +1477,7 @@ public class opencv_ml {
         public native boolean mix();                     public native CvTrainTestSplit mix(boolean mix);
     }
 
-    @Name("std::map<std::string, int>") @Index
+    @Name("std::map<std::string, int>")
     public static class StringIntMap extends Pointer {
         static { load(); }
         public StringIntMap() { allocate(); }
@@ -1418,7 +1486,7 @@ public class opencv_ml {
 
         public native long size();
 
-        public native int get(String i);
+        @Index public native int get(String i);
         public native StringIntMap put(String i, int value);
     }
 
@@ -1429,6 +1497,10 @@ public class opencv_ml {
         public CvMLData(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvMLData position(int position) {
+            return (CvMLData)super.position(position);
+        }
 
         public native int read_csv(String filename);
 

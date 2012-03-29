@@ -20,14 +20,14 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.Pointer;
 import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
-import com.googlecode.javacpp.Pointer;
 
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 
 /**
  *
@@ -676,25 +676,31 @@ public class ProjectiveDevice {
             B4x3 = CvMat.createThreadLocal(4, 3),
             a4x1 = CvMat.createThreadLocal(4, 1),
             t3x1 = CvMat.createThreadLocal(3, 1);
-    public CvMat getFrontoParallelH(double[] pts, CvMat n, CvMat H) {
+    public CvMat getFrontoParallelH(double[] roipts, CvMat n, CvMat H) {
         CvMat B = B4x3.get(), a = a4x1.get(), t = t3x1.get();
 
         // compute rotation from n to z-axis
-        double[] dir = JavaCV.unitize(-n.get(1), n.get(0));
-        double theta = Math.acos(n.get(2)/JavaCV.norm(n.get()));
+        double s = Math.signum(n.get(2));
+        double[] dir = JavaCV.unitize(-s*n.get(1), s*n.get(0));
+        double theta = Math.acos(s*n.get(2)/JavaCV.norm(n.get()));
         t.put(theta*dir[0], theta*dir[1], 0.0);
         cvRodrigues2(t, H, null);
 
-        // find the middle of the ROI
-        double x1 = pts[0]; double y1 = pts[1];
-        double x2 = pts[4]; double y2 = pts[5];
-        double x3 = pts[2]; double y3 = pts[3];
-        double x4 = pts[6]; double y4 = pts[7];
+        // and from z-axis to device axis
+        cvMatMul(R, H, H);
 
-        double u = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3))/
-                   ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
-        double x = x1 + u*(x2-x1);
-        double y = y1 + u*(y2-y1);
+        double x = 0, y = 0;
+        if (roipts != null) {
+            // find the middle of the ROI
+            double x1 = roipts[0], y1 = roipts[1],
+                   x2 = roipts[4], y2 = roipts[5],
+                   x3 = roipts[2], y3 = roipts[3],
+                   x4 = roipts[6], y4 = roipts[7];
+            double u = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3))/
+                       ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
+            x = x1 + u*(x2-x1);
+            y = y1 + u*(y2-y1);
+        }
 
         // compute 3D point from the middle of the ROI, and
         // form optimal homography for n

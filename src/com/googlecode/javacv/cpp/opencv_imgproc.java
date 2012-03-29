@@ -309,6 +309,14 @@ public class opencv_imgproc {
             return (CvMoments)super.position(position);
         }
 
+        public static ThreadLocal<CvMoments> createThreadLocal() {
+            return new ThreadLocal<CvMoments>() {
+                @Override protected CvMoments initialValue() {
+                    return new CvMoments();
+                }
+            };
+        }
+
         public native double m00(); public native CvMoments m00(double m00);
         public native double m10(); public native CvMoments m10(double m10);
         public native double m01(); public native CvMoments m01(double m01);
@@ -657,6 +665,8 @@ public class opencv_imgproc {
             @ByVal CvScalar fillval/*=cvScalarAll(0)*/);
     public static native CvMat cvGetAffineTransform(CvPoint2D32f src, CvPoint2D32f dst,
             CvMat map_matrix);
+    public static native CvMat cvGetAffineTransform(@Cast("CvPoint2D32f*") float[] src,
+            @Cast("CvPoint2D32f*") float[] dst, CvMat map_matrix);
     public static native CvMat cv2DRotationMatrix(@ByVal CvPoint2D32f center, double angle,
             double scale, CvMat map_matrix);
     public static void cvWarpPerspective(CvArr src, CvArr dst, CvMat map_matrix) {
@@ -667,6 +677,8 @@ public class opencv_imgproc {
             @ByVal CvScalar fillval/*=cvScalarAll(0)*/);
     public static native CvMat cvGetPerspectiveTransform(CvPoint2D32f src, CvPoint2D32f dst,
             CvMat map_matrix);
+    public static native CvMat cvGetPerspectiveTransform(@Cast("CvPoint2D32f*") float[] src,
+            @Cast("CvPoint2D32f*") float[] dst, CvMat map_matrix);
     public static native void cvRemap(CvArr src, CvArr dst, CvArr mapx, CvArr mapy,
             int flags/*=CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS*/,
             @ByVal CvScalar fillval/*=cvScalarAll(0)*/);
@@ -834,6 +846,7 @@ public class opencv_imgproc {
             @ByVal CvSlice slice/*=CV_WHOLE_SEQ*/, int oriented/*=0*/);
     public static native @ByVal CvBox2D cvMinAreaRect2(CvArr points, CvMemStorage storage/*=null*/);
     public static native int cvMinEnclosingCircle(CvArr points, CvPoint2D32f center, float[] radius);
+    public static native int cvMinEnclosingCircle(CvArr points, @Cast("CvPoint2D32f*") float[] center, float[] radius);
     public static native double cvMatchShapes(Pointer object1, Pointer object2, int method, double parameter/*=0*/);
     public static native CvSeq cvConvexHull2(CvArr input, Pointer hull_storage/*=null*/,
             int orientation/*=CV_CLOCKWISE*/, int return_points/*=0*/);
@@ -842,6 +855,7 @@ public class opencv_imgproc {
     public static native @ByVal CvBox2D cvFitEllipse2(CvArr points);
     public static native @ByVal CvRect cvMaxRect(CvRect rect1, CvRect rect2);
     public static native void cvBoxPoints(@ByVal CvBox2D box, CvPoint2D32f pt/*[4]*/);
+    public static native void cvBoxPoints(@ByVal CvBox2D box, @Cast("CvPoint2D32f*") float[/*8*/] pt);
     public static native CvSeq cvPointSeqFromMat(int seq_kind, CvArr mat, CvContour contour_header, CvSeqBlock block);
     public static native double cvPointPolygonTest(CvArr contour, @ByVal CvPoint2D32f pt, int measure_dist);
 

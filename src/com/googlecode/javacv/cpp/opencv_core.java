@@ -56,31 +56,6 @@
 
 package com.googlecode.javacv.cpp;
 
-import java.awt.Rectangle;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.ComponentSampleModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferDouble;
-import java.awt.image.DataBufferFloat;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.MultiPixelPackedSampleModel;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
-import java.awt.image.SinglePixelPackedSampleModel;
-import java.awt.image.WritableRaster;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.FloatPointer;
@@ -108,6 +83,31 @@ import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 import com.googlecode.javacpp.annotation.ValueGetter;
+import java.awt.Rectangle;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.MultiPixelPackedSampleModel;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.WritableRaster;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -464,12 +464,21 @@ public class opencv_core {
                     image.depth() != template.depth() || image.nChannels() != template.nChannels()) {
                 image = create(template.width(), template.height(),
                         template.depth(), template.nChannels(), template.origin());
+                if (template.bufferedImage != null) {
+                    image.bufferedImage = template.cloneBufferedImage();
+                }
             }
             image.origin(template.origin());
             return image;
         }
 
         public static IplImage createFrom(BufferedImage image) {
+            return createFrom(image, 1.0);
+        }
+        public static IplImage createFrom(BufferedImage image, double gamma) {
+            return createFrom(image, gamma, false);
+        }
+        public static IplImage createFrom(BufferedImage image, double gamma, boolean flipChannels) {
             if (image == null) {
                 return null;
             }
@@ -496,7 +505,7 @@ public class opencv_core {
                 }
             }
             IplImage i = create(image.getWidth(), image.getHeight(), depth, numChannels);
-            i.copyFrom(image, 1.0, null);
+            i.copyFrom(image, gamma, flipChannels);
             return i;
         }
 
@@ -505,7 +514,24 @@ public class opencv_core {
             if (i != null) {
                 i.deallocator(new ReleaseDeallocator(i));
             }
+            if (bufferedImage != null) {
+                i.bufferedImage = cloneBufferedImage();
+            }
             return i;
+        }
+
+        protected BufferedImage cloneBufferedImage() {
+            if (bufferedImage == null) {
+                return null;
+            }
+            BufferedImage bi = (BufferedImage)bufferedImage;
+            int type = bi.getType();
+            if (type == BufferedImage.TYPE_CUSTOM) {
+                return new BufferedImage(bi.getColorModel(),
+                        bi.copyData(null), bi.isAlphaPremultiplied(), null);
+            } else {
+                return new BufferedImage(bi.getWidth(), bi.getHeight(), type);
+            }
         }
 
         public void release() {
@@ -678,10 +704,11 @@ public class opencv_core {
             }
         }
         public static void flipCopyWithGamma(ShortBuffer srcBuf, int srcStep,
-                ShortBuffer dstBuf, int dstStep, boolean signed, double gamma, boolean flip) {
+                ShortBuffer dstBuf, int dstStep, boolean signed, double gamma, boolean flip, int channels) {
             assert srcBuf != dstBuf;
             int w = Math.min(srcStep, dstStep);
             int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            short[] buffer = new short[channels];
             while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
                 if (flip) {
                     srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
@@ -691,26 +718,62 @@ public class opencv_core {
                 dstBuf.position(dstLine);
                 w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
                 if (signed) {
-                    for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get();
-                        short out;
-                        if (gamma == 1.0) {
-                            out = (short)in;
-                        } else {
-                            out = (short)Math.round(Math.pow((double)in/Short.MAX_VALUE, gamma)*Short.MAX_VALUE);
+                    if (channels > 1) {
+                        for (int x = 0; x < w; x+=channels) {
+                            for (int z = 0; z < channels; z++) {
+                                int in = srcBuf.get();
+                                short out;
+                                if (gamma == 1.0) {
+                                    out = (short)in;
+                                } else {
+                                    out = (short)Math.round(Math.pow((double)in/Short.MAX_VALUE, gamma)*Short.MAX_VALUE);
+                                }
+                                buffer[z] = out;
+                            }
+                            for (int z = channels-1; z >= 0; z--) {
+                                dstBuf.put(buffer[z]);
+                            }
                         }
-                        dstBuf.put(out);
+                    } else {
+                        for (int x = 0; x < w; x++) {
+                            int in = srcBuf.get();
+                            short out;
+                            if (gamma == 1.0) {
+                                out = (short)in;
+                            } else {
+                                out = (short)Math.round(Math.pow((double)in/Short.MAX_VALUE, gamma)*Short.MAX_VALUE);
+                            }
+                            dstBuf.put(out);
+                        }
                     }
                 } else {
-                    for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get() & 0xFFFF;
-                        short out;
-                        if (gamma == 1.0) {
-                            out = (short)in;
-                        } else {
-                            out = (short)Math.round(Math.pow((double)in/0xFFFF, gamma)*0xFFFF);
+                    if (channels > 1) {
+                        for (int x = 0; x < w; x+=channels) {
+                            for (int z = 0; z < channels; z++) {
+                                int in = srcBuf.get();
+                                short out;
+                                if (gamma == 1.0) {
+                                    out = (short)in;
+                                } else {
+                                    out = (short)Math.round(Math.pow((double)in/0xFFFF, gamma)*0xFFFF);
+                                }
+                                buffer[z] = out;
+                            }
+                            for (int z = channels-1; z >= 0; z--) {
+                                dstBuf.put(buffer[z]);
+                            }
                         }
-                        dstBuf.put(out);
+                    } else {
+                        for (int x = 0; x < w; x++) {
+                            int in = srcBuf.get() & 0xFFFF;
+                            short out;
+                            if (gamma == 1.0) {
+                                out = (short)in;
+                            } else {
+                                out = (short)Math.round(Math.pow((double)in/0xFFFF, gamma)*0xFFFF);
+                            }
+                            dstBuf.put(out);
+                        }
                     }
                 }
                 srcLine += srcStep;
@@ -718,10 +781,11 @@ public class opencv_core {
             }
         }
         public static void flipCopyWithGamma(IntBuffer srcBuf, int srcStep,
-                IntBuffer dstBuf, int dstStep, double gamma, boolean flip) {
+                IntBuffer dstBuf, int dstStep, double gamma, boolean flip, int channels) {
             assert srcBuf != dstBuf;
             int w = Math.min(srcStep, dstStep);
             int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            int[] buffer = new int[channels];
             while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
                 if (flip) {
                     srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
@@ -730,25 +794,44 @@ public class opencv_core {
                 }
                 dstBuf.position(dstLine);
                 w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
-                for (int x = 0; x < w; x++) {
-                    int in = srcBuf.get();
-                    int out;
-                    if (gamma == 1.0) {
-                        out = in;
-                    } else {
-                        out = (int)Math.round(Math.pow((double)in/Integer.MAX_VALUE, gamma)*Integer.MAX_VALUE);
+                if (channels > 1) {
+                    for (int x = 0; x < w; x+=channels) {
+                        for (int z = 0; z < channels; z++) {
+                            int in = srcBuf.get();
+                            int out;
+                            if (gamma == 1.0) {
+                                out = (int)in;
+                            } else {
+                                out = (int)Math.round(Math.pow((double)in/Integer.MAX_VALUE, gamma)*Integer.MAX_VALUE);
+                            }
+                            buffer[z] = out;
+                        }
+                        for (int z = channels-1; z >= 0; z--) {
+                            dstBuf.put(buffer[z]);
+                        }
                     }
-                    dstBuf.put(out);
+                } else {
+                    for (int x = 0; x < w; x++) {
+                        int in = srcBuf.get();
+                        int out;
+                        if (gamma == 1.0) {
+                            out = in;
+                        } else {
+                            out = (int)Math.round(Math.pow((double)in/Integer.MAX_VALUE, gamma)*Integer.MAX_VALUE);
+                        }
+                        dstBuf.put(out);
+                    }
                 }
                 srcLine += srcStep;
                 dstLine += dstStep;
             }
         }
         public static void flipCopyWithGamma(FloatBuffer srcBuf, int srcStep,
-                FloatBuffer dstBuf, int dstStep, double gamma, boolean flip) {
+                FloatBuffer dstBuf, int dstStep, double gamma, boolean flip, int channels) {
             assert srcBuf != dstBuf;
             int w = Math.min(srcStep, dstStep);
             int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            float[] buffer = new float[channels];
             while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
                 if (flip) {
                     srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
@@ -757,25 +840,44 @@ public class opencv_core {
                 }
                 dstBuf.position(dstLine);
                 w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
-                for (int x = 0; x < w; x++) {
-                    float in = srcBuf.get();
-                    float out;
-                    if (gamma == 1.0) {
-                        out = in;
-                    } else {
-                        out = (float)Math.pow(in, gamma);
+                if (channels > 1) {
+                    for (int x = 0; x < w; x+=channels) {
+                        for (int z = 0; z < channels; z++) {
+                            float in = srcBuf.get();
+                            float out;
+                            if (gamma == 1.0) {
+                                out = in;
+                            } else {
+                                out = (float)Math.pow(in, gamma);
+                            }
+                            buffer[z] = out;
+                        }
+                        for (int z = channels-1; z >= 0; z--) {
+                            dstBuf.put(buffer[z]);
+                        }
                     }
-                    dstBuf.put(out);
+                } else {
+                    for (int x = 0; x < w; x++) {
+                        float in = srcBuf.get();
+                        float out;
+                        if (gamma == 1.0) {
+                            out = in;
+                        } else {
+                            out = (float)Math.pow(in, gamma);
+                        }
+                        dstBuf.put(out);
+                    }
                 }
                 srcLine += srcStep;
                 dstLine += dstStep;
             }
         }
         public static void flipCopyWithGamma(DoubleBuffer srcBuf, int srcStep,
-                DoubleBuffer dstBuf, int dstStep, double gamma, boolean flip) {
+                DoubleBuffer dstBuf, int dstStep, double gamma, boolean flip, int channels) {
             assert srcBuf != dstBuf;
             int w = Math.min(srcStep, dstStep);
             int srcLine = srcBuf.position(), dstLine = dstBuf.position();
+            double[] buffer = new double[channels];
             while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
                 if (flip) {
                     srcBuf.position(srcBuf.capacity() - srcLine - srcStep);
@@ -784,15 +886,33 @@ public class opencv_core {
                 }
                 dstBuf.position(dstLine);
                 w = Math.min(Math.min(w, srcBuf.remaining()), dstBuf.remaining());
-                for (int x = 0; x < w; x++) {
-                    double in = srcBuf.get();
-                    double out;
-                    if (gamma == 1.0) {
-                        out = in;
-                    } else {
-                        out = Math.pow(in, gamma);
+                if (channels > 1) {
+                    for (int x = 0; x < w; x+=channels) {
+                        for (int z = 0; z < channels; z++) {
+                            double in = srcBuf.get();
+                            double out;
+                            if (gamma == 1.0) {
+                                out = in;
+                            } else {
+                                out = Math.pow(in, gamma);
+                            }
+                            buffer[z] = out;
+                        }
+                        for (int z = channels-1; z >= 0; z--) {
+                            dstBuf.put(buffer[z]);
+                        }
                     }
-                    dstBuf.put(out);
+                } else {
+                    for (int x = 0; x < w; x++) {
+                        double in = srcBuf.get();
+                        double out;
+                        if (gamma == 1.0) {
+                            out = in;
+                        } else {
+                            out = Math.pow(in, gamma);
+                        }
+                        dstBuf.put(out);
+                    }
                 }
                 srcLine += srcStep;
                 dstLine += dstStep;
@@ -810,19 +930,19 @@ public class opencv_core {
                     flipCopyWithGamma(getByteBuffer(), widthStep(), getByteBuffer(), widthStep(), true, gamma, false, 0);
                     break;
                 case IPL_DEPTH_16U:
-                    flipCopyWithGamma(getShortBuffer(), widthStep()/2, getShortBuffer(), widthStep()/2, false, gamma, false);
+                    flipCopyWithGamma(getShortBuffer(), widthStep()/2, getShortBuffer(), widthStep()/2, false, gamma, false, 0);
                     break;
                 case IPL_DEPTH_16S:
-                    flipCopyWithGamma(getShortBuffer(), widthStep()/2, getShortBuffer(), widthStep()/2, true, gamma, false);
+                    flipCopyWithGamma(getShortBuffer(), widthStep()/2, getShortBuffer(), widthStep()/2, true, gamma, false, 0);
                     break;
                 case IPL_DEPTH_32S:
-                    flipCopyWithGamma(getFloatBuffer(), widthStep()/4, getFloatBuffer(), widthStep()/4, gamma, false);
+                    flipCopyWithGamma(getFloatBuffer(), widthStep()/4, getFloatBuffer(), widthStep()/4, gamma, false, 0);
                     break;
                 case IPL_DEPTH_32F:
-                    flipCopyWithGamma(getFloatBuffer(), widthStep()/4, getFloatBuffer(), widthStep()/4, gamma, false);
+                    flipCopyWithGamma(getFloatBuffer(), widthStep()/4, getFloatBuffer(), widthStep()/4, gamma, false, 0);
                     break;
                 case IPL_DEPTH_64F:
-                    flipCopyWithGamma(getDoubleBuffer(), widthStep()/8, getDoubleBuffer(), widthStep()/8, gamma, false);
+                    flipCopyWithGamma(getDoubleBuffer(), widthStep()/8, getDoubleBuffer(), widthStep()/8, gamma, false, 0);
                     break;
                 default:
                     assert false;
@@ -834,14 +954,17 @@ public class opencv_core {
             copyTo(image, 1.0);
         }
         public void copyTo(BufferedImage image, double gamma) {
+            copyTo(image, gamma, false);
+        }
+        public void copyTo(BufferedImage image, double gamma, boolean flipChannels) {
             Rectangle r = null;
             IplROI roi = roi();
             if (roi != null) {
                 r = new Rectangle(roi.xOffset(), roi.yOffset(), roi.width(), roi.height());
             }
-            copyTo(image, gamma, r);
+            copyTo(image, gamma, flipChannels, r);
         }
-        public void copyTo(BufferedImage image, double gamma, Rectangle roi) {
+        public void copyTo(BufferedImage image, double gamma, boolean flipChannels, Rectangle roi) {
             boolean flip = origin() == IPL_ORIGIN_BL; // need to add support for ROI..
 
             ByteBuffer in  = getByteBuffer(roi == null ? 0 : roi.y*widthStep() + roi.x*nChannels());
@@ -866,22 +989,22 @@ public class opencv_core {
 
             if (out instanceof DataBufferByte) {
                 byte[] a = ((DataBufferByte)out).getData();
-                flipCopyWithGamma(in, widthStep(), ByteBuffer.wrap(a, start, a.length - start), step, false, gamma, flip, channels == 4 ? 4 : 0);
+                flipCopyWithGamma(in, widthStep(), ByteBuffer.wrap(a, start, a.length - start), step, false, gamma, flip, flipChannels ? channels : 0);
             } else if (out instanceof DataBufferDouble) {
                 double[] a = ((DataBufferDouble)out).getData();
-                flipCopyWithGamma(in.asDoubleBuffer(), widthStep()/8, DoubleBuffer.wrap(a, start, a.length - start), step, gamma, flip);
+                flipCopyWithGamma(in.asDoubleBuffer(), widthStep()/8, DoubleBuffer.wrap(a, start, a.length - start), step, gamma, flip, flipChannels ? channels : 0);
             } else if (out instanceof DataBufferFloat) {
                 float[] a = ((DataBufferFloat)out).getData();
-                flipCopyWithGamma(in.asFloatBuffer(), widthStep()/4, FloatBuffer.wrap(a, start, a.length - start), step, gamma, flip);
+                flipCopyWithGamma(in.asFloatBuffer(), widthStep()/4, FloatBuffer.wrap(a, start, a.length - start), step, gamma, flip, flipChannels ? channels : 0);
             } else if (out instanceof DataBufferInt) {
                 int[] a = ((DataBufferInt)out).getData();
-                flipCopyWithGamma(in.asIntBuffer(), widthStep()/4, IntBuffer.wrap(a, start, a.length - start), step, gamma, flip);
+                flipCopyWithGamma(in.asIntBuffer(), widthStep()/4, IntBuffer.wrap(a, start, a.length - start), step, gamma, flip, flipChannels ? channels : 0);
             } else if (out instanceof DataBufferShort) {
                 short[] a = ((DataBufferShort)out).getData();
-                flipCopyWithGamma(in.asShortBuffer(), widthStep()/2, ShortBuffer.wrap(a, start, a.length - start), step, true, gamma, flip);
+                flipCopyWithGamma(in.asShortBuffer(), widthStep()/2, ShortBuffer.wrap(a, start, a.length - start), step, true, gamma, flip, flipChannels ? channels : 0);
             } else if (out instanceof DataBufferUShort) {
                 short[] a = ((DataBufferUShort)out).getData();
-                flipCopyWithGamma(in.asShortBuffer(), widthStep()/2, ShortBuffer.wrap(a, start, a.length - start), step, false, gamma, flip);
+                flipCopyWithGamma(in.asShortBuffer(), widthStep()/2, ShortBuffer.wrap(a, start, a.length - start), step, false, gamma, flip, flipChannels ? channels : 0);
             } else {
                 assert false;
             }
@@ -891,14 +1014,17 @@ public class opencv_core {
             copyFrom(image, 1.0);
         }
         public void copyFrom(BufferedImage image, double gamma) {
+            copyFrom(image, gamma, false);
+        }
+        public void copyFrom(BufferedImage image, double gamma, boolean flipChannels) {
             Rectangle r = null;
             IplROI roi = roi();
             if (roi != null) {
                 r = new Rectangle(roi.xOffset(), roi.yOffset(), roi.width(), roi.height());
             }
-            copyFrom(image, gamma, r);
+            copyFrom(image, gamma, flipChannels, r);
         }
-        public void copyFrom(BufferedImage image, double gamma, Rectangle roi) {
+        public void copyFrom(BufferedImage image, double gamma, boolean flipChannels, Rectangle roi) {
             origin(IPL_ORIGIN_TL);
 
             ByteBuffer out = getByteBuffer(roi == null ? 0 : roi.y*widthStep() + roi.x);
@@ -923,22 +1049,22 @@ public class opencv_core {
 
             if (in instanceof DataBufferByte) {
                 byte[] a = ((DataBufferByte)in).getData();
-                flipCopyWithGamma(ByteBuffer.wrap(a, start, a.length - start), step, out, widthStep(), false, gamma, false, channels == 4 ? 4 : 0);
+                flipCopyWithGamma(ByteBuffer.wrap(a, start, a.length - start), step, out, widthStep(), false, gamma, false, flipChannels ? channels : 0);
             } else if (in instanceof DataBufferDouble) {
                 double[] a = ((DataBufferDouble)in).getData();
-                flipCopyWithGamma(DoubleBuffer.wrap(a, start, a.length - start), step, out.asDoubleBuffer(), widthStep()/8, gamma, false);
+                flipCopyWithGamma(DoubleBuffer.wrap(a, start, a.length - start), step, out.asDoubleBuffer(), widthStep()/8, gamma, false, flipChannels ? channels : 0);
             } else if (in instanceof DataBufferFloat) {
                 float[] a = ((DataBufferFloat)in).getData();
-                flipCopyWithGamma(FloatBuffer.wrap(a, start, a.length - start), step, out.asFloatBuffer(), widthStep()/4, gamma, false);
+                flipCopyWithGamma(FloatBuffer.wrap(a, start, a.length - start), step, out.asFloatBuffer(), widthStep()/4, gamma, false, flipChannels ? channels : 0);
             } else if (in instanceof DataBufferInt) {
                 int[] a = ((DataBufferInt)in).getData();
-                flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), step, out.asIntBuffer(), widthStep()/4, gamma, false);
+                flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), step, out.asIntBuffer(), widthStep()/4, gamma, false, flipChannels ? channels : 0);
             } else if (in instanceof DataBufferShort) {
                 short[] a = ((DataBufferShort)in).getData();
-                flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), step, out.asShortBuffer(), widthStep()/2, true, gamma, false);
+                flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), step, out.asShortBuffer(), widthStep()/2, true, gamma, false, flipChannels ? channels : 0);
             } else if (in instanceof DataBufferUShort) {
                 short[] a = ((DataBufferUShort)in).getData();
-                flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), step, out.asShortBuffer(), widthStep()/2, false, gamma, false);
+                flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), step, out.asShortBuffer(), widthStep()/2, false, gamma, false, flipChannels ? channels : 0);
             } else {
                 assert false;
             }
@@ -981,9 +1107,12 @@ public class opencv_core {
             return getBufferedImage(1.0);
         }
         public BufferedImage getBufferedImage(double gamma) {
-            return getBufferedImage(gamma, null);
+            return getBufferedImage(gamma, false);
         }
-        public BufferedImage getBufferedImage(double gamma, ColorSpace cs) {
+        public BufferedImage getBufferedImage(double gamma, boolean flipChannels) {
+            return getBufferedImage(gamma, flipChannels, null);
+        }
+        public BufferedImage getBufferedImage(double gamma, boolean flipChannels, ColorSpace cs) {
             int type = getBufferedImageType();
 
             if (bufferedImage == null && type != BufferedImage.TYPE_CUSTOM && cs == null) {
@@ -1065,9 +1194,9 @@ public class opencv_core {
             if (bufferedImage != null) {
                 IplROI roi = roi();
                 if (roi != null) {
-                    copyTo(((BufferedImage)bufferedImage).getSubimage(roi.xOffset(), roi.yOffset(), roi.width(), roi.height()), gamma);
+                    copyTo(((BufferedImage)bufferedImage).getSubimage(roi.xOffset(), roi.yOffset(), roi.width(), roi.height()), gamma, flipChannels);
                 } else {
-                    copyTo((BufferedImage)bufferedImage, gamma);
+                    copyTo((BufferedImage)bufferedImage, gamma, flipChannels);
                 }
             }
 
@@ -1417,11 +1546,11 @@ public class opencv_core {
             return Double.NaN;
         }
         public double get(int i, int j) {
-            return get((i*step()/elemSize() + j)*channels());
+            return get(i*step()/elemSize() + j*channels());
         }
 
         public double get(int i, int j, int k) {
-            return get((i*step()/elemSize() + j)*channels() + k);
+            return get(i*step()/elemSize() + j*channels() + k);
         }
         public synchronized CvMat get(int index, double[] vv, int offset, int length) {
             int d = depth();
@@ -1479,8 +1608,7 @@ public class opencv_core {
             return get(0, vv);
         }
         public double[] get() {
-            int c = getDoubleBuffer().capacity();
-            double[] vv = new double[c];
+            double[] vv = new double[fullSize()/elemSize()];
             get(vv);
             return vv;
         }
@@ -1499,11 +1627,10 @@ public class opencv_core {
             return this;
         }
         public CvMat put(int i, int j, double v) {
-            return put((i*step()/elemSize() + j)*channels(), v);
+            return put(i*step()/elemSize() + j*channels(), v);
         }
-
         public CvMat put(int i, int j, int k, double v) {
-            return put((i*step()/elemSize() + j)*channels() + k, v);
+            return put(i*step()/elemSize() + j*channels() + k, v);
         }
         public synchronized CvMat put(int index, double[] vv, int offset, int length) {
             switch (depth()) {
@@ -1552,6 +1679,7 @@ public class opencv_core {
         public CvMat put(double ... vv) {
             return put(0, vv);
         }
+
         public CvMat put(CvMat mat) {
             return put(0, 0, 0, mat, 0, 0, 0);
         }
@@ -1962,6 +2090,23 @@ public class opencv_core {
         public native int x(); public native CvPoint x(int x);
         public native int y(); public native CvPoint y(int y);
 
+        public int[] get() {
+            int[] pts = new int[capacity == 0 ? 2 : 2*capacity];
+            get(pts);
+            return pts;
+        }
+        public CvPoint get(int[] pts) {
+            return get(pts, 0, pts.length);
+        }
+        public CvPoint get(int[] pts, int offset, int length) {
+            for (int i = 0; i < length/2; i++) {
+                position(i);
+                pts[offset + i*2  ] = x();
+                pts[offset + i*2+1] = y();
+            }
+            return position(0);
+        }
+
         public final CvPoint put(int[] pts, int offset, int length) {
             for (int i = 0; i < length/2; i++) {
                 position(i).put(pts[offset + i*2], pts[offset + i*2+1]);
@@ -2043,6 +2188,23 @@ public class opencv_core {
         public native float x(); public native CvPoint2D32f x(float x);
         public native float y(); public native CvPoint2D32f y(float y);
 
+        public double[] get() {
+            double[] pts = new double[capacity == 0 ? 2 : 2*capacity];
+            get(pts);
+            return pts;
+        }
+        public CvPoint2D32f get(double[] pts) {
+            return get(pts, 0, pts.length);
+        }
+        public CvPoint2D32f get(double[] pts, int offset, int length) {
+            for (int i = 0; i < length/2; i++) {
+                position(i);
+                pts[offset + i*2  ] = x();
+                pts[offset + i*2+1] = y();
+            }
+            return position(0);
+        }
+
         public final CvPoint2D32f put(double[] pts, int offset, int length) {
             for (int i = 0; i < length/2; i++) {
                 position(i).put(pts[offset + i*2], pts[offset + i*2+1]);
@@ -2118,6 +2280,24 @@ public class opencv_core {
         public native float y(); public native CvPoint3D32f y(float y);
         public native float z(); public native CvPoint3D32f z(float z);
 
+        public double[] get() {
+            double[] pts = new double[capacity == 0 ? 3 : 3*capacity];
+            get(pts);
+            return pts;
+        }
+        public CvPoint3D32f get(double[] pts) {
+            return get(pts, 0, pts.length);
+        }
+        public CvPoint3D32f get(double[] pts, int offset, int length) {
+            for (int i = 0; i < length/3; i++) {
+                position(i);
+                pts[offset + i*3  ] = x();
+                pts[offset + i*3+1] = y();
+                pts[offset + i*3+2] = z();
+            }
+            return position(0);
+        }
+
         public final CvPoint3D32f put(double[] pts, int offset, int length) {
             for (int i = 0; i < length/3; i++) {
                 position(i).put(pts[offset + i*3], pts[offset + i*3+1], pts[offset + i*3+2]);
@@ -2182,6 +2362,23 @@ public class opencv_core {
 
         public native double x(); public native CvPoint2D64f x(double x);
         public native double y(); public native CvPoint2D64f y(double y);
+
+        public double[] get() {
+            double[] pts = new double[capacity == 0 ? 2 : 2*capacity];
+            get(pts);
+            return pts;
+        }
+        public CvPoint2D64f get(double[] pts) {
+            return get(pts, 0, pts.length);
+        }
+        public CvPoint2D64f get(double[] pts, int offset, int length) {
+            for (int i = 0; i < length/2; i++) {
+                position(i);
+                pts[offset + i*2  ] = x();
+                pts[offset + i*2+1] = y();
+            }
+            return position(0);
+        }
 
         public final CvPoint2D64f put(double[] pts, int offset, int length) {
             for (int i = 0; i < length/2; i++) {
@@ -2248,6 +2445,24 @@ public class opencv_core {
         public native double x(); public native CvPoint3D64f x(double x);
         public native double y(); public native CvPoint3D64f y(double y);
         public native double z(); public native CvPoint3D64f z(double z);
+
+        public double[] get() {
+            double[] pts = new double[capacity == 0 ? 3 : 3*capacity];
+            get(pts);
+            return pts;
+        }
+        public CvPoint3D64f get(double[] pts) {
+            return get(pts, 0, pts.length);
+        }
+        public CvPoint3D64f get(double[] pts, int offset, int length) {
+            for (int i = 0; i < length/3; i++) {
+                position(i);
+                pts[offset + i*3  ] = x();
+                pts[offset + i*3+1] = y();
+                pts[offset + i*3+2] = z();
+            }
+            return position(0);
+        }
 
         public final CvPoint3D64f put(double[] pts, int offset, int length) {
             for (int i = 0; i < length/3; i++) {
@@ -2561,6 +2776,10 @@ public class opencv_core {
         public CvMemStorage(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvMemStorage position(int position) {
+            return (CvMemStorage)super.position(position);
+        }
 
         public static CvMemStorage create(int block_size) {
             CvMemStorage m = cvCreateMemStorage(block_size);
@@ -3647,6 +3866,11 @@ public class opencv_core {
     public static native void cvAvgSdv(CvArr arr, CvScalar mean, CvScalar std_dev, CvArr mask/*=null*/);
     public static native void cvMinMaxLoc(CvArr arr, double[] min_val, double[] max_val,
             CvPoint min_loc/*=null*/, CvPoint max_loc/*=null*/, CvArr mask/*=null*/);
+    public static native void cvMinMaxLoc(CvArr arr, double[] min_val, double[] max_val,
+            @Cast("CvPoint*") int[] min_loc/*=null*/, @Cast("CvPoint*") int[] max_loc/*=null*/, CvArr mask/*=null*/);
+    public static void cvMinMaxLoc(CvArr arr, double[] min_val, double[] max_val) {
+        cvMinMaxLoc(arr, min_val, max_val, (CvPoint)null, (CvPoint)null, null);
+    }
 
     public static final int
             CV_C          = 1,
@@ -3938,6 +4162,8 @@ public class opencv_core {
                    0, 360, color, thickness, line_type, shift);
     }
     public static native void cvFillConvexPoly(CvArr img, CvPoint pts, int npts,
+            @ByVal CvScalar color, int line_type/*=8*/, int shift/*=0*/);
+    public static native void cvFillConvexPoly(CvArr img, @Cast("CvPoint*") int[] pts, int npts,
             @ByVal CvScalar color, int line_type/*=8*/, int shift/*=0*/);
     public static void cvFillPoly(CvArr img, CvPoint[] pts, int[] npts,
             int contours, @ByVal CvScalar color, int line_type/*=8*/, int shift/*=0*/) {
@@ -4235,9 +4461,8 @@ public class opencv_core {
         } else if (CV_NODE_IS_STRING(node.tag())) {
             CvString str = node.data_str();
             BytePointer pointer = str.ptr();
-            int length = str.len();
-            byte[] bytes = new byte[length];
-            pointer.capacity(length).asBuffer().get(bytes);
+            byte[] bytes = new byte[str.len()];
+            pointer.get(bytes);
             return new String(bytes);
         } else {
             return null;
@@ -4342,7 +4567,7 @@ public class opencv_core {
             String file_name, int line, Pointer userdata);
 
 
-    @Name("std::vector<std::vector<char> >") @Index
+    @Name("std::vector<std::vector<char> >")
     public static class ByteVectorVector extends Pointer {
         static { load(); }
         public ByteVectorVector()       { allocate();  }
@@ -4356,11 +4581,11 @@ public class opencv_core {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        public native byte get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index public native byte get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native ByteVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, byte value);
     }
 
-    @Name("std::vector<std::vector<int> >") @Index
+    @Name("std::vector<std::vector<int> >")
     public static class IntVectorVector extends Pointer {
         static { load(); }
         public IntVectorVector()       { allocate();  }
@@ -4374,11 +4599,11 @@ public class opencv_core {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        public native int get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index public native int get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native IntVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, int value);
     }
 
-    @Name("std::vector<std::vector<cv::Point> >") @Index
+    @Name("std::vector<std::vector<cv::Point> >")
     public static class PointVectorVector extends Pointer {
         static { load(); }
         public PointVectorVector()       { allocate();  }
@@ -4392,11 +4617,11 @@ public class opencv_core {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByVal public native CvPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index @ByVal public native CvPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native PointVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint value);
     }
 
-    @Name("std::vector<std::vector<cv::Point2f> >") @Index
+    @Name("std::vector<std::vector<cv::Point2f> >")
     public static class Point2fVectorVector extends Pointer {
         static { load(); }
         public Point2fVectorVector()       { allocate();  }
@@ -4410,11 +4635,11 @@ public class opencv_core {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native Point2fVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint2D32f value);
     }
 
-    @Name("std::vector<std::vector<cv::Point2d> >") @Index
+    @Name("std::vector<std::vector<cv::Point2d> >")
     public static class Point2dVectorVector extends Pointer {
         static { load(); }
         public Point2dVectorVector()       { allocate();  }
@@ -4428,7 +4653,7 @@ public class opencv_core {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native Point2dVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint2D32f value);
     }
 
@@ -4437,12 +4662,18 @@ public class opencv_core {
         @NoOffset public static class Node extends Pointer {
             static { load(); }
             public Node() { allocate(); }
+            public Node(int size) { allocateArray(size); }
             public Node(Pointer p) { super(p); }
             public Node(int _idx, int _left, int _right, float _boundary) {
                 allocate(_idx, _left, _right, _boundary);
             }
             private native void allocate();
             private native void allocate(int _idx, int _left, int _right, float _boundary);
+            private native void allocateArray(int size);
+
+            @Override public Node position(int position) {
+                return (Node)super.position(position);
+            }
 
             public native int idx();        public native Node idx(int idx);
             public native int left();       public native Node left(int left);

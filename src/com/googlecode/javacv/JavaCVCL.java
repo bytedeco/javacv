@@ -153,11 +153,6 @@ public class JavaCVCL {
             glu = null;
         }
 
-//        CLImageFormat[] formats = context.getSupportedImage2dFormats();
-//        for (CLImageFormat f : formats) {
-//            System.out.println(f);
-//        }
-
         // creade a command queue with benchmarking flag set
         commandQueue = device.createCommandQueue(/*Mode.PROFILING_MODE*/);
 
@@ -651,6 +646,11 @@ public class JavaCVCL {
 
     public static void main(String[] args) {
         JavaCVCL context = new JavaCVCL();
+
+        CLImageFormat[] formats = context.getCLContext().getSupportedImage2dFormats();
+        for (CLImageFormat f : formats) {
+            System.out.println(f);
+        }
 
         CameraDevice camera = new CameraDevice("Camera");
         camera.imageWidth = 1280;

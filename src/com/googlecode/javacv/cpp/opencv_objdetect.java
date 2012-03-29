@@ -361,6 +361,10 @@ public class opencv_objdetect {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public FeatureEvaluator position(int position) {
+            return (FeatureEvaluator)super.position(position);
+        }
+
         public static final int HAAR = 0, LBP = 1;
 
         public native boolean read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
@@ -664,6 +668,10 @@ public class opencv_objdetect {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public DataMatrixCode position(int position) {
+            return (DataMatrixCode)super.position(position);
+        }
+
         public native String msg();                  public native DataMatrixCode msg(String msg);
         @Adapter("MatAdapter")
         public native CvMat original();              public native DataMatrixCode original(CvMat original);
@@ -682,12 +690,16 @@ public class opencv_objdetect {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvDataMatrixCode position(int position) {
+            return (CvDataMatrixCode)super.position(position);
+        }
+
         public native String msg();     public native CvDataMatrixCode msg(String msg);
         public native CvMat original(); public native CvDataMatrixCode original(CvMat original);
         public native CvMat corners();  public native CvDataMatrixCode corners(CvMat corners);
     }
 
-    @Name("std::deque<CvDataMatrixCode>") @Index
+    @Name("std::deque<CvDataMatrixCode>")
     public static class CvDataMatrixCodeDeque extends Pointer {
         static { load(); }
         public CvDataMatrixCodeDeque()       { allocate();  }
@@ -699,7 +711,7 @@ public class opencv_objdetect {
         public native long size();
         public native void resize(@Cast("size_t") long n);
 
-        @ByRef public native CvDataMatrixCode get(@Cast("size_t") long i);
+        @Index @ByRef public native CvDataMatrixCode get(@Cast("size_t") long i);
         public native CvDataMatrixCodeDeque put(@Cast("size_t") long i, CvDataMatrixCode value);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -128,10 +128,7 @@ if (true) {
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 if (mbuf.get(y*w + x) == 0) {
-                    srcPts.put(0, x  ); srcPts.put(1, y  );
-                    srcPts.put(2, x+1); srcPts.put(3, y  );
-                    srcPts.put(4, x+1); srcPts.put(5, y+1);
-                    srcPts.put(6, x  ); srcPts.put(7, y+1);
+                    srcPts.put((double)x, y,  x+1, y,  x+1, y+1,  x, y+1);
                     //System.out.println("srcPts" + srcPts);
                     cvPerspectiveTransform(srcPts, dstPts, H);
                     //System.out.println("dstPts" + dstPts);
@@ -259,8 +256,7 @@ if (true) {
         CvMat pts = srcPts4x1.get();
 
         for (Marker m : markers) {
-            pts.put(m.corners);
-            cvPerspectiveTransform(pts, pts, warp);
+            cvPerspectiveTransform(pts.put(m.corners), pts, warp);
             pts.get(m.corners);
         }
     }

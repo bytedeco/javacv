@@ -20,15 +20,15 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.Loader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import com.googlecode.javacpp.BytePointer;
-import com.googlecode.javacpp.Loader;
 
+import static com.googlecode.javacv.cpp.dc1394.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.dc1394.*;
 
 /**
  *

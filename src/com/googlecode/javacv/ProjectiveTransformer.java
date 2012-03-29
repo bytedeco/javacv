@@ -346,6 +346,29 @@ public class ProjectiveTransformer implements ImageTransformer {
             update();
             return constraintError;
         }
+        public void set(CvMat setH, boolean inverse) {
+            if (projectiveParameters.length == 8 && referencePoints1 != null) {
+                if (inverse) {
+                    cvInvert(setH, H);
+                } else if (setH != H) {
+                    cvCopy(setH, H);
+                }
+                if (referencePoints1.length == 0) {
+                    // direct homography parameterization
+                    for (int i = 0; i < 8; i++) {
+                        projectiveParameters[i] = H.get(i)/H.get(8);
+                    }
+                } else {
+                    // 4 point parametrization
+                    CvMat pts = pts4x1.get().put(referencePoints1);
+                    cvPerspectiveTransform(pts, pts, H);
+                    pts.get(projectiveParameters);
+                }
+                setUpdateNeeded(true);
+            } else {
+                throw new UnsupportedOperationException("Set homography operation not supported.");
+            }
+        }
         public void compose(ImageTransformer.Parameters p1, boolean inverse1,
                 ImageTransformer.Parameters p2, boolean inverse2) {
             Parameters pp1 = (Parameters)p1, pp2 = (Parameters)p2;
@@ -358,38 +381,19 @@ public class ProjectiveTransformer implements ImageTransformer {
             compose(pp1.getH(), inverse1, pp2.getH(), inverse2);
         }
         public void compose(CvMat H1, boolean inverse1, CvMat H2, boolean inverse2) {
-
-            if (projectiveParameters.length == 8 && referencePoints1 != null) {
-
-                if (inverse1 && inverse2) {
-                    cvMatMul(H2, H1, H);
-                    cvInvert(H, H);
-                } else if (inverse1) {
-                    cvInvert(H1, H);
-                    cvMatMul(H, H2, H);
-                } else if (inverse2) {
-                    cvInvert(H2, H);
-                    cvMatMul(H1, H, H);
-                } else {
-                    cvMatMul(H1, H2, H);
-                }
-
-                if (referencePoints1.length == 0) {
-                    // direct homography parameterization
-                    for (int i = 0; i < 8; i++) {
-                        projectiveParameters[i] = H.get(i)/H.get(8);
-                    }
-                } else {
-                    // 4 point parametrization
-                    CvMat pts = pts4x1.get();
-                    pts.put(referencePoints1);
-                    cvPerspectiveTransform(pts, pts, H);
-                    pts.get(projectiveParameters);
-                }
-                setUpdateNeeded(true);
+            if (inverse1 && inverse2) {
+                cvMatMul(H2, H1, H);
+                cvInvert(H, H);
+            } else if (inverse1) {
+                cvInvert(H1, H);
+                cvMatMul(H, H2, H);
+            } else if (inverse2) {
+                cvInvert(H2, H);
+                cvMatMul(H1, H, H);
             } else {
-                throw new UnsupportedOperationException("Compose operation not supported.");
+                cvMatMul(H1, H2, H);
             }
+            set(H, false);
         }
 
         public CvMat getH() {

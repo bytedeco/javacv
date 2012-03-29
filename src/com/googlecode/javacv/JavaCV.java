@@ -42,7 +42,7 @@ public class JavaCV {
             DBL_EPSILON = 2.2204460492503131e-16;
 
     // returns the distance^2 between the line (x1, y1) (x2, y2) and the point (x3, y3)
-    double distToLine(double x1, double y1, double x2, double y2, double x3, double y3) {
+    public static double distanceToLine(double x1, double y1, double x2, double y2, double x3, double y3) {
         double dx = x2 - x1;
         double dy = y2 - y1;
         double d2 = dx*dx + dy*dy;
@@ -56,19 +56,56 @@ public class JavaCV {
         return dx*dx + dy*dy;
     }
 
+    // returns the largest rectangle of given aspect ratio and angle,
+    // bounded by the contour and sharing the same centroid
+    private static ThreadLocal<CvMoments> moments = CvMoments.createThreadLocal();
+    public static CvBox2D boundedRect(CvMat contour, CvBox2D box) {
+        int contourLength = contour.length();
+        CvMoments m = moments.get();
+        cvMoments(contour, m, 0);
+        double inv_m00 = 1 / m.m00();
+        double centerX = m.m10() * inv_m00;
+        double centerY = m.m01() * inv_m00;
+
+        float[] pts = new float[8];
+        CvPoint2D32f center = box.center();
+        CvSize2D32f size = box.size();
+        center.put(centerX, centerY);
+        cvBoxPoints(box, pts);
+
+        float scale = Float.POSITIVE_INFINITY;
+        for (int i = 0; i < 4; i++) {
+            double x1 = centerX,  y1 = centerY,
+                   x2 = pts[2*i], y2 = pts[2*i + 1];
+            for (int j = 0; j < contourLength; j++) {
+                int k = (j + 1) % contourLength;
+                double x3 = contour.get(2*j), y3 = contour.get(2*j + 1),
+                       x4 = contour.get(2*k), y4 = contour.get(2*k + 1);
+                double d = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+                double ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3))/d,
+                       ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3))/d;
+                if (ub >= 0 && ub <= 1 && ua >= 0 && ua < scale) {
+                    scale = (float)ua;
+                }
+            }
+        }
+        size.width(scale*size.width()).height(scale*size.height());
+        return box;
+    }
+
     // Similar to cvBoundingRect(), but can also pad the output with some extra
     // pixels, useful to use as ROI for operations with interpolation. Further
     // aligns the region to specified boundaries, for easier vectorization and
     // subsampling, and also uses on input the rect argument as a maximum boundary.
-    public static CvRect boundingRect(double[] pts, CvRect rect,
+    public static CvRect boundingRect(double[] contour, CvRect rect,
             int padX, int padY, int alignX, int alignY) {
-        double minX = pts[0];
-        double minY = pts[1];
-        double maxX = pts[0];
-        double maxY = pts[1];
-        for (int i = 1; i < pts.length/2; i++) {
-            double x = pts[2*i  ];
-            double y = pts[2*i+1];
+        double minX = contour[0];
+        double minY = contour[1];
+        double maxX = contour[0];
+        double maxY = contour[1];
+        for (int i = 1; i < contour.length/2; i++) {
+            double x = contour[2*i  ];
+            double y = contour[2*i+1];
             minX = Math.min(minX, x);
             minY = Math.min(minY, y);
             maxX = Math.max(maxX, x);
@@ -351,7 +388,8 @@ public class JavaCV {
         return new double[] { a, b };
     }
 
-    public static void adaptiveBinarize(IplImage srcImage, final IplImage sumImage,
+    // more sophisticated than cvAdaptiveThreshold()
+    public static void adaptiveThreshold(IplImage srcImage, final IplImage sumImage,
             final IplImage sqSumImage, final IplImage dstImage, final boolean invert,
             final int windowMax, final int windowMin, final double varMultiplier, final double k) {
         final int w = srcImage.width();
@@ -463,6 +501,7 @@ public class JavaCV {
         }});
     }
 
+    // similar to hysteresis thresholding as used by the Canny edge detector
     public static void hysteresisThreshold(IplImage srcImage, IplImage dstImage,
             double highThresh, double lowThresh, double maxValue) {
         int highThreshold = (int)Math.round(highThresh);

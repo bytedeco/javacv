@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,9 +20,12 @@
 
 package com.googlecode.javacv;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
@@ -42,6 +45,61 @@ public abstract class FrameRecorder {
                 c.getMethod("tryLoad").invoke(null);
             } catch (Throwable t) { }
         }
+    }
+    public static Class<? extends FrameRecorder> getDefault() {
+        // select first frame recorder that can load..
+        for (Class<? extends FrameRecorder> c : FrameRecorder.list) {
+            try {
+                c.getMethod("tryLoad").invoke(null);
+                return c;
+            } catch (Throwable t) { }
+        }
+        return null;
+    }
+    public static Class<? extends FrameRecorder> get(String className) throws Exception {
+        className = FrameRecorder.class.getPackage().getName() + "." + className;
+        try {
+            return Class.forName(className).asSubclass(FrameRecorder.class);
+        } catch (ClassNotFoundException e) {
+            String className2 = className + "FrameRecorder";
+            try {
+                return Class.forName(className2).asSubclass(FrameRecorder.class);
+            } catch (ClassNotFoundException ex) {
+                throw new Exception("Could not get FrameRecorder class for " + className + " or " + className2, e);
+            }
+        }
+    }
+
+    public static FrameRecorder create(Class<? extends FrameRecorder> c, Class p, Object o, int w, int h) throws Exception {
+        Throwable cause = null;
+        try {
+            return c.getConstructor(p, int.class, int.class).newInstance(o, w, h);
+        } catch (InstantiationException ex) {
+            cause = ex;
+        } catch (IllegalAccessException ex) {
+            cause = ex;
+        } catch (IllegalArgumentException ex) {
+            cause = ex;
+        } catch (NoSuchMethodException ex) {
+            cause = ex;
+        } catch (InvocationTargetException ex) {
+            cause = ex;
+        }
+        throw new Exception("Could not create new " + c.getSimpleName() + "(" + o + ", " + w + ", " + h + ")", cause);
+    }
+
+    public static FrameRecorder createDefault(File file, int width, int height) throws Exception {
+        return create(getDefault(), File.class, file, width, height);
+    }
+    public static FrameRecorder createDefault(String filename, int width, int height) throws Exception {
+        return create(getDefault(), String.class, filename, width, height);
+    }
+
+    public static FrameRecorder create(String className, File file, int width, int height) throws Exception {
+        return create(get(className), File.class, file, width, height);
+    }
+    public static FrameRecorder create(String className, String filename, int width, int height) throws Exception {
+        return create(get(className), String.class, filename, width, height);
     }
 
     protected String format;

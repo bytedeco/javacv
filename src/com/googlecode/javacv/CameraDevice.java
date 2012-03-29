@@ -20,13 +20,13 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.Pointer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import com.googlecode.javacpp.Pointer;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 

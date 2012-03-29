@@ -44,46 +44,46 @@ public class MarkerDetector {
     // used for the projector markers... this is because we use binary
     // thresholding while we actually have three levels..
     public static class Settings extends BaseChildSettings {
-        int binarizeWindowMin = 5;
-        int binarizeWindowMax = 63;
-        double binarizeVarMultiplier = 1;
-        double binarizeKBlackMarkers = 0.6;
-        double binarizeKWhiteMarkers = 1.0;
+        int thresholdWindowMin = 5;
+        int thresholdWindowMax = 63;
+        double thresholdVarMultiplier = 1.0;
+        double thresholdKBlackMarkers = 0.6;
+        double thresholdKWhiteMarkers = 1.0;
         int subPixelWindow = 11;
 
-        public int getBinarizeWindowMin() {
-            return binarizeWindowMin;
+        public int getThresholdWindowMin() {
+            return thresholdWindowMin;
         }
-        public void setBinarizeWindowMin(int binarizeWindowMin) {
-            this.binarizeWindowMin = binarizeWindowMin;
-        }
-
-        public int getBinarizeWindowMax() {
-            return binarizeWindowMax;
-        }
-        public void setBinarizeWindowMax(int binarizeWindowMax) {
-            this.binarizeWindowMax = binarizeWindowMax;
+        public void setThresholdWindowMin(int thresholdWindowMin) {
+            this.thresholdWindowMin = thresholdWindowMin;
         }
 
-        public double getBinarizeVarMultiplier() {
-            return binarizeVarMultiplier;
+        public int getThresholdWindowMax() {
+            return thresholdWindowMax;
         }
-        public void setBinarizeVarMultiplier(double binarizeVarMultiplier) {
-            this.binarizeVarMultiplier = binarizeVarMultiplier;
-        }
-
-        public double getBinarizeKBlackMarkers() {
-            return binarizeKBlackMarkers;
-        }
-        public void setBinarizeKBlackMarkers(double binarizeKBlackMarkers) {
-            this.binarizeKBlackMarkers = binarizeKBlackMarkers;
+        public void setThresholdWindowMax(int thresholdWindowMax) {
+            this.thresholdWindowMax = thresholdWindowMax;
         }
 
-        public double getBinarizeKWhiteMarkers() {
-            return binarizeKWhiteMarkers;
+        public double getThresholdVarMultiplier() {
+            return thresholdVarMultiplier;
         }
-        public void setBinarizeKWhiteMarkers(double binarizeKWhiteMarkers) {
-            this.binarizeKWhiteMarkers = binarizeKWhiteMarkers;
+        public void setThresholdVarMultiplier(double thresholdVarMultiplier) {
+            this.thresholdVarMultiplier = thresholdVarMultiplier;
+        }
+
+        public double getThresholdKBlackMarkers() {
+            return thresholdKBlackMarkers;
+        }
+        public void setThresholdKBlackMarkers(double thresholdKBlackMarkers) {
+            this.thresholdKBlackMarkers = thresholdKBlackMarkers;
+        }
+
+        public double getThresholdKWhiteMarkers() {
+            return thresholdKWhiteMarkers;
+        }
+        public void setThresholdKWhiteMarkers(double thresholdKWhiteMarkers) {
+            this.thresholdKWhiteMarkers = thresholdKWhiteMarkers;
         }
 
         public int getSubPixelWindow() {
@@ -107,7 +107,7 @@ public class MarkerDetector {
 
     private MultiTracker tracker = null;
     private int width = 0, height = 0, depth = 0, channels = 0;
-    private IplImage tempsrc, tempsrc2, sumimage, sqsumimage, binarized;
+    private IplImage tempImage, tempImage2, sumImage, sqSumImage, thresholdedImage;
     private CvMat points = CvMat.create(1, 4, CV_32F, 2);
     private CvPoint2D32f corners = new CvPoint2D32f(4);
     private CvMemStorage memory = CvMemStorage.create();
@@ -116,7 +116,11 @@ public class MarkerDetector {
 
     private CvPoint pts = new CvPoint(4), pt1 = new CvPoint(), pt2 = new CvPoint();
     private CvFont font = new CvFont(CV_FONT_HERSHEY_PLAIN, 1, 1);
-    private CvSize text_size = new CvSize();
+    private CvSize textSize = new CvSize();
+
+    public IplImage getThresholdedImage() {
+        return thresholdedImage;
+    }
 
     private void init(IplImage image) {
         if (tracker != null && image.width() == width && image.height() == height &&
@@ -130,16 +134,16 @@ public class MarkerDetector {
         channels = image.nChannels();
 
         if (depth != IPL_DEPTH_8U || channels > 1) {
-            tempsrc  = IplImage.create(width, height, IPL_DEPTH_8U, 1);
+            tempImage    = IplImage.create(width, height, IPL_DEPTH_8U, 1);
         }
         if (depth != IPL_DEPTH_8U && channels > 1) {
-            tempsrc2 = IplImage.create(width, height, IPL_DEPTH_8U, 3);
+            tempImage2   = IplImage.create(width, height, IPL_DEPTH_8U, 3);
         }
-        sumimage   = IplImage.create(width+1, height+1, IPL_DEPTH_64F, 1);
-        sqsumimage = IplImage.create(width+1, height+1, IPL_DEPTH_64F, 1);
-        binarized  = IplImage.create(width,   height,   IPL_DEPTH_8U,  1);
+        sumImage         = IplImage.create(width+1, height+1, IPL_DEPTH_64F, 1);
+        sqSumImage       = IplImage.create(width+1, height+1, IPL_DEPTH_64F, 1);
+        thresholdedImage = IplImage.create(width,   height,   IPL_DEPTH_8U,  1);
 
-        tracker = new MultiTracker(binarized.widthStep(), binarized.height());
+        tracker = new MultiTracker(thresholdedImage.widthStep(), thresholdedImage.height());
 //        String description = tracker.getDescription();
 //        System.out.println("ARToolKitPlus compile-time information: " + description);
         tracker.setLoggerFunction(new ArtLogFunction() {
@@ -174,33 +178,31 @@ public class MarkerDetector {
         tracker.setImageProcessingMode(IMAGE_FULL_RES);
     }
 
-    public IplImage getBinarized() { return binarized; }
-
     public Marker[] detect(IplImage image, boolean whiteMarkers) {
         init(image);
 
         if (depth != IPL_DEPTH_8U && channels > 1) {
-            cvConvertScale(image, tempsrc2, 255/image.highValue(), 0);
-            cvCvtColor(tempsrc2, tempsrc, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
-            image = tempsrc;
+            cvConvertScale(image, tempImage2, 255/image.highValue(), 0);
+            cvCvtColor(tempImage2, tempImage, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
+            image = tempImage;
         } else if (depth != IPL_DEPTH_8U) {
-            cvConvertScale(image, tempsrc, 255/image.highValue(), 0);
-            image = tempsrc;
+            cvConvertScale(image, tempImage, 255/image.highValue(), 0);
+            image = tempImage;
         } else if (channels > 1) {
-            cvCvtColor(image, tempsrc, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
-            image = tempsrc;
+            cvCvtColor(image, tempImage, channels > 3 ? CV_RGBA2GRAY : CV_BGR2GRAY);
+            image = tempImage;
         }
 //long time1 = System.currentTimeMillis();
-        JavaCV.adaptiveBinarize(image, sumimage, sqsumimage, binarized, whiteMarkers,
-                settings.binarizeWindowMax, settings.binarizeWindowMin, settings.binarizeVarMultiplier,
-                whiteMarkers ? settings.binarizeKWhiteMarkers : settings.binarizeKBlackMarkers);
-//CanvasFrame.global.showImage(binarized, 0.5);
+        JavaCV.adaptiveThreshold(image, sumImage, sqSumImage, thresholdedImage, whiteMarkers,
+                settings.thresholdWindowMax, settings.thresholdWindowMin, settings.thresholdVarMultiplier,
+                whiteMarkers ? settings.thresholdKWhiteMarkers : settings.thresholdKBlackMarkers);
+//CanvasFrame.global.showImage(thresholded, 0.5);
 //CanvasFrame.global.waitKey();
 //long time2 = System.currentTimeMillis();
 
         int[] n = new int[1];
         ARMarkerInfo markers = new ARMarkerInfo(null);
-        tracker.arDetectMarkerLite(binarized.getByteBuffer(), 128 /* tracker.getThreshold() */, markers, n);
+        tracker.arDetectMarkerLite(thresholdedImage.getByteBuffer(), 128 /*tracker.getThreshold()*/, markers, n);
 //long time3 = System.currentTimeMillis();
         Marker[] markers2 = new Marker[n[0]];
         int n2 = 0;
@@ -214,7 +216,7 @@ public class MarkerDetector {
             int dir = markers.dir();
             double confidence = markers.cf();
             double[] vertex = new double[8];
-            markers.vertex().capacity(8).asBuffer().get(vertex);
+            markers.vertex().get(vertex);
 
             int w = settings.subPixelWindow/2+1;
             if (vertex[0]-w < 0 || vertex[0]+w >= width || vertex[1]-w < 0 || vertex[1]+w >= height ||
@@ -225,8 +227,7 @@ public class MarkerDetector {
                     continue;
             }
 
-            points.put(vertex);
-            CvBox2D box = cvMinAreaRect2(points, memory);
+            CvBox2D box = cvMinAreaRect2(points.put(vertex), memory);
             float bw = box.size().width();
             float bh = box.size().height();
             cvClearMemStorage(memory);
@@ -269,10 +270,10 @@ if (false) {
             markers2[n2++] = new Marker(id, vertex, confidence);
         }
 //long time4 = System.currentTimeMillis();
-//System.out.println("binarizeTime = " + (time2-time1) + "  detectTime = " + (time3-time2) + "  subPixTime = " + (time4-time3));
+//System.out.println("thresholdTime = " + (time2-time1) + "  detectTime = " + (time3-time2) + "  subPixTime = " + (time4-time3));
 
-        //cvCvtColor(binarized, image, CV_GRAY2BGR);
-        //cvCopy(binarized, image, null);
+        //cvCvtColor(thresholdedImage, image, CV_GRAY2BGR);
+        //cvCopy(thresholdedImage, image, null);
 
         return Arrays.copyOf(markers2, n2);
     }
@@ -305,16 +306,16 @@ if (false) {
 
             String text = Integer.toString(m.id);
             int[] baseline = new int[1];
-            cvGetTextSize(text, font, text_size, baseline);
+            cvGetTextSize(text, font, textSize, baseline);
 
-            pt1.x(cx - (text_size.width() *3/2 << 16)/2);
-            pt1.y(cy + (text_size.height()*3/2 << 16)/2);
-            pt2.x(cx + (text_size.width() *3/2 << 16)/2);
-            pt2.y(cy - (text_size.height()*3/2 << 16)/2);
+            pt1.x(cx - (textSize.width() *3/2 << 16)/2);
+            pt1.y(cy + (textSize.height()*3/2 << 16)/2);
+            pt2.x(cx + (textSize.width() *3/2 << 16)/2);
+            pt2.y(cy - (textSize.height()*3/2 << 16)/2);
             cvRectangle(image, pt1, pt2, CV_RGB(0, image.highValue(), 0), CV_FILLED, CV_AA, 16);
 
-            pt1.x((int)Math.round((double)cx/(1<<16) - text_size.width()/2));
-            pt1.y((int)Math.round((double)cy/(1<<16) + text_size.height()/2 + 1));
+            pt1.x((int)Math.round((double)cx/(1<<16) - textSize.width()/2));
+            pt1.y((int)Math.round((double)cy/(1<<16) + textSize.height()/2 + 1));
             cvPutText(image, text, pt1, font, CvScalar.BLACK);
         }
     }

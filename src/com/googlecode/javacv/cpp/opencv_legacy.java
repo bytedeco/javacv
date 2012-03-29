@@ -1364,6 +1364,10 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvDefParam position(int position) {
+            return (CvDefParam)super.position(position);
+        }
+
         public native CvDefParam     next();     public native CvDefParam next(CvDefParam next);
         @Cast("char*")
         public native BytePointer    pName();    public native CvDefParam pName(BytePointer pName);
@@ -1444,6 +1448,10 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvBlob position(int position) {
+            return (CvBlob)super.position(position);
+        }
+
         public native float x(); public native CvBlob x(float x);
         public native float y(); public native CvBlob y(float y);
         public native float w(); public native CvBlob w(float w);
@@ -1500,6 +1508,10 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvBlobTrack position(int position) {
+            return (CvBlobTrack)super.position(position);
+        }
+
         public native int        TrackID();    public native CvBlobTrack TrackID(int TrackID);
         public native int        StartFrame(); public native CvBlobTrack StartFrame(int StartFrame);
         public native CvBlobSeq  pBlobSeq();   public native CvBlobTrack pBlobSeq(CvBlobSeq pBlobSeq);
@@ -1546,6 +1558,10 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvDetectedBlob position(int position) {
+            return (CvDetectedBlob)super.position(position);
+        }
+
         public native float response(); public native CvDetectedBlob response(float response);
     }
 
@@ -1581,6 +1597,10 @@ public class opencv_legacy {
         public CvDrawShape(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvDrawShape position(int position) {
+            return (CvDrawShape)super.position(position);
+        }
 
         public static final int RECT=0, ELLIPSE=1; // enum shape;
         public native @ByRef CvScalar color(); public native CvDrawShape color(CvScalar color);
@@ -1681,6 +1701,10 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvBlobTrackerParamMS position(int position) {
+            return (CvBlobTrackerParamMS)super.position(position);
+        }
+
         public native int   noOfSigBits();        public native CvBlobTrackerParamMS noOfSigBits(int noOfSigBits);
         public native int   appearance_profile(); public native CvBlobTrackerParamMS appearance_profile(int appearance_profile);
         public native int   meanshift_profile();  public native CvBlobTrackerParamMS meanshift_profile(int meanshift_profile);
@@ -1698,6 +1722,10 @@ public class opencv_legacy {
         public CvBlobTrackerParamLH(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvBlobTrackerParamLH position(int position) {
+            return (CvBlobTrackerParamLH)super.position(position);
+        }
 
         public native int HistType();   public native CvBlobTrackerParamLH HistType(int HistType);
         public native int ScaleAfter(); public native CvBlobTrackerParamLH ScaleAfter(int ScaleAfter);
@@ -1854,6 +1882,10 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvBlobTrackerAutoParam1 position(int position) {
+            return (CvBlobTrackerAutoParam1)super.position(position);
+        }
+
         public native int                 FGTrainFrames(); public native CvBlobTrackerAutoParam1 FGTrainFrames(int FGTrainFrames);
         public native CvFGDetector        pFG();           public native CvBlobTrackerAutoParam1 pFG(CvFGDetector pFG);
         public native CvBlobDetector      pBD();           public native CvBlobTrackerAutoParam1 pBD(CvBlobDetector pBD);
@@ -1875,6 +1907,10 @@ public class opencv_legacy {
         public CvTracksTimePos(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvTracksTimePos position(int position) {
+            return (CvTracksTimePos)super.position(position);
+        }
 
         public native int len1();   public native CvTracksTimePos len1(int len1);
         public native int len2();   public native CvTracksTimePos len2(int len2);

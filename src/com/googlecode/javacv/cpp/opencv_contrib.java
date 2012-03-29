@@ -135,6 +135,10 @@ public class opencv_contrib {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvFuzzyCurve position(int position) {
+            return (CvFuzzyCurve)super.position(position);
+        }
+
         public native void setCentre(double _centre);
         public native double getCentre();
         public native void clear();
@@ -151,6 +155,10 @@ public class opencv_contrib {
         public CvFuzzyFunction(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvFuzzyFunction position(int position) {
+            return (CvFuzzyFunction)super.position(position);
+        }
 
         public native void addCurve(CvFuzzyCurve curve, double value/*=0*/);
         public native void resetValues();
@@ -169,6 +177,10 @@ public class opencv_contrib {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvFuzzyRule position(int position) {
+            return (CvFuzzyRule)super.position(position);
+        }
+
         public native void setRule(CvFuzzyCurve c1, CvFuzzyCurve c2, CvFuzzyCurve o1);
         public native double calcValue(double param1, double param2);
         public native CvFuzzyCurve getOutputCurve();
@@ -182,6 +194,10 @@ public class opencv_contrib {
         private native void allocate();
         private native void allocateArray(int size);
 
+        @Override public CvFuzzyController position(int position) {
+            return (CvFuzzyController)super.position(position);
+        }
+
         public native void addRule(CvFuzzyCurve c1, CvFuzzyCurve c2, CvFuzzyCurve o1);
         public native double calcOutput(double param1, double param2);
     }
@@ -193,6 +209,10 @@ public class opencv_contrib {
         public CvFuzzyMeanShiftTracker(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
+
+        @Override public CvFuzzyMeanShiftTracker position(int position) {
+            return (CvFuzzyMeanShiftTracker)super.position(position);
+        }
 
         public static final int 
         //enum TrackingState
@@ -227,6 +247,10 @@ public class opencv_contrib {
             public Node(Pointer p) { super(p); }
             private native void allocate();
             private native void allocateArray(int size);
+
+            @Override public Node position(int position) {
+                return (Node)super.position(position);
+            }
 
             public native int begin();                public native Node begin(int begin);
             public native int end();                  public native Node end(int end);
@@ -289,7 +313,7 @@ public class opencv_contrib {
 //        @MemberGetter public static native @ByVal CvPoint3D32f allzero();
     }
 
-    @Name("std::vector<std::vector<cv::Vec2i> >") @Index
+    @Name("std::vector<std::vector<cv::Vec2i> >")
     public static class Vec2iVectorVector extends Pointer {
         static { load(); }
         public Vec2iVectorVector()       { allocate();  }
@@ -303,7 +327,7 @@ public class opencv_contrib {
         public native @Index(1) long size(@Cast("size_t") long i);
         public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
-        @ValueGetter @ByVal public native CvScalar get(@Cast("size_t") long i, @Cast("size_t") long j);
+        @Index @ValueGetter @ByVal public native CvScalar get(@Cast("size_t") long i, @Cast("size_t") long j);
         //public native Vec2iVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvScalar value);
     }
 
