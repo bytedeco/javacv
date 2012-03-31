@@ -1383,7 +1383,7 @@ public class opencv_ml {
                 double fparam1/*=0*/, double fparam2/*=0*/);
 
         public native void create(CvMat layerSizes, int activateFunc/*=CvANN_MLP::SIGMOID_SYM*/,
-                double fparam1/*=0, double fparam2/*=0*/);
+                double fparam1/*=0*/, double fparam2/*=0*/);
 
         public native int train(CvMat inputs, CvMat outputs, CvMat sampleWeights, CvMat sampleIdx/*=null*/,
                 @ByVal CvANN_MLP_TrainParams params/*=CvANN_MLP_TrainParams()*/, int flags/*=0*/);

@@ -141,6 +141,10 @@ public class opencv_legacy {
 
     public static native void cvCalcCovarMatrixEx(int nObjects, Pointer input, int ioFlags, int ioBufSize,
             @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, float[] covarMatrix);
+    public static void cvCalcCovarMatrixEx(int nObjects, IplImage[] input, int ioFlags, int ioBufSize,
+            @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, float[] covarMatrix) {
+        cvCalcCovarMatrixEx(nObjects, new IplImageArray(input), ioFlags, ioBufSize, buffer, userData, avg, covarMatrix);
+    }
     public static native void cvCalcEigenObjects(int nObjects, Pointer input, Pointer output, int ioFlags,
             int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, float[] eigVals);
     public static void cvCalcEigenObjects(int nObjects, IplImage[] input, IplImage[] output, int ioFlags,
@@ -151,11 +155,23 @@ public class opencv_legacy {
     public static native double cvCalcDecompCoeff(IplImage obj, IplImage eigObj, IplImage avg);
     public static native void cvEigenDecomposite(IplImage obj, int nEigObjs, Pointer eigInput,
             int ioFlags, Pointer userData, IplImage avg, float[] coeffs);
+    public static void cvEigenDecomposite(IplImage obj, int nEigObjs, IplImage[] eigInput,
+            int ioFlags, Pointer userData, IplImage avg, float[] coeffs) {
+        cvEigenDecomposite(obj, nEigObjs, new IplImageArray(eigInput), ioFlags, userData, avg, coeffs);
+    }
     public static native void cvEigenProjection(Pointer eigInput, int nEigObjs, int ioFlags,
             Pointer userData, float[] coeffs, IplImage avg, IplImage proj);
+    public static void cvEigenProjection(IplImage[] eigInput, int nEigObjs, int ioFlags,
+            Pointer userData, float[] coeffs, IplImage avg, IplImage proj) {
+        cvEigenProjection(new IplImageArray(eigInput), nEigObjs, ioFlags, userData, coeffs, avg, proj);
+    }
 
     public static native void cvCalcCovarMatrixEx(int nObjects, Pointer input, int ioFlags, int ioBufSize,
             @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, FloatPointer covarMatrix);
+    public static void cvCalcCovarMatrixEx(int nObjects, IplImage[] input, int ioFlags, int ioBufSize,
+            @Cast("uchar*") BytePointer buffer, Pointer userData, IplImage avg, FloatPointer covarMatrix) {
+        cvCalcCovarMatrixEx(nObjects, new IplImageArray(input), ioFlags, ioBufSize, buffer, userData, avg, covarMatrix);
+    }
     public static native void cvCalcEigenObjects(int nObjects, Pointer input, Pointer output, int ioFlags,
             int ioBufSize, Pointer userData, CvTermCriteria calcLimit, IplImage avg, FloatPointer eigVals);
     public static void cvCalcEigenObjects(int nObjects, IplImage[] input, IplImage[] output, int ioFlags,
@@ -165,8 +181,16 @@ public class opencv_legacy {
     }
     public static native void cvEigenDecomposite(IplImage obj, int nEigObjs, Pointer eigInput,
             int ioFlags, Pointer userData, IplImage avg, FloatPointer coeffs);
+    public static void cvEigenDecomposite(IplImage obj, int nEigObjs, IplImage[] eigInput,
+            int ioFlags, Pointer userData, IplImage avg, FloatPointer coeffs) {
+        cvEigenDecomposite(obj, nEigObjs, new IplImageArray(eigInput), ioFlags, userData, avg, coeffs);
+    }
     public static native void cvEigenProjection(Pointer eigInput, int nEigObjs, int ioFlags,
             Pointer userData, FloatPointer coeffs, IplImage avg, IplImage proj);
+    public static void cvEigenProjection(IplImage[] eigInput, int nEigObjs, int ioFlags,
+            Pointer userData, FloatPointer coeffs, IplImage avg, IplImage proj) {
+        cvEigenProjection(new IplImageArray(eigInput), nEigObjs, ioFlags, userData, coeffs, avg, proj);
+    }
 
 
     public static class CvImgObsInfo extends Pointer {
