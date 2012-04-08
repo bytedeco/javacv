@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="javacv" default="default" basedir=".">
+    <description>Builds, tests, and runs the project javacv.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <tstamp>
+        <format property="TIMESTAMP" pattern="yyyyMMddhhmm" timezone=""/>
+    </tstamp>
+    <manifest file="manifest.mf">
+        <section name="com/googlecode/javacv/">
+            <attribute name="Implementation-Title" value="JavaCV"/>
+            <attribute name="Implementation-Vendor" value="Samuel Audet"/>
+            <attribute name="Implementation-Version" value="${TIMESTAMP}"/>
+            <attribute name="Specification-Title" value="JavaCV"/>
+            <attribute name="Specification-Vendor" value="Samuel Audet"/>
+            <attribute name="Specification-Version" value="${TIMESTAMP}"/>
+        </section>
+    </manifest>
+    <property environment="env"/>
+    <target name="-post-compile">
+        <property name="javacpp.options" value=""/>
+        <java jar="${reference.javacpp.jar}" fork="true" failonerror="true">
+            <!-- Hack required for Windows SDK v7.1 and videoInputLib -->
+            <env key="CL" value="&quot;/I${env.sdkdir}/Include/&quot;"/>
+            <arg line="${javacpp.options}"/>
+            <arg value="-classpath"/> <arg value="${build.classes.dir}"/>
+            <arg value="-jarprefix"/> <arg value="${dist.dir}/javacv"/>
+            <arg value="com.googlecode.javacv.cpp.*"/>
+        </java>
+        <delete>
+            <fileset dir="${build.classes.dir}" includes="com/googlecode/javacv/cpp/*.h"/>
+        </delete>
+    </target>
+    <target name="-init-macrodef-copylibs">
+        <macrodef name="copylibs" uri="http://www.netbeans.org/ns/j2se-project/3">
+            <element name="customize" optional="true"/>
+            <sequential>
+                <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${run.classpath}"/>
+                    <map from="${build.classes.dir.resolved}" to=""/>
+                </pathconvert>
+                <pathconvert pathsep=" " property="jar.classpath">
+                    <path path="${run.classpath.without.build.classes.dir}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <globmapper from="*" to="*"/>
+                    </chainedmapper>
+                </pathconvert>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
+                <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
+                    <fileset dir="${build.classes.dir}">
+                        <exclude name="com/googlecode/javacv/cpp/android-arm/"/>
+                        <exclude name="com/googlecode/javacv/cpp/android-x86/"/>
+                        <exclude name="com/googlecode/javacv/cpp/linux-x86/"/>
+                        <exclude name="com/googlecode/javacv/cpp/linux-x86_64/"/>
+                        <exclude name="com/googlecode/javacv/cpp/macosx-x86/"/>
+                        <exclude name="com/googlecode/javacv/cpp/macosx-x86_64/"/>
+                        <exclude name="com/googlecode/javacv/cpp/windows-x86/"/>
+                        <exclude name="com/googlecode/javacv/cpp/windows-x86_64/"/>
+                    </fileset>
+                    <manifest>
+                        <attribute name="Class-Path" value="${jar.classpath} javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar"/>
+                        <customize/>
+                    </manifest>
+                </copylibs>
+                <move todir="${dist.dir}">
+                    <fileset dir="${dist.dir}/lib/" includes="*"/>
+                </move>
+                <delete dir="${dist.dir}/lib/"/>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="-post-jar">
+        <delete file="${dist.dir}/README.TXT"/>
+        <copy file="LICENSE.txt" todir="${dist.dir}"/>
+        <copy file="README.txt" todir="${dist.dir}"/>
+    </target>
+    <!--
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="javacv-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
+</project>
