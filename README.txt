@@ -219,6 +219,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
  * Moved the source code repository to Git
  * Fixed missing parameter from `CvANN_MLP.create()`
  * Added methods `cvCalcCovarMatrixEx()`, `cvEigenDecomposite()`, and `cvEigenProjection()` taking an `IplImage[]` as argument for convenience
+ * `VideoInputFrameGrabber.start()` now accepts a `connection` argument such as `VI_COMPOSITE` to support analog cameras and what not
 
 ===March 29, 2012===
  * Added missing array allocators and `position()` methods to `KDTree.Node`, `DefaultRngAuto`, `CvAffinePose`, `KeyPoint`, `BaseKeypoint`, `ReferenceTrees`, `DMatch`, `*.Params`, `CvFuzzy*`, `Octree.Node`, `CvDefParam`, `Cv*Blob*`, `Cv*Track*`, `CvDrawShape`, `CvVectors`, `CvParamGrid`, `Cv*Params`, `CvSVM*`, `CvPair16u32s`, `CvDTree*`  `CvTrainTestSplit`, `CvMLData`, `FeatureEvaluator`, and `*DataMatrixCode`

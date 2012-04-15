@@ -6,6 +6,7 @@
   <artifactId>javacv</artifactId>
   <version>SNAPSHOT</version>
   <packaging>jar</packaging>
+
   <name>JavaCV</name>
   <description>Java interface to OpenCV and more</description>
   <url>http://code.google.com/p/javacv/</url>
@@ -28,7 +29,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
-    <javacpp.platform>${os.name}-${os.arch}</javacpp.platform>
+    <platform.name>${os.name}-${os.arch}</platform.name>
     <javacpp.options></javacpp.options>
   </properties>
 
@@ -89,7 +90,7 @@
                 <key>CL</key> <value>&quot;/I${env.sdkdir}/Include/&quot;</value>
               </environmentVariables>
               <executable>java</executable>
-              <commandlineArgs>-jar "${com.googlecode.javacpp:javacpp:jar}" -properties ${javacpp.platform} ${javacpp.options} -classpath "${project.build.outputDirectory}" -jarprefix "${project.build.directory}/${project.artifactId}" com.googlecode.javacv.cpp.*</commandlineArgs>
+              <commandlineArgs>-jar "${com.googlecode.javacpp:javacpp:jar}" -properties ${platform.name} ${javacpp.options} -classpath "${project.build.outputDirectory}" -jarprefix "${project.build.directory}/${project.artifactId}" com.googlecode.javacv.cpp.*</commandlineArgs>
             </configuration>
           </execution>
         </executions>
@@ -142,9 +143,9 @@
               <groupId>${project.groupId}</groupId>
               <artifactId>${project.artifactId}</artifactId>
               <version>${project.version}</version>
-              <classifier>${javacpp.platform}</classifier>
+              <classifier>${platform.name}</classifier>
               <packaging>jar</packaging>
-              <file>${project.build.directory}/${project.artifactId}-${javacpp.platform}.jar</file>
+              <file>${project.build.directory}/${project.artifactId}-${platform.name}.jar</file>
             </configuration>
           </execution>
         </executions>
@@ -165,9 +166,9 @@
               <groupId>${project.groupId}</groupId>
               <artifactId>${project.artifactId}</artifactId>
               <version>${project.version}</version>
-              <classifier>${javacpp.platform}</classifier>
+              <classifier>${platform.name}</classifier>
               <packaging>jar</packaging>
-              <file>${project.build.directory}/${project.artifactId}-${javacpp.platform}.jar</file>
+              <file>${project.build.directory}/${project.artifactId}-${platform.name}.jar</file>
             </configuration>
           </execution>
         </executions>

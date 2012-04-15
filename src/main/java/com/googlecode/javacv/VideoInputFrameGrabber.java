@@ -90,12 +90,15 @@ public class VideoInputFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
+        start(-1);
+    }
+    public void start(int connection) throws Exception {
         myVideoInput = new videoInput();
         if (frameRate > 0) {
             myVideoInput.setIdealFramerate(deviceNumber, (int)frameRate);
         }
-        if (imageWidth <= 0 || imageHeight <= 0 ? !myVideoInput.setupDevice(deviceNumber) :
-                !myVideoInput.setupDevice(deviceNumber, imageWidth, imageHeight)) {
+        if (imageWidth <= 0 || imageHeight <= 0 ? !myVideoInput.setupDevice(deviceNumber, connection) :
+                !myVideoInput.setupDevice(deviceNumber, imageWidth, imageHeight, connection)) {
             myVideoInput = null;
             throw new Exception("videoInput.setupDevice() Error: Could not setup device.");
         }
