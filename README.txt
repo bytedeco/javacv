@@ -7,8 +7,6 @@ JavaCV also comes with hardware accelerated full-screen image display (`CanvasFr
 
 To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/trunk/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/trunk/procamtracker/ ProCamTracker].
 
-I will continue to add all code that I am developing for my doctoral research as I go.
-
 
 ==Required Software==
 To use JavaCV, you will need to download and install the following software:
@@ -34,10 +32,12 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
  * JOCL and JOGL from JogAmp  http://jogamp.org/
 
 To modify the source code, please note that the project files were created for:
- * NetBeans 6.9  http://netbeans.org/downloads/
+ * NetBeans 6.9  http://netbeans.org/downloads/  or
  * Maven 2 or 3  http://maven.apache.org/download.html
  * JavaCPP  http://code.google.com/p/javacpp/
  * ARToolKitPlus 2.1.1t  http://code.google.com/p/javacv/downloads/list
+
+To recompile, simply call the usual `ant` or `mvn` command. Further, because installing all the dependencies above may be impractical, one may prefer to simply remove any source files not required before attempting to build.
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
@@ -210,7 +210,7 @@ public class Demo {
 
 
 ==Acknowledgments==
-This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute of Technology, where I was supported by a generous scholarship from the Ministry of Education, Culture, Sports, Science and Technology (MEXT) of the Japanese Government. I extend my gratitude further to all who have reported bugs, donated code, or made suggestions for improvements!
+This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute of Technology, where I was supported for my doctoral research project by a generous scholarship from the Ministry of Education, Culture, Sports, Science and Technology (MEXT) of the Japanese Government. I extend my gratitude further to all who have reported bugs, donated code, or made suggestions for improvements!
 
 
 ==Changes==
