@@ -5,10 +5,10 @@
  *
  * Description: Recognizes faces.
  *
- * Copyright (C) Dec 7, 2011, Stephen L. Reed, Texai.org.
+ * Copyright (C) Dec 7, 2011, Stephen L. Reed, Texai.org. (Fixed April 22, 2012, Samuel Audet)
  *
  * This file is a translation from the OpenCV example http://www.shervinemami.info/faceRecognition.html, ported
- * to Java using the JavaCV library.  Notable changes are the addition of the Apache Log4J framework and the
+ * to Java using the JavaCV library.  Notable changes are the addition of the Java Logging framework and the
  * installation of image files in a data directory child of the working directory. Some of the code has
  * been expanded to make debugging easier.  Expected results are 100% recognition of the lower3.txt test
  * image index set against the all10.txt training image index set.  See http://en.wikipedia.org/wiki/Eigenface
@@ -28,18 +28,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with JavaCV.  If not, see .
+ * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
-import java.util.List;
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import org.apache.log4j.Logger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_legacy.*;
@@ -51,7 +51,7 @@ import static com.googlecode.javacv.cpp.opencv_legacy.*;
 public class FaceRecognition {
 
   /** the logger */
-  private static final Logger LOGGER = Logger.getLogger(FaceRecognition.class);
+  private static final Logger LOGGER = Logger.getLogger(FaceRecognition.class.getName());
   /** the number of training faces */
   private int nTrainFaces = 0;
   /** the training face image array */
@@ -63,7 +63,7 @@ public class FaceRecognition {
   /** the number of persons */
   int nPersons;
   /** the person names */
-  final List personNames = new ArrayList<>();
+  final List<String> personNames = new ArrayList<String>();
   /** the number of eigenvalues */
   int nEigens = 0;
   /** eigenvectors */
@@ -93,7 +93,7 @@ public class FaceRecognition {
     nTrainFaces = trainingFaceImgArr.length;
     LOGGER.info("Got " + nTrainFaces + " training images");
     if (nTrainFaces < 3) {
-      LOGGER.error("Need 3 or more training faces\n"
+      LOGGER.severe("Need 3 or more training faces\n"
               + "Input file contains only " + nTrainFaces);
       return;
     }
@@ -432,33 +432,28 @@ public class FaceRecognition {
     cvWrite(
             fileStorage, // fs
             "trainPersonNumMat", // name
-            personNumTruthMat, // value
-            cvAttrList()); // attributes
+            personNumTruthMat); // value
 
     cvWrite(
             fileStorage, // fs
             "eigenValMat", // name
-            eigenValMat, // value
-            cvAttrList()); // attributes
+            eigenValMat); // value
 
     cvWrite(
             fileStorage, // fs
             "projectedTrainFaceMat", // name
-            projectedTrainFaceMat,
-            cvAttrList()); // value
+            projectedTrainFaceMat);
 
     cvWrite(fileStorage, // fs
             "avgTrainImg", // name
-            pAvgTrainImg, // value
-            cvAttrList()); // attributes
+            pAvgTrainImg); // value
 
     for (i = 0; i < nEigens; i++) {
       String varname = "eigenVect_" + i;
       cvWrite(
               fileStorage, // fs
               varname, // name
-              eigenVectArr[i], // value
-              cvAttrList()); // attributes
+              eigenVectArr[i]); // value
     }
 
     // release the file-storage interface
@@ -483,7 +478,7 @@ public class FaceRecognition {
             CV_STORAGE_READ, // flags
             null); // encoding
     if (fileStorage == null) {
-      LOGGER.error("Can't open training database file 'data/facedata.xml'.");
+      LOGGER.severe("Can't open training database file 'data/facedata.xml'.");
       return null;
     }
 
@@ -495,7 +490,7 @@ public class FaceRecognition {
             "nPersons", // name
             0); // default_value
     if (nPersons == 0) {
-      LOGGER.error("No people found in the training database 'data/facedata.xml'.");
+      LOGGER.severe("No people found in the training database 'data/facedata.xml'.");
       return null;
     } else {
       LOGGER.info(nPersons + " persons read from the training database");
@@ -528,29 +523,25 @@ public class FaceRecognition {
     Pointer pointer = cvReadByName(
             fileStorage, // fs
             null, // map
-            "trainPersonNumMat", // name
-            cvAttrList()); // attributes
+            "trainPersonNumMat"); // name
     pTrainPersonNumMat = new CvMat(pointer);
 
     pointer = cvReadByName(
             fileStorage, // fs
             null, // map
-            "eigenValMat", // nmae
-            cvAttrList()); // attributes
+            "eigenValMat"); // name
     eigenValMat = new CvMat(pointer);
 
     pointer = cvReadByName(
             fileStorage, // fs
             null, // map
-            "projectedTrainFaceMat", // name
-            cvAttrList()); // attributes
+            "projectedTrainFaceMat"); // name
     projectedTrainFaceMat = new CvMat(pointer);
 
     pointer = cvReadByName(
             fileStorage,
             null, // map
-            "avgTrainImg",
-            cvAttrList()); // attributes
+            "avgTrainImg");
     pAvgTrainImg = new IplImage(pointer);
 
     eigenVectArr = new IplImage[nTrainFaces];
@@ -559,8 +550,7 @@ public class FaceRecognition {
       pointer = cvReadByName(
               fileStorage,
               null, // map
-              varname,
-              cvAttrList()); // attributes
+              varname);
       eigenVectArr[i] = new IplImage(pointer);
     }
 

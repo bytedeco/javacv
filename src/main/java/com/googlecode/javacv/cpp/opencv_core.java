@@ -3274,6 +3274,8 @@ public class opencv_core {
         @Cast("const char**")
         public native PointerPointer attr(); public native CvAttrList attr(PointerPointer attr);
         public native CvAttrList next();     public native CvAttrList next(CvAttrList next);
+
+        public static final CvAttrList EMPTY = new CvAttrList();
     }
     public static CvAttrList cvAttrList(PointerPointer attr, CvAttrList next) {
         return new CvAttrList().attr(attr).next(next);
@@ -4408,6 +4410,9 @@ public class opencv_core {
     public static native void cvReleaseFileStorage(@ByPtrPtr CvFileStorage fs);
     public static native String cvAttrValue(CvAttrList attr, String attr_name);
 
+    public static void cvStartWriteStruct(CvFileStorage fs, String name, int struct_flags, String type_name/*=null*/) {
+        cvStartWriteStruct(fs, name, struct_flags, type_name, CvAttrList.EMPTY);
+    }
     public static native void cvStartWriteStruct(CvFileStorage fs, String name, int struct_flags,
             String type_name/*=null*/, @ByVal CvAttrList attributes/*=cvArrtList()*/);
     public static native void cvEndWriteStruct(CvFileStorage fs);
@@ -4415,6 +4420,9 @@ public class opencv_core {
     public static native void cvWriteReal(CvFileStorage fs, String name, double value);
     public static native void cvWriteString(CvFileStorage fs, String name, String str, int quote/*=0*/);
     public static native void cvWriteComment(CvFileStorage fs, String comment, int eol_comment);
+    public static void cvWrite(CvFileStorage fs, String name, Pointer ptr) {
+        cvWrite(fs, name, ptr, CvAttrList.EMPTY);
+    }
     public static native void cvWrite(CvFileStorage fs, String name, Pointer ptr, @ByVal CvAttrList attributes/*=cvArrtList()*/);
     public static native void cvStartNextStream(CvFileStorage fs);
     public static native void cvWriteRawData(CvFileStorage fs, Pointer src, int len, String dt);
@@ -4474,7 +4482,13 @@ public class opencv_core {
     public static String cvReadStringByName(CvFileStorage fs, CvFileNode map, String name, String default_value) {
         return cvReadString(cvGetFileNodeByName(fs, map, name), default_value);
     }
+    public static Pointer cvRead(CvFileStorage fs, CvFileNode node) {
+        return cvRead(fs, node, CvAttrList.EMPTY);
+    }
     public static native Pointer cvRead(CvFileStorage fs, CvFileNode node, CvAttrList attributes/*=null*/);
+    public static Pointer cvReadByName(CvFileStorage fs, CvFileNode map, String name) {
+        return cvReadByName(fs, map, name, CvAttrList.EMPTY);
+    }
     public static Pointer cvReadByName(CvFileStorage fs, CvFileNode map, String name, CvAttrList attributes) {
         CvFileNode n = cvGetFileNodeByName(fs, map, name);
         return cvRead(fs, n, attributes);
@@ -4496,17 +4510,16 @@ public class opencv_core {
     public static native void cvRelease(PointerPointer struct_ptr);
     public static native Pointer cvClone(Pointer struct_ptr);
 
-    public static native void cvSave(String filename, Pointer struct_ptr,
-            String name/*=null*/, String comment/*=null*/,
-            @ByVal CvAttrList attributes/*=cvAttrList()*/);
     public static void cvSave(String filename, Pointer struct_ptr) {
-        cvSave(filename, struct_ptr, null, null, cvAttrList());
+        cvSave(filename, struct_ptr, null, null, CvAttrList.EMPTY);
     }
-    public static native Pointer cvLoad(String filename, CvMemStorage memstorage/*=null*/,
-            String name/*=null*/, @Cast("const char**") @ByPtrPtr BytePointer real_name/*=null*/);
+    public static native void cvSave(String filename, Pointer struct_ptr, String name/*=null*/,
+            String comment/*=null*/, @ByVal CvAttrList attributes/*=cvAttrList()*/);
     public static Pointer cvLoad(String filename) {
         return cvLoad(filename, null, null, null);
     }
+    public static native Pointer cvLoad(String filename, CvMemStorage memstorage/*=null*/,
+            String name/*=null*/, @Cast("const char**") @ByPtrPtr BytePointer real_name/*=null*/);
 
 
     public static native long cvGetTickCount();
