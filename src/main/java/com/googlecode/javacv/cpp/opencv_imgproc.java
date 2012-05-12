@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Samuel Audet
+ * Copyright (C) 2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.3.1, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.0, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -88,7 +88,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>", "opencv_adapters.h"},
         link={"opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_imgproc231", "opencv_core231"}),
+        link={"opencv_imgproc240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -122,10 +122,6 @@ public class opencv_imgproc {
 
     public static final int
             CV_GAUSSIAN_5x5 = 7;
-
-    public static final int
-            CV_INPAINT_NS      = 0,
-            CV_INPAINT_TELEA   = 1;
 
     public static final int
             CV_SCHARR          = -1,
@@ -264,12 +260,93 @@ public class opencv_imgproc {
             CV_BayerRG2GRAY = 88,
             CV_BayerGR2GRAY = 89,
 
-            CV_YUV420i2RGB  = 90,
-            CV_YUV420i2BGR  = 91,
-            CV_YUV420sp2RGB = 92,
-            CV_YUV420sp2BGR = 93,
+            CV_YUV2RGB_NV12 = 90,
+            CV_YUV2BGR_NV12 = 91,
+            CV_YUV2RGB_NV21 = 92,
+            CV_YUV2BGR_NV21 = 93,
+            CV_YUV420sp2RGB = CV_YUV2RGB_NV21,
+            CV_YUV420sp2BGR = CV_YUV2BGR_NV21,
 
-            CV_COLORCVT_MAX = 100;
+            CV_YUV2RGBA_NV12 = 94,
+            CV_YUV2BGRA_NV12 = 95,
+            CV_YUV2RGBA_NV21 = 96,
+            CV_YUV2BGRA_NV21 = 97,
+            CV_YUV420sp2RGBA = CV_YUV2RGBA_NV21,
+            CV_YUV420sp2BGRA = CV_YUV2BGRA_NV21,
+
+            CV_YUV2RGB_YV12 = 98,
+            CV_YUV2BGR_YV12 = 99,
+            CV_YUV2RGB_IYUV = 100,
+            CV_YUV2BGR_IYUV = 101,
+            CV_YUV2RGB_I420 = CV_YUV2RGB_IYUV,
+            CV_YUV2BGR_I420 = CV_YUV2BGR_IYUV,
+            CV_YUV420p2RGB = CV_YUV2RGB_YV12,
+            CV_YUV420p2BGR = CV_YUV2BGR_YV12,
+
+            CV_YUV2RGBA_YV12 = 102,
+            CV_YUV2BGRA_YV12 = 103,
+            CV_YUV2RGBA_IYUV = 104,
+            CV_YUV2BGRA_IYUV = 105,
+            CV_YUV2RGBA_I420 = CV_YUV2RGBA_IYUV,
+            CV_YUV2BGRA_I420 = CV_YUV2BGRA_IYUV,
+            CV_YUV420p2RGBA = CV_YUV2RGBA_YV12,
+            CV_YUV420p2BGRA = CV_YUV2BGRA_YV12,
+
+            CV_YUV2GRAY_420 = 106,
+            CV_YUV2GRAY_NV21 = CV_YUV2GRAY_420,
+            CV_YUV2GRAY_NV12 = CV_YUV2GRAY_420,
+            CV_YUV2GRAY_YV12 = CV_YUV2GRAY_420,
+            CV_YUV2GRAY_IYUV = CV_YUV2GRAY_420,
+            CV_YUV2GRAY_I420 = CV_YUV2GRAY_420,
+            CV_YUV420sp2GRAY = CV_YUV2GRAY_420,
+            CV_YUV420p2GRAY = CV_YUV2GRAY_420,
+
+            CV_YUV2RGB_UYVY = 107,
+            CV_YUV2BGR_UYVY = 108,
+            //CV_YUV2RGB_VYUY = 109,
+            //CV_YUV2BGR_VYUY = 110,
+            CV_YUV2RGB_Y422 = CV_YUV2RGB_UYVY,
+            CV_YUV2BGR_Y422 = CV_YUV2BGR_UYVY,
+            CV_YUV2RGB_UYNV = CV_YUV2RGB_UYVY,
+            CV_YUV2BGR_UYNV = CV_YUV2BGR_UYVY,
+
+            CV_YUV2RGBA_UYVY = 111,
+            CV_YUV2BGRA_UYVY = 112,
+            //CV_YUV2RGBA_VYUY = 113,
+            //CV_YUV2BGRA_VYUY = 114,
+            CV_YUV2RGBA_Y422 = CV_YUV2RGBA_UYVY,
+            CV_YUV2BGRA_Y422 = CV_YUV2BGRA_UYVY,
+            CV_YUV2RGBA_UYNV = CV_YUV2RGBA_UYVY,
+            CV_YUV2BGRA_UYNV = CV_YUV2BGRA_UYVY,
+
+            CV_YUV2RGB_YUY2 = 115,
+            CV_YUV2BGR_YUY2 = 116,
+            CV_YUV2RGB_YVYU = 117,
+            CV_YUV2BGR_YVYU = 118,
+            CV_YUV2RGB_YUYV = CV_YUV2RGB_YUY2,
+            CV_YUV2BGR_YUYV = CV_YUV2BGR_YUY2,
+            CV_YUV2RGB_YUNV = CV_YUV2RGB_YUY2,
+            CV_YUV2BGR_YUNV = CV_YUV2BGR_YUY2,
+
+            CV_YUV2RGBA_YUY2 = 119,
+            CV_YUV2BGRA_YUY2 = 120,
+            CV_YUV2RGBA_YVYU = 121,
+            CV_YUV2BGRA_YVYU = 122,
+            CV_YUV2RGBA_YUYV = CV_YUV2RGBA_YUY2,
+            CV_YUV2BGRA_YUYV = CV_YUV2BGRA_YUY2,
+            CV_YUV2RGBA_YUNV = CV_YUV2RGBA_YUY2,
+            CV_YUV2BGRA_YUNV = CV_YUV2BGRA_YUY2,
+
+            CV_YUV2GRAY_UYVY = 123,
+            CV_YUV2GRAY_YUY2 = 124,
+            //CV_YUV2GRAY_VYUY = CV_YUV2GRAY_UYVY,
+            CV_YUV2GRAY_Y422 = CV_YUV2GRAY_UYVY,
+            CV_YUV2GRAY_UYNV = CV_YUV2GRAY_UYVY,
+            CV_YUV2GRAY_YVYU = CV_YUV2GRAY_YUY2,
+            CV_YUV2GRAY_YUYV = CV_YUV2GRAY_YUY2,
+            CV_YUV2GRAY_YUNV = CV_YUV2GRAY_YUY2,
+
+            CV_COLORCVT_MAX  = 125;
 
     public static final int
             CV_INTER_NN        = 0,
@@ -382,6 +459,7 @@ public class opencv_imgproc {
             CV_RETR_LIST     = 1,
             CV_RETR_CCOMP    = 2,
             CV_RETR_TREE     = 3,
+            CV_RETR_FLOODFILL= 4,
 
             CV_CHAIN_CODE              = 0,
             CV_CHAIN_APPROX_NONE       = 1,
@@ -568,6 +646,9 @@ public class opencv_imgproc {
             CV_DIST_MASK_5 =  5,
             CV_DIST_MASK_PRECISE = 0,
 
+            CV_DIST_LABEL_CCOMP = 0,
+            CV_DIST_LABEL_PIXEL = 1,
+
             CV_DIST_USER   = -1,
             CV_DIST_L1     = 1,
             CV_DIST_L2     = 2,
@@ -609,18 +690,6 @@ public class opencv_imgproc {
         public CvFeatureTree(Pointer p) { super(p); }
     }
 
-    @Opaque public static class CvLSH extends Pointer {
-        static { load(); }
-        public CvLSH() { }
-        public CvLSH(Pointer p) { super(p); }
-    }
-
-    @Opaque public static class CvLSHOperations extends Pointer {
-        static { load(); }
-        public CvLSHOperations() { }
-        public CvLSHOperations(Pointer p) { super(p); }
-    }
-
 
     public static native void cvAcc(CvArr image, CvArr sum, CvArr mask/*=null*/);
     public static native void cvSquareAcc(CvArr image, CvArr sqsum, CvArr mask/*=null*/);
@@ -644,12 +713,9 @@ public class opencv_imgproc {
     public static native CvMatArray cvCreatePyramid(CvArr img, int extra_layers, double rate,
             CvSize layer_sizes/*=null*/, CvArr bufarr/*=null*/, int calc/*=1*/, int filter/*=CV_GAUSSIAN_5x5*/);
     public static native void cvReleasePyramid(@ByPtrPtr CvMatArray pyramid, int extra_layers);
-    public static native void cvPyrSegmentation(IplImage src, IplImage dst, CvMemStorage storage,
-            @ByPtrPtr CvSeq comp, int level, double threshold1, double threshold2);
     public static native void cvPyrMeanShiftFiltering(CvArr src, CvArr dst, double sp, double sr, int max_level/*=1*/,
             @ByVal CvTermCriteria termcrit/*=cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 5, 1)*/);
     public static native void cvWatershed(CvArr image, CvArr markers);
-    public static native void cvInpaint(CvArr src, CvArr mask, CvArr dst, double inpaintRange, int flags);
     public static native void cvSobel(CvArr src, CvArr dst, int xorder, int yorder, int aperture_size/*=3*/);
     public static native void cvLaplace(CvArr src, CvArr dst, int aperture_size/*=3*/);
     public static native void cvCvtColor(CvArr src, CvArr dst, int code);
@@ -805,33 +871,6 @@ public class opencv_imgproc {
             double parameter/*=0*/, int minimal_perimeter/*=0*/, int recursive/*=0*/);
     public static native void cvStartReadChainPoints(CvChain chain, CvChainPtReader reader);
     public static native @ByVal CvPoint cvReadChainPoint(CvChainPtReader reader);
-
-
-    public static native void cvInitSubdivDelaunay2D(CvSubdiv2D subdiv, @ByVal CvRect rect);
-    public static native CvSubdiv2D cvCreateSubdiv2D(int subdiv_type, int header_size,
-            int vtx_size, int quadedge_size, CvMemStorage storage);
-    public static CvSubdiv2D cvCreateSubdivDelaunay2D(CvRect rect, CvMemStorage storage)  {
-        CvSubdiv2D subdiv = cvCreateSubdiv2D(CV_SEQ_KIND_SUBDIV2D, sizeof(CvSubdiv2D.class),
-                             sizeof(CvSubdiv2DPoint.class), sizeof(CvQuadEdge2D.class), storage);
-        cvInitSubdivDelaunay2D(subdiv, rect);
-        return subdiv;
-    }
-    public static native CvSubdiv2DPoint cvSubdivDelaunay2DInsert(CvSubdiv2D subdiv, @ByVal CvPoint2D32f pt);
-    public static native int /*CvSubdiv2DPointLocation*/ cvSubdiv2DLocate(CvSubdiv2D subdiv,
-            @ByVal CvPoint2D32f pt, @Cast("CvSubdiv2DEdge*") SizeTPointer edge, @ByPtrPtr CvSubdiv2DPoint vertex/*=null*/);
-    public static native void cvCalcSubdivVoronoi2D(CvSubdiv2D subdiv);
-    public static native void cvClearSubdivVoronoi2D(CvSubdiv2D subdiv);
-    public static native CvSubdiv2DPoint cvFindNearestPoint2D(CvSubdiv2D subdiv, @ByVal CvPoint2D32f pt);
-
-    public static CvSubdiv2DEdge cvSubdiv2DNextEdge(CvSubdiv2DEdge edge) {
-        return CV_SUBDIV2D_NEXT_EDGE(edge);
-    }
-    public static native @ByVal CvSubdiv2DEdge cvSubdiv2DRotateEdge(@ByVal CvSubdiv2DEdge edge, int rotate);
-    public static native @ByVal CvSubdiv2DEdge cvSubdiv2DSymEdge(@ByVal CvSubdiv2DEdge edge);
-    public static native @ByVal CvSubdiv2DEdge cvSubdiv2DGetEdge(@ByVal CvSubdiv2DEdge edge, @Cast("CvNextEdgeType") int type);
-    public static native CvSubdiv2DPoint cvSubdiv2DEdgeOrg(@ByVal CvSubdiv2DEdge edge);
-    public static native CvSubdiv2DPoint cvSubdiv2DEdgeDst(@ByVal CvSubdiv2DEdge edge);
-    public static native double cvTriangleArea(@ByVal CvPoint2D32f a, @ByVal CvPoint2D32f b, @ByVal CvPoint2D32f c);
 
 
     public static native CvSeq cvApproxPoly(Pointer src_seq, int header_size, CvMemStorage storage,
@@ -1006,7 +1045,7 @@ public class opencv_imgproc {
     public static native void cvEqualizeHist(CvArr src, CvArr dst);
 
     public static native void cvDistTransform(CvArr src, CvArr dst, int distance_type/*=CV_DIST_L2*/,
-            int mask_size/*=3*/, FloatPointer mask/*=null*/, CvArr labels/*=null*/);
+            int mask_size/*=3*/, FloatPointer mask/*=null*/, CvArr labels/*=null*/, int labelType/*=CV_DIST_LABEL_CCOMP*/);
     public static native double cvThreshold(CvArr src, CvArr dst, double threshold,
             double max_value, int threshold_type);
     public static native void cvAdaptiveThreshold(CvArr src, CvArr dst, double max_value,
@@ -1042,26 +1081,6 @@ public class opencv_imgproc {
             double reps, double aeps, float[] line);
     public static native void cvFitLine(CvArr points, int dist_type, double param,
             double reps, double aeps, FloatPointer line);
-
-    public static native CvFeatureTree cvCreateKDTree(CvMat desc);
-    public static native CvFeatureTree cvCreateSpillTree(CvMat raw_data,
-            int naive/*=50*/, double rho/*=0.7*/, double tau/*=0.1*/);
-    public static native void cvReleaseFeatureTree(CvFeatureTree tr);
-    public static native void cvFindFeatures(CvFeatureTree tr,
-            CvMat query_points, CvMat indices, CvMat dist, int k, int emax/*=20*/);
-    public static native int cvFindFeaturesBoxed(CvFeatureTree tr,
-            CvMat bounds_min, CvMat bounds_max, CvMat out_indices);
-
-    public static native CvLSH cvCreateLSH(CvLSHOperations ops, int d, int L/*=10*/,
-            int k/*=10*/, int type/*=CV_64FC1*/, double r/*=4*/, long seed/*=-1*/);
-    public static native CvLSH cvCreateMemoryLSH(int d, int n, int L/*=10*/, int k/*=10*/,
-            int type/*=CV_64FC1*/, double r/*=4*/, long seed/*=-1*/);
-    public static native void cvReleaseLSH(@ByPtrPtr CvLSH lsh);
-    public static native int LSHSize(CvLSH lsh);
-    public static native void cvLSHAdd(CvLSH lsh, CvMat data, CvMat indices/*=null*/);
-    public static native void cvLSHRemove(CvLSH lsh, CvMat indices);
-    public static native void cvLSHQuery(CvLSH lsh, CvMat query_points,
-            CvMat indices, CvMat dist, int k, int emax);
 
 
     public static final int
@@ -1262,6 +1281,8 @@ public class opencv_imgproc {
             int ksize, int anchor/*=-1*/, double scale/*=1*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createBoxFilter(int srcType, int dstType, @ByVal CvSize ksize,
             @ByVal CvPoint anchor/*=Point(-1,-1)*/, @Cast("bool") boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native @Adapter("MatAdapter") CvMat getGaborKernel(@ByVal CvSize ksize, double sigma,
+            double theta, double lambd, double gamma, double psi/*=Math.PI*0.5*/, int ktype/*=CV_64F*/);
 
     public static final int
             MORPH_ERODE=CV_MOP_ERODE, MORPH_DILATE=CV_MOP_DILATE,
@@ -1295,6 +1316,16 @@ public class opencv_imgproc {
     @Namespace("cv") public static native void sepFilter2D(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ddepth,
             @Adapter("ArrayAdapter") CvMat kernelX, @Adapter("ArrayAdapter") CvMat kernelY, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
 
+    @Namespace("cv") public static native void eigen2x2(float[] a, float[] e, int n);
+    @Namespace("cv") public static native void eigen2x2(FloatPointer a, FloatPointer e, int n);
+
+    @Namespace("cv") public static native double PSNR(@Adapter("ArrayAdapter") CvArr src1, @Adapter("ArrayAdapter") CvArr src2);
+
+    @Namespace("cv") public static native @Adapter("Point2dAdapter") CvPoint2D64f phaseCorrelate(@Adapter("ArrayAdapter") CvArr src1,
+            @Adapter("ArrayAdapter") CvArr src2, @Adapter("ArrayAdapter") CvArr window/*=null*/);
+    @Namespace("cv") public static native void createHanningWindow(@Adapter(value="ArrayAdapter", out=true) CvMat dst,
+            @ByVal CvSize winSize, int type);
+
     public static final int
             PROJ_SPHERICAL_ORTHO = 0,
             PROJ_SPHERICAL_EQRECT = 1;
@@ -1321,4 +1352,8 @@ public class opencv_imgproc {
 
     @Namespace("cv") public static native void grabCut(@Adapter("ArrayAdapter") CvArr img, @Adapter("ArrayAdapter") CvArr mask, @ByVal CvRect rect,
             @Adapter("ArrayAdapter") CvArr bgdModel, @Adapter("ArrayAdapter") CvArr fgdModel, int iterCount, int mode/*=GC_EVAL*/);
+
+    @Namespace("cv") public static native @Cast("bool") boolean isContourConvex(@Adapter("ArrayAdapter") CvArr contour);
+    @Namespace("cv") public static native float intersectConvexConvex(@Adapter("ArrayAdapter") CvArr _p1, @Adapter("ArrayAdapter") CvArr _p2,
+            @Adapter(value="ArrayAdapter", out=true) CvMat _p12, @Cast("bool") boolean handleNested/*=true*/);
 }

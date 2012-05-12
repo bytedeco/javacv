@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in ml.hpp of OpenCV 2.3.1,
+ * This file is based on information found in ml.hpp of OpenCV 2.4.0,
  * which is covered by the following copyright notice:
  *
  *                        Intel License Agreement
@@ -87,7 +87,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml231", "opencv_core231"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -156,6 +156,7 @@ public class opencv_ml {
             CV_TYPE_NAME_ML_ANN_MLP    = "opencv-ml-ann-mlp",
             CV_TYPE_NAME_ML_CNN        = "opencv-ml-cnn",
             CV_TYPE_NAME_ML_RTREES     = "opencv-ml-random-trees",
+            CV_TYPE_NAME_ML_ERTREES    = "opencv-ml-extremely-randomized-trees",
             CV_TYPE_NAME_ML_GBT        = "opencv-ml-gradient-boosting-trees";
 
     public static final int
@@ -583,100 +584,87 @@ public class opencv_ml {
     }
 
 
-    @NoOffset public static class CvEMParams extends Pointer {
-        static { load(); }
-        public CvEMParams() { allocate(); }
-        public CvEMParams(int nclusters, int cov_mat_type/*=CvEM::COV_MAT_DIAGONAL*/, int start_step/*=CvEM::START_AUTO_STEP*/,
-                @ByVal CvTermCriteria term_crit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/,
-                CvMat probs/*=null*/, CvMat weights/*=null*/, CvMat means/*=null*/, @Const CvMatArray covs/*=null*/) {
-            allocate(nclusters, cov_mat_type, start_step, term_crit, probs, weights, means, covs);
-        }
-        public CvEMParams(int size) { allocateArray(size); }
-        public CvEMParams(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocate(int nclusters, int cov_mat_type/*=CvEM::COV_MAT_DIAGONAL*/, int start_step/*=CvEM::START_AUTO_STEP*/,
-                @ByVal CvTermCriteria term_crit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/,
-                CvMat probs/*=null*/, CvMat weights/*=null*/, CvMat means/*=null*/, @Const CvMatArray covs/*=null*/);
-        private native void allocateArray(int size);
-
-        @Override public CvEMParams position(int position) {
-            return (CvEMParams)super.position(position);
-        }
-
-        public native int nclusters();            public native CvEMParams nclusters(int nclusters);
-        public native int cov_mat_type();         public native CvEMParams cov_mat_type(int cov_mat_type);
-        public native int start_step();           public native CvEMParams start_step(int start_step);
-        public native @Const CvMat probs();       public native CvEMParams probs(CvMat probs);
-        public native @Const CvMat weights();     public native CvEMParams weights(CvMat weights);
-        public native @Const CvMat means();       public native CvEMParams means(CvMat means);
-        public native @Const CvMatArray covs();   public native CvEMParams covs(CvMatArray covs);
-        @ByRef
-        public native CvTermCriteria term_crit(); public native CvEMParams term_crit(CvTermCriteria term_crit);
-    }
-
-
-    public static class CvEM extends CvStatModel {
+    @Namespace("cv") public static class EM extends Algorithm {
         static { Loader.load(); }
-        public CvEM() { allocate(); }
-        public CvEM(CvMat samples, CvMat sampleIdx/*=null*/,
-                CvEMParams params/*=CvEMParams()*/, CvMat labels/*=null*/ ) {
-            allocate(samples, sampleIdx, params, labels);
+        public EM() { allocate(); }
+        public EM(int nclusters/*=DEFAULT_NCLUSTERS*/, int covMatType/*=COV_MAT_DIAGONAL*/,
+                @ByVal CvTermCriteria termCrit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/) {
+            allocate(nclusters, covMatType, termCrit);
         }
-//        public CvEM(@ByVal CvEMParams params, CvMat means, CvMatArray covs, CvMat weights,
-//                CvMat probs, CvMat log_weight_div_det, CvMat inv_eigen_values, CvMatArray cov_rotate_mats);
-        public CvEM(Pointer p) { super(p); }
+        public EM(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(CvMat samples, CvMat sampleIdx/*=null*/,
-                @ByVal CvEMParams params/*=CvEMParams()*/, CvMat labels/*=null*/ );
+        private native void allocate(int nclusters/*=DEFAULT_NCLUSTERS*/, int covMatType/*=COV_MAT_DIAGONAL*/,
+                @ByVal CvTermCriteria termCrit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, FLT_EPSILON)*/);
 
-        public static final int COV_MAT_SPHERICAL=0, COV_MAT_DIAGONAL=1, COV_MAT_GENERIC=2;
+        public static final int COV_MAT_SPHERICAL=0, COV_MAT_DIAGONAL=1, COV_MAT_GENERIC=2, COV_MAT_DEFAULT=COV_MAT_DIAGONAL;
+
+        public static final int DEFAULT_NCLUSTERS=5, DEFAULT_MAX_ITERS=100;
 
         public static final int START_E_STEP=1, START_M_STEP=2, START_AUTO_STEP=0;
 
-        public native boolean train(CvMat samples, CvMat sampleIdx/*=null*/,
-                @ByVal CvEMParams params/*=CvEMParams()*/, CvMat labels/*=null*/);
-        public native float predict(CvMat sample, CvMat probs);
-        public native double calcLikelihood(CvMat sample);
-//        public native void clear();
+        public native void clear();
 
-        public native int           get_nclusters();
-        public native @Const CvMat  get_means();
-        public native @Const CvMatArray get_covs();
-        public native @Const CvMat  get_weights();
-        public native @Const CvMat  get_probs();
+        public native @Cast("bool") boolean train(@Adapter("ArrayAdapter") CvArr samples,
+                       @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods/*=null*/,
+                       @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/,
+                       @Adapter(value="ArrayAdapter", out=true) CvMat probs/*=null*/);
 
-        public native double        get_log_likelihood();
-        public native double        get_log_likelihood_delta();
+        public native @Cast("bool") boolean trainE(@Adapter("ArrayAdapter") CvArr samples,
+                        @Adapter("ArrayAdapter") CvArr means0,
+                        @Adapter("ArrayAdapter") CvArr covs0/*=null*/,
+                        @Adapter("ArrayAdapter") CvArr weights0/*=null*/,
+                        @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods/*=null*/,
+                        @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/,
+                        @Adapter(value="ArrayAdapter", out=true) CvMat probs/*=null*/);
 
-//        public native @Const CvMat  get_log_weight_div_det();
-//        public native @Const CvMat  get_inv_eigen_values();
-//        public native @Const CvMatArray get_cov_rotate_mats();
+        public native @Cast("bool") boolean trainM(@Adapter("ArrayAdapter") CvArr samples,
+                        @Adapter("ArrayAdapter") CvArr probs0,
+                        @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods/*=null*/,
+                        @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/,
+                        @Adapter(value="ArrayAdapter", out=true) CvMat probs/*=null*/);
 
-//        public native void read(CvFileStorage fs, CvFileNode node);
-//        public native void write(CvFileStorage fs, String name);
+        public native @ByVal CvScalar predict(@Adapter("ArrayAdapter") CvArr sample, @Adapter(value="ArrayAdapter", out=true) CvMat probs);
 
-        public native void write_params(CvFileStorage fs);
-        public native void read_params(CvFileStorage fs, CvFileNode node);
+        public native @Cast("bool") boolean isTrained();
 
-//        protected native void set_params(@ByRef CvEMParams params, @ByRef CvVectors train_data);
-//        protected native void init_em(@ByRef CvVectors train_data);
-//        protected native double run_em(@ByRef CvVectors train_data);
-//        protected native void init_auto(@ByRef CvVectors samples);
-//        protected native void kmeans(@ByRef CvVectors train_data, int nclusters,
-//                CvMat labels, @ByVal CvTermCriteria criteria, CvMat means);
-//        @ByRef
-//        protected native CvEMParams params();
-//        protected native double log_likelihood();
-//        protected native double log_likelihood_delta();
+//        public native AlgorithmInfo info();
+//        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+
+//        protected native void setTrainData(int startStep, CvMat samples,
+//                @Adapter("MatAdapter") CvMat probs0, @Adapter("MatAdapter") CvMat means0,
+//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covs0, @Adapter("MatAdapter") CvMat weights0);
 //
-//        protected native CvMat means();
-//        protected native CvMatArray covs();
-//        protected native CvMat weights();
-//        protected native CvMat probs();
+//        protected native @Cast("bool") boolean doTrain(int startStep,
+//                @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods,
+//                @Adapter(value="ArrayAdapter", out=true) CvMat labels,
+//                @Adapter(value="ArrayAdapter", out=true) CvMat probs);
+//        protected native void eStep();
+//        protected native void mStep();
 //
-//        protected native CvMat log_weight_div_det();
-//        protected native CvMat inv_eigen_values();
-//        protected native CvMatArray cov_rotate_mats();
+//        protected native void clusterTrainSamples();
+//        protected native void decomposeCovs();
+//        protected native void computeLogWeightDivDet();
+//
+//        protected native @ByVal CvScalar computeProbabilities(CvMat sample, @Adapter("MatAdapter") CvMat probs);
+//
+//        protected native int nclusters();
+//        protected native int covMatType();
+//        protected native int maxIters();
+//        protected native double epsilon();
+//
+//        protected native @Adapter("MatAdapter") CvMat trainSamples();
+//        protected native @Adapter("MatAdapter") CvMat trainProbs();
+//        protected native @Adapter("MatAdapter") CvMat trainLogLikelihoods();
+//        protected native @Adapter("MatAdapter") CvMat trainLabels();
+//
+//        protected native @Adapter("MatAdapter") CvMat weights();
+//        protected native @Adapter("MatAdapter") CvMat means();
+//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covs();
+//
+//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covsEigenValues();
+//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covsRotateMats();
+//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray invCovsEigenValues();
+//        protected native @Adapter("MatAdapter") CvMat logWeightDivDet();
     }
 
 
@@ -1051,6 +1039,8 @@ public class opencv_ml {
         public native int get_tree_count();
         public native CvForestTree get_tree(int i);
 
+//        protected native String get_name();
+//
 //        protected native boolean grow_forest(@ByVal CvTermCriteria term_crit);
 //
 //        protected native @Cast("CvForestTree**") PointerPointer trees();
@@ -1118,6 +1108,7 @@ public class opencv_ml {
 //                @ByVal CvRTParams params/*=CvRTParams()*/);
 //        public native boolean train(CvMLData data, @ByVal CvRTParams params/*=CvRTParams()*/);
 //
+//        protected native String get_name();
 //        protected native boolean grow_forest(@ByVal CvTermCriteria term_crit);
     }
 
@@ -1517,7 +1508,7 @@ public class opencv_ml {
         public native void mix_train_and_test_idx();
 
         public native @Const CvMat get_var_idx();
-        public native void chahge_var_idx(int vi, boolean state);
+        public native void change_var_idx(int vi, boolean state);
 
         public native @Const CvMat get_var_types();
         public native int get_var_type(int var_idx);

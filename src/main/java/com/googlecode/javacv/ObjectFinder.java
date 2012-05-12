@@ -35,10 +35,10 @@ import java.util.logging.Logger;
 
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_features2d.*;
 import static com.googlecode.javacv.cpp.opencv_flann.*;
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_legacy.*;
 
 /**
  *
@@ -369,6 +369,7 @@ public class ObjectFinder {
         ObjectFinder.Settings settings = new ObjectFinder.Settings();
         settings.objectImage = object;
         settings.useFLANN = true;
+        settings.ransacReprojThreshold = 5;
         ObjectFinder finder = new ObjectFinder(settings);
 
         long start = System.currentTimeMillis();

@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.3.1,
+ * This file is based on information found in highgui_c.h of OpenCV 2.4.0,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement
@@ -70,14 +70,14 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
- * @author saudet
+ * @author Samuel Audet
  */
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include="<opencv2/highgui/highgui_c.h>",
         link={"opencv_highgui", "opencv_imgproc", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_highgui231", "opencv_imgproc231", "opencv_core231"}, preload="opencv_ffmpeg231"),
+    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg240", "opencv_ffmpeg240_64"},
+        link={"opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -112,21 +112,9 @@ public class opencv_highgui {
     public static native void cvAddText(CvArr img, String text, @ByVal CvPoint org, CvFont arg2);
 
     @Platform("linux")
-    public static native void cvDisplayOverlay(String name, String text, int delayms);
+    public static native void cvDisplayOverlay(String name, String text, int delayms/*=0*/);
     @Platform("linux")
-    public static native void cvDisplayStatusBar(String name, String text, int delayms);
-
-    @Platform("linux")
-    public static class CvOpenGLCallback extends FunctionPointer {
-        static { load(); }
-        public    CvOpenGLCallback(Pointer p) { super(p); }
-        protected CvOpenGLCallback() { allocate(); }
-        protected final native void allocate();
-        public native void call(Pointer userdata);
-    }
-    @Platform("linux")
-    public static native void cvCreateOpenGLCallback(String window_name, CvOpenGLCallback callbackOpenGL,
-            Pointer userdata/*=null*/, double angle/*=-1*/, double zmin/*=-1*/, double zmax/*=-1*/);
+    public static native void cvDisplayStatusBar(String name, String text, int delayms/*=0*/);
 
     @Platform("linux")
     public static native void cvSaveWindowParameters(String name);
@@ -163,19 +151,21 @@ public class opencv_highgui {
     public static native int cvStartWindowThread();
 
     public static final int
-	CV_WND_PROP_FULLSCREEN  = 0,
-	CV_WND_PROP_AUTOSIZE    = 1,
-	CV_WND_PROP_ASPECTRATIO = 2,
+        CV_WND_PROP_FULLSCREEN  = 0,
+        CV_WND_PROP_AUTOSIZE    = 1,
+        CV_WND_PROP_ASPECTRATIO = 2,
+        CV_WND_PROP_OPENGL      = 3,
 
-	CV_WINDOW_NORMAL        = 0x00000000,
-	CV_WINDOW_AUTOSIZE 	= 0x00000001,
+        CV_WINDOW_NORMAL        = 0x00000000,
+        CV_WINDOW_AUTOSIZE      = 0x00000001,
+        CV_WINDOW_OPENGL        = 0x00001000,
 
-	CV_GUI_EXPANDED 	= 0x00000000,
-	CV_GUI_NORMAL 		= 0x00000010,
+        CV_GUI_EXPANDED         = 0x00000000,
+        CV_GUI_NORMAL           = 0x00000010,
 
-	CV_WINDOW_FULLSCREEN    = 1,
-	CV_WINDOW_FREERATIO	= 0x00000100,
-	CV_WINDOW_KEEPRATIO     = 0x00000000;
+        CV_WINDOW_FULLSCREEN    = 1,
+        CV_WINDOW_FREERATIO     = 0x00000100,
+        CV_WINDOW_KEEPRATIO     = 0x00000000;
 
     public static int cvNamedWindow(String name) { return cvNamedWindow(name, CV_WINDOW_AUTOSIZE); }
     public static native int cvNamedWindow(String name, int flags/*=CV_WINDOW_AUTOSIZE*/);
@@ -286,9 +276,15 @@ public class opencv_highgui {
     }
 
     public static final int
-            CV_IMWRITE_JPEG_QUALITY    = 1,
-            CV_IMWRITE_PNG_COMPRESSION = 16,
-            CV_IMWRITE_PXM_BINARY      = 32;
+            CV_IMWRITE_JPEG_QUALITY              = 1,
+            CV_IMWRITE_PNG_COMPRESSION           = 16,
+            CV_IMWRITE_PNG_STRATEGY              = 17,
+            CV_IMWRITE_PNG_STRATEGY_DEFAULT      = 0,
+            CV_IMWRITE_PNG_STRATEGY_FILTERED     = 1,
+            CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY = 2,
+            CV_IMWRITE_PNG_STRATEGY_RLE          = 3,
+            CV_IMWRITE_PNG_STRATEGY_FIXED        = 4,
+            CV_IMWRITE_PXM_BINARY                = 32;
 
     public static int cvSaveImage(String filename, CvArr image) { return cvSaveImage(filename, image, null); }
     public static native int cvSaveImage(String filename, CvArr image, int[] params/*=null*/);
@@ -308,6 +304,18 @@ public class opencv_highgui {
 
     public static int cvWaitKey() { return cvWaitKey(0); }
     public static native int cvWaitKey(int delay/*=0*/);
+
+    public static class CvOpenGLCallback extends FunctionPointer {
+        static { load(); }
+        public    CvOpenGLCallback(Pointer p) { super(p); }
+        protected CvOpenGLCallback() { allocate(); }
+        protected final native void allocate();
+        public native void call(Pointer userdata);
+    }
+    public static native void cvSetOpenGlDrawCallback(String window_name,
+            CvOpenGLCallback callbackOpenGL, Pointer userdata/*=null*/);
+    public static native void cvSetOpenGlContext(String window_name);
+    public static native void cvUpdateWindow(String window_name);
 
 
     @Opaque public static class CvCapture extends Pointer {
@@ -348,10 +356,13 @@ public class opencv_highgui {
             CV_CAP_PVAPI   = 800,
 
             CV_CAP_OPENNI  = 900,
+            CV_CAP_OPENNI_ASUS  = 910,
 
             CV_CAP_ANDROID = 1000,
 
-            CV_CAP_XIAPI   = 1100;
+            CV_CAP_XIAPI   = 1100,
+
+            CV_CAP_AVFOUNDATION = 1200;
 
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native int cvGrabFrame(CvCapture capture);
@@ -392,25 +403,43 @@ public class opencv_highgui {
             CV_CAP_PROP_TRIGGER       = 24,
             CV_CAP_PROP_TRIGGER_DELAY = 25,
             CV_CAP_PROP_WHITE_BALANCE_RED_V = 26,
-            CV_CAP_PROP_MAX_DC1394    = 27,
+            CV_CAP_PROP_ZOOM          =27,
+            CV_CAP_PROP_FOCUS         =28,
+            CV_CAP_PROP_GUID          =29,
+            CV_CAP_PROP_ISO_SPEED     =30,
+            CV_CAP_PROP_MAX_DC1394    =31,
+            CV_CAP_PROP_BACKLIGHT     =32,
+            CV_CAP_PROP_PAN           =33,
+            CV_CAP_PROP_TILT          =34,
+            CV_CAP_PROP_ROLL          =35,
+            CV_CAP_PROP_IRIS          =36,
+            CV_CAP_PROP_SETTINGS      =37,
+
             CV_CAP_PROP_AUTOGRAB      = 1024,
             CV_CAP_PROP_SUPPORTED_PREVIEW_SIZES_STRING=1025,
             CV_CAP_PROP_PREVIEW_FORMAT=1025,
 
-            CV_CAP_OPENNI_DEPTH_GENERATOR = 0,
-            CV_CAP_OPENNI_IMAGE_GENERATOR = 1 << 31,
-            CV_CAP_OPENNI_GENERATORS_MASK = 1 << 31,
+            CV_CAP_OPENNI_DEPTH_GENERATOR = 1 << 31,
+            CV_CAP_OPENNI_IMAGE_GENERATOR = 1 << 30,
+            CV_CAP_OPENNI_GENERATORS_MASK = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_OPENNI_IMAGE_GENERATOR,
 
             CV_CAP_PROP_OPENNI_OUTPUT_MODE      = 100,
             CV_CAP_PROP_OPENNI_FRAME_MAX_DEPTH  = 101,
             CV_CAP_PROP_OPENNI_BASELINE         = 102,
             CV_CAP_PROP_OPENNI_FOCAL_LENGTH     = 103,
-            CV_CAP_PROP_OPENNI_REGISTRATION_ON  = 104,
-            CV_CAP_PROP_OPENNI_REGISTRATION     = CV_CAP_PROP_OPENNI_REGISTRATION_ON,
-            CV_CAP_OPENNI_IMAGE_GENERATOR_OUTPUT_MODE = CV_CAP_OPENNI_IMAGE_GENERATOR + CV_CAP_PROP_OPENNI_OUTPUT_MODE,
-            CV_CAP_OPENNI_DEPTH_GENERATOR_BASELINE = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_BASELINE,
-            CV_CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_FOCAL_LENGTH,
-            CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION_ON = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_REGISTRATION_ON,
+            CV_CAP_PROP_OPENNI_REGISTRATION     = 104,
+            CV_CAP_PROP_OPENNI_REGISTRATION_ON  = CV_CAP_PROP_OPENNI_REGISTRATION,
+            CV_CAP_PROP_OPENNI_APPROX_FRAME_SYNC = 105,
+            CV_CAP_PROP_OPENNI_MAX_BUFFER_SIZE   = 106,
+            CV_CAP_PROP_OPENNI_CIRCLE_BUFFER     = 107,
+            CV_CAP_PROP_OPENNI_MAX_TIME_DURATION = 108,
+            CV_CAP_PROP_OPENNI_GENERATOR_PRESENT = 109,
+            CV_CAP_OPENNI_IMAGE_GENERATOR_PRESENT         = CV_CAP_OPENNI_IMAGE_GENERATOR + CV_CAP_PROP_OPENNI_GENERATOR_PRESENT,
+            CV_CAP_OPENNI_IMAGE_GENERATOR_OUTPUT_MODE     = CV_CAP_OPENNI_IMAGE_GENERATOR + CV_CAP_PROP_OPENNI_OUTPUT_MODE,
+            CV_CAP_OPENNI_DEPTH_GENERATOR_BASELINE        = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_BASELINE,
+            CV_CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH    = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_FOCAL_LENGTH,
+            CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION    = CV_CAP_OPENNI_DEPTH_GENERATOR + CV_CAP_PROP_OPENNI_REGISTRATION,
+            CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION_ON = CV_CAP_OPENNI_DEPTH_GENERATOR_REGISTRATION,
 
             CV_CAP_GSTREAMER_QUEUE_LENGTH       = 200,
             CV_CAP_PROP_PVAPI_MULTICASTIP       = 300,
@@ -437,6 +466,21 @@ public class opencv_highgui {
             CV_CAP_PROP_XI_AEAG_LEVEL    = 419,
             CV_CAP_PROP_XI_TIMEOUT       = 420,
 
+            CV_CAP_PROP_ANDROID_FLASH_MODE = 8001,
+            CV_CAP_PROP_ANDROID_FOCUS_MODE = 8002,
+            CV_CAP_PROP_ANDROID_WHITE_BALANCE = 8003,
+            CV_CAP_PROP_ANDROID_ANTIBANDING = 8004,
+            CV_CAP_PROP_ANDROID_FOCAL_LENGTH = 8005,
+            CV_CAP_PROP_ANDROID_FOCUS_DISTANCE_NEAR = 8006,
+            CV_CAP_PROP_ANDROID_FOCUS_DISTANCE_OPTIMAL = 8007,
+            CV_CAP_PROP_ANDROID_FOCUS_DISTANCE_FAR = 8008,
+
+            CV_CAP_PROP_IOS_DEVICE_FOCUS = 9001,
+            CV_CAP_PROP_IOS_DEVICE_EXPOSURE = 9002,
+            CV_CAP_PROP_IOS_DEVICE_FLASH = 9003,
+            CV_CAP_PROP_IOS_DEVICE_WHITEBALANCE = 9004,
+            CV_CAP_PROP_IOS_DEVICE_TORCH = 9005,
+
             CV_CAP_OPENNI_DEPTH_MAP                 = 0,
             CV_CAP_OPENNI_POINT_CLOUD_MAP           = 1,
             CV_CAP_OPENNI_DISPARITY_MAP             = 2,
@@ -448,14 +492,42 @@ public class opencv_highgui {
 
             CV_CAP_OPENNI_VGA_30HZ     = 0,
             CV_CAP_OPENNI_SXGA_15HZ    = 1,
+            CV_CAP_OPENNI_SXGA_30HZ    = 2,
 
             CV_CAP_ANDROID_COLOR_FRAME_BGR = 0,
             CV_CAP_ANDROID_COLOR_FRAME = CV_CAP_ANDROID_COLOR_FRAME_BGR,
             CV_CAP_ANDROID_GREY_FRAME  = 1,
             CV_CAP_ANDROID_COLOR_FRAME_RGB = 2,
             CV_CAP_ANDROID_COLOR_FRAME_BGRA = 3,
-            CV_CAP_ANDROID_COLOR_FRAME_RGBA = 4;
- 
+            CV_CAP_ANDROID_COLOR_FRAME_RGBA = 4,
+
+            CV_CAP_ANDROID_FLASH_MODE_AUTO = 0,
+            CV_CAP_ANDROID_FLASH_MODE_OFF = 1,
+            CV_CAP_ANDROID_FLASH_MODE_ON = 2,
+            CV_CAP_ANDROID_FLASH_MODE_RED_EYE = 3,
+            CV_CAP_ANDROID_FLASH_MODE_TORCH = 4,
+
+            CV_CAP_ANDROID_FOCUS_MODE_AUTO = 0,
+            CV_CAP_ANDROID_FOCUS_MODE_CONTINUOUS_VIDEO = 1,
+            CV_CAP_ANDROID_FOCUS_MODE_EDOF = 2,
+            CV_CAP_ANDROID_FOCUS_MODE_FIXED = 3,
+            CV_CAP_ANDROID_FOCUS_MODE_INFINITY = 4,
+            CV_CAP_ANDROID_FOCUS_MODE_MACRO = 5,
+
+            CV_CAP_ANDROID_WHITE_BALANCE_AUTO = 0,
+            CV_CAP_ANDROID_WHITE_BALANCE_CLOUDY_DAYLIGHT = 1,
+            CV_CAP_ANDROID_WHITE_BALANCE_DAYLIGHT = 2,
+            CV_CAP_ANDROID_WHITE_BALANCE_FLUORESCENT = 3,
+            CV_CAP_ANDROID_WHITE_BALANCE_INCANDESCENT = 4,
+            CV_CAP_ANDROID_WHITE_BALANCE_SHADE = 5,
+            CV_CAP_ANDROID_WHITE_BALANCE_TWILIGHT = 6,
+            CV_CAP_ANDROID_WHITE_BALANCE_WARM_FLUORESCENT = 7,
+
+            CV_CAP_ANDROID_ANTIBANDING_50HZ = 0,
+            CV_CAP_ANDROID_ANTIBANDING_60HZ = 1,
+            CV_CAP_ANDROID_ANTIBANDING_AUTO = 2,
+            CV_CAP_ANDROID_ANTIBANDING_OFF = 3;
+
     public static native double cvGetCaptureProperty(CvCapture capture, int property_id);
     public static native int    cvSetCaptureProperty(CvCapture capture, int property_id, double value);
     public static native int    cvGetCaptureDomain(CvCapture capture);
@@ -468,7 +540,7 @@ public class opencv_highgui {
     }
 
     public static int CV_FOURCC(byte c1, byte c2, byte c3, byte c4) {
-        return (c1&255) + ((c2&255)<<8) + ((c3&255)<<16) + ((c4&255)<<24);
+        return (c1 & 255) + ((c2 & 255) << 8) + ((c3 & 255) << 16) + ((c4 & 255) << 24);
     }
     public static int CV_FOURCC(char c1, char c2, char c3, char c4) {
         return CV_FOURCC((byte)c1, (byte)c2, (byte)c3, (byte)c4);

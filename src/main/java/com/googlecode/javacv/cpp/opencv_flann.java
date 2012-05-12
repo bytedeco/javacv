@@ -18,8 +18,8 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in flann.hpp of OpenCV 2.3.1,
- * which is covered by the following copyright notice:
+ * This file is based on information found in defines.h and miniflann.hpp
+ * of OpenCV 2.4.0, which ares covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -64,7 +64,6 @@ import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.Cast;
-import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
@@ -80,7 +79,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann", "opencv_core"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann231", "opencv_core231"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -114,23 +113,6 @@ public class opencv_flann {
             FLANN_DIST_CS         = 7,
             FLANN_DIST_KULLBACK_LEIBLER  = 8,
             FLANN_DIST_KL                = 8;
-
-    @Name("std::vector<std::string>") 
-    public static class StringVector extends Pointer {
-        static { load(); }
-        public StringVector()       { allocate();  }
-        public StringVector(long n) { allocate(n); }
-        public StringVector(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocate(@Cast("size_t") long n);
-
-        public native long size();
-        public native void resize(@Cast("size_t") long n);
-
-        @com.googlecode.javacpp.annotation.Index
-        @ByRef public native String get(@Cast("size_t") long i);
-        public native StringVector put(@Cast("size_t") long i, String value);
-    }
 
     @NoOffset @Namespace("cv::flann") public static class IndexParams extends Pointer {
         static { load(); }
@@ -183,7 +165,7 @@ public class opencv_flann {
         public CompositeIndexParams(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(int trees/*=4*/, int branching/*=32*/, int iterations/*=11*/,
-                @Cast("cv::flann::flann_centers_init_t") int centers_init/*=CENTERS_RANDOM*/, float cb_index/*=0.2*/);
+                @Cast("cvflann::flann_centers_init_t") int centers_init/*=CENTERS_RANDOM*/, float cb_index/*=0.2*/);
     }
 
     @Namespace("cv::flann") public static class AutotunedIndexParams extends IndexParams {
@@ -209,7 +191,7 @@ public class opencv_flann {
         public KMeansIndexParams(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(int branching/*=32*/, int iterations/*= 11*/,
-                @Cast("cv::flann::flann_centers_init_t") int centers_init/*=CENTERS_RANDOM*/, float cb_index/*=0.2*/);
+                @Cast("cvflann::flann_centers_init_t") int centers_init/*=CENTERS_RANDOM*/, float cb_index/*=0.2*/);
     }
 
     @Namespace("cv::flann") public static class LshIndexParams extends IndexParams {
@@ -252,14 +234,14 @@ public class opencv_flann {
         public Index(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(@Adapter("ArrayAdapter") CvArr features, @ByRef IndexParams params,
-                @Cast("cv::flann::flann_distance_t") int distType);
+                @Cast("cvflann::flann_distance_t") int distType);
         private native void allocate(@Adapter("ArrayAdapter") FloatPointer features, @ByRef IndexParams params,
-                @Cast("cv::flann::flann_distance_t") int distType);
+                @Cast("cvflann::flann_distance_t") int distType);
 
         public native void build(@Adapter("ArrayAdapter") CvArr features, @ByRef IndexParams params,
-                @Cast("cv::flann::flann_distance_t") int distType/*=FLANN_DIST_L2*/);
+                @Cast("cvflann::flann_distance_t") int distType/*=FLANN_DIST_L2*/);
         public native void build(@Adapter("ArrayAdapter") FloatPointer features, @ByRef IndexParams params,
-                @Cast("cv::flann::flann_distance_t") int distType/*=FLANN_DIST_L2*/);
+                @Cast("cvflann::flann_distance_t") int distType/*=FLANN_DIST_L2*/);
         public native void knnSearch(@Adapter("ArrayAdapter") CvArr query,
                 @Adapter(value="ArrayAdapter",out=true) CvMat indices,
                 @Adapter(value="ArrayAdapter",out=true) CvMat dists, int knn,
@@ -282,11 +264,11 @@ public class opencv_flann {
         public native boolean load(@Adapter("ArrayAdapter") CvArr features, String filename);
         public native boolean load(@Adapter("ArrayAdapter") FloatPointer features, String filename);
         public native void release();
-        public native @Cast("cv::flann::flann_distance_t") int getDistance();
-        public native @Cast("cv::flann::flann_algorithm_t") int getAlgorithm();
+        public native @Cast("cvflann::flann_distance_t") int getDistance();
+        public native @Cast("cvflann::flann_algorithm_t") int getAlgorithm();
 
-//        protected native @Cast("cv::flann::flann_distance_t") int distType();
-//        protected native @Cast("cv::flann::flann_algorithm_t") int algo();
+//        protected native @Cast("cvflann::flann_distance_t") int distType();
+//        protected native @Cast("cvflann::flann_algorithm_t") int algo();
 //        protected native int featureType();
 //        protected native Pointer index();
     }

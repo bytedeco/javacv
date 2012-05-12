@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in calib3d.hpp
- * of OpenCV 2.3.1, which are covered by the following copyright notice:
+ * of OpenCV 2.4.0, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -85,7 +85,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"},
         link={"opencv_calib3d", "opencv_features2d", "opencv_flann", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_calib3d231", "opencv_features2d231", "opencv_flann231", "opencv_highgui231", "opencv_imgproc231", "opencv_core231"}),
+        link={"opencv_calib3d240", "opencv_features2d240", "opencv_flann240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -136,7 +136,11 @@ public class opencv_calib3d {
             CV_FM_LMEDS_ONLY = CV_LMEDS,
             CV_FM_RANSAC_ONLY = CV_RANSAC,
             CV_FM_LMEDS = CV_LMEDS,
-            CV_FM_RANSAC = CV_RANSAC;
+            CV_FM_RANSAC = CV_RANSAC,
+
+            CV_ITERATIVE = 0,
+            CV_EPNP = 1,
+            CV_P3P = 2;
 
     public static native int cvFindFundamentalMat(CvMat points1, CvMat points2, CvMat fundamental_matrix,
             int method/*=CV_FM_RANSAC*/, double param1/*=3*/, double param2/*=0.99*/, CvMat status/*=null*/);
@@ -238,6 +242,10 @@ public class opencv_calib3d {
     public static native double cvCalibrateCamera2(CvMat object_points, CvMat image_points,
             CvMat point_counts, @ByVal CvSize image_size, CvMat camera_matrix, CvMat distortion_coeffs,
             CvMat rotation_vectors/*=null*/, CvMat translation_vectors/*=null*/, int flags/*=0*/);
+    public static native double cvCalibrateCamera2(CvMat object_points, CvMat image_points,
+            CvMat point_counts, @ByVal CvSize image_size, CvMat camera_matrix, CvMat distortion_coeffs,
+            CvMat rotation_vectors/*=null*/, CvMat translation_vectors/*=null*/, int flags/*=0*/,
+            @ByVal CvTermCriteria term_crit/*=cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,30,DBL_EPSILON)*/);
 
     public static native void cvCalibrationMatrixValues(CvMat camera_matrix, @ByVal CvSize image_size,
             double aperture_width/*=0*/, double aperture_height/*=0*/,
@@ -342,62 +350,6 @@ public class opencv_calib3d {
             int minDisparity, int numberOfDisparities, int disp12MaxDiff/*=1*/);
 
 
-    public static final int CV_STEREO_GC_OCCLUDED = Short.MAX_VALUE;
-
-    public static class CvStereoGCState extends Pointer {
-        static { load(); }
-        public CvStereoGCState() { allocate(); }
-        public CvStereoGCState(int size) { allocateArray(size); }
-        public CvStereoGCState(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocateArray(int size);
-
-        @Override public CvStereoGCState position(int position) {
-            return (CvStereoGCState)super.position(position);
-        }
-
-        public static CvStereoGCState create(int numberOfDisparities, int maxIters) {
-            CvStereoGCState p = cvCreateStereoGCState(numberOfDisparities, maxIters);
-            if (p != null) {
-                p.deallocator(new ReleaseDeallocator(p));
-            }
-            return p;
-        }
-        public void release() {
-            deallocate();
-        }
-        static class ReleaseDeallocator extends CvStereoGCState implements Deallocator {
-            ReleaseDeallocator(CvStereoGCState p) { super(p); }
-            @Override public void deallocate() { cvReleaseStereoGCState(this); }
-        }
-
-        public native int Ithreshold();          public native CvStereoGCState Ithreshold(int Ithreshold);
-        public native int interactionRadius();   public native CvStereoGCState interactionRadius(int interactionRadius);
-        public native float K();                 public native CvStereoGCState K(float K);
-        public native float lambda();            public native CvStereoGCState lambda(float lambda);
-        public native float lambda1();           public native CvStereoGCState lambda1(float lambda1);
-        public native float lambda2();           public native CvStereoGCState lambda2(float lambda2);
-        public native int occlusionCost();       public native CvStereoGCState occlusionCost(int occlusionCost);
-        public native int minDisparity();        public native CvStereoGCState minDisparity(int minDisparity);
-        public native int numberOfDisparities(); public native CvStereoGCState numberOfDisparities(int numberOfDisparities);
-        public native int maxIters();            public native CvStereoGCState maxIters(int maxIters);
-
-        public native CvMat left();              public native CvStereoGCState left(CvMat left);
-        public native CvMat right();             public native CvStereoGCState right(CvMat left);
-        public native CvMat dispLeft();          public native CvStereoGCState dispLeft(CvMat left);
-        public native CvMat dispRight();         public native CvStereoGCState dispRight(CvMat left);
-        public native CvMat ptrLeft();           public native CvStereoGCState ptrLeft(CvMat left);
-        public native CvMat ptrRight();          public native CvStereoGCState ptrRight(CvMat left);
-        public native CvMat vtxBuf();            public native CvStereoGCState vtxBuf(CvMat left);
-        public native CvMat edgeBuf();           public native CvStereoGCState edgeBuf(CvMat left);
-    }
-
-    public static native CvStereoGCState cvCreateStereoGCState(int numberOfDisparities, int maxIters);
-    public static native void cvReleaseStereoGCState(@ByPtrPtr CvStereoGCState state);
-    public static native void cvFindStereoCorrespondenceGC(CvArr left, CvArr right,
-            CvArr disparityLeft, CvArr disparityRight,
-            CvStereoGCState state, int useDisparityGuess/*=0*/);
-
     public static void cvReprojectImageTo3D(CvArr disparityImage, CvArr _3dImage, CvMat Q) {
         cvReprojectImageTo3D(disparityImage, _3dImage, Q, 0);
     }
@@ -449,6 +401,15 @@ public class opencv_calib3d {
         public native boolean completeSymmFlag(); public native CvLevMarq completeSymmFlag(boolean completeSymmFlag);
     }
 
+    public static final int
+        ITERATIVE=CV_ITERATIVE,
+        EPNP=CV_EPNP,
+        P3P=CV_P3P;
+
+    @Namespace("cv") public static native boolean solvePnP(@Adapter("ArrayAdapter") CvMat objectPoints,
+            @Adapter("ArrayAdapter") CvMat imagePoints, @Adapter("ArrayAdapter") CvMat cameraMatrix,
+            @Adapter("ArrayAdapter") CvMat distCoeffs,  @Adapter(value="ArrayAdapter", out=true) CvMat rvec,
+            @Adapter(value="ArrayAdapter", out=true) CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=0*/);
     @Namespace("cv") public static native void solvePnPRansac(@Adapter("ArrayAdapter") CvMat objectPoints,
             @Adapter("ArrayAdapter") CvMat imagePoints, @Adapter("ArrayAdapter") CvMat cameraMatrix,
             @Adapter("ArrayAdapter") CvMat distCoeffs,  @Adapter("ArrayAdapter") CvMat rvec,
@@ -461,11 +422,9 @@ public class opencv_calib3d {
     
     public static final int CALIB_CB_SYMMETRIC_GRID = 1, CALIB_CB_ASYMMETRIC_GRID = 2,
             CALIB_CB_CLUSTERING = 4;
-    @Platform(not="android") // Android does not support circular dependencies...
     @Namespace("cv") public static native boolean findCirclesGrid(@Adapter("ArrayAdapter") CvArr image, @ByVal CvSize patternSize,
             @Adapter(value="ArrayAdapter", out=true) CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/,
             @ByRef FeatureDetectorPtr blobDetector/*=new SimpleBlobDetector()*/);
-    @Platform(not="android") // Android does not support circular dependencies...
     @Namespace("cv") public static native boolean findCirclesGridDefault(@Adapter("ArrayAdapter") CvArr image, @ByVal CvSize patternSize,
              @Adapter(value="ArrayAdapter", out=true) CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/);
 

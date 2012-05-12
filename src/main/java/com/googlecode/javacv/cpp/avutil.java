@@ -76,7 +76,7 @@ public class avutil {
     static { load(); }
     public static final String genericIncludepath = "/opt/local/include/ffmpeg/:/usr/local/include/ffmpeg/:/opt/local/include/:/usr/include/ffmpeg/";
     public static final String genericLinkpath    = "/opt/local/lib/:/opt/local/lib64/:/usr/local/lib/:/usr/local/lib64/";
-    public static final String windowsIncludepath = "C:/MinGW/local/include/ffmpeg/;C:/MinGW/include/ffmpeg/;C:/MinGW/local/include/;src/com/googlecode/javacv/cpp/";
+    public static final String windowsIncludepath = "C:/MinGW/local/include/ffmpeg/;C:/MinGW/include/ffmpeg/;C:/MinGW/local/include/;src/main/resources/com/googlecode/javacv/cpp/";
     public static final String windowsLinkpath    = "C:/MinGW/local/lib/;C:/MinGW/lib/";
     public static final String windowsPreloadpath = "C:/MinGW/local/bin/;C:/MinGW/bin/";
     public static final String androidIncludepath = "../include/";

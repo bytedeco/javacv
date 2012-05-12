@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.3.1, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.4.0, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -83,6 +83,7 @@ import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 import com.googlecode.javacpp.annotation.ValueGetter;
+import com.googlecode.javacpp.annotation.ValueSetter;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -119,7 +120,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core"),
-    @Platform(value="windows", includepath=windowsIncludepath, link="opencv_core231", preload={"msvcr100", "msvcp100", "tbb"}),
+    @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath=windowsIncludepath,
+        link="opencv_core240", preload={"msvcr100", "msvcp100", "tbb"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -147,8 +149,8 @@ public class opencv_core {
 
     public static final int
             CV_MAJOR_VERSION    = 2,
-            CV_MINOR_VERSION    = 3,
-            CV_SUBMINOR_VERSION = 1;
+            CV_MINOR_VERSION    = 4,
+            CV_SUBMINOR_VERSION = 0;
 
     public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
 
@@ -335,8 +337,8 @@ public class opencv_core {
             CV_StsAssert                = -215,
             CV_GpuNotSupported          = -216,
             CV_GpuApiCallError          = -217,
-            CV_GpuNppCallError          = -218,
-            CV_GpuCufftCallError        = -219;
+            CV_OpenGlNotSupported       = -218,
+            CV_OpenGlApiCallError       = -219;
 
 
     public static final long CV_RNG_COEFF = 4164903690L;
@@ -3484,8 +3486,6 @@ public class opencv_core {
         public native CvPluginFuncInfo func_tab();  public native CvModuleInfo func_tab(CvPluginFuncInfo func_tab);
     }
 
-    public static final int CV_PARAM_TYPE_INT=0, CV_PARAM_TYPE_REAL=1, CV_PARAM_TYPE_STRING=2, CV_PARAM_TYPE_MAT=3;
-
 
     public static native Pointer cvAlloc(@Cast("size_t") long size);
     public static native void cvFree_(Pointer ptr);
@@ -3949,7 +3949,7 @@ public class opencv_core {
     public static native @ByVal CvString cvMemStorageAllocString(CvMemStorage storage,
             @Cast("const char*") BytePointer ptr, int len/*=-1*/);
 
-    public static native CvSeq cvCreateSeq(int seq_flags, int header_size, int elem_size, CvMemStorage storage);
+    public static native CvSeq cvCreateSeq(int seq_flags, @Cast("size_t") long header_size, int elem_size, CvMemStorage storage);
     public static native void cvSetSeqBlockSize(CvSeq seq, int delta_elems);
     public static native @Cast("schar*") BytePointer cvSeqPush(CvSeq seq, Pointer element/*=null*/);
     public static native @Cast("schar*") BytePointer cvSeqPushFront(CvSeq seq, Pointer element/*=null*/);
@@ -4580,6 +4580,40 @@ public class opencv_core {
             String file_name, int line, Pointer userdata);
 
 
+    @Name("std::vector<std::string>")
+    public static class StringVector extends Pointer {
+        static { load(); }
+        public StringVector()       { allocate();  }
+        public StringVector(long n) { allocate(n); }
+        public StringVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(@Cast("size_t") long n);
+
+        public native long size();
+        public native void resize(@Cast("size_t") long n);
+
+        @Index @ByRef public native String get(@Cast("size_t") long i);
+        public native StringVector put(@Cast("size_t") long i, String value);
+    }
+
+    @Name("std::vector<cv::Mat>")
+    public static class MatVector extends Pointer {
+        static { load(); }
+        public MatVector()       { allocate();  }
+        public MatVector(long n) { allocate(n); }
+        public MatVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(@Cast("size_t") long n);
+
+        public native long size();
+        public native void resize(@Cast("size_t") long n);
+
+        @Index @ValueGetter public native @Adapter("MatAdapter") CvMat getCvMat(@Cast("size_t") long i);
+        @Index @ValueGetter public native @Adapter("MatAdapter") CvMatND getCvMatND(@Cast("size_t") long i);
+        @Index @ValueGetter public native @Adapter("MatAdapter") IplImage getIplImage(@Cast("size_t") long i);
+        @Index @ValueSetter public native MatVector put(@Cast("size_t") long i, @Adapter("MatAdapter") CvArr value);
+    }
+
     @Name("std::vector<std::vector<char> >")
     public static class ByteVectorVector extends Pointer {
         static { load(); }
@@ -4670,6 +4704,33 @@ public class opencv_core {
         public native Point2dVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint2D32f value);
     }
 
+    @Name("std::vector<std::vector<cv::Rect> >")
+    public static class RectVectorVector extends Pointer {
+        static { load(); }
+        public RectVectorVector()       { allocate();  }
+        public RectVectorVector(long n) { allocate(n); }
+        public RectVectorVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(@Cast("size_t") long n);
+
+        public native long size();
+        public native void resize(@Cast("size_t") long n);
+        public native @Index(1) long size(@Cast("size_t") long i);
+        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+
+        @Index @ByVal public native CvRect get(@Cast("size_t") long i, @Cast("size_t") long j);
+        public native RectVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvRect value);
+    }
+
+    public static final int NORM_INF=1, NORM_L1=2, NORM_L2=4, NORM_L2SQR=5, NORM_HAMMING=6, NORM_HAMMING2=7, NORM_TYPE_MASK=7, NORM_RELATIVE=8, NORM_MINMAX=32;
+
+    @Namespace("cv") public static native @ByRef String getBuildInformation();
+
+    @Namespace("cv") public static native void batchDistance(@Adapter("ArrayAdapter") CvArr src1,
+        @Adapter("ArrayAdapter") CvArr src2, @Adapter(value="ArrayAdapter", out=true) CvMat dist,
+        int dtype, @Adapter(value="ArrayAdapter", out=true) CvMat nidx, int normType/*=NORM_L2*/, int K/*=0*/,
+        @Adapter("ArrayAdapter") CvArr mask/*=null*/, int update/*=0*/, @Cast("bool") boolean crosscheck/*=false*/);
+
     @NoOffset @Namespace("cv") public static class KDTree extends Pointer {
         static { load(); }
         @NoOffset public static class Node extends Pointer {
@@ -4741,5 +4802,117 @@ public class opencv_core {
         public native IntPointer labels(); public native KDTree labels(IntPointer labels);
         public native int maxDepth(); public native KDTree maxDepth(int maxDepth);
         public native int normType(); public native KDTree normType(int normType);
+    }
+
+
+    @Name("cv::Ptr<cv::Algorithm>")
+    public static class AlgorithmPtr extends Pointer {
+        static { load(); }
+        public AlgorithmPtr()       { allocate();  }
+        public AlgorithmPtr(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native Algorithm get();
+        public native AlgorithmPtr put(Algorithm value);
+    }
+
+    @Namespace("cv") public static class Algorithm extends Pointer {
+        static { load(); }
+        public Algorithm() { allocate(); }
+        public Algorithm(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native @ByRef String name();
+
+        public native int getInt(String name);
+        public native double getDouble(String name);
+        public native @Cast("bool") boolean getBool(String name);
+        public native @ByRef String getString(String name);
+        public native @Adapter("MatAdapter") CvMat getMat(String name);
+        public native @ByVal MatVector getMatVector(String name);
+        public native @ByVal AlgorithmPtr getAlgorithm(String name);
+
+        public native void set(String name, int value);
+        public native void set(String name, double value);
+        public native void set(String name, @Cast("bool") boolean value);
+        public native void set(String name, String value);
+        public native void set(String name, CvMat value);
+        public native void set(String name, @ByRef MatVector value);
+        public native void set(String name, @ByRef AlgorithmPtr value);
+
+        public native @ByRef String paramHelp(String name);
+        public native int paramType(String name);
+        public native void getParams(@ByRef StringVector names);
+
+        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+
+        public static native void getList(@ByRef StringVector algorithms);
+        public static native @ByVal AlgorithmPtr _create(String name);
+
+        public static class Constructor extends FunctionPointer {
+            static { load(); }
+            public    Constructor(Pointer p) { super(p); }
+            protected Constructor() { allocate(); }
+            protected final native void allocate();
+            public native Algorithm call();
+        }
+        @Namespace("cv::Algorithm") @Const public static class Getter extends FunctionPointer {
+            static { load(); }
+            public Getter(Pointer p) { super(p); }
+            public native int call(Algorithm o);
+        }
+        @Namespace("cv::Algorithm") public static class Setter extends FunctionPointer {
+            static { load(); }
+            public Setter(Pointer p) { super(p); }
+            public native void call(Algorithm o, int i);
+        }
+
+        public native AlgorithmInfo info();
+    }
+
+    @Namespace("cv") public static class AlgorithmInfo extends Pointer {
+        static { load(); }
+        public AlgorithmInfo(String name, Algorithm.Constructor create) { allocate(name, create); }
+        public AlgorithmInfo(Pointer p) { super(p); }
+        private native void allocate(String name, Algorithm.Constructor create);
+
+        public native void get(Algorithm algo, String name, int argType, Pointer value);
+        public native void addParam_(@ByRef Algorithm algo, String name, int argType,
+                Pointer value, @Cast("bool") boolean readOnly,
+                Algorithm.Getter getter, Algorithm.Setter setter, String help/*=""*/);
+        public native @ByRef String paramHelp(String name);
+        public native int paramType(String name);
+        public native void getParams(@ByRef StringVector names);
+
+        public native void write(Algorithm algo, @Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void read(Algorithm algo, @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+        public native @ByRef String name();
+
+//        protected native AlgorithmInfoData data();
+//        protected native void set(Algorithm algo, String name, int argType,
+//                Pointer value, @Cast("boolean") force/*=false*/);
+    }
+
+    @NoOffset @Namespace("cv") public static class Param extends Pointer {
+        static { load(); }
+        public Param() { allocate(); }
+        public Param(int _type, @Cast("bool") boolean _readonly, int _offset,
+                Algorithm.Getter _getter/*=null*/, Algorithm.Setter _setter/*=null*/, String _help/*=""*/) {
+            allocate(_type, _readonly, _offset, _getter, _setter, _help);
+        }
+        public Param(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int _type, @Cast("bool") boolean _readonly, int _offset,
+                Algorithm.Getter _getter/*=null*/, Algorithm.Setter _setter/*=null*/, String _help/*=""*/);
+
+        public static final int INT=0, BOOLEAN=1, REAL=2, STRING=3, MAT=4, MAT_VECTOR=5, ALGORITHM=6;
+
+        public native int type();                       public native Param type(int type);
+        public native int offset();                     public native Param offset(int offset);
+        public native @Cast("bool") boolean readonly(); public native Param readonly(boolean readonly);
+        public native Algorithm.Getter getter();        public native Param getter(Algorithm.Getter getter);
+        public native Algorithm.Setter setter();        public native Param setter(Algorithm.Setter setter);
+        public native @ByRef String help();             public native Param help(String help);
     }
 }

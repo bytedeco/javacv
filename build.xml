@@ -57,14 +57,14 @@
                 <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
                 <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
                     <fileset dir="${build.classes.dir}">
-                        <exclude name="com/googlecode/javacv/cpp/android-arm/"/>
-                        <exclude name="com/googlecode/javacv/cpp/android-x86/"/>
-                        <exclude name="com/googlecode/javacv/cpp/linux-x86/"/>
-                        <exclude name="com/googlecode/javacv/cpp/linux-x86_64/"/>
-                        <exclude name="com/googlecode/javacv/cpp/macosx-x86/"/>
-                        <exclude name="com/googlecode/javacv/cpp/macosx-x86_64/"/>
-                        <exclude name="com/googlecode/javacv/cpp/windows-x86/"/>
-                        <exclude name="com/googlecode/javacv/cpp/windows-x86_64/"/>
+                        <exclude name="com/googlecode/javacv/cpp/android-arm/**"/>
+                        <exclude name="com/googlecode/javacv/cpp/android-x86/**"/>
+                        <exclude name="com/googlecode/javacv/cpp/linux-x86/**"/>
+                        <exclude name="com/googlecode/javacv/cpp/linux-x86_64/**"/>
+                        <exclude name="com/googlecode/javacv/cpp/macosx-x86/**"/>
+                        <exclude name="com/googlecode/javacv/cpp/macosx-x86_64/**"/>
+                        <exclude name="com/googlecode/javacv/cpp/windows-x86/**"/>
+                        <exclude name="com/googlecode/javacv/cpp/windows-x86_64/**"/>
                     </fileset>
                     <manifest>
                         <attribute name="Class-Path" value="${jar.classpath} javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar"/>
