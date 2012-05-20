@@ -52,7 +52,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libavdevice/avdevice.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice", "avformat", "avcodec", "avutil"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice@.52", "avformat@.52", "avcodec@.52", "avutil@.50"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avdevice-52"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

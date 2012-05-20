@@ -119,7 +119,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core"),
+        include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4"),
     @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath=windowsIncludepath,
         link="opencv_core240", preload={"msvcr100", "msvcp100", "tbb"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
@@ -1205,6 +1205,12 @@ public class opencv_core {
             return (BufferedImage)bufferedImage;
         }
 
+        public CvMat asCvMat() {
+            CvMat mat = new CvMat();
+            cvGetMat(this, mat, null, 0);
+            return mat;
+        }
+
         @Override public String toString() {
             if (isNull()) {
                 return super.toString();
@@ -1705,6 +1711,12 @@ public class opencv_core {
                 }
             }
             return this;
+        }
+
+        public IplImage asIplImage() {
+            IplImage image = new IplImage();
+            cvGetImage(this, image);
+            return image;
         }
 
         @Override public String toString() {

@@ -68,7 +68,7 @@ import static com.googlecode.javacv.cpp.avcodec.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="avformat.h",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avformat", "avcodec", "avutil"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avformat@.52", "avcodec@.52", "avutil@.50"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avformat-52"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

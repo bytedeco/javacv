@@ -78,7 +78,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann", "opencv_core"}),
+        include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),

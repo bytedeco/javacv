@@ -86,7 +86,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml", "opencv_core"}),
+        include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),

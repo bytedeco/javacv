@@ -75,7 +75,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include="<opencv2/highgui/highgui_c.h>",
-        link={"opencv_highgui", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg240", "opencv_ffmpeg240_64"},
         link={"opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),

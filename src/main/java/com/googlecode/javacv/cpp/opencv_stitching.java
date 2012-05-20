@@ -83,8 +83,8 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/stitching/stitcher.hpp>", "<opencv2/stitching/detail/autocalib.hpp>", "opencv_adapters.h"},
-        link={"opencv_stitching", "opencv_video", "opencv_nonfree", "opencv_gpu", "opencv_objdetect", "opencv_features2d",
-              "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_stitching@.2.4", "opencv_video@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_objdetect@.2.4", "opencv_features2d@.2.4",
+              "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="android",
         link={"opencv_stitching", "opencv_video", "opencv_nonfree", "opencv_objdetect", "opencv_features2d",
               "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),

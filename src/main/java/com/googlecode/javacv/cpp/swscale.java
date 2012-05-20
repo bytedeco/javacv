@@ -63,7 +63,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libswscale/swscale.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swscale", "avutil"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swscale@.0", "avutil@.50"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="swscale-0"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

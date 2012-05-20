@@ -76,7 +76,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
-        link={"opencv_nonfree", "opencv_features2d", "opencv_flann", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_nonfree@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
         link={"opencv_nonfree240", "opencv_features2d240", "opencv_flann240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),

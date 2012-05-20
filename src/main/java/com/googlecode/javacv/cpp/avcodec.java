@@ -74,7 +74,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={
         "<libavcodec/avcodec.h>", "<libavcodec/opt.h>", "<libavcodec/avfft.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avcodec", "avutil"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avcodec@.52", "avutil@.50"}),
     @Platform(value={"linux", "freebsd", "solaris", "sunos"}, cinclude={
         "<libavcodec/vaapi.h>", "<libavcodec/vdpau.h>", "<libavcodec/xvmc.h>",
         "<libavcodec/avcodec.h>", "<libavcodec/opt.h>", "<libavcodec/avfft.h>"}),

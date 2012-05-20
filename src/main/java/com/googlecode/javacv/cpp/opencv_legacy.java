@@ -91,8 +91,8 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>", "<opencv2/legacy/blobtrack.hpp>", "opencv_adapters.h"},
-        link={"opencv_legacy", "opencv_ml", "opencv_video","opencv_nonfree", "opencv_features2d",
-              "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4","opencv_nonfree@.2.4", "opencv_features2d@.2.4",
+              "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
         link={"opencv_legacy240", "opencv_ml240", "opencv_video240", "opencv_nonfree240", "opencv_features2d240",
               "opencv_flann240", "opencv_calib3d240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),

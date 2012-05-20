@@ -68,7 +68,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="avutil.h",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link="avutil"),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link="avutil@.50"),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avutil-50"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

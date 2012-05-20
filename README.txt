@@ -5,7 +5,7 @@ JavaCV first provides wrappers to commonly used libraries by researchers in the 
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL`, i.e.: `JavaCVCL`, etc. except for `GLCanvasFrame`.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/procamtracker/ ProCamTracker] as well as [http://code.google.com/p/javacv/source/browse/javacv-examples/ Examples ported from OpenCV2 Cookbook] and the associated [http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples Wiki page].
+To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the sample programs, including one for Android, found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse/procamcalib/ ProCamCalib] and [http://code.google.com/p/javacv/source/browse/procamtracker/ ProCamTracker] as well as [http://code.google.com/p/javacv/source/browse/javacv-examples/ Examples ported from OpenCV2 Cookbook] and the associated [http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples Wiki pages].
 
 
 ==Required Software==
@@ -210,10 +210,15 @@ public class Demo {
 
 
 ==Acknowledgments==
-This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute of Technology, where I was supported for my doctoral research project by a generous scholarship from the Ministry of Education, Culture, Sports, Science and Technology (MEXT) of the Japanese Government. I extend my gratitude further to all who have reported bugs, donated code, or made suggestions for improvements!
+This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute of Technology, where I was supported for my doctoral research program by a generous scholarship from the Ministry of Education, Culture, Sports, Science and Technology (MEXT) of the Japanese Government. I extend my gratitude further to all who have reported bugs, donated code, or made suggestions for improvements!
 
 
 ==Changes==
+===June xx, 2012===
+ * JavaCV can now extract and load native dependent libraries such as `libopencv_core.so.2.4`, `libopencv_core.2.4.dylib`, `opencv_core240.dll`, etc. from Java resources inside the `com.googlecode.javacv.cpp.<platform.name>` package (i.e.: under the subdirectory `com/googlecode/javacv/cpp/<platform.name>/` of a JAR file in the classpath)
+ * Added handy `IplImage.asCvMat()` and `CvMat.asIplImage()` conversion methods
+ * 
+
 ===May 12, 2012===
  * Upgraded support to OpenCV 2.4.0 (issue #187)
  * Added `pom.xml` file for Maven support and changed the directory structure of the source code to match Maven's standard directory layout
