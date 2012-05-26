@@ -45,7 +45,7 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 
 
 ==Quick Start for OpenCV and FFmpeg==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directory or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV  Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, or point your `pom.xml` file to the Maven repositories http://maven2.javacpp.googlecode.com/git/ and http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -214,10 +214,12 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
-===June xx, 2012===
- * JavaCV can now extract and load native dependent libraries such as `libopencv_core.so.2.4`, `libopencv_core.2.4.dylib`, `opencv_core240.dll`, etc. from Java resources inside the `com.googlecode.javacv.cpp.<platform.name>` package (i.e.: under the subdirectory `com/googlecode/javacv/cpp/<platform.name>/` of a JAR file in the classpath)
+===May 27, 2012 version 0.1===
+ * Started using version numbers, friendly to tools like Maven, and placing packages in a sort of [http://maven2.javacv.googlecode.com/git/ Maven repository]
+ * JavaCV can now extract and load native dependent libraries such as `libopencv_core.so.2.4`, `libopencv_core.2.4.dylib`, `opencv_core240.dll`, etc. from Java resources placed inside the `com.googlecode.javacv.cpp.<platform.name>` package (i.e.: under the `/com/googlecode/javacv/cpp/<platform.name>/` directory of a JAR file in the classpath) (issue #146)
+ * Included new `FaceApplet` sample to demonstrate [http://code.google.com/p/javacv/wiki/HowToMakeAnApplet How to use JavaCV in an applet]
  * Added handy `IplImage.asCvMat()` and `CvMat.asIplImage()` conversion methods
- * 
+ * Fixed a few small things with `OpenCVFrameGrabber`, `opencv_contrib`, `opencv_legacy`, and `opencv_stitching`
 
 ===May 12, 2012===
  * Upgraded support to OpenCV 2.4.0 (issue #187)

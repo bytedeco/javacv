@@ -967,12 +967,12 @@ public class JavaCV {
     }
 
     public static void main(String[] args) {
-        String timestamp = JavaCV.class.getPackage().getImplementationVersion();
-        if (timestamp == null) {
-            timestamp = "unknown";
+        String version = JavaCV.class.getPackage().getImplementationVersion();
+        if (version == null) {
+            version = "unknown";
         }
         System.out.println(
-            "JavaCV build timestamp " + timestamp + "\n" +
+            "JavaCV version " + version + "\n" +
             "Copyright (C) 2009-2012 Samuel Audet <samuel.audet@gmail.com>\n" +
             "Project site: http://code.google.com/p/javacv/\n\n" +
 

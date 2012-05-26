@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="" href="">
+    <information>
+        <title>FaceApplet</title>
+        <vendor>Samuel Audet</vendor>
+    </information>
+    <resources>
+        <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se" />
+        <jar href="FaceApplet.jar" main="true" />
+    </resources>
+    <applet-desc name="FaceApplet" main-class="FaceApplet" width="640" height="480" />
+    <update check="background"/>
+</jnlp>

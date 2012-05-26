@@ -100,7 +100,7 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_legacy {
-    static { load(opencv_features2d.class); load(opencv_nonfree.class); load(opencv_video.class); load(opencv_ml.class); load(); }
+    static { load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_nonfree.class); load(opencv_video.class); load(opencv_ml.class); load(); }
 
     public static float cvQueryHistValue_1D(CvHistogram hist, int idx0) {
         return (float)cvGetReal1D(hist.bins(), idx0);

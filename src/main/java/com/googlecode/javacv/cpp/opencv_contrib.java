@@ -989,6 +989,20 @@ public class opencv_contrib {
     }
 
 
+    @Name("std::vector<std::pair<cv::Rect, int> >")
+    public static class RectIntPairVector extends Pointer {
+        static { load(); }
+        public RectIntPairVector()       { allocate();  }
+        public RectIntPairVector(long n) { allocate(n); }
+        public RectIntPairVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        @Adapter("RectAdapter")
+        public native @Index CvRect first(long i); public native RectIntPairVector first(long i, CvRect rect);
+        public native @Index int second(long i);   public native RectIntPairVector second(long i, int integer);
+    }
+
     @Platform({"linux", "macosx", "android"})
     public static class DetectionBasedTracker extends Pointer {
         static { load(); }
@@ -1022,7 +1036,7 @@ public class opencv_contrib {
         public native @Const @ByRef Parameters getParameters();
 
         public native void getObjects(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true) CvRect result);
-        //public native void getObjects(@ByRef std::vector<std::pair<cv::Rect, int> > result);
+        public native void getObjects(@ByRef RectIntPairVector result);
 
 //        @Opaque protected class SeparateDetectionWorkPtr extends Pointer { };
 //        protected native @ByVal SeparateDetectionWorkPtr separateDetectionWork();

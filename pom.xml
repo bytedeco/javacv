@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.googlecode.javacv</groupId>
   <artifactId>javacv</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <packaging>jar</packaging>
 
   <name>JavaCV</name>
@@ -37,9 +37,17 @@
     <dependency>
       <groupId>com.googlecode.javacpp</groupId>
       <artifactId>javacpp</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>0.1</version>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>javacpp</id>
+      <name>JavaCPP</name>
+      <url>http://maven2.javacpp.googlecode.com/git/</url>
+    </repository>
+  </repositories>
 
   <build>
     <finalName>${project.artifactId}</finalName>
@@ -124,10 +132,10 @@
               <Name>com/googlecode/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Samuel Audet</Implementation-Vendor>
-              <Implementation-Version>${maven.build.timestamp}</Implementation-Version>
+              <Implementation-Version>${project.version}</Implementation-Version>
               <Specification-Title>${project.name}</Specification-Title>
               <Specification-Vendor>Samuel Audet</Specification-Vendor>
-              <Specification-Version>${maven.build.timestamp}</Specification-Version>
+              <Specification-Version>${project.version}</Specification-Version>
             </manifestEntries>
           </archive>
         </configuration>

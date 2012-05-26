@@ -66,6 +66,7 @@ import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Const;
+import com.googlecode.javacpp.annotation.Index;
 import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
@@ -987,6 +988,20 @@ public class opencv_stitching {
 
 
     // #include "detail/exposure_compensate.hpp"
+    @Name("std::vector<std::pair<cv::Mat,uchar> >")
+    public static class MatBytePairVector extends Pointer {
+        static { load(); }
+        public MatBytePairVector()       { allocate();  }
+        public MatBytePairVector(long n) { allocate(n); }
+        public MatBytePairVector(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(long n);
+
+        @Adapter("MatAdapter")
+        public native @Index CvMat first(long i); public native MatBytePairVector first(long i, CvMat mat);
+        public native @Index byte second(long i); public native MatBytePairVector second(long i, byte uchar);
+    }
+
     @Namespace("cv::detail") public static class ExposureCompensator extends Pointer {
         static { load(); }
         public ExposureCompensator() { }
@@ -997,8 +1012,8 @@ public class opencv_stitching {
 
         public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
                 @ByRef MatVector images, @ByRef MatVector masks);
-//        public /*abstract*/ native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
-//                @ByRef MatVector images, @ByRef std::vector<std::pair<Mat,uchar> > masks);
+        public /*abstract*/ native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
+                @ByRef MatVector images, @ByRef MatBytePairVector masks);
         public /*abstract*/ native void apply(int index, @ByVal CvPoint corner,
                 @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
     }
@@ -1021,7 +1036,7 @@ public class opencv_stitching {
         private native void allocate();
 
 //        public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
-//                @ByRef MatVector images, @ByRef std::vector<std::pair<Mat,uchar> > masks);
+//                @ByRef MatVector images, @ByRef MatBytePairVector masks);
 //        public native void apply(int index, @ByVal CvPoint corner,
 //                @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
 
@@ -1034,7 +1049,7 @@ public class opencv_stitching {
         private native void allocate();
 
 //        public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
-//                @ByRef MatVector images, @ByRef std::vector<std::pair<Mat,uchar> > masks);
+//                @ByRef MatVector images, @ByRef MatBytePairVector masks);
 //        public native void apply(int index, @ByVal CvPoint corner,
 //                @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
 
@@ -1050,7 +1065,7 @@ public class opencv_stitching {
         private native void allocate(int bl_width/*=32*/, int bl_height/*=32*/);
 
 //        public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
-//                @ByRef MatVector images, @ByRef std::vector<std::pair<Mat,uchar> > masks);
+//                @ByRef MatVector images, @ByRef MatBytePairVector masks);
 //        public native void apply(int index, @ByVal CvPoint corner,
 //                @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
     }

@@ -67,7 +67,6 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         release();
     }
 
-    private static final boolean macosx = Loader.getPlatformName().startsWith("macosx");
     private int deviceNumber = 0;
     private String filename = null;
     private CvCapture capture = null;
@@ -191,15 +190,15 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         }
         cvSetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB, imageMode == ImageMode.COLOR ? 1 : 0);
 
-        if (macosx) {
-            // Before cvRetrieveFrame() starts returning something else then null
-            // QTKit sometimes requires some "warm-up" time for some reason...
-            int count = 0;
-            while (count++ < 100 && cvGrabFrame(capture) != 0 && cvRetrieveFrame(capture) == null) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) { }
-            }
+        // Before cvRetrieveFrame() starts returning something else then null
+        // QTKit sometimes requires some "warm-up" time for some reason...
+        // The first frame on Linux is sometimes null as well, 
+        // so it's probably a good idea to run this for all platforms... ?
+        int count = 0;
+        while (count++ < 100 && cvGrabFrame(capture) != 0 && cvRetrieveFrame(capture) == null) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) { }
         }
 
         if (!triggerMode) {
