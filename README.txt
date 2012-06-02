@@ -48,22 +48,25 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, or point your `pom.xml` file to the Maven repositories http://maven2.javacpp.googlecode.com/git/ and http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
- * In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
- * Locate the JAR files, select them, and click OK.
+ # In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
+ # Locate the JAR files, select them, and click OK.
 
 Eclipse (Java SE 6 or 7):
- * Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs..."
- * Locate the JAR files, select them, and click OK.
+ # Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs..."
+ # Locate the JAR files, select them, and click OK.
 
 Eclipse (Android 2.2 or newer):
- * Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
- * Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
- * Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
- * Extract directly all the `*.so` files from `javacv-android-arm.jar` *as well as* the ones from `OpenCV-2.4.0-android-arm.zip` and `ffmpeg-0.7.11-android-arm.zip` in the newly created "libs/armeabi" folder, without creating any new subdirectories.
- * Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
- * Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
+ # Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
+ # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
+ # Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `OpenCV-2.4.0-android-arm.zip`, and `ffmpeg-0.7.11-android-arm.zip` directly in the newly created "libs/armeabi" folder, without creating any new subdirectories.
+ # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
+ # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
-After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs. The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
+After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
+ * [http://ffmpeg.org/doxygen/0.6/ FFmpeg 0.6 Documentation]
+ * [http://docs.opencv.org/ OpenCV v2.4.0 documentation]
+The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -214,6 +217,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Refined the `FaceApplet` sample
+
 ===May 27, 2012 version 0.1===
  * Started using version numbers, friendly to tools like Maven, and placing packages in a sort of [http://maven2.javacv.googlecode.com/git/ Maven repository]
  * JavaCV can now extract and load native dependent libraries such as `libopencv_core.so.2.4`, `libopencv_core.2.4.dylib`, `opencv_core240.dll`, etc. from Java resources placed inside the `com.googlecode.javacv.cpp.<platform.name>` package (i.e.: under the `/com/googlecode/javacv/cpp/<platform.name>/` directory of a JAR file in the classpath) (issue #146)
@@ -223,9 +228,9 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ===May 12, 2012===
  * Upgraded support to OpenCV 2.4.0 (issue #187)
+ * Moved the source code repository to Git
  * Added `pom.xml` file for Maven support and changed the directory structure of the source code to match Maven's standard directory layout
  * Made it easier to create one massive statically linked native library by passing something like "-Xcompiler -Wl,-static -o javacv" as command line options to JavaCPP, usually from inside `build.xml` or `pom.xml` (issue #146)
- * Moved the source code repository to Git
  * Fixed missing parameter from `CvANN_MLP.create()`
  * Added methods `cvCalcCovarMatrixEx()`, `cvEigenDecomposite()`, and `cvEigenProjection()` taking an `IplImage[]` as argument for convenience
  * `VideoInputFrameGrabber.start()` now accepts a `connection` argument such as `VI_COMPOSITE` to support analog cameras and what not

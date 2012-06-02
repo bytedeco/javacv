@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.FrameGrabber;
+import com.googlecode.javacv.OpenCVFrameGrabber;
 import com.googlecode.javacv.cpp.opencv_objdetect;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -21,19 +22,19 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
  */
 public class FaceApplet extends Applet implements Runnable {
 
-    private CvHaarClassifierCascade classifier;
-    private CvMemStorage storage;
-    private FrameGrabber grabber;
-    private IplImage grabbedImage, grayImage;
-    private CvSeq faces;
-    private boolean stop;
+    private CvHaarClassifierCascade classifier = null;
+    private CvMemStorage storage = null;
+    private FrameGrabber grabber = null;
+    private IplImage grabbedImage = null, grayImage = null, smallImage = null;
+    private CvSeq faces = null;
+    private boolean stop = false;
     private Exception exception = null;
 
     @Override public void init() {
         try {
             // Load the classifier file from Java resources.
             String classiferName = "haarcascade_frontalface_alt.xml";
-            File classifierFile = Loader.extractResource(classiferName, null, null, null);
+            File classifierFile = Loader.extractResource(classiferName, null, "classifier", ".xml");
             if (classifierFile == null || classifierFile.length() <= 0) {
                 throw new IOException("Could not extract \"" + classiferName + "\" from Java resources.");
             }
@@ -45,12 +46,8 @@ public class FaceApplet extends Applet implements Runnable {
             if (classifier.isNull()) {
                 throw new IOException("Could not load the classifier file.");
             }
+
             storage = CvMemStorage.create();
-            grabber = FrameGrabber.createDefault(0);
-            grabber.setImageWidth(getWidth());
-            grabber.setImageHeight(getHeight());
-            grabbedImage = grayImage = null;
-            faces = null;
         } catch (Exception e) {
             if (exception == null) {
                 exception = e;
@@ -61,7 +58,6 @@ public class FaceApplet extends Applet implements Runnable {
 
     @Override public void start() {
         try {
-            stop = false;
             new Thread(this).start();
         } catch (Exception e) {
             if (exception == null) {
@@ -73,21 +69,36 @@ public class FaceApplet extends Applet implements Runnable {
 
     public void run() {
         try {
-            grabber.start();
-            while (!stop) {
+            try {
+                grabber = FrameGrabber.createDefault(0);
+                grabber.setImageWidth(getWidth());
+                grabber.setImageHeight(getHeight());
+                grabber.start();
                 grabbedImage = grabber.grab();
-                if (grayImage == null) {
-                    grayImage = IplImage.create(grabbedImage.width(), grabbedImage.height(), IPL_DEPTH_8U, 1);
-                }
+            } catch (Exception e) {
+                if (grabber != null) grabber.release();
+                grabber = new OpenCVFrameGrabber(0);
+                grabber.setImageWidth(getWidth());
+                grabber.setImageHeight(getHeight());
+                grabber.start();
+                grabbedImage = grabber.grab();
+            }
+            grayImage  = IplImage.create(grabbedImage.width(),   grabbedImage.height(),   IPL_DEPTH_8U, 1);
+            smallImage = IplImage.create(grabbedImage.width()/4, grabbedImage.height()/4, IPL_DEPTH_8U, 1);
+            stop = false;
+            while (!stop && (grabbedImage = grabber.grab()) != null) {
                 if (faces == null) {
                     cvClearMemStorage(storage);
                     cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
-                    faces = cvHaarDetectObjects(grayImage, classifier, storage, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
+                    cvResize(grayImage, smallImage, CV_INTER_AREA);
+                    faces = cvHaarDetectObjects(smallImage, classifier, storage, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
                     repaint();
                 }
             }
-            grabbedImage = grayImage = null; 
+            grabbedImage = grayImage = smallImage = null;
             grabber.stop();
+            grabber.release();
+            grabber = null;
         } catch (Exception e) {
             if (exception == null) {
                 exception = e;
@@ -110,7 +121,7 @@ public class FaceApplet extends Applet implements Runnable {
                 int total = faces.total();
                 for (int i = 0; i < total; i++) {
                     CvRect r = new CvRect(cvGetSeqElem(faces, i));
-                    g2.drawRect(r.x(), r.y(), r.width(), r.height());
+                    g2.drawRect(r.x()*4, r.y()*4, r.width()*4, r.height()*4);
                 }
                 faces = null;
             }
@@ -129,14 +140,5 @@ public class FaceApplet extends Applet implements Runnable {
         stop = true;
     }
 
-    @Override public void destroy() {
-        try {
-            grabber.release();
-        } catch (Exception e) {
-            if (exception == null) {
-                exception = e;
-                repaint();
-            }
-        }
-    }
+    @Override public void destroy() { }
 }
