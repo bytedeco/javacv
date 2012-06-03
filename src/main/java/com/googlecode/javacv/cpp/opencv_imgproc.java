@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.4.0, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -88,7 +88,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>", "opencv_adapters.h"},
         link={"opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_imgproc240", "opencv_core240"}),
+        link={"opencv_imgproc241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -874,7 +874,7 @@ public class opencv_imgproc {
 
 
     public static native CvSeq cvApproxPoly(Pointer src_seq, int header_size, CvMemStorage storage,
-            int method/*=CV_POLY_APPROX_DP*/, double parameter, int parameter2/*=0*/);
+            int method/*=CV_POLY_APPROX_DP*/, double eps, int recursive/*=0*/);
     public static native double cvArcLength(Pointer curve, @ByVal CvSlice slice/*=CV_WHOLE_SEQ*/,
             int is_closed/*=-1*/);
     public static double cvContourPerimeter(Pointer contour) {
@@ -1259,11 +1259,11 @@ public class opencv_imgproc {
             @Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int bits/*=0*/);
 
     @Namespace("cv") public static native @ByVal FilterEnginePtr createSeparableLinearFilter(int srcType, int dstType,
-            @Adapter("ArrayAdapter") CvMat rowKernel, @Adapter("ArrayAdapter") CvMat columnKernel, @ByVal CvPoint _anchor/*=Point(-1,-1)*/, double delta/*=0*/,
-            int _rowBorderType/*=BORDER_DEFAULT*/, int _columnBorderType/*=-1*/, @ByVal CvScalar _borderValue/*=Scalar()*/);
+            @Adapter("ArrayAdapter") CvMat rowKernel, @Adapter("ArrayAdapter") CvMat columnKernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
+            int rowBorderType/*=BORDER_DEFAULT*/, int columnBorderType/*=-1*/, @ByVal CvScalar borderValue/*=Scalar()*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createLinearFilter(int srcType, int dstType,
-            @Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint _anchor/*=Point(-1,-1)*/, double delta/*=0*/,
-            int _rowBorderType/*=BORDER_DEFAULT*/, int _columnBorderType/*=-1*/, @ByVal CvScalar _borderValue/*=Scalar()*/);
+            @Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
+            int rowBorderType/*=BORDER_DEFAULT*/, int columnBorderType/*=-1*/, @ByVal CvScalar borderValue/*=Scalar()*/);
 
     @Namespace("cv") public static native @Adapter("MatAdapter") CvMat getGaussianKernel(int ksize, double sigma, int ktype/*=CV_64F*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createGaussianFilter(int type, @ByVal CvSize ksize,
@@ -1299,12 +1299,12 @@ public class opencv_imgproc {
     @Namespace("cv") public static native @ByVal CvScalar morphologyDefaultBorderValue();
 
     @Namespace("cv") public static native @ByVal FilterEnginePtr createMorphologyFilter(int op, int type, @Adapter("ArrayAdapter") CvMat kernel,
-            @ByVal CvPoint anchor/*=Point(-1,-1)*/, int _rowBorderType/*=BORDER_CONSTANT*/, int _columnBorderType/*=-1*/,
-            @ByVal CvScalar _borderValue/*=morphologyDefaultBorderValue()*/);
+            @ByVal CvPoint anchor/*=Point(-1,-1)*/, int rowBorderType/*=BORDER_CONSTANT*/, int columnBorderType/*=-1*/,
+            @ByVal CvScalar borderValue/*=morphologyDefaultBorderValue()*/);
 
     @Namespace("cv") public static native void medianBlur(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ksize);
     @Namespace("cv") public static native void GaussianBlur(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst,
-            @ByVal CvSize ksize, double sigma1, double sigma2/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+            @ByVal CvSize ksize, double sigmaX, double sigmaY/*=0*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void bilateralFilter(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int d,
             double sigmaColor, double sigmaSpace, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void boxFilter(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ddepth,

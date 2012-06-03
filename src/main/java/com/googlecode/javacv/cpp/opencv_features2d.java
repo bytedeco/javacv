@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.4.0,
+ * This file is based on information found in features2d.hpp of OpenCV 2.4.1,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -81,7 +81,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d240", "opencv_flann240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
+        link={"opencv_features2d241", "opencv_flann241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -274,12 +274,12 @@ public class opencv_features2d {
         public ORB() { allocate(); }
         public ORB(Pointer p) { super(p); }
         public ORB(int nfeatures/*=500*/, float scaleFactor/*=1.2*/, int nlevels/*=8*/, int edgeThreshold/*=31*/,
-                int firstLevel/*=0*/, int WTA_K/*=2*/, int scoreType/*=0*/, int patchSize/*=31*/) {
+                int firstLevel/*=0*/, int WTA_K/*=2*/, int scoreType/*=HARRIS_SCORE*/, int patchSize/*=31*/) {
             allocate(nfeatures, scaleFactor, nlevels, edgeThreshold, firstLevel, WTA_K, scoreType, patchSize);
         }
         private native void allocate();
         private native void allocate(int nfeatures/*=500*/, float scaleFactor/*=1.2*/, int nlevels/*=8*/, int edgeThreshold/*=31*/,
-                int firstLevel/*=0*/, int WTA_K/*=2*/, int scoreType/*=0*/, int patchSize/*=31*/);
+                int firstLevel/*=0*/, int WTA_K/*=2*/, int scoreType/*=HARRIS_SCORE*/, int patchSize/*=31*/);
 
         public native int descriptorSize();
         public native int descriptorType();
@@ -310,6 +310,9 @@ public class opencv_features2d {
                 int _max_evolution/*=200*/, double _area_threshold/*=1.01*/,
                 double _min_margin/*=0.003*/, int _edge_blur_size/*=5*/);
 
+//        public native void detect(@Adapter("MatAdapter") CvArr image,
+//                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint msers, @Adapter("MatAdapter") CvArr mask/*=null*/);
+//
 //        public native AlgorithmInfo info();
 
 //        protected native void detectImpl(@Adapter("MatAdapter") CvArr image, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints, @Adapter("MatAdapter") CvArr mask/*=null*/);
@@ -494,16 +497,19 @@ public class opencv_features2d {
 
     @Namespace("cv") public static class GridAdaptedFeatureDetector extends FeatureDetector {
         static { load(); }
-        public GridAdaptedFeatureDetector() { }
+        public GridAdaptedFeatureDetector() { allocate(); }
         public GridAdaptedFeatureDetector(Pointer p) { super(p); }
-        public GridAdaptedFeatureDetector(@ByRef FeatureDetectorPtr detector, int maxTotalKeypoints/*=1000*/,
+        public GridAdaptedFeatureDetector(@ByRef FeatureDetectorPtr detector/*=null*/, int maxTotalKeypoints/*=1000*/,
                 int gridRows/*=4*/, int gridCols/*=4*/) {
             allocate(detector, maxTotalKeypoints, gridRows, gridCols);
         }
-        private native void allocate(@ByRef FeatureDetectorPtr detector, int maxTotalKeypoints/*=1000*/,
+        private native void allocate();
+        private native void allocate(@ByRef FeatureDetectorPtr detector/*=null*/, int maxTotalKeypoints/*=1000*/,
                 int gridRows/*=4*/, int gridCols/*=4*/);
 
 //        public native boolean empty();
+//
+//        public native AlgorithmInfo info();
 
 //        protected native void detectImpl(@Adapter("MatAdapter") CvArr image, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints, @Adapter("MatAdapter") CvArr mask/*=null*/);
 
@@ -560,11 +566,11 @@ public class opencv_features2d {
         static { load(); }
         public DynamicAdaptedFeatureDetector() { }
         public DynamicAdaptedFeatureDetector(Pointer p) { super(p); }
-        public DynamicAdaptedFeatureDetector(@ByRef AdjusterAdapterPtr adjaster,
+        public DynamicAdaptedFeatureDetector(@ByRef AdjusterAdapterPtr adjuster,
                 int min_features/*=400*/, int max_features/*=500*/, int max_iters/*=5*/) {
-            allocate(adjaster, min_features, max_features, max_iters);
+            allocate(adjuster, min_features, max_features, max_iters);
         }
-        private native void allocate(@ByRef AdjusterAdapterPtr adjaster,
+        private native void allocate(@ByRef AdjusterAdapterPtr adjuster,
                 int min_features/*=400*/, int max_features/*=500*/, int max_iters/*=5*/);
 
 //        public native boolean empty();

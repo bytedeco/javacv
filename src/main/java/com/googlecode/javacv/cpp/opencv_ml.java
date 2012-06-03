@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in ml.hpp of OpenCV 2.4.0,
+ * This file is based on information found in ml.hpp of OpenCV 2.4.1,
  * which is covered by the following copyright notice:
  *
  *                        Intel License Agreement
@@ -87,12 +87,14 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml240", "opencv_core240"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_ml {
     static { load(opencv_core.class); load(); }
+
+    @Namespace("cv") public static native @Cast("bool") boolean initModule_ml();
 
     public static final double CV_LOG2PI = 1.8378770664093454835606594728112;
 
@@ -183,14 +185,14 @@ public class opencv_ml {
     @NoOffset public static class CvParamGrid extends Pointer {
         static { load(); }
         public CvParamGrid() { allocate(); }
-        public CvParamGrid(double _min_val, double _max_val, double log_step) {
-            allocate(_min_val, _max_val, log_step);
+        public CvParamGrid(double min_val, double max_val, double log_step) {
+            allocate(min_val, max_val, log_step);
         }
         //public CvParamGrid(int param_id);
         public CvParamGrid(int size) { allocateArray(size); }
         public CvParamGrid(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(double _min_val, double _max_val, double log_step);
+        private native void allocate(double min_val, double max_val, double log_step);
         private native void allocateArray(int size);
 
         @Override public CvParamGrid position(int position) {
@@ -280,15 +282,15 @@ public class opencv_ml {
     @NoOffset public static class CvSVMParams extends Pointer {
         static { load(); }
         public CvSVMParams() { allocate(); }
-        public CvSVMParams(int _svm_type, int _kernel_type, double _degree, double _gamma, double _coef0,
-                 double Cvalue, double _nu, double _p, CvMat _class_weights, CvTermCriteria _term_crit) {
-            allocate(_svm_type, _kernel_type, _degree, _gamma, _coef0, Cvalue, _nu, _p, _class_weights, _term_crit);
+        public CvSVMParams(int svm_type, int kernel_type, double degree, double gamma, double coef0,
+                 double Cvalue, double nu, double p, CvMat class_weights, CvTermCriteria term_crit) {
+            allocate(svm_type, kernel_type, degree, gamma, coef0, Cvalue, nu, p, class_weights, term_crit);
         }
         public CvSVMParams(int size) { allocateArray(size); }
         public CvSVMParams(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(int _svm_type, int _kernel_type, double _degree, double _gamma, double _coef0,
-                 double Cvalue, double _nu, double _p, CvMat _class_weights, @ByVal CvTermCriteria _term_crit);
+        private native void allocate(int svm_type, int kernel_type, double degree, double gamma, double coef0,
+                 double Cvalue, double nu, double p, CvMat class_weights, @ByVal CvTermCriteria term_crit);
         private native void allocateArray(int size);
 
         @Override public CvSVMParams position(int position) {
@@ -1025,7 +1027,7 @@ public class opencv_ml {
         public native @Const CvMat get_var_importance();
         public native float get_proximity(CvMat sample1, CvMat sample2, CvMat missing1/*=null*/, CvMat missing2/*=null*/);
 
-        public native float calc_error(CvMLData _data, int type, 
+        public native float calc_error(CvMLData data, int type, 
                 @Adapter(value="VectorAdapter<float>", out=true) FloatPointer resp/*=null*/);
 
         public native float get_train_error();

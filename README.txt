@@ -15,7 +15,7 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.0  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.1  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
@@ -52,20 +52,20 @@ NetBeans (Java SE 6 or 7):
  # Locate the JAR files, select them, and click OK.
 
 Eclipse (Java SE 6 or 7):
- # Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs..."
+ # Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs...".
  # Locate the JAR files, select them, and click OK.
 
 Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
- # Copy `javacpp.jar` and `javacv.jar` in the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `OpenCV-2.4.0-android-arm.zip`, and `ffmpeg-0.7.11-android-arm.zip` directly in the newly created "libs/armeabi" folder, without creating any new subdirectories.
- # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs..."
+ # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `OpenCV-2.4.1-android-arm.zip`, and `ffmpeg-0.7.11-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
+ # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
 After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
  * [http://ffmpeg.org/doxygen/0.6/ FFmpeg 0.6 Documentation]
- * [http://docs.opencv.org/ OpenCV v2.4.0 documentation]
+ * [http://docs.opencv.org/ OpenCV v2.4.1 documentation]
 The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
@@ -218,6 +218,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
  * Refined the `FaceApplet` sample
+ * Made a few minor updates for OpenCV 2.4.1
 
 ===May 27, 2012 version 0.1===
  * Started using version numbers, friendly to tools like Maven, and placing packages in a sort of [http://maven2.javacv.googlecode.com/git/ Maven repository]

@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in defines.h and miniflann.hpp
- * of OpenCV 2.4.0, which ares covered by the following copyright notice:
+ * of OpenCV 2.4.1, which ares covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -79,7 +79,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann240", "opencv_core240"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in contrib.hpp, retina.hpp,
- * detection_based_tracker.hpp, and hybrid_tracker.hpp of OpenCV 2.4.0,
+ * detection_based_tracker.hpp, and hybrid_tracker.hpp of OpenCV 2.4.1,
  * which are covered by the following copyright notice:
  *
  *                           License Agreement
@@ -92,13 +92,15 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         link={"opencv_contrib@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_objdetect@.2.4", "opencv_calib3d@.2.4",
               "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_contrib240", "opencv_ml240", "opencv_video240", "opencv_objdetect240", "opencv_calib3d240",
-              "opencv_features2d240", "opencv_flann240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
+        link={"opencv_contrib241", "opencv_ml241", "opencv_video241", "opencv_objdetect241", "opencv_calib3d241",
+              "opencv_features2d241", "opencv_flann241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_contrib {
     static { load(opencv_calib3d.class); load(opencv_objdetect.class); load(opencv_video.class); load(opencv_ml.class); load(); }
+
+    @Namespace("cv") public static native @Cast("bool") boolean initModule_contrib();
 
     public static class CvAdaptiveSkinDetector extends Pointer {
         static { load(); }

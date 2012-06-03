@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in nonfree/features2d.hpp and
- * nonfree.hpp of OpenCV 2.4.0, which are covered by the following copyright notice:
+ * nonfree.hpp of OpenCV 2.4.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -78,7 +78,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_nonfree@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_nonfree240", "opencv_features2d240", "opencv_flann240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
+        link={"opencv_nonfree241", "opencv_features2d241", "opencv_flann241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -95,13 +95,13 @@ public class opencv_nonfree {
         static { load(); }
         public SIFT() { allocate(); }
         public SIFT(Pointer p) { super(p); }
-        public SIFT(int _nfeatures/*=0*/, int _nOctaveLayers/*=3*/, double _contrastThreshold/*=0.04*/,
-                double _edgeThreshold/*=10*/, double _sigma/*=1.6*/) {
-            allocate(_nfeatures, _nOctaveLayers, _contrastThreshold, _edgeThreshold, _sigma);
+        public SIFT(int nfeatures/*=0*/, int nOctaveLayers/*=3*/, double contrastThreshold/*=0.04*/,
+                double edgeThreshold/*=10*/, double sigma/*=1.6*/) {
+            allocate(nfeatures, nOctaveLayers, contrastThreshold, edgeThreshold, sigma);
         }
         private native void allocate();
-        private native void allocate(int _nfeatures/*=0*/, int _nOctaveLayers/*=3*/, double _contrastThreshold/*=0.04*/,
-                double _edgeThreshold/*=10*/, double _sigma/*=1.6*/);
+        private native void allocate(int nfeatures/*=0*/, int nOctaveLayers/*=3*/, double contrastThreshold/*=0.04*/,
+                double edgeThreshold/*=10*/, double sigma/*=1.6*/);
 
         public native int descriptorSize();
         public native int descriptorType();
@@ -135,15 +135,15 @@ public class opencv_nonfree {
 
     @NoOffset @Namespace("cv") public static class SURF extends Feature2D {
         static { load(); }
-        public SURF(double _hessianThreshold) { allocate(_hessianThreshold); }
+        public SURF(double hessianThreshold) { allocate(hessianThreshold); }
         public SURF(Pointer p) { super(p); }
-        public SURF(double _hessianThreshold, int _nOctaves/*=4*/, int _nOctaveLayers/*=2*/,
-                @Cast("bool") boolean _extended/*=true*/, @Cast("bool") boolean _upright/*=false*/) {
-            allocate(_hessianThreshold, _nOctaves, _nOctaveLayers, _extended, _upright);
+        public SURF(double hessianThreshold, int nOctaves/*=4*/, int nOctaveLayers/*=2*/,
+                @Cast("bool") boolean extended/*=true*/, @Cast("bool") boolean upright/*=false*/) {
+            allocate(hessianThreshold, nOctaves, nOctaveLayers, extended, upright);
         }
-        private native void allocate(double _hessianThreshold);
-        private native void allocate(double _hessianThreshold, int _nOctaves/*=4*/, int _nOctaveLayers/*=2*/,
-                @Cast("bool") boolean _extended/*=true*/, @Cast("bool") boolean _upright/*=false*/);
+        private native void allocate(double hessianThreshold);
+        private native void allocate(double hessianThreshold, int nOctaves/*=4*/, int nOctaveLayers/*=2*/,
+                @Cast("bool") boolean extended/*=true*/, @Cast("bool") boolean upright/*=false*/);
 
         public native int descriptorSize();
         public native int descriptorType();

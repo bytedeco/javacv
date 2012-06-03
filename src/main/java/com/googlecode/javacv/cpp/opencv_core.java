@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.4.0, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.4.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -121,7 +121,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4"),
     @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath=windowsIncludepath,
-        link="opencv_core240", preload={"msvcr100", "msvcp100", "tbb"}),
+        link="opencv_core241", preload={"msvcr100", "msvcp100", "tbb"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -150,7 +150,7 @@ public class opencv_core {
     public static final int
             CV_MAJOR_VERSION    = 2,
             CV_MINOR_VERSION    = 4,
-            CV_SUBMINOR_VERSION = 0;
+            CV_SUBMINOR_VERSION = 1;
 
     public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
 
@@ -3271,7 +3271,12 @@ public class opencv_core {
             CV_STORAGE_WRITE        = 1,
             CV_STORAGE_WRITE_TEXT   = CV_STORAGE_WRITE,
             CV_STORAGE_WRITE_BINARY = CV_STORAGE_WRITE,
-            CV_STORAGE_APPEND       = 2;
+            CV_STORAGE_APPEND       = 2,
+            CV_STORAGE_MEMORY       = 4,
+            CV_STORAGE_FORMAT_MASK  = 7<<3,
+            CV_STORAGE_FORMAT_AUTO  = 0,
+            CV_STORAGE_FORMAT_XML   = 8,
+            CV_STORAGE_FORMAT_YAML  =16;
 
     public static class CvAttrList extends Pointer {
         static { load(); }

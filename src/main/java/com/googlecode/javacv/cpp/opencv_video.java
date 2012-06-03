@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in tracking.hpp and background_segm.hpp
- * of OpenCV 2.4.0, which are covered by the following copyright notice:
+ * of OpenCV 2.4.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -79,24 +79,24 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  */
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/video/tracking.hpp>", "<opencv2/video/background_segm.hpp>", "opencv_adapters.h"},
+        include={"<opencv2/video/video.hpp>", "opencv_adapters.h"},
         link={"opencv_video@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_video240", "opencv_imgproc240", "opencv_core240"}),
+        link={"opencv_video241", "opencv_imgproc241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_video {
     static { load(opencv_imgproc.class); load(); }
 
+    @Namespace("cv") public static native @Cast("bool") boolean initModule_video();
+
     public static final int
             CV_LKFLOW_PYR_A_READY       = 1,
             CV_LKFLOW_PYR_B_READY       = 2,
             CV_LKFLOW_INITIAL_GUESSES   = 4,
-            CV_LKFLOW_GET_MIN_EIGENVALS = 8,
+            CV_LKFLOW_GET_MIN_EIGENVALS = 8;
 
-            OPTFLOW_USE_INITIAL_FLOW    = 4,
-            OPTFLOW_FARNEBACK_GAUSSIAN  = 256;
     public static native void cvCalcOpticalFlowPyrLK(CvArr prev, CvArr curr, CvArr prev_pyr,
             CvArr curr_pyr, CvPoint2D32f prev_features, CvPoint2D32f curr_features,
             int count, @ByVal CvSize win_size, int level, @Cast("char*") byte[] status,
@@ -206,6 +206,26 @@ public class opencv_video {
     public static CvMat cvKalmanUpdateByMeasurement(CvKalman kalman, CvMat measurement) {
         return cvKalmanCorrect(kalman, measurement);
     }
+
+
+    public static final int
+            OPTFLOW_USE_INITIAL_FLOW = CV_LKFLOW_INITIAL_GUESSES,
+            OPTFLOW_LK_GET_MIN_EIGENVALS = CV_LKFLOW_GET_MIN_EIGENVALS,
+            OPTFLOW_FARNEBACK_GAUSSIAN  = 256;
+
+    @Namespace("cv") public static native int buildOpticalFlowPyramid(@Adapter("ArrayAdapter") CvArr img,
+            @Adapter(value="ArrayAdapter", out=true) CvMatArray pyramid, @ByVal CvSize winSize,
+            int maxLevel, @Cast("bool") boolean withDerivatives/*=true*/, int pyrBorder/*=BORDER_REFLECT_101*/,
+            int derivBorder/*=BORDER_CONSTANT*/, @Cast("bool") boolean tryReuseInputImage/*=true*/);
+    @Namespace("cv") public static native void calcOpticalFlowPyrLK(@Adapter("ArrayAdapter") CvMatArray prevImg,
+            @Adapter("ArrayAdapter") CvMatArray nextImg, @Adapter("ArrayAdapter") CvArr prevPts,
+            @Adapter("ArrayAdapter") CvArr nextPts, @Adapter("ArrayAdapter") CvArr status,
+            @Adapter("ArrayAdapter") CvArr err, @ByVal CvSize winSize/*=Size(21,21)*/, int maxLevel/*=3*/,
+            @ByVal CvTermCriteria criteria/*=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01)*/,
+            int flags/*=0*/, double minEigThreshold/*=1e-4*/);
+    @Namespace("cv") public static native void calcOpticalFlowFarneback(@Adapter("ArrayAdapter") CvMatArray prev,
+            @Adapter("ArrayAdapter") CvMatArray next, @Adapter("ArrayAdapter") CvArr flow, double pyr_scale,
+            int levels, int winsize, int iterations, int poly_n, double poly_sigma, int flags);
 
 
     @Namespace("cv") public static class BackgroundSubtractor extends Algorithm {

@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in objdetect.hpp of OpenCV 2.4.0,
+ * This file is based on information found in objdetect.hpp of OpenCV 2.4.1,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -88,7 +88,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/objdetect/objdetect.hpp>", "opencv_adapters.h"},
         link={"opencv_objdetect@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_objdetect240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
+        link={"opencv_objdetect241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -370,7 +370,7 @@ public class opencv_objdetect {
         @Override public native @ByVal FeatureEvaluatorPtr clone();
         public native int getFeatureType();
 
-        public native boolean setImage(@Adapter("MatAdapter") CvArr image, @ByVal CvSize origWinSize);
+        public native boolean setImage(@Adapter("MatAdapter") CvArr img, @ByVal CvSize origWinSize);
         public native boolean setWindow(@ByVal CvPoint p);
 
         public native double calcOrd(int featureIdx);

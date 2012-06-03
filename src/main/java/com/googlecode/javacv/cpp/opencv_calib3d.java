@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in calib3d.hpp
- * of OpenCV 2.4.0, which are covered by the following copyright notice:
+ * of OpenCV 2.4.1, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -85,7 +85,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"},
         link={"opencv_calib3d@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_calib3d240", "opencv_features2d240", "opencv_flann240", "opencv_highgui240", "opencv_imgproc240", "opencv_core240"}),
+        link={"opencv_calib3d241", "opencv_features2d241", "opencv_flann241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -409,13 +409,13 @@ public class opencv_calib3d {
     @Namespace("cv") public static native boolean solvePnP(@Adapter("ArrayAdapter") CvMat objectPoints,
             @Adapter("ArrayAdapter") CvMat imagePoints, @Adapter("ArrayAdapter") CvMat cameraMatrix,
             @Adapter("ArrayAdapter") CvMat distCoeffs,  @Adapter(value="ArrayAdapter", out=true) CvMat rvec,
-            @Adapter(value="ArrayAdapter", out=true) CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=0*/);
+            @Adapter(value="ArrayAdapter", out=true) CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=ITERATIVE*/);
     @Namespace("cv") public static native void solvePnPRansac(@Adapter("ArrayAdapter") CvMat objectPoints,
             @Adapter("ArrayAdapter") CvMat imagePoints, @Adapter("ArrayAdapter") CvMat cameraMatrix,
             @Adapter("ArrayAdapter") CvMat distCoeffs,  @Adapter("ArrayAdapter") CvMat rvec,
             @Adapter("ArrayAdapter") CvMat tvec, boolean useExtrinsicGuess/*=false*/,
             int iterationsCount/*=100*/, float reprojectionError/*=8.0*/, int minInliersCount/*=100*/,
-            @Adapter(value="ArrayAdapter", out=true) CvMat inliers/*=noArray()*/);
+            @Adapter(value="ArrayAdapter", out=true) CvMat inliers/*=noArray()*/, int flags/*=ITERATIVE*/);
 
     @Namespace("cv") public static native boolean find4QuadCornerSubpix(@Adapter("ArrayAdapter") CvArr img,
             @Adapter("ArrayAdapter") CvArr corners, @ByVal CvSize region_size);
@@ -496,7 +496,7 @@ public class opencv_calib3d {
     @Namespace("cv") public static native void filterSpeckles(@Adapter("ArrayAdapter") CvArr img, double newVal,
             int maxSpeckleSize, double maxDiff, @Adapter("ArrayAdapter") CvArr buf);
 
-    @Namespace("cv") public static native int estimateAffine3D(@Adapter("ArrayAdapter") CvMat _from,
-            @Adapter("ArrayAdapter") CvMat _to, @Adapter(value="ArrayAdapter", out=true) CvMat _out,
-            @Adapter(value="ArrayAdapter", out=true) CvMat _inliers, double param1/*=3*/, double param2/*=0.99*/);
+    @Namespace("cv") public static native int estimateAffine3D(@Adapter("ArrayAdapter") CvArr src,
+            @Adapter("ArrayAdapter") CvArr dst, @Adapter(value="ArrayAdapter", out=true) CvMat out,
+            @Adapter(value="ArrayAdapter", out=true) CvMat inliers, double ransacThreshold/*=3*/, double confidence/*=0.99*/);
 }
