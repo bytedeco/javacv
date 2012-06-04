@@ -843,7 +843,7 @@ public class opencv_contrib {
         public FaceRecognizer() { }
         public FaceRecognizer(Pointer p) { super(p); }
 
-        public /*abstract*/ native void train(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels);
+        public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") CvArr labels);
         public /*abstract*/ native int predict(@Adapter("ArrayAdapter") CvArr src);
         public native void save(String filename);
         public native void load(String filename);

@@ -214,17 +214,17 @@ public class opencv_video {
             OPTFLOW_FARNEBACK_GAUSSIAN  = 256;
 
     @Namespace("cv") public static native int buildOpticalFlowPyramid(@Adapter("ArrayAdapter") CvArr img,
-            @Adapter(value="ArrayAdapter", out=true) CvMatArray pyramid, @ByVal CvSize winSize,
+            @Adapter(value="ArrayAdapter", out=true) IplImageArray pyramid, @ByVal CvSize winSize,
             int maxLevel, @Cast("bool") boolean withDerivatives/*=true*/, int pyrBorder/*=BORDER_REFLECT_101*/,
             int derivBorder/*=BORDER_CONSTANT*/, @Cast("bool") boolean tryReuseInputImage/*=true*/);
-    @Namespace("cv") public static native void calcOpticalFlowPyrLK(@Adapter("ArrayAdapter") CvMatArray prevImg,
-            @Adapter("ArrayAdapter") CvMatArray nextImg, @Adapter("ArrayAdapter") CvArr prevPts,
+    @Namespace("cv") public static native void calcOpticalFlowPyrLK(@Adapter("ArrayAdapter") IplImageArray prevImg,
+            @Adapter("ArrayAdapter") IplImageArray nextImg, @Adapter("ArrayAdapter") CvArr prevPts,
             @Adapter("ArrayAdapter") CvArr nextPts, @Adapter("ArrayAdapter") CvArr status,
             @Adapter("ArrayAdapter") CvArr err, @ByVal CvSize winSize/*=Size(21,21)*/, int maxLevel/*=3*/,
             @ByVal CvTermCriteria criteria/*=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01)*/,
             int flags/*=0*/, double minEigThreshold/*=1e-4*/);
-    @Namespace("cv") public static native void calcOpticalFlowFarneback(@Adapter("ArrayAdapter") CvMatArray prev,
-            @Adapter("ArrayAdapter") CvMatArray next, @Adapter("ArrayAdapter") CvArr flow, double pyr_scale,
+    @Namespace("cv") public static native void calcOpticalFlowFarneback(@Adapter("ArrayAdapter") IplImageArray prev,
+            @Adapter("ArrayAdapter") IplImageArray next, @Adapter("ArrayAdapter") CvArr flow, double pyr_scale,
             int levels, int winsize, int iterations, int poly_n, double poly_sigma, int flags);
 
 

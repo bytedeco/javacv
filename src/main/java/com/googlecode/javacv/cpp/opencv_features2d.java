@@ -71,6 +71,7 @@ import com.googlecode.javacpp.annotation.Properties;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_flann.*;
 
 /**
  *
@@ -892,10 +893,13 @@ public class opencv_features2d {
     @Namespace("cv") public static class FlannBasedMatcher extends DescriptorMatcher {
         static { load(); }
         public FlannBasedMatcher()       { allocate();  }
-//        public FlannBasedMatcher(@ByRef Ptr<flann::IndexParams>& indexParams=new flann::KDTreeIndexParams(),
-//                @ByRef Ptr<flann::SearchParams> searchParams=new flann::SearchParams());
+        public FlannBasedMatcher(IndexParams indexParams/*=new KDTreeIndexParams()*/,
+                SearchParams searchParams/*=new SearchParams()*/) {
+            allocate(indexParams, searchParams);
+        }
         public FlannBasedMatcher(Pointer p) { super(p); }
         private native void allocate();
+        private native void allocate(IndexParams indexParams, SearchParams searchParams);
 
 //        public native void add(@Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray descriptors);
 //        public native void clear();

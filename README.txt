@@ -219,6 +219,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 ==Changes==
  * Refined the `FaceApplet` sample
  * Made a few minor updates for OpenCV 2.4.1
+ * Fixed `FlannBasedMatcher` constructor and `FaceRecognizer.train()`
 
 ===May 27, 2012 version 0.1===
  * Started using version numbers, friendly to tools like Maven, and placing packages in a sort of [http://maven2.javacv.googlecode.com/git/ Maven repository]
