@@ -95,8 +95,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.imageWidth  = imageWidth;
         this.imageHeight = imageHeight;
 
-        this.pixelFormat = PIX_FMT_RGB32;
-        this.codecID     = CODEC_ID_HUFFYUV;
+        this.pixelFormat = PIX_FMT_NONE;
+        this.codecID     = CODEC_ID_NONE;
         this.bitrate     = 400000;
         this.frameRate   = 30;
 
@@ -157,6 +157,21 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         c = video_st.codec();
+
+        // some formats want stream headers to be separate
+        String name = oformat.name().getString();
+        if (name.equals("mp4") || name.equals("mov") || name.equals("3gp")) {
+            c.flags(c.flags() | CODEC_FLAG_GLOBAL_HEADER);
+        }
+        if (codecID == CODEC_ID_NONE) {
+            if ("mp4".equals(name)) {
+                codecID = CODEC_ID_MPEG4;
+            } else if ("3gp".equals(name)) {
+                codecID = CODEC_ID_H263;
+            } else if ("avi".equals(name)) {
+                codecID = CODEC_ID_HUFFYUV;
+            }
+        }
         c.codec_id(codecID == CODEC_ID_NONE ? oformat.video_codec() : codecID);
         c.codec_type(CODEC_TYPE_VIDEO);
 
@@ -171,18 +186,38 @@ public class FFmpegFrameRecorder extends FrameRecorder {
            identically 1. */
         c.time_base(av_d2q(1/frameRate, DEFAULT_FRAME_RATE_BASE));
         c.gop_size(12); /* emit one intra frame every twelve frames at most */
+
+        if (pixelFormat == PIX_FMT_NONE) {
+            if (c.codec_id() == CODEC_ID_HUFFYUV || c.codec_id() == CODEC_ID_FFV1 ||
+                    c.codec_id() == CODEC_ID_PNG || c.codec_id() == CODEC_ID_RAWVIDEO) {
+                pixelFormat = PIX_FMT_RGB32; // appropriate for common lossless formats
+            } else {
+                pixelFormat = PIX_FMT_YUV420P; // lossy, but works with about everything
+            }
+        }
         c.pix_fmt(pixelFormat);
+
         if (c.codec_id() == CODEC_ID_MPEG2VIDEO) {
             /* just for testing, we also add B frames */
             c.max_b_frames(2);
-        }
-        if (c.codec_id() == CODEC_ID_MPEG1VIDEO) {
+        } else if (c.codec_id() == CODEC_ID_MPEG1VIDEO) {
             /* Needed to avoid using macroblocks in which some coeffs overflow.
                This does not happen with normal video, it just happens here as
                the motion of the chroma plane does not match the luma plane. */
             c.mb_decision(2);
-        }
-        if (c.codec_id() == CODEC_ID_H264) {
+        } else if (c.codec_id() == CODEC_ID_H263) {
+            if (imageWidth <= 128 && imageHeight <= 96) {
+                c.width(128).height(96);
+            } else if (imageWidth <= 176 && imageHeight <= 144) {
+                c.width(176).height(144);
+            } else if (imageWidth <= 352 && imageHeight <= 288) {
+                c.width(352).height(288);
+            } else if (imageWidth <= 704 && imageHeight <= 576) {
+                c.width(704).height(576);
+            } else {
+                c.width(1408).height(1152);
+            }
+        } else if (c.codec_id() == CODEC_ID_H264) {
             // libx264-default.ffpreset
             c.coder_type(1); // coder=1
             c.flags(c.flags() | CODEC_FLAG_LOOP_FILTER); // flags=+loop
@@ -209,19 +244,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     CODEC_FLAG2_8X8DCT | CODEC_FLAG2_FASTPSKIP); // flags2=+bpyramid+mixed_refs+wpred+dct8x8+fastpskip
             c.weighted_p_pred(2); // wpredp=2
 
-            // libx264-baseline.ffpreset
+            // libx264-baseline.ffpreset (works on mobile devices with no real tradeoffs)
             c.coder_type(0); // coder=0
             c.max_b_frames(0); // bf=0
             c.flags2(c.flags2() & ~CODEC_FLAG2_WPRED & ~CODEC_FLAG2_8X8DCT); // flags2=-wpred-dct8x8
             c.weighted_p_pred(0); // wpredp=0
         }
-
-        // some formats want stream headers to be separate
-        String name = oformat.name().getString();
-        if(name.equals("mp4") || name.equals("mov") || name.equals("3gp")) {
-            c.flags(c.flags() | CODEC_FLAG_GLOBAL_HEADER);
-        }
-
 
         /* set the output parameters (must be done even if no parameters). */
         if (av_set_parameters(oc, null) < 0) {
@@ -240,14 +268,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if (codec == null) {
                 av_freep(video_st);
                 video_st = null;
-                throw new Exception("codec not found");
+                throw new Exception("Codec not found");
             }
 
             /* open the codec */
             if (avcodec_open(c, codec) < 0) {
                 av_freep(video_st);
                 video_st = null;
-                throw new Exception("could not open codec");
+                throw new Exception("Could not open codec");
             }
 
             /* allocate the encoded raw picture */
@@ -277,7 +305,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                    as long as they're aligned enough for the architecture, and
                    they're freed appropriately (such as using av_free for buffers
                    allocated with av_malloc) */
-                video_outbuf_size = imageWidth*imageHeight*4; // ??
+                video_outbuf_size = Math.max(256 * 1024, 8 * c.width() * c.height()); // a la ffmpeg.c
                 video_outbuf = new BytePointer(av_malloc(video_outbuf_size));
             }
         }
