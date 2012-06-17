@@ -122,10 +122,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private SwsContext img_convert_ctx;
     private AVPacket pkt;
     private AVPicture tempPicture;
+    private int frameNumber;
 
     public static final int DEFAULT_FRAME_RATE_BASE = 1001000;
 
     public void start() throws Exception {
+        frameNumber = 0;
+
         /* auto detect the output format from the name. */
         String formatName = format == null || format.length() == 0 ? null : format;
         oformat = av_guess_format(formatName, filename, null);
@@ -178,6 +181,39 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                This does not happen with normal video, it just happens here as
                the motion of the chroma plane does not match the luma plane. */
             c.mb_decision(2);
+        }
+        if (c.codec_id() == CODEC_ID_H264) {
+            // libx264-default.ffpreset
+            c.coder_type(1); // coder=1
+            c.flags(c.flags() | CODEC_FLAG_LOOP_FILTER); // flags=+loop
+            c.me_cmp(c.me_cmp() | 1); // cmp=+chroma
+            c.partitions(c.partitions() | c.X264_PART_I8X8 | c.X264_PART_I4X4 | c.X264_PART_P8X8 |
+                    c.X264_PART_B8X8); // partitions=+parti8x8+parti4x4+partp8x8+partb8x8
+            c.me_method(ME_HEX); // me_method=hex
+            c.me_subpel_quality(7); // subq=7
+            c.me_range(16); // me_range=16
+            c.gop_size(250); // g=250
+            c.keyint_min(25); // keyint_min=25
+            c.scenechange_threshold(40); // sc_threshold=40
+            c.i_quant_factor(0.71f); // i_qfactor=0.71
+            c.b_frame_strategy(1); // b_strategy=1
+            c.qcompress(0.6f); // qcomp=0.6
+            c.qmin(10); // qmin=10
+            c.qmax(51); // qmax=51
+            c.max_qdiff(4); // qdiff=4
+            c.max_b_frames(3); // bf=3
+            c.refs(3); // refs=3
+            c.directpred(1); // directpred=1
+            c.trellis(1); // trellis=1
+            c.flags2(c.flags2() | CODEC_FLAG2_BPYRAMID | CODEC_FLAG2_MIXED_REFS | CODEC_FLAG2_WPRED |
+                    CODEC_FLAG2_8X8DCT | CODEC_FLAG2_FASTPSKIP); // flags2=+bpyramid+mixed_refs+wpred+dct8x8+fastpskip
+            c.weighted_p_pred(2); // wpredp=2
+
+            // libx264-baseline.ffpreset
+            c.coder_type(0); // coder=0
+            c.max_b_frames(0); // bf=0
+            c.flags2(c.flags2() & ~CODEC_FLAG2_WPRED & ~CODEC_FLAG2_8X8DCT); // flags2=-wpred-dct8x8
+            c.weighted_p_pred(0); // wpredp=0
         }
 
         // some formats want stream headers to be separate
@@ -266,6 +302,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public void stop() throws Exception {
+        if (oc != null) {
+            /* write the trailer, if any */
+            av_write_trailer(oc);
+        }
+
         /* close codec and free stream */
         if (video_st != null) {
             avcodec_close(c);
@@ -277,9 +318,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if (oc != null) {
-            /* write the trailer, if any */
-            av_write_trailer(oc);
-
             /* free the streams */
             int nb_streams = oc.nb_streams();
             for(int i = 0; i < nb_streams; i++) {
@@ -372,6 +410,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             ret = av_write_frame(oc, pkt);
         } else {
+            picture.pts(frameNumber++); // magic required by libx264
             /* encode the image */
             out_size = avcodec_encode_video(c, video_outbuf, video_outbuf_size, picture);
             /* if zero size, it means the image was buffered */
