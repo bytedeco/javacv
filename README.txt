@@ -147,6 +147,7 @@ public class Demo {
 
         // CanvasFrame is a JFrame containing a Canvas component, which is hardware accelerated.
         // It can also switch into full-screen mode when called with a screenNumber.
+        // We should also specify the relative monitor/camera response for proper gamma correction.
         CanvasFrame frame = new CanvasFrame("Some Title", CanvasFrame.getDefaultGamma()/grabber.getGamma());
 
         // Let's create some random 3D rotation...
@@ -220,7 +221,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
  * Gave better default `FFmpegFrameRecorder` settings to H.263, MPEG-4, etc. codecs and fixed H.264 encoding with libx264 (issue #160)
  * Refined the `FaceApplet` sample
  * Made a few minor updates for OpenCV 2.4.1
- * Fixed `FlannBasedMatcher` constructor and `FaceRecognizer.train()`
+ * Fixed `FlannBasedMatcher` constructor, `FaceRecognizer.train()`, and `Stitcher.stitch()/composePanorama()`
 
 ===May 27, 2012 version 0.1===
  * Started using version numbers, friendly to tools like Maven, and placing packages in a sort of [http://maven2.javacv.googlecode.com/git/ Maven repository]

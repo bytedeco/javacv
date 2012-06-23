@@ -164,7 +164,7 @@ public class ARToolKitPlus {
         @MemberGetter public native @Cast("ARFloat(*)[4]") DoublePointer transR();
     }
 
-    @Opaque public static class Logger extends Pointer {
+    public static class Logger extends Pointer {
         static { load(); }
         public Logger() { }
         public Logger(Pointer p) { super(p); }
@@ -182,7 +182,7 @@ public class ARToolKitPlus {
         public Profiler(Pointer p) { super(p); }
     }
 
-    @Opaque public static class Tracker extends Pointer {
+    public static class Tracker extends Pointer {
         static { load(); }
         public Tracker() { }
         public Tracker(Pointer p) { super(p); }
@@ -265,7 +265,7 @@ public class ARToolKitPlus {
         protected final native void allocate();
         public native void call(String nStr);
     }
-    @Opaque public static class FunctionLogger extends Logger {
+    public static class FunctionLogger extends Logger {
         static { load(); }
         public FunctionLogger(ArtLogFunction f) {  allocate(f); }
         public FunctionLogger(Pointer p) { super(p); }

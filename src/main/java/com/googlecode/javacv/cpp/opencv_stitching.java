@@ -1260,11 +1260,15 @@ public class opencv_stitching {
         public native /* Status */ int estimateTransform(@ByRef MatVector images);
         public native /* Status */ int estimateTransform(@ByRef MatVector images, @ByRef RectVectorVector rois);
 
-        public native /* Status */ int composePanorama(@ByRef MatVector pano);
-        public native /* Status */ int composePanorama(@ByRef MatVector images, @ByRef MatVector pano);
+        public native /* Status */ int composePanorama(
+                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
+        public native /* Status */ int composePanorama(@ByRef MatVector images,
+                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
 
-        public native /* Status */ int stitch(@ByRef MatVector images, @ByRef MatVector pano);
-        public native /* Status */ int stitch(@ByRef MatVector images, @ByRef RectVectorVector rois, @ByRef MatVector pano);
+        public native /* Status */ int stitch(@ByRef MatVector images,
+                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
+        public native /* Status */ int stitch(@ByRef MatVector images, @ByRef RectVectorVector rois,
+                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
 
         public native double registrationResol();
         public native void setRegistrationResol(double resol_mpx);
