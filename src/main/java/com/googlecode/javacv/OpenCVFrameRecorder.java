@@ -54,12 +54,14 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         this.imageHeight = imageHeight;
 
         this.pixelFormat = 1;
-        this.codecID     = windows ? CV_FOURCC_PROMPT : CV_FOURCC_DEFAULT;
-        this.bitrate     = 0;
+        this.videoCodec  = windows ? CV_FOURCC_PROMPT : CV_FOURCC_DEFAULT;
         this.frameRate   = 30;
     }
     public void release() throws Exception {
-        stop();
+        if (writer != null) {
+            cvReleaseVideoWriter(writer);
+            writer = null;
+        }
     }
     @Override protected void finalize() throws Throwable {
         super.finalize();
@@ -71,17 +73,14 @@ public class OpenCVFrameRecorder extends FrameRecorder {
     private CvVideoWriter writer = null;
 
     public void start() throws Exception {
-        writer = cvCreateVideoWriter(filename, codecID, frameRate, cvSize(imageWidth, imageHeight), pixelFormat);
+        writer = cvCreateVideoWriter(filename, videoCodec, frameRate, cvSize(imageWidth, imageHeight), pixelFormat);
         if (writer == null) {
             throw new Exception("cvCreateVideoWriter(): Could not create a writer");
         }
     }
 
     public void stop() throws Exception {
-        if (writer != null) {
-            cvReleaseVideoWriter(writer);
-            writer = null;
-        }
+        release();
     }
 
     public void record(IplImage frame) throws Exception {

@@ -209,7 +209,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVFormatParameters fp = null;
         if (frameRate > 0 || bpp > 0 || imageWidth > 0 || imageHeight > 0) {
             fp = new AVFormatParameters();
-            fp.time_base(av_d2q(1/frameRate, FFmpegFrameRecorder.DEFAULT_FRAME_RATE_BASE));
+            fp.time_base(av_d2q(1/frameRate, 1001000));
             fp.sample_rate(bpp);
             fp.channels(imageMode == ImageMode.COLOR ? 3 : 1);
             fp.width(imageWidth);

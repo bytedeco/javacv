@@ -21,6 +21,7 @@
 package com.googlecode.javacv;
 
 import java.io.File;
+import java.nio.Buffer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,9 +104,10 @@ public abstract class FrameRecorder {
     }
 
     protected String format;
-    protected int    imageWidth, imageHeight;
-    protected int    pixelFormat, codecID, bitrate;
+    protected int imageWidth, imageHeight, audioChannels;
+    protected int pixelFormat, videoCodec, videoBitrate;
     protected double frameRate;
+    protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
 
     public String getFormat() {
         return format;
@@ -128,6 +130,13 @@ public abstract class FrameRecorder {
         this.imageHeight = imageHeight;
     }
 
+    public int getAudioChannels() {
+        return audioChannels;
+    }
+    public void setAudioChannels(int audioChannels) {
+        this.audioChannels = audioChannels;
+    }
+
     public int getPixelFormat() {
         return pixelFormat;
     }
@@ -135,18 +144,18 @@ public abstract class FrameRecorder {
         this.pixelFormat = pixelFormat;
     }
 
-    public int getCodecID() {
-        return codecID;
+    public int getVideoCodec() {
+        return videoCodec;
     }
-    public void setCodecID(int codecID) {
-        this.codecID = codecID;
+    public void setVideoCodec(int videoCodec) {
+        this.videoCodec = videoCodec;
     }
 
-    public int getBitrate() {
-        return bitrate;
+    public int getVideoBitrate() {
+        return videoBitrate;
     }
-    public void setBitrate(int bitrate) {
-        this.bitrate = bitrate;
+    public void setVideoBitrate(int videoBitrate) {
+        this.videoBitrate = videoBitrate;
     }
 
     public double getFrameRate() {
@@ -154,6 +163,34 @@ public abstract class FrameRecorder {
     }
     public void setFrameRate(double frameRate) {
         this.frameRate = frameRate;
+    }
+
+    public int getSampleFormat() {
+        return sampleFormat;
+    }
+    public void setSampleFormat(int sampleFormat) {
+        this.sampleFormat = sampleFormat;
+    }
+
+    public int getAudioCodec() {
+        return audioCodec;
+    }
+    public void setAudioCodec(int audioCodec) {
+        this.audioCodec = audioCodec;
+    }
+
+    public int getAudioBitrate() {
+        return audioBitrate;
+    }
+    public void setAudioBitrate(int audioBitrate) {
+        this.audioBitrate = audioBitrate;
+    }
+
+    public int getSampleRate() {
+        return sampleRate;
+    }
+    public void setSampleRate(int sampleRate) {
+        this.sampleRate = sampleRate;
     }
 
     public static class Exception extends java.lang.Exception {
@@ -164,6 +201,8 @@ public abstract class FrameRecorder {
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void record(IplImage frame) throws Exception;
+    public void record(Buffer samples) throws Exception {
+        throw new UnsupportedOperationException("This FrameRecorder does not support audio.");
+    }
     public abstract void release() throws Exception;
-
 }

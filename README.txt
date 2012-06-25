@@ -177,7 +177,7 @@ public class Demo {
                 int x = r.x(), y = r.y(), w = r.width(), h = r.height();
                 cvRectangle(grabbedImage, cvPoint(x, y), cvPoint(x+w, y+h), CvScalar.RED, 1, CV_AA, 0);
 
-                // To access the elements of a native array, use the position() method.
+                // To access or pass as argument the elements of a native array, call position() before.
                 hatPoints.position(0).x(x-w/10)   .y(y-h/10);
                 hatPoints.position(1).x(x+w*11/10).y(y-h/10);
                 hatPoints.position(2).x(x+w/2)    .y(y-h/2);
@@ -218,10 +218,11 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Added audio support to `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Buffer)` alongside `record(IplImage)`) (issue #160)
  * Gave better default `FFmpegFrameRecorder` settings to H.263, MPEG-4, etc. codecs and fixed H.264 encoding with libx264 (issue #160)
  * Refined the `FaceApplet` sample
  * Made a few minor updates for OpenCV 2.4.1
- * Fixed `FlannBasedMatcher` constructor, `FaceRecognizer.train()`, and `Stitcher.stitch()/composePanorama()`
+ * Fixed `FlannBasedMatcher` constructor, `FaceRecognizer.train()`, and `Stitcher.stitch()/composePanorama()` (issue #211)
 
 ===May 27, 2012 version 0.1===
  * Started using version numbers, friendly to tools like Maven, and placing packages in a sort of [http://maven2.javacv.googlecode.com/git/ Maven repository]
