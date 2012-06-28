@@ -23,6 +23,7 @@ package com.googlecode.javacv;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -178,11 +179,12 @@ public abstract class FrameGrabber {
             SENSOR_PATTERN_BGGR = (1L << 32) | 1;
 
     protected String format = null;
-    protected int imageWidth = 0, imageHeight = 0;
+    protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
     protected long sensorPattern = -1L;
     protected int pixelFormat = -1;
     protected double frameRate = 0;
+    protected int sampleFormat, sampleRate;
     protected boolean triggerMode = false;
     protected int bpp = 0;
     protected int timeout = 10000;
@@ -213,6 +215,13 @@ public abstract class FrameGrabber {
         this.imageHeight = imageHeight;
     }
 
+    public int getAudioChannels() {
+        return audioChannels;
+    }
+    public void setAudioChannels(int audioChannels) {
+        this.audioChannels = audioChannels;
+    }
+
     public ImageMode getImageMode() {
         return imageMode;
     }
@@ -239,6 +248,20 @@ public abstract class FrameGrabber {
     }
     public void setFrameRate(double frameRate) {
         this.frameRate = frameRate;
+    }
+
+    public int getSampleFormat() {
+        return sampleFormat;
+    }
+    public void setSampleFormat(int sampleFormat) {
+        this.sampleFormat = sampleFormat;
+    }
+
+    public int getSampleRate() {
+        return sampleRate;
+    }
+    public void setSampleRate(int sampleRate) {
+        this.sampleRate = sampleRate;
     }
 
     public boolean isTriggerMode() {
@@ -313,6 +336,9 @@ public abstract class FrameGrabber {
     public abstract void stop() throws Exception;
     public abstract void trigger() throws Exception;
     public abstract IplImage grab() throws Exception;
+    public Frame grabFrame() throws Exception {
+        throw new UnsupportedOperationException("This FrameGrabber does not support audio.");
+    }
     public abstract void release() throws Exception;
 
     public void restart() throws Exception {

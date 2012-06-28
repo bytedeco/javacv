@@ -218,7 +218,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
- * Added audio support to `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Buffer)` alongside `record(IplImage)`) (issue #160)
+ * Added audio support to `FFmpegFrameGrabber` (call `grabFrame()` instead of `grab()`) and `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Buffer)` alongside `record(IplImage)`) (issue #160)
  * Gave better default `FFmpegFrameRecorder` settings to H.263, MPEG-4, etc. codecs and fixed H.264 encoding with libx264 (issue #160)
  * Refined the `FaceApplet` sample
  * Made a few minor updates for OpenCV 2.4.1

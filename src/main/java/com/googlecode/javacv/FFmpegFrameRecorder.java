@@ -442,7 +442,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* ugly hack for PCM codecs (will be removed ASAP with new PCM
                support to compute the input frame size in samples */
             if (audio_c.frame_size() <= 1) {
-                audio_outbuf_size = 16 * 1024;
+                audio_outbuf_size = FF_MIN_BUFFER_SIZE;
                 audio_input_frame_size = audio_outbuf_size / audio_c.channels();
                 switch (audio_c.codec_id()) {
                     case CODEC_ID_PCM_S16LE:

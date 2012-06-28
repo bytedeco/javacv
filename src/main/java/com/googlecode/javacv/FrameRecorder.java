@@ -21,8 +21,8 @@
 package com.googlecode.javacv;
 
 import java.io.File;
-import java.nio.Buffer;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.Buffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -200,9 +200,21 @@ public abstract class FrameRecorder {
 
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
-    public abstract void record(IplImage frame) throws Exception;
+    public abstract void record(IplImage image) throws Exception;
     public void record(Buffer samples) throws Exception {
         throw new UnsupportedOperationException("This FrameRecorder does not support audio.");
+    }
+    public void record(Frame frame) throws Exception {
+        if (frame == null) {
+            record((IplImage)null);
+        } else {
+            if (frame.image != null) {
+                record(frame.image);
+            }
+            if (frame.samples != null) {
+                record(frame.samples);
+            }
+        }
     }
     public abstract void release() throws Exception;
 }

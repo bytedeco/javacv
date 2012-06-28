@@ -61,6 +61,7 @@ import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
+import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -1642,6 +1643,10 @@ public class avcodec {
             int filter_length, int log2_phase_count, int linear, double cutoff);
     public static native int audio_resample(ReSampleContext s, short[] output, short[] input, int nb_samples);
     public static native int audio_resample(ReSampleContext s, ShortBuffer output, ShortBuffer input, int nb_samples);
+    public static native int audio_resample(ReSampleContext s, ShortPointer output, ShortPointer input, int nb_samples);
+    public static native int audio_resample(ReSampleContext s, @Cast("short*") byte[] output, @Cast("short*") byte[] input, int nb_samples);
+    public static native int audio_resample(ReSampleContext s, @Cast("short*") Buffer output, @Cast("short*") Buffer input, int nb_samples);
+    public static native int audio_resample(ReSampleContext s, @Cast("short*") Pointer output, @Cast("short*") Pointer input, int nb_samples);
     public static native void audio_resample_close(ReSampleContext s);
 
     public static native AVResampleContext av_resample_init(int out_rate, int in_rate, int filter_length,
@@ -1649,6 +1654,14 @@ public class avcodec {
     public static native int av_resample(AVResampleContext c, short[] dst, short[] src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
     public static native int av_resample(AVResampleContext c, ShortBuffer dst, ShortBuffer src,
+            int[] consumed, int src_size, int dst_size, int update_ctx);
+    public static native int av_resample(AVResampleContext c, ShortPointer dst, ShortPointer src,
+            int[] consumed, int src_size, int dst_size, int update_ctx);
+    public static native int av_resample(AVResampleContext c, @Cast("short*") byte[] dst, @Cast("short*") byte[] src,
+            int[] consumed, int src_size, int dst_size, int update_ctx);
+    public static native int av_resample(AVResampleContext c, @Cast("short*") Buffer dst, @Cast("short*") Buffer src,
+            int[] consumed, int src_size, int dst_size, int update_ctx);
+    public static native int av_resample(AVResampleContext c, @Cast("short*") Pointer dst, @Cast("short*") Pointer src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
     public static native void av_resample_compensate(AVResampleContext c, int sample_delta, int compensation_distance);
     public static native void av_resample_close(AVResampleContext c);
@@ -1762,10 +1775,21 @@ public class avcodec {
 //    @Deprecated
 //    public static native int avcodec_decode_audio2(AVCodecContext avctx, ShortBuffer samples,
 //            int[] frame_size_ptr, @Cast("uint8_t*") BytePointer buf, int buf_size);
+//    @Deprecated
+//    public static native int avcodec_decode_audio2(AVCodecContext avctx, ShortPointer samples,
+//            int[] frame_size_ptr, @Cast("uint8_t*") BytePointer buf, int buf_size);
 //#endif
     public static native int avcodec_decode_audio3(AVCodecContext avctx, short[] samples,
             int[] frame_size_ptr, AVPacket avpkt);
     public static native int avcodec_decode_audio3(AVCodecContext avctx, ShortBuffer samples,
+            int[] frame_size_ptr, AVPacket avpkt);
+    public static native int avcodec_decode_audio3(AVCodecContext avctx, ShortPointer samples,
+            int[] frame_size_ptr, AVPacket avpkt);
+    public static native int avcodec_decode_audio3(AVCodecContext avctx, @Cast("short*") byte[] samples,
+            int[] frame_size_ptr, AVPacket avpkt);
+    public static native int avcodec_decode_audio3(AVCodecContext avctx, @Cast("short*") Buffer samples,
+            int[] frame_size_ptr, AVPacket avpkt);
+    public static native int avcodec_decode_audio3(AVCodecContext avctx, @Cast("short*") Pointer samples,
             int[] frame_size_ptr, AVPacket avpkt);
 
 //#if LIBAVCODEC_VERSION_MAJOR < 53
@@ -1791,6 +1815,12 @@ public class avcodec {
             @Cast("uint8_t*") BytePointer buf, int buf_size, ShortBuffer samples);
     public static native int avcodec_encode_audio(AVCodecContext avctx,
             @Cast("uint8_t*") BytePointer buf, int buf_size, ShortPointer samples);
+    public static native int avcodec_encode_audio(AVCodecContext avctx,
+            @Cast("uint8_t*") BytePointer buf, int buf_size, @Cast("short*") byte[] samples);
+    public static native int avcodec_encode_audio(AVCodecContext avctx,
+            @Cast("uint8_t*") BytePointer buf, int buf_size, @Cast("short*") Buffer samples);
+    public static native int avcodec_encode_audio(AVCodecContext avctx,
+            @Cast("uint8_t*") BytePointer buf, int buf_size, @Cast("short*") Pointer samples);
 
     public static native int avcodec_encode_video(AVCodecContext avctx,
             @Cast("uint8_t*") BytePointer buf, int buf_size, AVFrame pict);
