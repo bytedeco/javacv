@@ -34,6 +34,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_ProfileRGB;
@@ -51,9 +52,9 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  *
  * @author Samuel Audet
  * 
- * Make sure OpenGL is enabled to get low latency, something like
+ * Make sure OpenGL or XRender is enabled to get low latency, something like
  *      export _JAVA_OPTIONS=-Dsun.java2d.opengl=True
- *
+ *      export _JAVA_OPTIONS=-Dsun.java2d.xrender=True
  */
 public class CanvasFrame extends JFrame {
 
@@ -175,13 +176,32 @@ public class CanvasFrame extends JFrame {
 
             if (CanvasFrame.this.getClass() == CanvasFrame.class) {
                 canvas = new Canvas() {
+                    @Override public void update(Graphics g) { 
+                        paint(g);
+                    }
                     @Override public void paint(Graphics g) {
-                        // Try to redraw the front buffer when the OS says it has stomped
-                        // on it, using the back buffer. Calling bufferStrategy.show() here
-                        // sometimes throws NullPointerException or IllegalStateException,
+                        // Calling BufferStrategy.show() here sometimes throws
+                        // NullPointerException or IllegalStateException,
                         // but otherwise seems to work fine.
                         try {
-                            bufferStrategy.show();
+                            BufferStrategy strategy = canvas.getBufferStrategy();
+                            do {
+                                do {
+                                    g = strategy.getDrawGraphics();
+                                    if (color != null) {
+                                        g.setColor(color);
+                                        g.fillRect(0, 0, getWidth(), getHeight());
+                                    }
+                                    if (image != null) {
+                                        g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
+                                    }
+                                    if (buffer != null) {
+                                        g.drawImage(buffer, 0, 0, getWidth(), getHeight(), null);
+                                    }
+                                    g.dispose();
+                                } while (strategy.contentsRestored());
+                                strategy.show();
+                            } while (strategy.contentsLost());
                         } catch (NullPointerException e) {
                         } catch (IllegalStateException e) { }
                     }
@@ -196,7 +216,6 @@ public class CanvasFrame extends JFrame {
                 canvas.setVisible(true);
                 canvas.createBufferStrategy(2);
                 //canvas.setIgnoreRepaint(true);
-                bufferStrategy = canvas.getBufferStrategy();
             }
         }};
 
@@ -235,7 +254,9 @@ public class CanvasFrame extends JFrame {
     protected boolean needInitialResize = false;
     protected double initialScale = 1.0;
     protected double inverseGamma = 1.0;
-    private BufferStrategy bufferStrategy = null;
+    private Color color = null;
+    private Image image = null;
+    private BufferedImage buffer = null;
 
     public long getLatency() {
         // if there exists some way to estimate the latency in real time,
@@ -262,9 +283,6 @@ public class CanvasFrame extends JFrame {
 
     public Canvas getCanvas() {
         return canvas;
-    }
-    @Override public BufferStrategy getBufferStrategy() {
-        return bufferStrategy;
     }
 
     public Dimension getCanvasSize() {
@@ -309,21 +327,30 @@ public class CanvasFrame extends JFrame {
     }
 
     public Graphics2D createGraphics() {
-        return (Graphics2D)bufferStrategy.getDrawGraphics();
+        if (buffer == null || buffer.getWidth() != canvas.getWidth() || buffer.getHeight() != canvas.getHeight()) {
+            BufferedImage newbuffer = canvas.getGraphicsConfiguration().createCompatibleImage(
+                    canvas.getWidth(), canvas.getHeight(), Transparency.TRANSLUCENT);
+            if (buffer != null) {
+                Graphics g = newbuffer.getGraphics();
+                g.drawImage(buffer, 0, 0, null);
+                g.dispose();
+            }
+            buffer = newbuffer;
+        }
+        return buffer.createGraphics();
     }
     public void releaseGraphics(Graphics2D g) {
         g.dispose();
-        bufferStrategy.show();
+        canvas.paint(null);
     }
 
     public void showColor(CvScalar color) {
         showColor(new Color((int)color.red(), (int)color.green(), (int)color.blue()));
     }
     public void showColor(Color color) {
-        Graphics2D g = createGraphics();
-        g.setColor(color);
-        g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        releaseGraphics(g);
+        this.color = color;
+        this.image = null;
+        canvas.paint(null);
     }
 
     // Java2D will do gamma correction for TYPE_CUSTOM BufferedImage, but
@@ -343,9 +370,9 @@ public class CanvasFrame extends JFrame {
             int h = (int)Math.round(image.getHeight(null)*initialScale);
             setCanvasSize(w, h);
         }
-        Graphics2D g = createGraphics();
-        g.drawImage(image, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
-        releaseGraphics(g);
+        this.color = null;
+        this.image = image;
+        canvas.paint(null);
     }
 
     // This should not be called from the event dispatch thread (EDT),

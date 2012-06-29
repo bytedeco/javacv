@@ -218,6 +218,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Fixed CanvasFrame sometimes blanking out under Windows (issue #212)
  * Added audio support to `FFmpegFrameGrabber` (call `grabFrame()` instead of `grab()`) and `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Buffer)` alongside `record(IplImage)`) (issue #160)
  * Gave better default `FFmpegFrameRecorder` settings to H.263, MPEG-4, etc. codecs and fixed H.264 encoding with libx264 (issue #160)
  * Refined the `FaceApplet` sample
@@ -384,6 +385,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 ===May 30, 2010===
  * Removed redundant `CvMemStorage.clearMem()` method, use `cvClearMemStorage()`
  * Fixed the sample `Test2` class that did not work under Windows
+
  * Fixed corruption by the `cvkernels` `transformer` at the borders
  * Modified `CanvasFrame` constructors and added a `gamma` argument used by `showImage(IplImage)`
  * `CanvasFrame` now lets users resize the frame, while displayed images are stretched to fit the new size
