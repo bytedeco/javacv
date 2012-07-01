@@ -454,10 +454,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public IplImage grab() throws Exception {
-        return grabFrame(true, false).image;
+        Frame frame = grabFrame(true, false);
+        return frame != null ? frame.image : null;
     }
     private IplImage grab(boolean processImage) throws Exception {
-        return grabFrame(processImage, false).image;
+        Frame frame = grabFrame(processImage, false);
+        return frame != null ? frame.image : null;
     }
     @Override public Frame grabFrame() throws Exception {
         return grabFrame(true, true);

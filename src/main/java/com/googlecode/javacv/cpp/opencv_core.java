@@ -594,7 +594,7 @@ public class opencv_core {
 
         public CvSize cvSize() { return opencv_core.cvSize(width(), height()); }
 
-        public ByteBuffer   getByteBuffer  (int index) { return imageData().position(index).capacity(imageSize()-index).asByteBuffer(); }
+        public ByteBuffer   getByteBuffer  (int index) { return imageData().position(index).capacity(imageSize()).asByteBuffer(); }
         public ShortBuffer  getShortBuffer (int index) { return getByteBuffer(index*2).asShortBuffer();  }
         public IntBuffer    getIntBuffer   (int index) { return getByteBuffer(index*4).asIntBuffer();    }
         public FloatBuffer  getFloatBuffer (int index) { return getByteBuffer(index*4).asFloatBuffer();  }
