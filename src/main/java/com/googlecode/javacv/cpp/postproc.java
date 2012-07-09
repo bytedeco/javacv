@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Samuel Audet
+ * Copyright (C) 2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from postprocess.h include file from
- * FFmpeg 0.6.1, which are covered by the following copyright notice:
+ * FFmpeg 0.11.1, which are covered by the following copyright notice:
  *
  * Copyright (C) 2001-2003 Michael Niedermayer (michaelni@gmx.at)
  *
@@ -42,7 +42,7 @@
  *
  * WARNING: postproc itself is covered by the full GPLv2.
  * If your program uses this class, it will become bound to that license.
-  */
+ */
 
 package com.googlecode.javacv.cpp;
 
@@ -62,15 +62,21 @@ import static com.googlecode.javacv.cpp.avutil.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(not="windows", define="__STDC_CONSTANT_MACROS", cinclude="<libpostproc/postprocess.h>",
-        link={"postproc@.51", "avutil@.50"}, includepath=genericIncludepath, linkpath=genericLinkpath),
+    @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libpostproc/postprocess.h>",
+        link={"postproc@.52", "avutil@.51"}, includepath=genericIncludepath, linkpath=genericLinkpath),
     @Platform(value="android",               includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class postproc {
     static { load(avutil.class); load(); }
 
-    public static final int LIBPOSTPROC_VERSION_MAJOR = 51;
+    /**
+     * @file
+     * @brief
+     *     external postprocessing API
+     */
+
+    public static final int LIBPOSTPROC_VERSION_MAJOR = 52;
     public static final int LIBPOSTPROC_VERSION_MINOR =  2;
-    public static final int LIBPOSTPROC_VERSION_MICRO =  0;
+    public static final int LIBPOSTPROC_VERSION_MICRO = 100;
 
     public static final int    LIBPOSTPROC_VERSION_INT = AV_VERSION_INT(LIBPOSTPROC_VERSION_MAJOR,
                                                                         LIBPOSTPROC_VERSION_MINOR,
@@ -82,14 +88,22 @@ public class postproc {
 
     public static final String LIBPOSTPROC_IDENT       = "postproc" + LIBPOSTPROC_VERSION;
 
+    /**
+     * Return the LIBPOSTPROC_VERSION_INT constant.
+     */
+    public static native @Cast("unsigned") int postproc_version();
 
-    public static native int postproc_version();
+    /**
+     * Return the libpostproc build-time configuration.
+     */
     public static native String postproc_configuration();
+
+    /**
+     * Return the libpostproc license.
+     */
     public static native String postproc_license();
 
     public static final int PP_QUALITY_MAX = 6;
-
-//#define QP_STORE_T int8_t
 
     @Opaque public static class pp_context extends Pointer {
         static { load(); }
@@ -102,7 +116,7 @@ public class postproc {
         public pp_mode(Pointer p) { super(p); }
     }
 
-    @MemberGetter public static native String pp_help();
+    @MemberGetter public static native String pp_help(); ///< a simple help text
 
     public static native void pp_postprocess(
             @Cast("const uint8_t**")/*[3]*/ PointerPointer src, int srcStride[/*3*/],
@@ -111,6 +125,13 @@ public class postproc {
             @Cast("QP_STORE_T*") byte[] QP_store, int QP_stride,
             pp_mode mode, pp_context ppContext, int pict_type);
 
+
+    /**
+     * Return a pp_mode or NULL if an error occurred.
+     *
+     * @param name    the string after "-pp" on the command line
+     * @param quality a number from 0 to PP_QUALITY_MAX
+     */
     public static native pp_mode pp_get_mode_by_name_and_quality(String name, int quality);
     public static native void pp_free_mode(pp_mode mode);
 
@@ -118,9 +139,9 @@ public class postproc {
     public static native void pp_free_context(pp_context ppContext);
 
     public static final int
-            PP_CPU_CAPS_MMX   = 0x80000000,
-            PP_CPU_CAPS_MMX2  = 0x20000000,
-            PP_CPU_CAPS_3DNOW = 0x40000000,
+            PP_CPU_CAPS_MMX     = 0x80000000,
+            PP_CPU_CAPS_MMX2    = 0x20000000,
+            PP_CPU_CAPS_3DNOW   = 0x40000000,
             PP_CPU_CAPS_ALTIVEC = 0x10000000,
 
             PP_FORMAT       =  0x00000008,
@@ -129,5 +150,5 @@ public class postproc {
             PP_FORMAT_411   = (0x00000002|PP_FORMAT),
             PP_FORMAT_444   = (0x00000000|PP_FORMAT),
 
-            PP_PICT_TYPE_QP2 = 0x00000010;
+            PP_PICT_TYPE_QP2 = 0x00000010; ///< MPEG2 style QScale
 }

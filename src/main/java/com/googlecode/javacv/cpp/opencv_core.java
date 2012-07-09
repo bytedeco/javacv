@@ -1881,9 +1881,9 @@ public class opencv_core {
 
         // struct { } dim[CV_MAX_DIM]
         @Name({"dim", ".size"})
-        public native int data_size(int i); public native CvMatND data_size(int i, int size);
+        public native int dim_size(int i); public native CvMatND dim_size(int i, int size);
         @Name({"dim", ".step"})
-        public native int data_step(int i); public native CvMatND data_step(int i, int step);
+        public native int dim_step(int i); public native CvMatND dim_step(int i, int step);
     }
 
     public static boolean CV_IS_MATND_HDR(CvArr mat) {

@@ -218,6 +218,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Upgraded supported FFmpeg API to the 0.11 release branch
  * New `Pointer.limit` property of JavaCPP can now be used to get the `size` of an output parameter, and to specify the maximum `size` on input as well
  * Fixed CanvasFrame sometimes blanking out under Windows (issue #212)
  * Added audio support to `FFmpegFrameGrabber` (call `grabFrame()` instead of `grab()`) and `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Buffer)` alongside `record(IplImage)`) (issue #160)
@@ -386,7 +387,6 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 ===May 30, 2010===
  * Removed redundant `CvMemStorage.clearMem()` method, use `cvClearMemStorage()`
  * Fixed the sample `Test2` class that did not work under Windows
-
  * Fixed corruption by the `cvkernels` `transformer` at the borders
  * Modified `CanvasFrame` constructors and added a `gamma` argument used by `showImage(IplImage)`
  * `CanvasFrame` now lets users resize the frame, while displayed images are stretched to fit the new size

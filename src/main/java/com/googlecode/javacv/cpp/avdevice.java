@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011 Samuel Audet
+ * Copyright (C) 2010,2011,2012 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avdevice.h include file from
- * FFmpeg 0.6.1, which are covered by the following copyright notice:
+ * FFmpeg 0.11.1, which are covered by the following copyright notice:
  *
  * This file is part of FFmpeg.
  *
@@ -40,6 +40,7 @@
 
 package com.googlecode.javacv.cpp;
 
+import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 
@@ -52,16 +53,38 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libavdevice/avdevice.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice@.52", "avformat@.52", "avcodec@.52", "avutil@.50"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice@.54", "avformat@.54", "avcodec@.54", "avutil@.51"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload="avdevice-52"),
+        preloadpath=windowsPreloadpath, preload="avdevice-54"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class avdevice {
     static { load(avformat.class); load(); }
 
+    /**
+     * @file
+     * @ingroup lavd
+     * Main libavdevice API header
+     */
+
+    /**
+     * @defgroup lavd Special devices muxing/demuxing library
+     * @{
+     * Libavdevice is a complementary library to @ref libavf "libavformat". It
+     * provides various "special" platform-specific muxers and demuxers, e.g. for
+     * grabbing devices, audio capture and playback etc. As a consequence, the
+     * (de)muxers in libavdevice are of the AVFMT_NOFILE type (they use their own
+     * I/O functions). The filename passed to avformat_open_input() often does not
+     * refer to an actually existing file, but has some special device-specific
+     * meaning - e.g. for the x11grab device it is the display name.
+     *
+     * To use libavdevice, simply call avdevice_register_all() to register all
+     * compiled muxers and demuxers. They all use standard libavformat API.
+     * @}
+     */
+
     public static final int LIBAVDEVICE_VERSION_MAJOR = 52;
-    public static final int LIBAVDEVICE_VERSION_MINOR =  2;
-    public static final int LIBAVDEVICE_VERSION_MICRO =  0;
+    public static final int LIBAVDEVICE_VERSION_MINOR =  0;
+    public static final int LIBAVDEVICE_VERSION_MICRO = 100;
 
     public static final int    LIBAVDEVICE_VERSION_INT = AV_VERSION_INT(LIBAVDEVICE_VERSION_MAJOR,
                                                                         LIBAVDEVICE_VERSION_MINOR,
@@ -71,9 +94,24 @@ public class avdevice {
                                                                     LIBAVDEVICE_VERSION_MICRO);
     public static final int    LIBAVDEVICE_BUILD       = LIBAVDEVICE_VERSION_INT;
 
+    /**
+     * Return the LIBAVDEVICE_VERSION_INT constant.
+     */
+    public static native @Cast("unsigned") int avdevice_version();
 
-    public static native int avdevice_version();
+    /**
+     * Return the libavdevice build-time configuration.
+     */
     public static native String avdevice_configuration();
+
+    /**
+     * Return the libavdevice license.
+     */
     public static native String avdevice_license();
+
+    /**
+     * Initialize libavdevice and register all the input and output devices.
+     * @warning This function is not thread safe.
+     */
     public static native void avdevice_register_all();
 }
