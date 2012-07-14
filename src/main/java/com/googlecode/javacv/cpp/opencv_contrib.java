@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in contrib.hpp, retina.hpp,
- * detection_based_tracker.hpp, and hybrid_tracker.hpp of OpenCV 2.4.1,
+ * detection_based_tracker.hpp, and hybrid_tracker.hpp of OpenCV 2.4.2,
  * which are covered by the following copyright notice:
  *
  *                           License Agreement
@@ -92,8 +92,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         link={"opencv_contrib@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_objdetect@.2.4", "opencv_calib3d@.2.4",
               "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_contrib241", "opencv_ml241", "opencv_video241", "opencv_objdetect241", "opencv_calib3d241",
-              "opencv_features2d241", "opencv_flann241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
+        link={"opencv_contrib242", "opencv_ml242", "opencv_video242", "opencv_objdetect242", "opencv_calib3d242",
+              "opencv_features2d242", "opencv_flann242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -838,18 +838,18 @@ public class opencv_contrib {
 //        protected native void lda(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels);
     }
 
-    @Namespace("cv") public static class FaceRecognizer extends Pointer {
+    @Namespace("cv") public static class FaceRecognizer extends Algorithm {
         static { Loader.load(); }
         public FaceRecognizer() { }
         public FaceRecognizer(Pointer p) { super(p); }
 
         public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") CvArr labels);
         public /*abstract*/ native int predict(@Adapter("ArrayAdapter") CvArr src);
+        public /*abstract*/ native void predict(@Adapter("ArrayAdapter") CvArr src, @ByRef int[] label, @ByRef double[] dist);
         public native void save(String filename);
         public native void load(String filename);
         public native void save(@Adapter("FileStorageAdapter") CvFileStorage fs);
         public native void load(@Adapter("FileStorageAdapter") CvFileStorage fs);
-        public native @Adapter("MatAdapter") CvMat eigenvectors();
     }
     @Name("cv::Ptr<cv::FaceRecognizer>")
     public static class FaceRecognizerPtr extends Pointer {
@@ -862,10 +862,10 @@ public class opencv_contrib {
         public native FaceRecognizerPtr put(FaceRecognizer value);
     }
 
-    @Namespace("cv") public static native @ByVal FaceRecognizerPtr createEigenFaceRecognizer(int num_components/*=0*/);
-    @Namespace("cv") public static native @ByVal FaceRecognizerPtr createFisherFaceRecognizer(int num_components/*=0*/);
+    @Namespace("cv") public static native @ByVal FaceRecognizerPtr createEigenFaceRecognizer(int num_components/*=0*/, double threshold/*=DBL_MAX*/);
+    @Namespace("cv") public static native @ByVal FaceRecognizerPtr createFisherFaceRecognizer(int num_components/*=0*/, double threshold/*=DBL_MAX*/);
     @Namespace("cv") public static native @ByVal FaceRecognizerPtr createLBPHFaceRecognizer(int radius/*=1*/,
-            int neighbors/*=8*/, int grid_x/*=8*/, int grid_y/*=8*/);
+            int neighbors/*=8*/, int grid_x/*=8*/, int grid_y/*=8*/, double threshold/*=DBL_MAX*/);
 
     public static final int
         COLORMAP_AUTUMN = 0,
@@ -879,9 +879,7 @@ public class opencv_contrib {
         COLORMAP_COOL = 8,
         COLORMAP_HSV = 9,
         COLORMAP_PINK = 10,
-        COLORMAP_HOT = 11,
-        COLORMAP_MKPJ1 = 12,
-        COLORMAP_MKPJ2 = 13;
+        COLORMAP_HOT = 11;
 
     @Namespace("cv") public static native void applyColorMap(@Adapter("ArrayAdapter") CvArr src,
             @Adapter(value="ArrayAdapter") CvArr dst, int colormap);

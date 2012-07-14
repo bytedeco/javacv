@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in stitcher.hpp and all included
- * files of of OpenCV 2.4.1, which are covered by the following copyright notice:
+ * files of of OpenCV 2.4.2, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -90,8 +90,8 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         link={"opencv_stitching", "opencv_video", "opencv_nonfree", "opencv_objdetect", "opencv_features2d",
               "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_stitching241", "opencv_video241", "opencv_nonfree241", "opencv_gpu241", "opencv_objdetect241", "opencv_features2d241",
-              "opencv_flann241", "opencv_calib3d241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
+        link={"opencv_stitching242", "opencv_video242", "opencv_nonfree242", "opencv_gpu242", "opencv_objdetect242", "opencv_features2d242",
+              "opencv_flann242", "opencv_calib3d242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

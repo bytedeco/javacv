@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.4.1,
+ * This file is based on information found in highgui_c.h of OpenCV 2.4.2,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement
@@ -76,8 +76,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include="<opencv2/highgui/highgui_c.h>",
         link={"opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg241", "opencv_ffmpeg241_64"},
-        link={"opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
+    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg242", "opencv_ffmpeg242_64"},
+        link={"opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

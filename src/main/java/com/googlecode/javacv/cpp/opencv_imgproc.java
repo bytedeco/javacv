@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.4.1, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.2, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -88,7 +88,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>", "opencv_adapters.h"},
         link={"opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_imgproc241", "opencv_core241"}),
+        link={"opencv_imgproc242", "opencv_core242"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -346,7 +346,10 @@ public class opencv_imgproc {
             CV_YUV2GRAY_YUYV = CV_YUV2GRAY_YUY2,
             CV_YUV2GRAY_YUNV = CV_YUV2GRAY_YUY2,
 
-            CV_COLORCVT_MAX  = 125;
+            CV_RGBA2mRGBA = 125,
+            CV_mRGBA2RGBA = 126,
+
+            CV_COLORCVT_MAX  = 127;
 
     public static final int
             CV_INTER_NN        = 0,
@@ -639,7 +642,8 @@ public class opencv_imgproc {
             CV_COMP_CORREL        = 0,
             CV_COMP_CHISQR        = 1,
             CV_COMP_INTERSECT     = 2,
-            CV_COMP_BHATTACHARYYA = 3;
+            CV_COMP_BHATTACHARYYA = 3,
+            CV_COMP_HELLINGER     = CV_COMP_BHATTACHARYYA;
 
     public static final int
             CV_DIST_MASK_3 =  3,

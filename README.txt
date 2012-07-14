@@ -15,11 +15,11 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.1  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.2  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
- * FFmpeg 0.6.x or 0.7.x  http://ffmpeg.org/download.html
+ * FFmpeg 0.11.x  http://ffmpeg.org/download.html
   * Precompiled for Windows  http://ffmpeg.zeranoe.com/builds/  Known compatible builds:
    * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-0.7.1-win32-shared.7z
    * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-0.7.1-win64-shared.7z
@@ -59,13 +59,13 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `OpenCV-2.4.1-android-arm.zip`, and `ffmpeg-0.7.11-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.2-android-arm.zip`, and `ffmpeg-0.11.1-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
 After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
- * [http://ffmpeg.org/doxygen/0.6/ FFmpeg 0.6 Documentation]
- * [http://docs.opencv.org/ OpenCV v2.4.1 documentation]
+ * [http://ffmpeg.org/doxygen/ FFmpeg documentation]
+ * [http://docs.opencv.org/ OpenCV documentation]
 The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
@@ -218,14 +218,14 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
- * Upgraded supported FFmpeg API to the 0.11 release branch
+ * Made a few minor updates for OpenCV 2.4.2
  * New `Pointer.limit` property of JavaCPP can now be used to get the `size` of an output parameter, and to specify the maximum `size` on input as well
- * Fixed CanvasFrame sometimes blanking out under Windows (issue #212)
- * Added audio support to `FFmpegFrameGrabber` (call `grabFrame()` instead of `grab()`) and `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Buffer)` alongside `record(IplImage)`) (issue #160)
+ * Upgraded supported FFmpeg API to the 0.11 release branch
+ * Added audio support to `FFmpegFrameGrabber` (call `grabFrame()` instead of `grab()`) and `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Frame)` instead of `record(IplImage)`) (issue #160)
  * Gave better default `FFmpegFrameRecorder` settings to H.263, MPEG-4, etc. codecs and fixed H.264 encoding with libx264 (issue #160)
  * Refined the `FaceApplet` sample
- * Made a few minor updates for OpenCV 2.4.1
  * Fixed `FlannBasedMatcher` constructor, `FaceRecognizer.train()`, and `Stitcher.stitch()/composePanorama()` (issue #211)
+ * Fixed `CanvasFrame` sometimes blanking out under Windows and maybe Linux (issue #212)
 
 ===May 27, 2012 version 0.1===
  * Started using version numbers, friendly to tools like Maven, and placing packages in a sort of [http://maven2.javacv.googlecode.com/git/ Maven repository]

@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.4.1,
+ * This file is based on information found in features2d.hpp of OpenCV 2.4.2,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -56,6 +56,7 @@
 
 package com.googlecode.javacv.cpp;
 
+import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByRef;
@@ -82,7 +83,7 @@ import static com.googlecode.javacv.cpp.opencv_flann.*;
         include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d241", "opencv_flann241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
+        link={"opencv_features2d242", "opencv_flann242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -292,7 +293,88 @@ public class opencv_features2d {
                 @Adapter(value="ArrayAdapter", out=true) CvMat descriptors, @Cast("bool") boolean useProvidedKeypoints/*=false*/);
 
         public native AlgorithmInfo info();
+
+//        protected native void computeImpl(@Adapter("MatAdapter") CvArr image, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints, @Adapter(value="MatAdapter", out=true) CvMat descriptors);
+//        protected native void detectImpl(@Adapter("MatAdapter") CvArr image, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints, @Adapter("MatAdapter") CvArr mask/*=null*/);
+//
+//        protected native int nfeatures();
+//        protected native double scaleFactor();
+//        protected native int nlevels();
+//        protected native int edgeThreshold();
+//        protected native int firstLevel();
+//        protected native int WTA_K();
+//        protected native int scoreType();
+//        protected native int patchSize();
     }
+
+
+    @Namespace("cv") public static class FREAK extends DescriptorExtractor {
+        static { load(); }
+        public static final int kBytes = 32, HARRIS_SCORE=0, FAST_SCORE=1;
+        public FREAK() { allocate(); }
+        public FREAK(Pointer p) { super(p); }
+        public FREAK(FREAK rhs) { allocate(rhs); }
+        public FREAK(boolean orientationNormalized/*=true*/, boolean scaleNormalized/*=true*/,
+               float patternScale/*=22.0f*/, int nOctaves/*=4*/, @Adapter("VectorAdapter<int>") IntPointer selectedPairs/*=null*/) {
+            allocate(orientationNormalized, scaleNormalized, patternScale, nOctaves, selectedPairs);
+        }
+        private native void allocate();
+        private native void allocate(@ByRef FREAK rhs);
+        private native void allocate(boolean orientationNormalized/*=true*/, boolean scaleNormalized/*=true*/,
+               float patternScale/*=22.0f*/, int nOctaves/*=4*/, @Adapter("VectorAdapter<int>") IntPointer selectedPairs/*=null*/);
+
+        public native @Name("operator=") @ByRef FREAK copy(@ByRef FREAK rhs);
+
+//        public native int descriptorSize();
+//        public native int descriptorType();
+
+        public native @Adapter("VectorAdapter<int>") IntPointer selectPairs(@ByRef MatVector images,
+                @ByRef KeyPointVectorVector keypoints, double corrThresh/*=0.7*/, boolean verbose/*=true*/);
+
+//        public native AlgorithmInfo info();
+
+        public static final int
+                NB_SCALES = 64, NB_PAIRS = 512, NB_ORIENPAIRS = 45;
+
+//        protected native void computeImpl(@Adapter("MatAdapter") CvArr image, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints, @Adapter(value="MatAdapter", out=true) CvMat descriptors);
+//        protected native void buildPattern();
+//        protected native @Cast("uchar") byte meanIntensity(@Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr integral,
+//                float kp_x, float kp_y, @Cast("unsigned") int scale, @Cast("unsigned") int rot, @Cast("unsigned") int point);
+//
+//        protected native @Cast("bool") boolean orientationNormalized();
+//        protected native @Cast("bool") boolean scaleNormalized();
+//        protected native double patternScale();
+//        protected native int nOctaves();
+//        protected native @Cast("bool") boolean extAll();
+//
+//        protected native double patternScale0();
+//        protected native int nOctaves0();
+//        protected native @Adapter("VectorAdapter<int>") IntPointer selectedPairs0();
+//
+//        protected static class PatternPoint extends Pointer {
+//            public native float x();
+//            public native float y();
+//            public native float sigma();
+//        }
+//
+//        protected static class  DescriptionPair extends Pointer {
+//            public native @Cast("uchar") byte i();
+//            public native @Cast("uchar") byte j();
+//        }
+//
+//        protected static class  OrientationPair extends Pointer {
+//            public native @Cast("uchar") byte i();
+//            public native @Cast("uchar") byte j();
+//            public native int weight_dx();
+//            public native int weight_dy();
+//        }
+//
+//        protected native @Adapter("VectorAdapter<PatternPoint>") PatternPoint patternLookup();
+//        protected native int patternSizes(int i); // [NB_SCALES];
+//        protected native DescriptionPair descriptionPairs(int i); // [NB_PAIRS];
+//        protected native OrientationPair orientationPairs(int i); // [NB_ORIENPAIRS];
+    }
+
 
     @Namespace("cv") public static class MSER extends FeatureDetector {
         static { load(); }

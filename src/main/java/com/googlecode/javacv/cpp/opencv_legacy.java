@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in compat.hpp, legacy.hpp, and
- * blobtrack.hpp of OpenCV 2.4.1, which are covered by the following copyright notice:
+ * blobtrack.hpp of OpenCV 2.4.2, which are covered by the following copyright notice:
  *
  *                        Intel License Agreement
  *                For Open Source Computer Vision Library
@@ -94,8 +94,8 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
         link={"opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4","opencv_nonfree@.2.4", "opencv_features2d@.2.4",
               "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_legacy241", "opencv_ml241", "opencv_video241", "opencv_nonfree241", "opencv_features2d241",
-              "opencv_flann241", "opencv_calib3d241", "opencv_highgui241", "opencv_imgproc241", "opencv_core241"}),
+        link={"opencv_legacy242", "opencv_ml242", "opencv_video242", "opencv_nonfree242", "opencv_features2d242",
+              "opencv_flann242", "opencv_calib3d242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
