@@ -90,6 +90,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
+    public FFmpegFrameRecorder(File file, int audioChannels) {
+        this(file, 0, 0, audioChannels);
+    }
+    public FFmpegFrameRecorder(String filename, int audioChannels) {
+        this(filename, 0, 0, audioChannels);
+    }
     public FFmpegFrameRecorder(File file, int imageWidth, int imageHeight) {
         this(file, imageWidth, imageHeight, 0);
     }
@@ -233,79 +239,81 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         /* add the audio and video streams using the format codecs
            and initialize the codecs */
 
-        /* add a video output stream */
-        video_st = avformat_new_stream(oc, null);
-        if (video_st == null) {
-            release();
-            throw new Exception("Could not alloc video stream");
-        }
-
-        video_c = video_st.codec();
-
-        String name = oformat.name().getString();
-        if (videoCodec == CODEC_ID_NONE) {
-            if ("mp4".equals(name)) {
-                videoCodec = CODEC_ID_MPEG4;
-            } else if ("3gp".equals(name)) {
-                videoCodec = CODEC_ID_H263;
-            } else if ("avi".equals(name)) {
-                videoCodec = CODEC_ID_HUFFYUV;
+        if (imageWidth > 0 && imageHeight > 0) {
+            /* add a video output stream */
+            video_st = avformat_new_stream(oc, null);
+            if (video_st == null) {
+                release();
+                throw new Exception("Could not alloc video stream");
             }
-        }
-        video_c.codec_id(videoCodec == CODEC_ID_NONE ? oformat.video_codec() : videoCodec);
-        video_c.codec_type(AVMEDIA_TYPE_VIDEO);
 
-        /* put sample parameters */
-        video_c.bit_rate(videoBitrate);
-        /* resolution must be a multiple of two */
-        video_c.width(imageWidth);
-        video_c.height(imageHeight);
-        /* time base: this is the fundamental unit of time (in seconds) in terms
-           of which frame timestamps are represented. for fixed-fps content,
-           timebase should be 1/framerate and timestamp increments should be
-           identically 1. */
-        video_c.time_base(av_d2q(1 / frameRate, 1001000));
-        video_c.gop_size(12); /* emit one intra frame every twelve frames at most */
+            video_c = video_st.codec();
 
-        if (pixelFormat == PIX_FMT_NONE) {
-            if (video_c.codec_id() == CODEC_ID_HUFFYUV || video_c.codec_id() == CODEC_ID_FFV1 ||
-                    video_c.codec_id() == CODEC_ID_PNG || video_c.codec_id() == CODEC_ID_RAWVIDEO) {
-                pixelFormat = PIX_FMT_RGB32; // appropriate for common lossless formats
-            } else {
-                pixelFormat = PIX_FMT_YUV420P; // lossy, but works with about everything
+            String name = oformat.name().getString();
+            if (videoCodec == CODEC_ID_NONE) {
+                if ("mp4".equals(name)) {
+                    videoCodec = CODEC_ID_MPEG4;
+                } else if ("3gp".equals(name)) {
+                    videoCodec = CODEC_ID_H263;
+                } else if ("avi".equals(name)) {
+                    videoCodec = CODEC_ID_HUFFYUV;
+                }
             }
-        }
-        video_c.pix_fmt(pixelFormat);
+            video_c.codec_id(videoCodec == CODEC_ID_NONE ? oformat.video_codec() : videoCodec);
+            video_c.codec_type(AVMEDIA_TYPE_VIDEO);
 
-        if (video_c.codec_id() == CODEC_ID_MPEG2VIDEO) {
-            /* just for testing, we also add B frames */
-            video_c.max_b_frames(2);
-        } else if (video_c.codec_id() == CODEC_ID_MPEG1VIDEO) {
-            /* Needed to avoid using macroblocks in which some coeffs overflow.
-               This does not happen with normal video, it just happens here as
-               the motion of the chroma plane does not match the luma plane. */
-            video_c.mb_decision(2);
-        } else if (video_c.codec_id() == CODEC_ID_H263) {
-            // H.263 does not support any other resolution then the following
-            if (imageWidth <= 128 && imageHeight <= 96) {
-                video_c.width(128).height(96);
-            } else if (imageWidth <= 176 && imageHeight <= 144) {
-                video_c.width(176).height(144);
-            } else if (imageWidth <= 352 && imageHeight <= 288) {
-                video_c.width(352).height(288);
-            } else if (imageWidth <= 704 && imageHeight <= 576) {
-                video_c.width(704).height(576);
-            } else {
-                video_c.width(1408).height(1152);
+            /* put sample parameters */
+            video_c.bit_rate(videoBitrate);
+            /* resolution must be a multiple of two, but round up to 16 as often required */
+            video_c.width((imageWidth + 15) / 16 * 16);
+            video_c.height(imageHeight);
+            /* time base: this is the fundamental unit of time (in seconds) in terms
+               of which frame timestamps are represented. for fixed-fps content,
+               timebase should be 1/framerate and timestamp increments should be
+               identically 1. */
+            video_c.time_base(av_d2q(1 / frameRate, 1001000));
+            video_c.gop_size(12); /* emit one intra frame every twelve frames at most */
+
+            if (pixelFormat == PIX_FMT_NONE) {
+                if (video_c.codec_id() == CODEC_ID_HUFFYUV || video_c.codec_id() == CODEC_ID_FFV1 ||
+                        video_c.codec_id() == CODEC_ID_PNG || video_c.codec_id() == CODEC_ID_RAWVIDEO) {
+                    pixelFormat = PIX_FMT_RGB32; // appropriate for common lossless formats
+                } else {
+                    pixelFormat = PIX_FMT_YUV420P; // lossy, but works with about everything
+                }
             }
-        } else if (video_c.codec_id() == CODEC_ID_H264) {
-            // to get content that plays back on mobile devices with IMO no real tradeoffs
-            video_c.profile(AVCodecContext.FF_PROFILE_H264_BASELINE);
-        }
+            video_c.pix_fmt(pixelFormat);
 
-        // some formats want stream headers to be separate
-        if ((oformat.flags() & AVFMT_GLOBALHEADER) != 0) {
-            video_c.flags(video_c.flags() | CODEC_FLAG_GLOBAL_HEADER);
+            if (video_c.codec_id() == CODEC_ID_MPEG2VIDEO) {
+                /* just for testing, we also add B frames */
+                video_c.max_b_frames(2);
+            } else if (video_c.codec_id() == CODEC_ID_MPEG1VIDEO) {
+                /* Needed to avoid using macroblocks in which some coeffs overflow.
+                   This does not happen with normal video, it just happens here as
+                   the motion of the chroma plane does not match the luma plane. */
+                video_c.mb_decision(2);
+            } else if (video_c.codec_id() == CODEC_ID_H263) {
+                // H.263 does not support any other resolution than the following
+                if (imageWidth <= 128 && imageHeight <= 96) {
+                    video_c.width(128).height(96);
+                } else if (imageWidth <= 176 && imageHeight <= 144) {
+                    video_c.width(176).height(144);
+                } else if (imageWidth <= 352 && imageHeight <= 288) {
+                    video_c.width(352).height(288);
+                } else if (imageWidth <= 704 && imageHeight <= 576) {
+                    video_c.width(704).height(576);
+                } else {
+                    video_c.width(1408).height(1152);
+                }
+            } else if (video_c.codec_id() == CODEC_ID_H264) {
+                // produces content that plays back on mobile devices with IMO no real tradeoffs
+                video_c.profile(AVCodecContext.FF_PROFILE_H264_BASELINE);
+            }
+
+            // some formats want stream headers to be separate
+            if ((oformat.flags() & AVFMT_GLOBALHEADER) != 0) {
+                video_c.flags(video_c.flags() | CODEC_FLAG_GLOBAL_HEADER);
+            }
         }
 
         /*
@@ -475,7 +483,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
     public void record(IplImage image, int pixelFormat) throws Exception {
         if (video_st == null) {
-            throw new Exception("No video output stream (Has start() been called?)");
+            throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
         }
         int ret;
 
@@ -576,7 +584,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     @Override public void record(Buffer samples) throws Exception {
         if (audio_st == null) {
-            throw new Exception("No audio output stream (Is audioChannels > 0?)");
+            throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
         int ret;
 
@@ -629,7 +637,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     pkt.stream_index(audio_st.index());
 
                     /* write the compressed frame in the media file */
-                    ret = av_interleaved_write_frame(oc, pkt);
+                    if (video_st != null) {
+                        ret = av_interleaved_write_frame(oc, pkt);
+                    } else {
+                        ret = av_write_frame(oc, pkt);
+                    }
                 }
                 if (ret != 0) {
                     throw new Exception("Error while writing audio frame");

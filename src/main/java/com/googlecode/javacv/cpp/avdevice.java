@@ -82,7 +82,7 @@ public class avdevice {
      * @}
      */
 
-    public static final int LIBAVDEVICE_VERSION_MAJOR = 52;
+    public static final int LIBAVDEVICE_VERSION_MAJOR = 54;
     public static final int LIBAVDEVICE_VERSION_MINOR =  0;
     public static final int LIBAVDEVICE_VERSION_MICRO = 100;
 
