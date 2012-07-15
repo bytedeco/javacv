@@ -313,17 +313,17 @@ public class opencv_features2d {
         public static final int kBytes = 32, HARRIS_SCORE=0, FAST_SCORE=1;
         public FREAK() { allocate(); }
         public FREAK(Pointer p) { super(p); }
-        public FREAK(FREAK rhs) { allocate(rhs); }
+//        public FREAK(FREAK rhs) { allocate(rhs); }
         public FREAK(boolean orientationNormalized/*=true*/, boolean scaleNormalized/*=true*/,
                float patternScale/*=22.0f*/, int nOctaves/*=4*/, @Adapter("VectorAdapter<int>") IntPointer selectedPairs/*=null*/) {
             allocate(orientationNormalized, scaleNormalized, patternScale, nOctaves, selectedPairs);
         }
         private native void allocate();
-        private native void allocate(@ByRef FREAK rhs);
+//        private native void allocate(@ByRef FREAK rhs);
         private native void allocate(boolean orientationNormalized/*=true*/, boolean scaleNormalized/*=true*/,
                float patternScale/*=22.0f*/, int nOctaves/*=4*/, @Adapter("VectorAdapter<int>") IntPointer selectedPairs/*=null*/);
 
-        public native @Name("operator=") @ByRef FREAK copy(@ByRef FREAK rhs);
+//        public native @Name("operator=") @ByRef FREAK copy(@ByRef FREAK rhs);
 
 //        public native int descriptorSize();
 //        public native int descriptorType();

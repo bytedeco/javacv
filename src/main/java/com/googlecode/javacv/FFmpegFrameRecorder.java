@@ -18,13 +18,14 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * Based on the output-example.c file included in FFmpeg 0.6.5, which is
- * covered by the following copyright notice:
+ * Based on the output-example.c file included in FFmpeg 0.6.5
+ * as well as on the decoding_encoding.c file included in FFmpeg 0.11.1,
+ * which are covered by the following copyright notice:
  *
  * Libavformat API example: Output a media file in any supported
  * libavformat format. The default codecs are used.
  *
- * Copyright (c) 2003 Fabrice Bellard
+ * Copyright (c) 2001,2003 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -190,7 +191,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVFrame picture, tmp_picture;
     private BytePointer picture_buf;
     private BytePointer video_outbuf;
-    private int frame_count, video_outbuf_size;
+    private int video_outbuf_size;
     private AVFrame frame;
     private BytePointer samplesPointer;
     private ByteBuffer samplesBuffer;
@@ -199,6 +200,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private int audio_input_frame_size;
     private AVOutputFormat oformat;
     private AVFormatContext oc;
+    private AVCodec video_codec, audio_codec;
     private AVCodecContext video_c, audio_c;
     private AVStream video_st, audio_st;
     private SwsContext img_convert_ctx;
@@ -209,7 +211,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         picture = null;
         tmp_picture = null;
         picture_buf = null;
-        frame_count = 0;
         frame = null;
         video_outbuf = null;
         audio_outbuf = null;
@@ -221,16 +222,17 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         got_packet = new int[1];
 
         /* auto detect the output format from the name. */
-        String formatName = format == null || format.length() == 0 ? null : format;
-        oformat = av_guess_format(formatName, filename, null);
+        String format_name = format == null || format.length() == 0 ? null : format;
+        oformat = av_guess_format(format_name, filename, null);
         if (oformat == null) {
             throw new Exception("Could not find suitable output format");
         }
+        format_name = oformat.name().getString();
 
         /* allocate the output media context */
         oc = avformat_alloc_context();
         if (oc == null) {
-            throw new Exception("Memory error");
+            throw new Exception("Could not allocate format context");
         }
 
         oc.oformat(oformat);
@@ -240,26 +242,31 @@ public class FFmpegFrameRecorder extends FrameRecorder {
            and initialize the codecs */
 
         if (imageWidth > 0 && imageHeight > 0) {
+            if (videoCodec != CODEC_ID_NONE) {
+                oformat.video_codec(videoCodec);
+            } else if ("mp4".equals(format_name)) {
+                oformat.video_codec(CODEC_ID_MPEG4);
+            } else if ("3gp".equals(format_name)) {
+                oformat.video_codec(CODEC_ID_H263);
+            } else if ("avi".equals(format_name)) {
+                oformat.video_codec(CODEC_ID_HUFFYUV);
+            }
+
+            /* find the video encoder */
+            video_codec = avcodec_find_encoder(oformat.video_codec());
+            if (video_codec == null) {
+                release();
+                throw new Exception("Video codec not found");
+            }
+
             /* add a video output stream */
-            video_st = avformat_new_stream(oc, null);
+            video_st = avformat_new_stream(oc, video_codec);
             if (video_st == null) {
                 release();
-                throw new Exception("Could not alloc video stream");
+                throw new Exception("Could not allocate video stream");
             }
-
             video_c = video_st.codec();
-
-            String name = oformat.name().getString();
-            if (videoCodec == CODEC_ID_NONE) {
-                if ("mp4".equals(name)) {
-                    videoCodec = CODEC_ID_MPEG4;
-                } else if ("3gp".equals(name)) {
-                    videoCodec = CODEC_ID_H263;
-                } else if ("avi".equals(name)) {
-                    videoCodec = CODEC_ID_HUFFYUV;
-                }
-            }
-            video_c.codec_id(videoCodec == CODEC_ID_NONE ? oformat.video_codec() : videoCodec);
+            video_c.codec_id(oformat.video_codec());
             video_c.codec_type(AVMEDIA_TYPE_VIDEO);
 
             /* put sample parameters */
@@ -274,15 +281,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_c.time_base(av_d2q(1 / frameRate, 1001000));
             video_c.gop_size(12); /* emit one intra frame every twelve frames at most */
 
-            if (pixelFormat == PIX_FMT_NONE) {
-                if (video_c.codec_id() == CODEC_ID_HUFFYUV || video_c.codec_id() == CODEC_ID_FFV1 ||
-                        video_c.codec_id() == CODEC_ID_PNG || video_c.codec_id() == CODEC_ID_RAWVIDEO) {
-                    pixelFormat = PIX_FMT_RGB32; // appropriate for common lossless formats
-                } else {
-                    pixelFormat = PIX_FMT_YUV420P; // lossy, but works with about everything
-                }
+            if (pixelFormat != PIX_FMT_NONE) {
+                video_c.pix_fmt(pixelFormat);
+            } else if (video_c.codec_id() == CODEC_ID_RAWVIDEO || video_c.codec_id() == CODEC_ID_PNG ||
+                       video_c.codec_id() == CODEC_ID_HUFFYUV  || video_c.codec_id() == CODEC_ID_FFV1) {
+                video_c.pix_fmt(PIX_FMT_RGB32);   // appropriate for common lossless formats
+            } else {
+                video_c.pix_fmt(PIX_FMT_YUV420P); // lossy, but works with about everything
             }
-            video_c.pix_fmt(pixelFormat);
 
             if (video_c.codec_id() == CODEC_ID_MPEG2VIDEO) {
                 /* just for testing, we also add B frames */
@@ -306,8 +312,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     video_c.width(1408).height(1152);
                 }
             } else if (video_c.codec_id() == CODEC_ID_H264) {
-                // produces content that plays back on mobile devices with IMO no real tradeoffs
-                video_c.profile(AVCodecContext.FF_PROFILE_H264_BASELINE);
+                // use constrained baseline to produce content that plays back on anything,
+                // without any significant tradeoffs for most use cases
+                video_c.profile(AVCodecContext.FF_PROFILE_H264_CONSTRAINED_BASELINE);
+                av_opt_set(video_c.priv_data(), "profile", "baseline", 0);
+                av_opt_set(video_c.priv_data(), "preset", "medium", 0);
             }
 
             // some formats want stream headers to be separate
@@ -320,14 +329,24 @@ public class FFmpegFrameRecorder extends FrameRecorder {
          * add an audio output stream
          */
         if (audioChannels > 0) {
-            audio_st = avformat_new_stream(oc, null);
-            if (audio_st == null) {
-                release();
-                throw new Exception("Could not alloc audio stream");
+            if (audioCodec != CODEC_ID_NONE) {
+                oformat.audio_codec(audioCodec);
             }
 
+            /* find the audio encoder */
+            audio_codec = avcodec_find_encoder(oformat.audio_codec());
+            if (audio_codec == null) {
+                release();
+                throw new Exception("Audio codec not found");
+            }
+
+            audio_st = avformat_new_stream(oc, audio_codec);
+            if (audio_st == null) {
+                release();
+                throw new Exception("Could not allocate audio stream");
+            }
             audio_c = audio_st.codec();
-            audio_c.codec_id(audioCodec == CODEC_ID_NONE ? oformat.audio_codec() : audioCodec);
+            audio_c.codec_id(oformat.audio_codec());
             audio_c.codec_type(AVMEDIA_TYPE_AUDIO);
 
             /* put sample parameters */
@@ -356,15 +375,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         /* now that all the parameters are set, we can open the audio and
            video codecs and allocate the necessary encode buffers */
         if (video_st != null) {
-            /* find the video encoder */
-            AVCodec codec = avcodec_find_encoder(video_c.codec_id());
-            if (codec == null) {
-                release();
-                throw new Exception("Video codec not found");
-            }
-
             /* open the codec */
-            if (avcodec_open2(video_c, codec, null) < 0) {
+            if (avcodec_open2(video_c, video_codec, null) < 0) {
                 release();
                 throw new Exception("Could not open video codec");
             }
@@ -387,6 +399,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 release();
                 throw new Exception("Could not allocate picture");
             }
+            picture.pts(0); // magic required by libx264
+
             int size = avpicture_get_size(video_c.pix_fmt(), video_c.width(), video_c.height());
             picture_buf = new BytePointer(av_malloc(size));
             if (picture_buf == null) {
@@ -404,15 +418,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if (audio_st != null) {
-            /* find the audio encoder */
-            AVCodec codec = avcodec_find_encoder(audio_c.codec_id());
-            if (codec == null) {
-                release();
-                throw new Exception("Audio codec not found");
-            }
-
-            /* open it */
-            if (avcodec_open2(audio_c, codec, null) < 0) {
+            /* open the codec */
+            if (avcodec_open2(audio_c, audio_codec, null) < 0) {
                 release();
                 throw new Exception("Could not open audio codec");
             }
@@ -535,10 +542,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if ((oformat.flags() & AVFMT_RAWPICTURE) != 0) {
-            /* raw video case. The API will change slightly in the near
-               futur for that */
+            /* raw video case. The API may change slightly in the future for that? */
             av_init_packet(pkt);
-
             pkt.flags(pkt.flags() | AV_PKT_FLAG_KEY);
             pkt.stream_index(video_st.index());
             pkt.data(new BytePointer(picture));
@@ -550,22 +555,18 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 ret = av_write_frame(oc, pkt);
             }
         } else {
-            picture.pts(frame_count++); // magic required by libx264
+            /* encode the image */
             av_init_packet(pkt);
             pkt.data(video_outbuf);
             pkt.size(video_outbuf_size);
-
-            /* encode the image */
             ret = avcodec_encode_video2(video_c, pkt, picture, got_packet);
             /* if zero size, it means the image was buffered */
             if (got_packet[0] != 0) {
-                AVFrame coded_frame = video_c.coded_frame();
-                long pts = coded_frame.pts();
-                if (pts != AV_NOPTS_VALUE) {
-                    pkt.pts(av_rescale_q(pts, video_c.time_base(), video_st.time_base()));
+                if (pkt.pts() != AV_NOPTS_VALUE) {
+                    pkt.pts(av_rescale_q(pkt.pts(), video_c.time_base(), video_st.time_base()));
                 }
-                if (coded_frame.key_frame() != 0) {
-                    pkt.flags(pkt.flags() | AV_PKT_FLAG_KEY);
+                if (pkt.dts() != AV_NOPTS_VALUE) {
+                    pkt.dts(av_rescale_q(pkt.dts(), video_c.time_base(), video_st.time_base()));
                 }
                 pkt.stream_index(video_st.index());
 
@@ -576,6 +577,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     ret = av_write_frame(oc, pkt);
                 }
             }
+            picture.pts(picture.pts() + 1); // magic required by libx264
         }
         if (ret != 0) {
             throw new Exception("Error while writing video frame");
@@ -628,10 +630,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 pkt.size(audio_outbuf_size);
                 ret = avcodec_encode_audio2(audio_c, pkt, frame, got_packet);
                 if (got_packet[0] != 0) {
-                    AVFrame coded_frame = audio_c.coded_frame();
-                    long pts = coded_frame.pts();
-                    if (pts != AV_NOPTS_VALUE) {
-                        pkt.pts(av_rescale_q(pts, audio_c.time_base(), audio_st.time_base()));
+                    if (pkt.pts() != AV_NOPTS_VALUE) {
+                        pkt.pts(av_rescale_q(pkt.pts(), audio_c.time_base(), audio_c.time_base()));
+                    }
+                    if (pkt.dts() != AV_NOPTS_VALUE) {
+                        pkt.dts(av_rescale_q(pkt.dts(), audio_c.time_base(), audio_c.time_base()));
                     }
                     pkt.flags(pkt.flags() | AV_PKT_FLAG_KEY);
                     pkt.stream_index(audio_st.index());

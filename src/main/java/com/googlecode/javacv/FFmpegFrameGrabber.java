@@ -21,8 +21,8 @@
  * Based on the avcodec_sample.0.5.0.c file available at
  * http://web.me.com/dhoerl/Home/Tech_Blog/Entries/2009/1/22_Revised_avcodec_sample.c_files/avcodec_sample.0.5.0.c
  * by Martin Böhme, Stephen Dranger, and David Hoerl
- * as well as on the decoding_encoding.c file included in FFmpeg 0.11.1, which is
- * covered by the following copyright notice:
+ * as well as on the decoding_encoding.c file included in FFmpeg 0.11.1,
+ * which is covered by the following copyright notice:
  *
  * Copyright (c) 2001 Fabrice Bellard
  *
