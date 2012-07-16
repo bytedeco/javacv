@@ -90,7 +90,7 @@ import static com.googlecode.javacv.cpp.opencv_flann.*;
 public class opencv_features2d {
     static { load(opencv_highgui.class); load(opencv_flann.class);
         if (load() != null) {
-            //initModule_features2d();
+            initModule_features2d();
         }
     }
 

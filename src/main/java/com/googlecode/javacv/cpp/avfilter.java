@@ -69,8 +69,8 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={"<libavfilter/avfilter.h>", "<libavfilter/buffersink.h>",
         "<libavfilter/buffersrc.h>", "<libavfilter/avcodec.h>", "<libavfilter/avfiltergraph.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avfilter@.2", "swscale@.2", "swresample@.0",
-        "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.51"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avfilter@.2",
+        "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.51"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avfilter-2"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -376,26 +376,30 @@ public class avfilter {
      * get updated as well. Therefore, we have the format list structure store a
      * pointer to each of the pointers to itself.
      */
-    public static class AVFilterFormats extends Pointer {
-        static { load(); }
-        public AVFilterFormats() { allocate(); }
-        public AVFilterFormats(int size) { allocateArray(size); }
+//    public static class AVFilterFormats extends Pointer {
+//        static { load(); }
+//        public AVFilterFormats() { allocate(); }
+//        public AVFilterFormats(int size) { allocateArray(size); }
+//        public AVFilterFormats(Pointer p) { super(p); }
+//        private native void allocate();
+//        private native void allocateArray(int size);
+//
+//        @Override public AVFilterFormats position(int position) {
+//            return (AVFilterFormats)super.position(position);
+//        }
+//        @Cast("unsigned")                           ///< number of formats
+//        public native int format_count();           public native AVFilterFormats format_count(int format_count);
+//                                                    ///< list of media formats
+//        public native IntPointer formats();         public native AVFilterFormats formats(IntPointer formats);
+//        @MemberGetter public native int formats(int i);
+//        @Cast("unsigned")                           ///< number of references to this list
+//        public native int refcount();               public native AVFilterFormats refcount(int refcount);
+//        @Cast("AVFilterFormats***")                 ///< references to this list
+//        public native PointerPointer refs();        public native AVFilterFormats refs(PointerPointer refs);
+//    }
+    @Opaque public static class AVFilterFormats extends Pointer {
+        public AVFilterFormats() { }
         public AVFilterFormats(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocateArray(int size);
-
-        @Override public AVFilterFormats position(int position) {
-            return (AVFilterFormats)super.position(position);
-        }
-        @Cast("unsigned")                           ///< number of formats
-        public native int format_count();           public native AVFilterFormats format_count(int format_count);
-                                                    ///< list of media formats
-        public native IntPointer formats();         public native AVFilterFormats formats(IntPointer formats);
-        @MemberGetter public native int formats(int i);
-        @Cast("unsigned")                           ///< number of references to this list
-        public native int refcount();               public native AVFilterFormats refcount(int refcount);
-        @Cast("AVFilterFormats***")                 ///< references to this list
-        public native PointerPointer refs();        public native AVFilterFormats refs(PointerPointer refs);
     }
 
     /**
@@ -406,7 +410,7 @@ public class avfilter {
      *        empty list is created.
      * @return the format list, with no existing references
      */
-    public static native AVFilterFormats avfilter_make_format_list(int[] fmts);
+//    public static native AVFilterFormats avfilter_make_format_list(int[] fmts);
 
     /**
      * Add fmt to the list of media formats contained in *avff.
@@ -416,17 +420,17 @@ public class avfilter {
      * @return a non negative value in case of success, or a negative
      * value corresponding to an AVERROR code in case of error
      */
-    public static native int avfilter_add_format(@ByPtrPtr AVFilterFormats avff, long fmt);
+//    public static native int avfilter_add_format(@ByPtrPtr AVFilterFormats avff, long fmt);
 
     /**
      * Return a list of all formats supported by FFmpeg for the given media type.
      */
-    public static native AVFilterFormats avfilter_make_all_formats(@Cast("AVMediaType") int type);
+//    public static native AVFilterFormats avfilter_make_all_formats(@Cast("AVMediaType") int type);
 
     /**
      * A list of all channel layouts supported by libavfilter.
      */
-    @MemberGetter public static native long avfilter_all_channel_layouts(int i);
+//    @MemberGetter public static native long avfilter_all_channel_layouts(int i);
 
     /**
      * Return a format list which contains the intersection of the formats of
@@ -436,7 +440,7 @@ public class avfilter {
      * If a and b do not share any common formats, neither is modified, and NULL
      * is returned.
      */
-    public static native AVFilterFormats avfilter_merge_formats(AVFilterFormats a, AVFilterFormats b);
+//    public static native AVFilterFormats avfilter_merge_formats(AVFilterFormats a, AVFilterFormats b);
 
     /**
      * Add *ref as a new reference to formats.
@@ -450,7 +454,7 @@ public class avfilter {
      *  | |____| |    | |____|
      *  |________|    |________________________
      */
-    public static native void avfilter_formats_ref(AVFilterFormats formats, @ByPtrPtr AVFilterFormats ref);
+//    public static native void avfilter_formats_ref(AVFilterFormats formats, @ByPtrPtr AVFilterFormats ref);
 
     /**
      * If *ref is non-NULL, remove *ref as a reference to the format list
@@ -467,7 +471,7 @@ public class avfilter {
      *  | |____| |    | |____|                 | |____| |    | |____|
      *  |________|    |_____________________   |________|    |_____________________
      */
-    public static native void avfilter_formats_unref(@ByPtrPtr AVFilterFormats ref);
+//    public static native void avfilter_formats_unref(@ByPtrPtr AVFilterFormats ref);
 
     /**
      *
@@ -482,7 +486,7 @@ public class avfilter {
      *  |________|                       |________|                |*oldref|
      *                                                             |_______|
      */
-    public static native void avfilter_formats_changeref(@ByPtrPtr AVFilterFormats oldref, @ByPtrPtr AVFilterFormats newref);
+//    public static native void avfilter_formats_changeref(@ByPtrPtr AVFilterFormats oldref, @ByPtrPtr AVFilterFormats newref);
 
     /**
      * A filter pad used for either input or output.
@@ -618,14 +622,14 @@ public class avfilter {
          *
          * Input audio pads only.
          */
-        public static class Filter_samples extends FunctionPointer {
-            static { load(); }
-            public    Filter_samples(Pointer p) { super(p); }
-            protected Filter_samples() { allocate(); }
-            protected final native void allocate();
-            public native void call(AVFilterLink link, AVFilterBufferRef samplesref);
-        }
-        public native Filter_samples filter_samples();     public native AVFilterPad filter_samples(Filter_samples filter_samples);
+//        public static class Filter_samples extends FunctionPointer {
+//            static { load(); }
+//            public    Filter_samples(Pointer p) { super(p); }
+//            protected Filter_samples() { allocate(); }
+//            protected final native void allocate();
+//            public native void call(AVFilterLink link, AVFilterBufferRef samplesref);
+//        }
+//        public native Filter_samples filter_samples();     public native AVFilterPad filter_samples(Filter_samples filter_samples);
 
         /**
          * Frame poll callback. This returns the number of immediately available
@@ -695,10 +699,10 @@ public class avfilter {
      * formats/layouts. If there are no links hooked to this filter, the list
      * of formats is freed.
      */
-    public static native void avfilter_set_common_formats(AVFilterContext ctx, AVFilterFormats formats);
-    public static native void avfilter_set_common_pixel_formats(AVFilterContext ctx, AVFilterFormats formats);
-    public static native void avfilter_set_common_sample_formats(AVFilterContext ctx, AVFilterFormats formats);
-    public static native void avfilter_set_common_channel_layouts(AVFilterContext ctx, AVFilterFormats formats);
+//    public static native void avfilter_set_common_formats(AVFilterContext ctx, AVFilterFormats formats);
+//    public static native void avfilter_set_common_pixel_formats(AVFilterContext ctx, AVFilterFormats formats);
+//    public static native void avfilter_set_common_sample_formats(AVFilterContext ctx, AVFilterFormats formats);
+//    public static native void avfilter_set_common_channel_layouts(AVFilterContext ctx, AVFilterFormats formats);
 
     /**
      * Filter definition. This defines the pads a filter contains, and all the
@@ -727,14 +731,14 @@ public class avfilter {
          * opaque is data provided by the code requesting creation of the filter,
          * and is used to pass data to the filter.
          */
-        public static class Init extends FunctionPointer {
-            static { load(); }
-            public    Init(Pointer p) { super(p); }
-            protected Init() { allocate(); }
-            protected final native void allocate();
-            public native int call(AVFilterContext ctx, String args, Pointer opaque);
-        }
-        public native Init init();                       public native AVFilter init(Init init);
+//        public static class Init extends FunctionPointer {
+//            static { load(); }
+//            public    Init(Pointer p) { super(p); }
+//            protected Init() { allocate(); }
+//            protected final native void allocate();
+//            public native int call(AVFilterContext ctx, String args, Pointer opaque);
+//        }
+//        public native Init init();                       public native AVFilter init(Init init);
 
         /**
          * Filter uninitialization function. Should deallocate any memory held
@@ -1017,7 +1021,7 @@ public class avfilter {
      * @return      A reference to the buffer. This must be unreferenced with
      *              avfilter_unref_buffer when you are finished with it.
      */
-    public static native AVFilterBufferRef avfilter_get_video_buffer(AVFilterLink link, int perms, int w, int h);
+//    public static native AVFilterBufferRef avfilter_get_video_buffer(AVFilterLink link, int perms, int w, int h);
 
     /**
      * Create a buffer reference wrapped around an already allocated image
@@ -1056,7 +1060,7 @@ public class avfilter {
      *             AVERROR(EAGAIN) means that no frame could be immediately
      *             produced.
      */
-    public static native int avfilter_request_frame(AVFilterLink link);
+//    public static native int avfilter_request_frame(AVFilterLink link);
 
     /**
      * Poll a frame from the filter chain.
@@ -1065,7 +1069,7 @@ public class avfilter {
      * @return the number of immediately available frames, a negative
      * number in case of error
      */
-    public static native int avfilter_poll_frame(AVFilterLink link);
+//    public static native int avfilter_poll_frame(AVFilterLink link);
 
     /**
      * Notify the next filter of the start of a frame.
@@ -1076,14 +1080,14 @@ public class avfilter {
      *               portion. The receiving filter will free this reference when
      *               it no longer needs it.
      */
-    public static native void avfilter_start_frame(AVFilterLink link, AVFilterBufferRef picref);
+//    public static native void avfilter_start_frame(AVFilterLink link, AVFilterBufferRef picref);
 
     /**
      * Notify the next filter that the current frame has finished.
      *
      * @param link the output link the frame was sent over
      */
-    public static native void avfilter_end_frame(AVFilterLink link);
+//    public static native void avfilter_end_frame(AVFilterLink link);
 
     /**
      * Send a slice to the next filter.
@@ -1100,7 +1104,7 @@ public class avfilter {
      *             from the bottom slice to the top slice if the value is -1,
      *             for other values the behavior of the function is undefined.
      */
-    public static native void avfilter_draw_slice(AVFilterLink link, int y, int h, int slice_dir);
+//    public static native void avfilter_draw_slice(AVFilterLink link, int y, int h, int slice_dir);
 
     public static final int
             AVFILTER_CMD_FLAG_ONE  = 1, ///< Stop once a filter understood the command (for target=all for example), fast filters are favored automatically
@@ -1203,15 +1207,15 @@ public class avfilter {
      * @param links Pointer to the pointer to the beginning of the list of links
      * @param newpad The new pad to add. A copy is made when adding.
      */
-    public static native void avfilter_insert_pad(@Cast("unsigned") int idx, @Cast("unsigned*") int[] count,
-            @Cast("size_t") long padidx_off, @Cast("AVFilterPad**") PointerPointer pads,
-            @Cast("AVFilterLink***") PointerPointer links, AVFilterPad newpad);
+//    public static native void avfilter_insert_pad(@Cast("unsigned") int idx, @Cast("unsigned*") int[] count,
+//            @Cast("size_t") long padidx_off, @Cast("AVFilterPad**") PointerPointer pads,
+//            @Cast("AVFilterLink***") PointerPointer links, AVFilterPad newpad);
 
     /** Insert a new input pad for the filter. */
-    public static native void avfilter_insert_inpad(AVFilterContext f, @Cast("unsigned") int index, AVFilterPad p);
+//    public static native void avfilter_insert_inpad(AVFilterContext f, @Cast("unsigned") int index, AVFilterPad p);
 
     /** Insert a new output pad for the filter. */
-    public static native  void avfilter_insert_outpad(AVFilterContext f, @Cast("unsigned") int index, AVFilterPad p);
+//    public static native  void avfilter_insert_outpad(AVFilterContext f, @Cast("unsigned") int index, AVFilterPad p);
 
 
     // #include "buffersink.h"
@@ -1493,7 +1497,7 @@ public class avfilter {
      * @return >= 0 in case of success, a negative AVERROR code in case of
      * failure
      */
-    public static native int av_vsrc_buffer_add_frame(AVFilterContext buffer_src, AVFrame frame, int flags);
+//    public static native int av_vsrc_buffer_add_frame(AVFilterContext buffer_src, AVFrame frame, int flags);
 
 
     // #include "filtergraph.h"
@@ -1509,6 +1513,7 @@ public class avfilter {
             return (AVFilterGraph)super.position(position);
         }
 
+//        public native  AVClass av_class();          public native AVFilterContext av_class(AVClass av_class);
         @Cast("unsigned")
         public native int filter_count();           public native AVFilterGraph filter_count(int filter_count);
         @Cast("AVFilterContext**")
@@ -1742,5 +1747,4 @@ public class avfilter {
      *          or AVERROR_EOF of all links returned AVERROR_EOF.
      */
     public static native int avfilter_graph_request_oldest(AVFilterGraph graph);
-
 }

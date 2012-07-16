@@ -92,7 +92,11 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_ml {
-    static { load(opencv_core.class); load(); }
+    static { load(opencv_core.class);
+        if (load() != null) {
+            initModule_ml();
+        }
+    }
 
     @Namespace("cv") public static native @Cast("bool") boolean initModule_ml();
 

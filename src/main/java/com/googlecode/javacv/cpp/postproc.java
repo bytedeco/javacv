@@ -50,6 +50,7 @@ import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.MemberGetter;
+import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
@@ -64,7 +65,10 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libpostproc/postprocess.h>",
         link={"postproc@.52", "avutil@.51"}, includepath=genericIncludepath, linkpath=genericLinkpath),
-    @Platform(value="android",               includepath=androidIncludepath, linkpath=androidLinkpath) })
+    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
+        define={"__STDC_CONSTANT_MACROS", "pp_help pp_help_bad[]; __declspec(dllimport) extern const char pp_help"},
+        preloadpath=windowsPreloadpath, preload="postproc-52"),
+    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class postproc {
     static { load(avutil.class); load(); }
 
@@ -116,6 +120,7 @@ public class postproc {
         public pp_mode(Pointer p) { super(p); }
     }
 
+    @Name("\n #undef pp_help \n pp_help")
     @MemberGetter public static native String pp_help(); ///< a simple help text
 
     public static native void pp_postprocess(

@@ -1431,9 +1431,9 @@ public class opencv_core {
             @Override public void deallocate() { cvReleaseMat(this); }
         }
 
-
-        public native int type(); public native CvMat type(int type);
-        public native int step(); public native CvMat step(int step);
+        @Name("type")
+        public native int raw_type(); public native CvMat raw_type(int type);
+        public native int step();     public native CvMat step(int step);
 
         public native IntPointer refcount(); public native CvMat refcount(IntPointer type);
         public native int hdr_refcount();    public native CvMat hdr_refcount(int hdr_refcount);
@@ -1450,17 +1450,23 @@ public class opencv_core {
         public native int cols(); public native CvMat cols(int cols);
 
 
-        public int channels() {
-            return CV_MAT_CN(type());
+        public int type() {
+            return CV_MAT_TYPE(raw_type());
+        }
+        public void type(int depth, int cn) {
+            raw_type(CV_MAKETYPE(depth, cn) | CV_MAT_MAGIC_VAL);
         }
         public int depth() {
             return CV_MAT_DEPTH(type());
         }
-        public int maskedType() {
-            return CV_MAT_TYPE(type());
+        public int channels() {
+            return CV_MAT_CN(type());
         }
-        public void type(int depth, int cn) {
-            type(CV_MAKETYPE(depth, cn) | CV_MAT_MAGIC_VAL);
+        public int nChannels() {
+            return CV_MAT_CN(type());
+        }
+        public boolean isContinuous() {
+            return CV_IS_MAT_CONT(type());
         }
         public int elemSize() {
             switch (depth()) {
@@ -1477,6 +1483,12 @@ public class opencv_core {
         }
         public int length() {
             return rows()*cols();
+        }
+        public int total() {
+            return rows()*cols();
+        }
+        public boolean empty() {
+            return length() == 0;
         }
         public int size() {
             if (rows() > 1) {
@@ -1758,28 +1770,28 @@ public class opencv_core {
 
     public static boolean CV_IS_MAT_HDR(CvArr mat) {
         CvMat m = new CvMat(mat);
-        return mat != null && (m.type() & CV_MAGIC_MASK) == CV_MAT_MAGIC_VAL &&
+        return mat != null && (m.raw_type() & CV_MAGIC_MASK) == CV_MAT_MAGIC_VAL &&
                m.cols() > 0 && m.rows() > 0;
     }
     public static boolean CV_IS_MAT_HDR_Z(CvArr mat) {
         CvMat m = new CvMat(mat);
-        return mat != null && (m.type() & CV_MAGIC_MASK) == CV_MAT_MAGIC_VAL &&
+        return mat != null && (m.raw_type() & CV_MAGIC_MASK) == CV_MAT_MAGIC_VAL &&
                m.cols() >= 0 && m.rows() >= 0;
     }
     public static boolean CV_IS_MAT(CvArr mat) {
         return CV_IS_MAT_HDR(mat) && new CvMat(mat).data_ptr() != null;
     }
     public static boolean CV_IS_MASK_ARR(CvMat mat) {
-        return (mat.type() & (CV_MAT_TYPE_MASK & ~CV_8SC1)) == 0;
+        return (mat.raw_type() & (CV_MAT_TYPE_MASK & ~CV_8SC1)) == 0;
     }
     public static boolean CV_ARE_TYPES_EQ(CvMat mat1, CvMat mat2) {
-        return ((mat1.type() ^ mat2.type()) & CV_MAT_TYPE_MASK) == 0;
+        return ((mat1.raw_type() ^ mat2.raw_type()) & CV_MAT_TYPE_MASK) == 0;
     }
     public static boolean CV_ARE_CNS_EQ(CvMat mat1, CvMat mat2) {
-        return ((mat1.type() ^ mat2.type()) & CV_MAT_CN_MASK) == 0;
+        return ((mat1.raw_type() ^ mat2.raw_type()) & CV_MAT_CN_MASK) == 0;
     }
     public static boolean CV_ARE_DEPTHS_EQ(CvMat mat1, CvMat mat2) {
-        return ((mat1.type() ^ mat2.type()) & CV_MAT_DEPTH_MASK) == 0;
+        return ((mat1.raw_type() ^ mat2.raw_type()) & CV_MAT_DEPTH_MASK) == 0;
     }
     public static boolean CV_ARE_SIZES_EQ(CvMat mat1, CvMat mat2) {
         return (mat1.rows() == mat2.rows() && mat1.cols() == mat2.cols());
@@ -1804,7 +1816,7 @@ public class opencv_core {
 
         assert CV_MAT_DEPTH(type) >= 0 && CV_MAT_DEPTH(type) <= CV_64F;
         type = CV_MAT_TYPE(type);
-        m.type(CV_MAT_MAGIC_VAL | CV_MAT_CONT_FLAG | type);
+        m.raw_type(CV_MAT_MAGIC_VAL | CV_MAT_CONT_FLAG | type);
         m.cols(cols);
         m.rows(rows);
         m.step(cols*CV_ELEM_SIZE(type));

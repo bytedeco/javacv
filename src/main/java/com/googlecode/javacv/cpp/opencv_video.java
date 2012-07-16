@@ -87,7 +87,11 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_video {
-    static { load(opencv_imgproc.class); load(); }
+    static { load(opencv_imgproc.class);
+        if (load() != null) {
+            initModule_video();
+        }
+    }
 
     @Namespace("cv") public static native @Cast("bool") boolean initModule_video();
 
