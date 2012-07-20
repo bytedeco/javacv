@@ -23,6 +23,7 @@ package com.googlecode.javacv;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.Buffer;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,23 +35,20 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 public abstract class FrameRecorder {
 
-    public static final List<Class<? extends FrameRecorder>> list =
-            new LinkedList<Class<? extends FrameRecorder>>();
-    static {
-        list.add(FFmpegFrameRecorder.class);
-        list.add(OpenCVFrameRecorder.class);
-    }
+    public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] { "FFmpeg", "OpenCV" }));
     public static void init() {
-        for (Class<? extends FrameRecorder> c : list) {
+        for (String name : list) {
             try {
+                Class<? extends FrameRecorder> c = get(name);
                 c.getMethod("tryLoad").invoke(null);
             } catch (Throwable t) { }
         }
     }
     public static Class<? extends FrameRecorder> getDefault() {
         // select first frame recorder that can load..
-        for (Class<? extends FrameRecorder> c : FrameRecorder.list) {
+        for (String name : list) {
             try {
+                Class<? extends FrameRecorder> c = get(name);
                 c.getMethod("tryLoad").invoke(null);
                 return c;
             } catch (Throwable t) { }
@@ -84,7 +82,7 @@ public abstract class FrameRecorder {
         } catch (NoSuchMethodException ex) {
             cause = ex;
         } catch (InvocationTargetException ex) {
-            cause = ex;
+            cause = ex.getCause();
         }
         throw new Exception("Could not create new " + c.getSimpleName() + "(" + o + ", " + w + ", " + h + ")", cause);
     }

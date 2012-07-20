@@ -24,6 +24,7 @@ import com.googlecode.javacpp.Pointer;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 
@@ -298,9 +299,32 @@ public class ProjectorDevice extends ProjectiveDevice {
         }
         DisplayMode d = new DisplayMode(settings.getImageWidth(), settings.getImageHeight(),
                 settings.getBitDepth(), settings.getRefreshRate());
-        CanvasFrame c = settings.isUseOpenGL() ? 
-            new GLCanvasFrame(settings.getName(), settings.getScreenNumber(), d, settings.getResponseGamma()) :
-            new   CanvasFrame(settings.getName(), settings.getScreenNumber(), d, settings.getResponseGamma());
+        CanvasFrame c = null;
+        Throwable cause = null;
+        try {
+            c = Class.forName(CanvasFrame.class.getPackage().getName() + (settings.isUseOpenGL() ? ".GLCanvasFrame" : ".CanvasFrame")).
+                    asSubclass(CanvasFrame.class).getConstructor(String.class, int.class, DisplayMode.class, double.class).
+                    newInstance(settings.getName(), settings.getScreenNumber(), d, settings.getResponseGamma());
+        } catch (ClassNotFoundException ex) {
+            cause = ex;
+        } catch (InstantiationException ex) {
+            cause = ex;
+        } catch (IllegalAccessException ex) {
+            cause = ex;
+        } catch (IllegalArgumentException ex) {
+            cause = ex;
+        } catch (NoSuchMethodException ex) {
+            cause = ex;
+        } catch (InvocationTargetException ex) {
+            cause = ex.getCause();
+        }
+        if (cause != null) {
+            if (cause instanceof CanvasFrame.Exception) {
+                throw (CanvasFrame.Exception)cause;
+            } else {
+                throw new CanvasFrame.Exception("Failed to create CanvasFrame", cause);
+            }
+        }
         c.setLatency(settings.getLatency());
 
         Dimension size = c.getCanvasSize();

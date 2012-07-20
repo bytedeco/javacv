@@ -82,15 +82,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_highgui {
-    static {
-        try {
-            load(avformat.class); load(swscale.class);
-        } catch (Throwable t) {
-            // oh well, at least we tried to preload the correct version of FFmpeg...
-        } finally {
-            load(opencv_imgproc.class); load();
-        }
-    }
+    static { load(opencv_imgproc.class); load(); }
 
     public static final int
             CV_FONT_LIGHT          = 25,

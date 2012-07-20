@@ -41,28 +41,21 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 public abstract class FrameGrabber {
 
-    public static final List<Class<? extends FrameGrabber>> list =
-            new LinkedList<Class<? extends FrameGrabber>>();
-    static {
-        list.add(DC1394FrameGrabber.class);
-        list.add(FlyCaptureFrameGrabber.class);
-        list.add(OpenKinectFrameGrabber.class);
-        list.add(PS3EyeFrameGrabber.class);
-        list.add(VideoInputFrameGrabber.class);
-        list.add(OpenCVFrameGrabber.class);
-        list.add(FFmpegFrameGrabber.class);
-    }
+    public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
+            "DC1394", "FlyCapture", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg" }));
     public static void init() {
-        for (Class<? extends FrameGrabber> c : list) {
+        for (String name : list) {
             try {
+                Class<? extends FrameGrabber> c = get(name);
                 c.getMethod("tryLoad").invoke(null);
             } catch (Throwable t) { }
         }
     }
     public static Class<? extends FrameGrabber> getDefault() {
         // select first frame grabber that can load and that may have some cameras..
-        for (Class<? extends FrameGrabber> c : FrameGrabber.list) {
+        for (String name : list) {
             try {
+                Class<? extends FrameGrabber> c = get(name);
                 c.getMethod("tryLoad").invoke(null);
                 boolean mayContainCameras = false;
                 try {
@@ -109,7 +102,7 @@ public abstract class FrameGrabber {
         } catch (NoSuchMethodException ex) {
             cause = ex;
         } catch (InvocationTargetException ex) {
-            cause = ex;
+            cause = ex.getCause();
         }
         throw new Exception("Could not create new " + c.getSimpleName() + "(" + o + ")", cause);
     }
@@ -145,25 +138,20 @@ public abstract class FrameGrabber {
     public static class PropertyEditor extends PropertyEditorSupport {
         @Override public String getAsText() {
             Class c = (Class)getValue();
-            return c == null ? "null" : c.getSimpleName();
+            return c == null ? "null" : c.getSimpleName().split("FrameGrabber")[0];
         }
         @Override public void setAsText(String s) {
             if (s == null) {
                 setValue(null);
             }
-            for (int i = 0; i < list.size(); i++) {
-                Class c = list.get(i);
-                if (s.equals(c.getSimpleName())) {
-                    setValue(c);
-                }
+            try {
+                setValue(get(s));
+            } catch (Exception ex) {
+                throw new IllegalArgumentException(ex);
             }
         }
         @Override public String[] getTags() {
-            String[] s = new String[list.size()];
-            for (int i = 0; i < list.size(); i++) {
-                s[i] = list.get(i).getSimpleName();
-            }
-            return s;
+            return list.toArray(new String[list.size()]);
         }
     }
 

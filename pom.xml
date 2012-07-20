@@ -31,6 +31,21 @@
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
     <platform.name>${os.name}-${os.arch}</platform.name>
     <javacpp.options></javacpp.options>
+    <exclude.artoolkitplus>**/cpp/ARToolKitPlus.java</exclude.artoolkitplus>
+    <exclude.markers>**/Marke*.java</exclude.markers>
+    <exclude.calibration>**/*Calibrator.java</exclude.calibration>
+    <exclude.libav>**/cpp/av*.java</exclude.libav>
+    <exclude.libsw>**/cpp/sw*.java</exclude.libsw>
+    <exclude.postproc>**/cpp/postproc.java</exclude.postproc>
+    <exclude.ffmpeg>**/FFmpeg*.java</exclude.ffmpeg>
+    <exclude.dc1394>**/??1394*.java</exclude.dc1394>
+    <exclude.flycapture>**/*FlyCapture*.java</exclude.flycapture>
+    <exclude.freenect>**/cpp/freenect.java</exclude.freenect>
+    <exclude.openkinect>**/OpenKinectFrameGrabber.java</exclude.openkinect>
+    <exclude.ps3eye>**/PS3EyeFrameGrabber.java</exclude.ps3eye>
+    <exclude.videoinput>**/?ideoInput*.java</exclude.videoinput>
+    <exclude.opengl>**/GLCanvasFrame.java</exclude.opengl>
+    <exclude.opencl>**/*CL.java</exclude.opencl>
   </properties>
 
   <dependencies>
@@ -58,6 +73,24 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+          <excludes>
+            <exclude>${exclude.artoolkitplus}</exclude>
+            <exclude>${exclude.markers}</exclude>
+            <exclude>${exclude.calibration}</exclude>
+            <exclude>${exclude.libav}</exclude>
+            <exclude>${exclude.libsw}</exclude>
+            <exclude>${exclude.postproc}</exclude>
+            <exclude>${exclude.ffmpeg}</exclude>
+            <exclude>${exclude.dc1394}</exclude>
+            <exclude>${exclude.flycapture}</exclude>
+            <exclude>${exclude.freenect}</exclude>
+            <exclude>${exclude.openkinect}</exclude>
+            <exclude>${exclude.ps3eye}</exclude>
+            <exclude>${exclude.videoinput}</exclude>
+            <exclude>${exclude.opengl}</exclude>
+            <exclude>${exclude.artoolkitplus}</exclude>
+            <exclude>${exclude.opencl}</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -114,6 +147,7 @@
             <exclude>com/googlecode/javacv/cpp/*.h</exclude>
             <exclude>com/googlecode/javacv/cpp/android-arm/</exclude>
             <exclude>com/googlecode/javacv/cpp/android-x86/</exclude>
+            <exclude>com/googlecode/javacv/cpp/linux-arm/</exclude>
             <exclude>com/googlecode/javacv/cpp/linux-x86/</exclude>
             <exclude>com/googlecode/javacv/cpp/linux-x86_64/</exclude>
             <exclude>com/googlecode/javacv/cpp/macosx-x86/</exclude>
@@ -128,7 +162,7 @@
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
-              <Class-Path>javacpp.jar javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar</Class-Path>
+              <Class-Path>javacpp.jar javacv-linux-arm.jar javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar</Class-Path>
               <Name>com/googlecode/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Samuel Audet</Implementation-Vendor>
@@ -208,6 +242,82 @@
 
   <!-- If someone knows a better way to do this, please do let me know! -->
   <profiles>
+    <profile>
+      <id>all</id>
+      <properties>
+        <exclude.artoolkitplus>none</exclude.artoolkitplus>
+        <exclude.markers>none</exclude.markers>
+        <exclude.calibration>none</exclude.calibration>
+        <exclude.libav>none</exclude.libav>
+        <exclude.libsw>none</exclude.libsw>
+        <exclude.postproc>none</exclude.postproc>
+        <exclude.ffmpeg>none</exclude.ffmpeg>
+        <exclude.dc1394>none</exclude.dc1394>
+        <exclude.flycapture>none</exclude.flycapture>
+        <exclude.freenect>none</exclude.freenect>
+        <exclude.openkinect>none</exclude.openkinect>
+        <exclude.ps3eye>none</exclude.ps3eye>
+        <exclude.videoinput>none</exclude.videoinput>
+        <exclude.opengl>none</exclude.opengl>
+        <exclude.opencl>none</exclude.opencl>
+      </properties>
+    </profile>
+    <profile>
+      <id>markers</id>
+      <properties>
+        <exclude.artoolkitplus>none</exclude.artoolkitplus>
+        <exclude.markers>none</exclude.markers>
+        <exclude.calibration>none</exclude.calibration>
+      </properties>
+    </profile>
+    <profile>
+      <id>ffmpeg</id>
+      <properties>
+        <exclude.libav>none</exclude.libav>
+        <exclude.libsw>none</exclude.libsw>
+        <exclude.postproc>none</exclude.postproc>
+        <exclude.ffmpeg>none</exclude.ffmpeg>
+      </properties>
+    </profile>
+    <profile>
+      <id>dc1394</id>
+      <properties>
+        <exclude.dc1394>none</exclude.dc1394>
+      </properties>
+    </profile>
+    <profile>
+      <id>flycapture</id>
+      <properties>
+        <exclude.flycapture>none</exclude.flycapture>
+      </properties>
+    </profile>
+    <profile>
+      <id>openkinect</id>
+      <properties>
+        <exclude.freenect>none</exclude.freenect>
+        <exclude.openkinect>none</exclude.openkinect>
+      </properties>
+    </profile>
+    <profile>
+      <id>ps3eye</id>
+      <properties>
+        <exclude.ps3eye>none</exclude.ps3eye>
+      </properties>
+    </profile>
+    <profile>
+      <id>videoinput</id>
+      <properties>
+        <exclude.videoinput>none</exclude.videoinput>
+      </properties>
+    </profile>
+    <profile>
+      <id>jogamp</id>
+      <properties>
+        <exclude.opengl>none</exclude.opengl>
+        <exclude.opencl>none</exclude.opencl>
+      </properties>
+    </profile>
+
     <profile>
       <id>linux</id>
       <activation>

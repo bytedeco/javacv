@@ -218,6 +218,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Additional default properties inside `pom.xml` make it easier to build JavaCV from source (issue #202), calling `mvn package` now succeeds with only OpenCV and a C++ compiler for JavaCPP
  * Made a few minor updates for OpenCV 2.4.2
  * New `Pointer.limit` property of JavaCPP can now be used to get the `size` of an output parameter, and to specify the maximum `size` on input as well
  * Upgraded supported FFmpeg API to the 0.11 release branch
