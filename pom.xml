@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.googlecode.javacv</groupId>
   <artifactId>javacv</artifactId>
-  <version>0.1</version>
+  <version>0.2</version>
   <packaging>jar</packaging>
 
   <name>JavaCV</name>
@@ -52,7 +52,7 @@
     <dependency>
       <groupId>com.googlecode.javacpp</groupId>
       <artifactId>javacpp</artifactId>
-      <version>0.1</version>
+      <version>0.2</version>
     </dependency>
   </dependencies>
 
@@ -130,7 +130,7 @@
             <configuration>
               <environmentVariables>
                 <!-- Hack required for Windows SDK v7.1 and videoInputLib -->
-                <key>CL</key> <value>&quot;/I${env.sdkdir}/Include/&quot;</value>
+                <CL>&quot;/I${env.SDKDIR}/Include/&quot;</CL>
               </environmentVariables>
               <executable>java</executable>
               <commandlineArgs>-jar "${com.googlecode.javacpp:javacpp:jar}" -properties ${platform.name} ${javacpp.options} -classpath "${project.build.outputDirectory}" -jarprefix "${project.build.directory}/${project.artifactId}" com.googlecode.javacv.cpp.*</commandlineArgs>

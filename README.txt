@@ -21,23 +21,22 @@ To use JavaCV, you will need to download and install the following software:
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
  * FFmpeg 0.11.x  http://ffmpeg.org/download.html
   * Precompiled for Windows  http://ffmpeg.zeranoe.com/builds/  Known compatible builds:
-   * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-0.7.1-win32-shared.7z
-   * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-0.7.1-win64-shared.7z
+   * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-20120720-git-85761ef-win32-shared.7z
+   * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-20120720-git-85761ef-win64-shared.7z
   * Precompiled for Android 2.2  http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x or 2.2.x  http://sourceforge.net/projects/libdc1394/files/
- * PGR FlyCapture 1.7~2.2 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
+ * PGR FlyCapture 1.7~2.3 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
  * OpenKinect  http://openkinect.org/
  * CL Eye Platform SDK (Windows only)  http://codelaboratories.com/downloads/
  * Android SDK API 8 or newer  http://developer.android.com/sdk/
  * JOCL and JOGL from JogAmp  http://jogamp.org/
-
-To modify the source code, please note that the project files were created for:
- * NetBeans 6.9  http://netbeans.org/downloads/  or
- * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP  http://code.google.com/p/javacpp/
  * ARToolKitPlus 2.1.1t  http://code.google.com/p/javacv/downloads/list
 
-To recompile, simply call the usual `ant` or `mvn` command. By default, all the dependencies listed above are required, but we may simply remove any source files that do not contain any desired features, before attempting to build.
+To modify the source code, please note that the project files were created for:
+ * Maven 2 or 3  http://maven.apache.org/download.html
+ * JavaCPP  http://code.google.com/p/javacpp/
+
+To rebuild, simply call the usual `mvn package` command. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP.
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
@@ -218,6 +217,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+===July 21, 2012 version 0.2===
+ * Provided new `javacv-linux-arm.jar` build thanks to Jeremy Nicola (issue #184)
  * Additional default properties inside `pom.xml` make it easier to build JavaCV from source (issue #202), calling `mvn package` now succeeds with only OpenCV and a C++ compiler for JavaCPP
  * Made a few minor updates for OpenCV 2.4.2
  * New `Pointer.limit` property of JavaCPP can now be used to get the `size` of an output parameter, and to specify the maximum `size` on input as well
