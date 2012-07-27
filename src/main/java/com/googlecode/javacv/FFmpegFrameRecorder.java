@@ -109,6 +109,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public FFmpegFrameRecorder(String filename, int imageWidth, int imageHeight, int audioChannels) {
         /* initialize libavcodec, and register all codecs and formats */
         av_register_all();
+        avformat_network_init();
 
         this.filename      = filename;
         this.imageWidth    = imageWidth;
@@ -120,7 +121,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.videoBitrate  = 400000;
         this.frameRate     = 30;
 
-        this.sampleFormat  = AV_SAMPLE_FMT_S16;
+        this.sampleFormat  = AV_SAMPLE_FMT_NONE;
         this.audioCodec    = CODEC_ID_NONE;
         this.audioBitrate  = 64000;
         this.sampleRate    = 44100;
@@ -244,6 +245,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (imageWidth > 0 && imageHeight > 0) {
             if (videoCodec != CODEC_ID_NONE) {
                 oformat.video_codec(videoCodec);
+            } else if ("flv".equals(format_name)) {
+                oformat.video_codec(CODEC_ID_FLV1);
             } else if ("mp4".equals(format_name)) {
                 oformat.video_codec(CODEC_ID_MPEG4);
             } else if ("3gp".equals(format_name)) {
@@ -323,6 +326,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if ((oformat.flags() & AVFMT_GLOBALHEADER) != 0) {
                 video_c.flags(video_c.flags() | CODEC_FLAG_GLOBAL_HEADER);
             }
+
+            if ((video_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
+                video_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
+            }
         }
 
         /*
@@ -331,6 +338,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (audioChannels > 0) {
             if (audioCodec != CODEC_ID_NONE) {
                 oformat.audio_codec(audioCodec);
+            } else if ("flv".equals(format_name) || "mp4".equals(format_name) || "3gp".equals(format_name)) {
+                oformat.audio_codec(CODEC_ID_AAC);
+            } else if ("avi".equals(format_name)) {
+                oformat.audio_codec(CODEC_ID_PCM_S16LE);
             }
 
             /* find the audio encoder */
@@ -353,7 +364,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             audio_c.bit_rate(audioBitrate);
             audio_c.sample_rate(sampleRate);
             audio_c.channels(audioChannels);
-            audio_c.sample_fmt(sampleFormat);
+            if (sampleFormat != AV_SAMPLE_FMT_NONE) {
+                audio_c.sample_fmt(sampleFormat);
+            } else if (audio_c.codec_id() == CODEC_ID_AAC &&
+                    (audio_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
+                audio_c.sample_fmt(AV_SAMPLE_FMT_FLT);
+            } else {
+                audio_c.sample_fmt(AV_SAMPLE_FMT_S16);
+            }
             audio_c.time_base().num(1).den(sampleRate);
             switch (audio_c.sample_fmt()) {
                 case AV_SAMPLE_FMT_U8:  audio_c.bits_per_raw_sample(8);  break;
@@ -367,6 +385,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             // some formats want stream headers to be separate
             if ((oformat.flags() & AVFMT_GLOBALHEADER) != 0) {
                 audio_c.flags(audio_c.flags() | CODEC_FLAG_GLOBAL_HEADER);
+            }
+
+            if ((audio_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
+                audio_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
             }
         }
 
@@ -446,7 +468,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 audio_input_frame_size = audio_c.frame_size();
             }
             //int bufferSize = audio_input_frame_size * audio_c.bits_per_raw_sample()/8 * audio_c.channels();
-            int bufferSize = av_samples_get_buffer_size(null, audio_c.channels(), audio_input_frame_size, sampleFormat, 1);
+            int bufferSize = av_samples_get_buffer_size(null, audio_c.channels(), audio_input_frame_size, audio_c.sample_fmt(), 1);
             samplesPointer = new BytePointer(av_malloc(bufferSize));
             samplesBuffer = samplesPointer.capacity(bufferSize).asBuffer();
 
@@ -534,7 +556,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 avpicture_fill(picture, picture_buf, video_c.pix_fmt(), video_c.width(), video_c.height());
                 tmp_picture.linesize(0, step);
                 sws_scale(img_convert_ctx, new PointerPointer(tmp_picture), tmp_picture.linesize(),
-                          0, video_c.height(), new PointerPointer(picture), picture.linesize());
+                          0, height, new PointerPointer(picture), picture.linesize());
             } else {
                 avpicture_fill(picture, data, pixelFormat, width, height);
                 picture.linesize(0, step);
@@ -589,32 +611,73 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
         int ret;
+        int sampleFormat = audio_c.sample_fmt();
 
         while (samples.hasRemaining()) {
             if (samples instanceof ByteBuffer) {
                 ByteBuffer b = (ByteBuffer)samples;
                 while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
-                    samplesBuffer.put(b.get());
+                    int sample = (b.get() & 0xFF) - 128;
+                    switch (sampleFormat) {
+                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)(sample + 128)); break;
+                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)(sample << 8)); break;
+                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample << 24); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample / Byte.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble((double)sample / Byte.MAX_VALUE); break;
+                        default: assert false;
+                    }
                 }
             } else if (samples instanceof ShortBuffer) {
                 ShortBuffer b = (ShortBuffer)samples;
                 while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
-                    samplesBuffer.putShort(b.get());
+                    short sample = b.get();
+                    switch (sampleFormat) {
+                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)((sample >> 8) + 128)); break;
+                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort(sample); break;
+                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample << 16); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample / Short.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble((double)sample / Short.MAX_VALUE); break;
+                        default: assert false;
+                    }
                 }
             } else if (samples instanceof IntBuffer) {
                 IntBuffer b = (IntBuffer)samples;
                 while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
-                    samplesBuffer.putInt(b.get());
+                    int sample = b.get();
+                    switch (sampleFormat) {
+                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)((sample >> 24) + 128)); break;
+                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)(sample >> 16)); break;
+                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample / Integer.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble((double)sample / Integer.MAX_VALUE); break;
+                        default: assert false;
+                    }
                 }
             } else if (samples instanceof FloatBuffer) {
                 FloatBuffer b = (FloatBuffer)samples;
                 while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
-                    samplesBuffer.putFloat(b.get());
+                    float sample = b.get();
+                    switch (sampleFormat) {
+                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)(Math.round(sample * Byte.MAX_VALUE) + 128)); break;
+                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)Math.round(sample * Short.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt((int)Math.round(sample * Integer.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample); break;
+                        default: assert false;
+                    }
                 }
             } else if (samples instanceof DoubleBuffer) {
                 DoubleBuffer b = (DoubleBuffer)samples;
                 while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
-                    samplesBuffer.putDouble(b.get());
+                    double sample = b.get();
+                    switch (sampleFormat) {
+                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)(Math.round(sample * Byte.MAX_VALUE) + 128)); break;
+                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)Math.round(sample * Short.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt((int)Math.round(sample * Integer.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample); break;
+                        default: assert false;
+                    }
                 }
             } else {
                 assert false;

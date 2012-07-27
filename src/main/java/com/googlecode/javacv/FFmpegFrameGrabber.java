@@ -95,6 +95,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         avcodec_register_all();
         avdevice_register_all();
         av_register_all();
+        avformat_network_init();
 
         this.filename = filename;
     }
@@ -556,6 +557,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         frame.image = null;
                         frame.samples = samples;
+                        switch (samples_frame.format()) {
+                            case AV_SAMPLE_FMT_U8:  frame.samples = samples; break;
+                            case AV_SAMPLE_FMT_S16: frame.samples = samples.asShortBuffer(); break;
+                            case AV_SAMPLE_FMT_S32: frame.samples = samples.asIntBuffer(); break;
+                            case AV_SAMPLE_FMT_FLT: frame.samples = samples.asFloatBuffer(); break;
+                            case AV_SAMPLE_FMT_DBL: frame.samples = samples.asDoubleBuffer(); break;
+                            default: assert false;
+                        }
                     }
                 }
             }

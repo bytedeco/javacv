@@ -44,7 +44,7 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 
 
 ==Quick Start for OpenCV and FFmpeg==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, or point your `pom.xml` file to the Maven repositories http://maven2.javacpp.googlecode.com/git/ and http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  # In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -65,7 +65,7 @@ Eclipse (Android 2.2 or newer):
 After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
  * [http://ffmpeg.org/doxygen/ FFmpeg documentation]
  * [http://docs.opencv.org/ OpenCV documentation]
-The class definitions are basically ports to Java of the original include files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
+The class definitions are basically ports to Java of the original header files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -217,13 +217,15 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Enhanced `FFmpegFrameRecorder` to support converting between audio sample formats, for the experimental AAC encoder among other things
+
 ===July 21, 2012 version 0.2===
  * Provided new `javacv-linux-arm.jar` build thanks to Jeremy Nicola (issue #184)
  * Additional default properties inside `pom.xml` make it easier to build JavaCV from source (issue #202), calling `mvn package` now succeeds with only OpenCV and a C++ compiler for JavaCPP
  * Made a few minor updates for OpenCV 2.4.2
  * New `Pointer.limit` property of JavaCPP can now be used to get the `size` of an output parameter, and to specify the maximum `size` on input as well
  * Upgraded supported FFmpeg API to the 0.11 release branch
- * Added audio support to `FFmpegFrameGrabber` (call `grabFrame()` instead of `grab()`) and `FFmpegFrameRecorder` (`setAudioChannels(int)` for int > 0 and `record(Frame)` instead of `record(IplImage)`) (issue #160)
+ * Added audio support to `FFmpegFrameGrabber` (call `grabFrame()` instead of `grab()`) and `FFmpegFrameRecorder` (call `setAudioChannels()` before `start()`, and `record(Frame)` instead of `record(IplImage)`) (issue #160)
  * Gave better default `FFmpegFrameRecorder` settings to H.263, MPEG-4, etc. codecs and fixed H.264 encoding with libx264 (issue #160)
  * Refined the `FaceApplet` sample
  * Fixed `FlannBasedMatcher` constructor, `FaceRecognizer.train()`, and `Stitcher.stitch()/composePanorama()` (issue #211)

@@ -88,7 +88,6 @@
             <exclude>${exclude.ps3eye}</exclude>
             <exclude>${exclude.videoinput}</exclude>
             <exclude>${exclude.opengl}</exclude>
-            <exclude>${exclude.artoolkitplus}</exclude>
             <exclude>${exclude.opencl}</exclude>
           </excludes>
         </configuration>
