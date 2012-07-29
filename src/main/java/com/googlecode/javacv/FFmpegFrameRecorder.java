@@ -126,7 +126,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.audioBitrate  = 64000;
         this.sampleRate    = 44100;
 
-        this.pkt = new AVPacket();
+        this.interleaved = true;
+
+        this.video_pkt = new AVPacket();
+        this.audio_pkt = new AVPacket();
     }
     public void release() throws Exception {
         /* close each codec */
@@ -205,8 +208,23 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVCodecContext video_c, audio_c;
     private AVStream video_st, audio_st;
     private SwsContext img_convert_ctx;
-    private AVPacket pkt;
+    private AVPacket video_pkt, audio_pkt;
     private int[] got_packet;
+
+    @Override public int getFrameNumber() {
+        return picture == null ? super.getFrameNumber() : (int)picture.pts();
+    }
+    @Override public void setFrameNumber(int frameNumber) {
+        if (picture == null) { super.setFrameNumber(frameNumber); } else { picture.pts(frameNumber); }
+    }
+
+    // best guess for timestamp in microseconds...
+    @Override public long getTimestamp() {
+        return (long)(getFrameNumber() * 1000000 / getFrameRate());
+    }
+    @Override public void setTimestamp(long timestamp)  {
+        setTimestamp((int)(timestamp * getFrameRate() / 1000000));
+    }
 
     public void start() throws Exception {
         picture = null;
@@ -565,38 +583,40 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
         if ((oformat.flags() & AVFMT_RAWPICTURE) != 0) {
             /* raw video case. The API may change slightly in the future for that? */
-            av_init_packet(pkt);
-            pkt.flags(pkt.flags() | AV_PKT_FLAG_KEY);
-            pkt.stream_index(video_st.index());
-            pkt.data(new BytePointer(picture));
-            pkt.size(Loader.sizeof(AVPicture.class));
+            av_init_packet(video_pkt);
+            video_pkt.flags(video_pkt.flags() | AV_PKT_FLAG_KEY);
+            video_pkt.stream_index(video_st.index());
+            video_pkt.data(new BytePointer(picture));
+            video_pkt.size(Loader.sizeof(AVPicture.class));
 
             if (audio_st != null) {
-                ret = av_interleaved_write_frame(oc, pkt);
+                ret = av_interleaved_write_frame(oc, video_pkt);
             } else {
-                ret = av_write_frame(oc, pkt);
+                ret = av_write_frame(oc, video_pkt);
             }
         } else {
             /* encode the image */
-            av_init_packet(pkt);
-            pkt.data(video_outbuf);
-            pkt.size(video_outbuf_size);
-            ret = avcodec_encode_video2(video_c, pkt, picture, got_packet);
+            av_init_packet(video_pkt);
+            video_pkt.data(video_outbuf);
+            video_pkt.size(video_outbuf_size);
+            ret = avcodec_encode_video2(video_c, video_pkt, picture, got_packet);
             /* if zero size, it means the image was buffered */
             if (got_packet[0] != 0) {
-                if (pkt.pts() != AV_NOPTS_VALUE) {
-                    pkt.pts(av_rescale_q(pkt.pts(), video_c.time_base(), video_st.time_base()));
+                if (video_pkt.pts() != AV_NOPTS_VALUE) {
+                    video_pkt.pts(av_rescale_q(video_pkt.pts(), video_c.time_base(), video_st.time_base()));
                 }
-                if (pkt.dts() != AV_NOPTS_VALUE) {
-                    pkt.dts(av_rescale_q(pkt.dts(), video_c.time_base(), video_st.time_base()));
+                if (video_pkt.dts() != AV_NOPTS_VALUE) {
+                    video_pkt.dts(av_rescale_q(video_pkt.dts(), video_c.time_base(), video_st.time_base()));
                 }
-                pkt.stream_index(video_st.index());
+                video_pkt.stream_index(video_st.index());
 
-                /* write the compressed frame in the media file */
-                if (audio_st != null) {
-                    ret = av_interleaved_write_frame(oc, pkt);
-                } else {
-                    ret = av_write_frame(oc, pkt);
+                synchronized (oc) {
+                    /* write the compressed frame in the media file */
+                    if (interleaved && audio_st != null) {
+                        ret = av_interleaved_write_frame(oc, video_pkt);
+                    } else {
+                        ret = av_write_frame(oc, video_pkt);
+                    }
                 }
             }
             picture.pts(picture.pts() + 1); // magic required by libx264
@@ -622,8 +642,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                         case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)(sample + 128)); break;
                         case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)(sample << 8)); break;
                         case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample << 24); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample / Byte.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble((double)sample / Byte.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample * (1.0f / Byte.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample * (1.0 / Byte.MAX_VALUE)); break;
                         default: assert false;
                     }
                 }
@@ -635,8 +655,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                         case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)((sample >> 8) + 128)); break;
                         case AV_SAMPLE_FMT_S16: samplesBuffer.putShort(sample); break;
                         case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample << 16); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample / Short.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble((double)sample / Short.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample * (1.0f / Short.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample * (1.0 / Short.MAX_VALUE)); break;
                         default: assert false;
                     }
                 }
@@ -648,8 +668,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                         case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)((sample >> 24) + 128)); break;
                         case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)(sample >> 16)); break;
                         case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample / Integer.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble((double)sample / Integer.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample * (1.0f / Integer.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample * (1.0 / Integer.MAX_VALUE)); break;
                         default: assert false;
                     }
                 }
@@ -688,25 +708,27 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 frame.nb_samples(audio_input_frame_size);
                 avcodec_fill_audio_frame(frame, audioChannels, sampleFormat, samplesPointer, samplesPointer.capacity(), 0);
 
-                av_init_packet(pkt);
-                pkt.data(audio_outbuf);
-                pkt.size(audio_outbuf_size);
-                ret = avcodec_encode_audio2(audio_c, pkt, frame, got_packet);
+                av_init_packet(audio_pkt);
+                audio_pkt.data(audio_outbuf);
+                audio_pkt.size(audio_outbuf_size);
+                ret = avcodec_encode_audio2(audio_c, audio_pkt, frame, got_packet);
                 if (got_packet[0] != 0) {
-                    if (pkt.pts() != AV_NOPTS_VALUE) {
-                        pkt.pts(av_rescale_q(pkt.pts(), audio_c.time_base(), audio_c.time_base()));
+                    if (audio_pkt.pts() != AV_NOPTS_VALUE) {
+                        audio_pkt.pts(av_rescale_q(audio_pkt.pts(), audio_c.time_base(), audio_c.time_base()));
                     }
-                    if (pkt.dts() != AV_NOPTS_VALUE) {
-                        pkt.dts(av_rescale_q(pkt.dts(), audio_c.time_base(), audio_c.time_base()));
+                    if (audio_pkt.dts() != AV_NOPTS_VALUE) {
+                        audio_pkt.dts(av_rescale_q(audio_pkt.dts(), audio_c.time_base(), audio_c.time_base()));
                     }
-                    pkt.flags(pkt.flags() | AV_PKT_FLAG_KEY);
-                    pkt.stream_index(audio_st.index());
+                    audio_pkt.flags(audio_pkt.flags() | AV_PKT_FLAG_KEY);
+                    audio_pkt.stream_index(audio_st.index());
 
                     /* write the compressed frame in the media file */
-                    if (video_st != null) {
-                        ret = av_interleaved_write_frame(oc, pkt);
-                    } else {
-                        ret = av_write_frame(oc, pkt);
+                    synchronized (oc) {
+                        if (interleaved && video_st != null) {
+                            ret = av_interleaved_write_frame(oc, audio_pkt);
+                        } else {
+                            ret = av_write_frame(oc, audio_pkt);
+                        }
                     }
                 }
                 if (ret != 0) {

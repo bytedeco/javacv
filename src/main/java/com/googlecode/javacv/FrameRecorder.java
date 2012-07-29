@@ -106,6 +106,9 @@ public abstract class FrameRecorder {
     protected int pixelFormat, videoCodec, videoBitrate;
     protected double frameRate;
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
+    protected boolean interleaved;
+    protected int frameNumber = 0;
+    protected long timestamp = 0;
 
     public String getFormat() {
         return format;
@@ -189,6 +192,27 @@ public abstract class FrameRecorder {
     }
     public void setSampleRate(int sampleRate) {
         this.sampleRate = sampleRate;
+    }
+
+    public boolean isInterleaved() {
+        return interleaved;
+    }
+    public void setInterleaved(boolean interleaved) {
+        this.interleaved = interleaved;
+    }
+
+    public int getFrameNumber() {
+        return frameNumber;
+    }
+    public void setFrameNumber(int frameNumber) {
+        this.frameNumber = frameNumber;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public static class Exception extends java.lang.Exception {

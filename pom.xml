@@ -31,6 +31,7 @@
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
     <platform.name>${os.name}-${os.arch}</platform.name>
     <javacpp.options></javacpp.options>
+    <javacpp.skip>false</javacpp.skip>
     <exclude.artoolkitplus>**/cpp/ARToolKitPlus.java</exclude.artoolkitplus>
     <exclude.markers>**/Marke*.java</exclude.markers>
     <exclude.calibration>**/*Calibrator.java</exclude.calibration>
@@ -127,6 +128,7 @@
               <goal>exec</goal>
             </goals>
             <configuration>
+              <skip>${javacpp.skip}</skip>
               <environmentVariables>
                 <!-- Hack required for Windows SDK v7.1 and videoInputLib -->
                 <CL>&quot;/I${env.SDKDIR}/Include/&quot;</CL>
