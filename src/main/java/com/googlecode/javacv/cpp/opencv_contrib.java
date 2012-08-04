@@ -338,8 +338,8 @@ public class opencv_contrib {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index @ValueGetter @ByVal public native CvScalar get(@Cast("size_t") long i, @Cast("size_t") long j);
         //public native Vec2iVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvScalar value);
@@ -811,24 +811,24 @@ public class opencv_contrib {
         static { Loader.load(); }
         public LDA() { allocate(); }
         public LDA(int num_components) { allocate(num_components); }
-        public LDA(CvMat src, @Adapter("VectorAdapter<int>") int[] labels, int num_components/*=0*/) {
-            allocate(src, labels, num_components);
-        }
-        public LDA(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels, int num_components/*=0*/) {
-            allocate(src, labels, num_components);
-        }
+        public LDA(CvMat src, int[] labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
+        public LDA(CvArr src, CvArr labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
+        public LDA(CvArr src, IntPointer labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
         public LDA(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(int num_components);
-        private native void allocate(CvMat src, @Adapter("VectorAdapter<int>") int[] labels, int num_components/*=0*/);
+        private native void allocate(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") int[] labels, int num_components/*=0*/);
         private native void allocate(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels, int num_components/*=0*/);
+        private native void allocate(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") IntPointer labels, int num_components/*=0*/);
 
         public native void save(String filename);
         public native void load(String filename);
         public native void save(@Adapter("FileStorageAdapter") CvFileStorage fs);
         public native void load(@Adapter("FileStorageAdapter") CvFileStorage fs);
 
+        public native void compute(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") int[] labels);
         public native void compute(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels);
+        public native void compute(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") IntPointer labels);
         public native @Adapter("MatAdapter") CvMat project(@Adapter("ArrayAdapter") CvArr src);
         public native @Adapter("MatAdapter") CvMat reconstruct(@Adapter("ArrayAdapter") CvArr src);
         public native @Adapter("MatAdapter") CvMat eigenvectors();
@@ -839,7 +839,9 @@ public class opencv_contrib {
 //        protected native @Adapter("MatAdapter") CvMat _eigenvectors();
 //        protected native @Adapter("MatAdapter") CvMat _eigenvalues();
 //
+//        protected native void lda(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") int[] labels);
 //        protected native void lda(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels);
+//        protected native void lda(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") IntPointer labels);
     }
 
     @Namespace("cv") public static class FaceRecognizer extends Algorithm {
@@ -847,7 +849,9 @@ public class opencv_contrib {
         public FaceRecognizer() { }
         public FaceRecognizer(Pointer p) { super(p); }
 
+        public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") int[] labels);
         public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") CvArr labels);
+        public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") IntPointer labels);
         public /*abstract*/ native int predict(@Adapter("ArrayAdapter") CvArr src);
         public /*abstract*/ native void predict(@Adapter("ArrayAdapter") CvArr src, @ByRef int[] label, @ByRef double[] dist);
         public native void save(String filename);

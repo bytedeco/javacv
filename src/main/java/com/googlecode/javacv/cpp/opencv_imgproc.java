@@ -1355,7 +1355,7 @@ public class opencv_imgproc {
             GC_EVAL            = 2;
 
     @Namespace("cv") public static native void grabCut(@Adapter("ArrayAdapter") CvArr img, @Adapter("ArrayAdapter") CvArr mask, @ByVal CvRect rect,
-            @Adapter("ArrayAdapter") CvArr bgdModel, @Adapter("ArrayAdapter") CvArr fgdModel, int iterCount, int mode/*=GC_EVAL*/);
+            @Adapter(value="ArrayAdapter", out=true) CvMat bgdModel, @Adapter(value="ArrayAdapter", out=true) CvMat fgdModel, int iterCount, int mode/*=GC_EVAL*/);
 
     @Namespace("cv") public static native @Cast("bool") boolean isContourConvex(@Adapter("ArrayAdapter") CvArr contour);
     @Namespace("cv") public static native float intersectConvexConvex(@Adapter("ArrayAdapter") CvArr _p1, @Adapter("ArrayAdapter") CvArr _p2,

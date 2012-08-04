@@ -43,6 +43,14 @@ import static com.googlecode.javacv.cpp.opencv_legacy.*;
 /**
  *
  * @author Samuel Audet
+ *
+ * ObjectFinder does not work out-of-the-box under Android, because it lacks the standard 
+ * java.beans.beancontext package. We can work around it by doing the following *BEFORE* 
+ * following the instructions in the README.txt file:
+ *
+ * 1. Remove BaseChildSettings.class and BaseSettings.class from javacv.jar
+ * 2. Follow the instructions in the README.txt file
+ * 3. In your project, define empty classes BaseChildSettings and BaseSettings under the com.googlecode.javacv package name
  */
 public class ObjectFinder {
     public ObjectFinder(IplImage objectImage) {

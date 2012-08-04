@@ -92,6 +92,14 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
                         rawVideoImageData = new BytePointer((Pointer)null);
     private IplImage rawDepthImage = null, rawVideoImage = null, returnImage = null;
     private int[] timestamp = { 0 };
+    private ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+
+    public ByteOrder getByteOrder() {
+        return byteOrder;
+    }
+    public void setByteOrder(ByteOrder byteOrder) {
+        this.byteOrder = byteOrder;
+    }
 
     @Override public double getGamma() {
         // I guess a default gamma of 2.2 is reasonable...
@@ -156,7 +164,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         }
         cvSetData(rawDepthImage, rawDepthImageData, w*channels*iplDepth/8);
 
-        if (iplDepth > 8 && ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
             // ack, the camera's endianness doesn't correspond to our machine ...
             // swap bytes of 16-bit images
             ByteBuffer  bb  = rawDepthImage.getByteBuffer();
@@ -194,7 +202,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         }
         cvSetData(rawVideoImage, rawVideoImageData, w*channels*iplDepth/8);
 
-        if (iplDepth > 8 && ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
             // ack, the camera's endianness doesn't correspond to our machine ...
             // swap bytes of 16-bit images
             ByteBuffer  bb  = rawVideoImage.getByteBuffer();

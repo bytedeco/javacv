@@ -169,8 +169,8 @@ public class opencv_features2d {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index @ByRef public native KeyPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native KeyPointVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, KeyPoint value);
@@ -864,8 +864,8 @@ public class opencv_features2d {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index @ByRef public native DMatch get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native DMatchVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, DMatch value);

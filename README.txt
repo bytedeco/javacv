@@ -44,7 +44,7 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 
 
 ==Quick Start for OpenCV and FFmpeg==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your classpath, or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`) somewhere in your CLASSPATH, or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system library PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  # In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -63,8 +63,8 @@ Eclipse (Android 2.2 or newer):
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
 After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
- * [http://ffmpeg.org/doxygen/ FFmpeg documentation]
  * [http://docs.opencv.org/ OpenCV documentation]
+ * [http://ffmpeg.org/doxygen/ FFmpeg documentation]
 The class definitions are basically ports to Java of the original header files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{

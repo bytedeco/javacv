@@ -4654,8 +4654,8 @@ public class opencv_core {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index public native byte get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native ByteVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, byte value);
@@ -4672,8 +4672,8 @@ public class opencv_core {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index public native int get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native IntVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, int value);
@@ -4690,8 +4690,8 @@ public class opencv_core {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index @ByVal public native CvPoint get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native PointVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint value);
@@ -4708,8 +4708,8 @@ public class opencv_core {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native Point2fVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint2D32f value);
@@ -4726,8 +4726,8 @@ public class opencv_core {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index @ByVal public native CvPoint2D32f get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native Point2dVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvPoint2D32f value);
@@ -4744,8 +4744,8 @@ public class opencv_core {
 
         public native long size();
         public native void resize(@Cast("size_t") long n);
-        public native @Index(1) long size(@Cast("size_t") long i);
-        public native @Index(1) void resize(@Cast("size_t") long i, @Cast("size_t") long n);
+        public native @Index long size(@Cast("size_t") long i);
+        public native @Index void resize(@Cast("size_t") long i, @Cast("size_t") long n);
 
         @Index @ByVal public native CvRect get(@Cast("size_t") long i, @Cast("size_t") long j);
         public native RectVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, CvRect value);

@@ -752,7 +752,7 @@ public class FaceRecognition {
       throw new RuntimeException("illegal argument - CvMat must have one channel");
     }
 
-    final int type = cvMat.maskedType();
+    final int type = cvMat.type();
     StringBuilder s = new StringBuilder("[ ");
     for (int i = 0; i < cvMat.rows(); i++) {
       for (int j = 0; j < cvMat.cols(); j++) {
