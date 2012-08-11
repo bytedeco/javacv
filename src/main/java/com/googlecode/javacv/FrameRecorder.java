@@ -101,7 +101,7 @@ public abstract class FrameRecorder {
         return create(get(className), String.class, filename, width, height);
     }
 
-    protected String format;
+    protected String format, profile, preset;
     protected int imageWidth, imageHeight, audioChannels;
     protected int pixelFormat, videoCodec, videoBitrate;
     protected double frameRate;
@@ -115,6 +115,20 @@ public abstract class FrameRecorder {
     }
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public String getProfile() {
+        return profile;
+    }
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public String getPreset() {
+        return preset;
+    }
+    public void setPreset(String preset) {
+        this.preset = preset;
     }
 
     public int getImageWidth() {

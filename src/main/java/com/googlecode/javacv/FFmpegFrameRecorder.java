@@ -49,8 +49,12 @@
 package com.googlecode.javacv;
 
 import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.DoublePointer;
+import com.googlecode.javacpp.FloatPointer;
+import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.PointerPointer;
+import com.googlecode.javacpp.ShortPointer;
 import java.io.File;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -164,7 +168,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (samplesPointer != null) {
             av_free(samplesPointer);
             samplesPointer = null;
-            samplesBuffer = null;
         }
         if (audio_outbuf != null) {
             av_free(audio_outbuf);
@@ -198,7 +201,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private int video_outbuf_size;
     private AVFrame frame;
     private BytePointer samplesPointer;
-    private ByteBuffer samplesBuffer;
+    private byte[] byteArray;
+    private short[] shortArray;
+    private int[] intArray;
+    private float[] floatArray;
+    private double[] doubleArray;
+    private int arrayPosition;
     private BytePointer audio_outbuf;
     private int audio_outbuf_size;
     private int audio_input_frame_size;
@@ -331,11 +339,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     video_c.width(1408).height(1152);
                 }
             } else if (video_c.codec_id() == CODEC_ID_H264) {
-                // use constrained baseline to produce content that plays back on anything,
+                // default to constrained baseline to produce content that plays back on anything,
                 // without any significant tradeoffs for most use cases
                 video_c.profile(AVCodecContext.FF_PROFILE_H264_CONSTRAINED_BASELINE);
-                av_opt_set(video_c.priv_data(), "profile", "baseline", 0);
-                av_opt_set(video_c.priv_data(), "preset", "medium", 0);
+                av_opt_set(video_c.priv_data(), "profile", profile != null && profile.length() > 0 ? profile : "baseline", 0);
+                av_opt_set(video_c.priv_data(), "preset",  preset  != null && preset .length() > 0 ? preset  : "medium",   0);
             }
 
             // some formats want stream headers to be separate
@@ -480,8 +488,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             //int bufferSize = audio_input_frame_size * audio_c.bits_per_raw_sample()/8 * audio_c.channels();
             int bufferSize = av_samples_get_buffer_size(null, audio_c.channels(), audio_input_frame_size, audio_c.sample_fmt(), 1);
-            samplesPointer = new BytePointer(av_malloc(bufferSize));
-            samplesBuffer = samplesPointer.capacity(bufferSize).asBuffer();
+            samplesPointer = new BytePointer(av_malloc(bufferSize)).capacity(bufferSize);
+            switch (audio_c.sample_fmt()) {
+                case AV_SAMPLE_FMT_U8:  byteArray   = new byte  [bufferSize];   break;
+                case AV_SAMPLE_FMT_S16: shortArray  = new short [bufferSize/2]; break;
+                case AV_SAMPLE_FMT_S32: intArray    = new int   [bufferSize/4]; break;
+                case AV_SAMPLE_FMT_FLT: floatArray  = new float [bufferSize/4]; break;
+                case AV_SAMPLE_FMT_DBL: doubleArray = new double[bufferSize/8]; break;
+                default: assert false;
+            }
+            arrayPosition = 0;
 
             /* allocate the audio frame */
             if ((frame = avcodec_alloc_frame()) == null) {
@@ -624,78 +640,87 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
         int ret;
         int sampleFormat = audio_c.sample_fmt();
+        int sampleSize = audio_c.bits_per_raw_sample()/8;
 
         while (samples.hasRemaining()) {
             if (samples instanceof ByteBuffer) {
                 ByteBuffer b = (ByteBuffer)samples;
-                while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
+                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
                     int sample = (b.get() & 0xFF) - 128;
                     switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)(sample + 128)); break;
-                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)(sample << 8)); break;
-                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample << 24); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample * (1.0f / Byte.MAX_VALUE)); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample * (1.0 / Byte.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)(sample + 128); break;
+                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)(sample << 8); break;
+                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = sample << 24; break;
+                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample * (1.0f / Byte.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample * (1.0 / Byte.MAX_VALUE); break;
                         default: assert false;
                     }
                 }
             } else if (samples instanceof ShortBuffer) {
                 ShortBuffer b = (ShortBuffer)samples;
-                while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
+                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
                     short sample = b.get();
                     switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)((sample >> 8) + 128)); break;
-                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort(sample); break;
-                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample << 16); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample * (1.0f / Short.MAX_VALUE)); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample * (1.0 / Short.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)((sample >> 8) + 128); break;
+                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = sample; break;
+                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = sample << 16; break;
+                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample * (1.0f / Short.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample * (1.0 / Short.MAX_VALUE); break;
                         default: assert false;
                     }
                 }
             } else if (samples instanceof IntBuffer) {
                 IntBuffer b = (IntBuffer)samples;
-                while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
+                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
                     int sample = b.get();
                     switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)((sample >> 24) + 128)); break;
-                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)(sample >> 16)); break;
-                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt(sample); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample * (1.0f / Integer.MAX_VALUE)); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample * (1.0 / Integer.MAX_VALUE)); break;
+                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)((sample >> 24) + 128); break;
+                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)(sample >> 16); break;
+                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = sample; break;
+                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample * (1.0f / Integer.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample * (1.0 / Integer.MAX_VALUE); break;
                         default: assert false;
                     }
                 }
             } else if (samples instanceof FloatBuffer) {
                 FloatBuffer b = (FloatBuffer)samples;
-                while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
+                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
                     float sample = b.get();
                     switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)(Math.round(sample * Byte.MAX_VALUE) + 128)); break;
-                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)Math.round(sample * Short.MAX_VALUE)); break;
-                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt((int)Math.round(sample * Integer.MAX_VALUE)); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat(sample); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample); break;
+                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)(Math.round(sample * Byte.MAX_VALUE) + 128); break;
+                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)Math.round(sample * Short.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = (int)Math.round(sample * Integer.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample; break;
+                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample; break;
                         default: assert false;
                     }
                 }
             } else if (samples instanceof DoubleBuffer) {
                 DoubleBuffer b = (DoubleBuffer)samples;
-                while (samplesBuffer.hasRemaining() && b.hasRemaining()) {
+                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
                     double sample = b.get();
                     switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  samplesBuffer.put((byte)(Math.round(sample * Byte.MAX_VALUE) + 128)); break;
-                        case AV_SAMPLE_FMT_S16: samplesBuffer.putShort((short)Math.round(sample * Short.MAX_VALUE)); break;
-                        case AV_SAMPLE_FMT_S32: samplesBuffer.putInt((int)Math.round(sample * Integer.MAX_VALUE)); break;
-                        case AV_SAMPLE_FMT_FLT: samplesBuffer.putFloat((float)sample); break;
-                        case AV_SAMPLE_FMT_DBL: samplesBuffer.putDouble(sample); break;
+                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)(Math.round(sample * Byte.MAX_VALUE) + 128); break;
+                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)Math.round(sample * Short.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = (int)Math.round(sample * Integer.MAX_VALUE); break;
+                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = (float)sample; break;
+                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample; break;
                         default: assert false;
                     }
                 }
             } else {
                 assert false;
             }
-            if (!samplesBuffer.hasRemaining()) {
-                samplesBuffer.clear();
+            if (sampleSize * arrayPosition >= samplesPointer.capacity()) {
+                switch (sampleFormat) {
+                    case AV_SAMPLE_FMT_U8:                    samplesPointer. put(byteArray);   break;
+                    case AV_SAMPLE_FMT_S16: new ShortPointer (samplesPointer).put(shortArray);  break;
+                    case AV_SAMPLE_FMT_S32: new IntPointer   (samplesPointer).put(intArray);    break;
+                    case AV_SAMPLE_FMT_FLT: new FloatPointer (samplesPointer).put(floatArray);  break;
+                    case AV_SAMPLE_FMT_DBL: new DoublePointer(samplesPointer).put(doubleArray); break;
+                    default: assert false;
+                }
+                arrayPosition = 0;
 
                 frame.nb_samples(audio_input_frame_size);
                 avcodec_fill_audio_frame(frame, audioChannels, sampleFormat, samplesPointer, samplesPointer.capacity(), 0);
