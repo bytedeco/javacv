@@ -57,13 +57,14 @@
 package com.googlecode.javacv.cpp;
 
 import com.googlecode.javacpp.Pointer;
-import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
+import com.googlecode.javacpp.annotation.StdVector;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -106,25 +107,23 @@ public class opencv_nonfree {
         public native int descriptorSize();
         public native int descriptorType();
 
-        public native @Name("operator()") void detect(@Adapter("ArrayAdapter") CvArr img, @Adapter("ArrayAdapter") CvArr mask,
-                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints);
-        public native @Name("operator()") void detect(@Adapter("ArrayAdapter") CvArr img, @Adapter("ArrayAdapter") CvArr mask,
-                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-                @Adapter(value="ArrayAdapter", out=true) CvMat descriptors, @Cast("bool") boolean useProvidedKeypoints/*=false*/);
+        public native @Name("operator()") void detect(@InputArray CvArr img, @InputArray CvArr mask, @StdVector KeyPoint keypoints);
+        public native @Name("operator()") void detect(@InputArray CvArr img, @InputArray CvArr mask, @StdVector KeyPoint keypoints,
+                @OutputArray CvMat descriptors, @Cast("bool") boolean useProvidedKeypoints/*=false*/);
 
         public native AlgorithmInfo info();
 
-        public native void buildGaussianPyramid(IplImage base, @Adapter("VectorAdapter<IplImage*,cv::Mat>") IplImageArray pyr, int nOctaves);
-        public native void buildDoGPyramid(@Adapter("VectorAdapter<IplImage*,cv::Mat>") IplImageArray pyr,
-                                           @Adapter("VectorAdapter<IplImage*,cv::Mat>") IplImageArray dogpyr);
-        public native void findScaleSpaceExtrema(@Adapter("VectorAdapter<IplImage*,cv::Mat>") IplImageArray gauss_pyr,
-                                                 @Adapter("VectorAdapter<IplImage*,cv::Mat>") IplImageArray dog_pyr,
-                                                 @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints);
+        public native void buildGaussianPyramid(IplImage base, @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr, int nOctaves);
+        public native void buildDoGPyramid(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+                                           @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray dogpyr);
+        public native void findScaleSpaceExtrema(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray gauss_pyr,
+                                                 @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray dog_pyr,
+                                                 @StdVector KeyPoint keypoints);
 
-//        protected native void detectImpl(@Adapter("MatAdapter") CvArr image, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints, @Adapter("MatAdapter") CvArr mask/*=null*/);
-//        protected native void computeImpl(@Adapter("MatAdapter") CvArr image,
-//                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-//                @Adapter(value="MatAdapter", out=true) CvMat descriptors);
+//        protected native void detectImpl(@InputMat CvArr image,
+//                @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
+//        protected native void computeImpl(@InputMat CvArr image,
+//                @StdVector KeyPoint keypoints, @OutputMat CvMat descriptors);
 
 //        protected native int nfeatures();
 //        protected native int nOctaveLayers();
@@ -148,11 +147,9 @@ public class opencv_nonfree {
         public native int descriptorSize();
         public native int descriptorType();
 
-        public native @Name("operator()") void detect(@Adapter("ArrayAdapter") CvArr img, @Adapter("ArrayAdapter") CvArr mask,
-                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints);
-        public native @Name("operator()") void detect(@Adapter("ArrayAdapter") CvArr img, @Adapter("ArrayAdapter") CvArr mask,
-                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-                @Adapter(value="ArrayAdapter", out=true) CvMat descriptors, @Cast("bool") boolean useProvidedKeypoints/*=false*/);
+        public native @Name("operator()") void detect(@InputArray CvArr img, @InputArray CvArr mask, @StdVector KeyPoint keypoints);
+        public native @Name("operator()") void detect(@InputArray CvArr img, @InputArray CvArr mask, @StdVector KeyPoint keypoints,
+                @OutputArray CvMat descriptors, @Cast("bool") boolean useProvidedKeypoints/*=false*/);
 
         public native AlgorithmInfo info();
 
@@ -162,9 +159,7 @@ public class opencv_nonfree {
         public native @Cast("bool") boolean extended(); public native SURF extended(boolean extended);
         public native @Cast("bool") boolean upright();  public native SURF upright(boolean upright);
 
-//        protected native void detectImpl(@Adapter("MatAdapter") CvArr image, @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints, @Adapter("MatAdapter") CvArr mask/*=null*/);
-//        protected native void computeImpl(@Adapter("MatAdapter") CvArr image,
-//                @Adapter(value="VectorAdapter<cv::KeyPoint>", out=true) KeyPoint keypoints,
-//                @Adapter(value="MatAdapter", out=true) CvMat descriptors);
+//        protected native void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
+//        protected native void computeImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @OutputMat CvMat descriptors);
     }
 }

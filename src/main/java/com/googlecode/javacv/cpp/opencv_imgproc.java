@@ -75,6 +75,7 @@ import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
+import com.googlecode.javacpp.annotation.StdVector;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -1157,11 +1158,11 @@ public class opencv_imgproc {
                 @ByVal CvScalar _borderValue/*=Scalar()*/);
 
         public native int start(@ByVal CvSize wholeSize, @ByVal CvRect roi, int maxBufRows/*=-1*/);
-        public native int start(@Adapter("MatAdapter") CvArr src, @ByVal CvRect srcRoi/*=Rect(0,0,-1,-1)*/,
+        public native int start(@InputMat CvArr src, @ByVal CvRect srcRoi/*=Rect(0,0,-1,-1)*/,
                 @Cast("bool") boolean isolated/*=false*/, int maxBufRows/*=-1*/);
         public native int proceed(@Cast("uchar*") BytePointer src, int srcStep, int srcCount,
                 @Cast("uchar*") BytePointer dst, int dstStep);
-        public native void apply(@Adapter("MatAdapter") CvArr src, @Adapter("MatAdapter") CvArr dst,
+        public native void apply(@InputMat CvArr src, @InputMat CvArr dst,
                 @ByVal CvRect srcRoi/*=Rect(0,0,-1,-1)*/, @ByVal CvPoint dstOfs/*=Point(0,0)*/,
                 @Cast("bool") boolean isolated/*=false*/);
         public native boolean isSeparable();
@@ -1180,16 +1181,16 @@ public class opencv_imgproc {
         public native int dx2();                      public native FilterEngine dx2(int dx2);
         public native int rowBorderType();            public native FilterEngine rowBorderType(int rowBorderType);
         public native int columnBorderType();         public native FilterEngine columnBorderType(int columnBorderType);
-        @Adapter("VectorAdapter<int>")
+        @Const @StdVector
         public native IntPointer borderTab();         public native FilterEngine borderTab(IntPointer borderTab);
         public native int borderElemSize();           public native FilterEngine borderElemSize(int borderElemSize);
-        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        @Const @StdVector @Cast("uchar*")
         public native BytePointer ringBuf();          public native FilterEngine ringBuf(BytePointer ringBuf);
-        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        @Const @StdVector @Cast("uchar*")
         public native BytePointer srcRow();           public native FilterEngine srcRow(BytePointer srcRow);
-        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        @Const @StdVector @Cast("uchar*")
         public native BytePointer constBorderValue(); public native FilterEngine constBorderValue(BytePointer constBorderValue);
-        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        @Const @StdVector @Cast("uchar*")
         public native BytePointer constBorderRow();   public native FilterEngine constBorderRow(BytePointer constBorderRow);
         public native int bufStep();                  public native FilterEngine bufStep(int bufStep);
         public native int startY();                   public native FilterEngine startY(int startY);
@@ -1197,7 +1198,7 @@ public class opencv_imgproc {
         public native int endY();                     public native FilterEngine endY(int endY);
         public native int rowCount();                 public native FilterEngine rowCount(int rowCount);
         public native int dstY();                     public native FilterEngine dstY(int dstY);
-        @Adapter("VectorAdapter<uchar*>") @Cast("uchar**")
+        @Const @StdVector @Cast("uchar**")
         public native PointerPointer rows();          public native FilterEngine rows(PointerPointer rows);
 
         public native @ByRef BaseFilterPtr filter2D();           public native FilterEngine filter2D(BaseFilterPtr filter2D);
@@ -1253,29 +1254,28 @@ public class opencv_imgproc {
             KERNEL_GENERAL=0, KERNEL_SYMMETRICAL=1, KERNEL_ASYMMETRICAL=2,
             KERNEL_SMOOTH=4, KERNEL_INTEGER=8;
 
-    @Namespace("cv") public static native int getKernelType(@Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint anchor);
+    @Namespace("cv") public static native int getKernelType(@InputArray CvMat kernel, @ByVal CvPoint anchor);
 
     @Namespace("cv") public static native @ByVal BaseRowFilterPtr getLinearRowFilter(int srcType, int bufType,
-            @Adapter("ArrayAdapter") CvMat kernel, int anchor, int symmetryType);
+            @InputArray CvMat kernel, int anchor, int symmetryType);
     @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getLinearColumnFilter(int bufType, int dstType,
-            @Adapter("ArrayAdapter") CvMat kernel, int anchor, int symmetryType, double delta/*=0*/, int bits/*=0*/);
+            @InputArray CvMat kernel, int anchor, int symmetryType, double delta/*=0*/, int bits/*=0*/);
     @Namespace("cv") public static native @ByVal BaseFilterPtr getLinearFilter(int srcType, int dstType,
-            @Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int bits/*=0*/);
+            @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int bits/*=0*/);
 
     @Namespace("cv") public static native @ByVal FilterEnginePtr createSeparableLinearFilter(int srcType, int dstType,
-            @Adapter("ArrayAdapter") CvMat rowKernel, @Adapter("ArrayAdapter") CvMat columnKernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
+            @InputArray CvMat rowKernel, @InputArray CvMat columnKernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
             int rowBorderType/*=BORDER_DEFAULT*/, int columnBorderType/*=-1*/, @ByVal CvScalar borderValue/*=Scalar()*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createLinearFilter(int srcType, int dstType,
-            @Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
+            @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
             int rowBorderType/*=BORDER_DEFAULT*/, int columnBorderType/*=-1*/, @ByVal CvScalar borderValue/*=Scalar()*/);
 
-    @Namespace("cv") public static native @Adapter("MatAdapter") CvMat getGaussianKernel(int ksize, double sigma, int ktype/*=CV_64F*/);
+    @Namespace("cv") public static native @OutputMat CvMat getGaussianKernel(int ksize, double sigma, int ktype/*=CV_64F*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createGaussianFilter(int type, @ByVal CvSize ksize,
             double sigma1, double sigma2/*=0*/, int borderType/*=BORDER_DEFAULT*/);
 
-    @Namespace("cv") public static native void getDerivKernels(@Adapter(value="ArrayAdapter", out=true) CvMat kx,
-            @Adapter(value="ArrayAdapter", out=true) CvMat ky, int dx, int dy, int ksize,
-            @Cast("bool") boolean normalize/*=false*/, int ktype/*=CV_32F*/);
+    @Namespace("cv") public static native void getDerivKernels(@OutputArray CvMat kx, @OutputArray CvMat ky,
+            int dx, int dy, int ksize, @Cast("bool") boolean normalize/*=false*/, int ktype/*=CV_32F*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createDerivFilter(int srcType, int dstType,
             int dx, int dy, int ksize, int borderType/*=BORDER_DEFAULT*/);
     
@@ -1285,7 +1285,7 @@ public class opencv_imgproc {
             int ksize, int anchor/*=-1*/, double scale/*=1*/);
     @Namespace("cv") public static native @ByVal FilterEnginePtr createBoxFilter(int srcType, int dstType, @ByVal CvSize ksize,
             @ByVal CvPoint anchor/*=Point(-1,-1)*/, @Cast("bool") boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
-    @Namespace("cv") public static native @Adapter("MatAdapter") CvMat getGaborKernel(@ByVal CvSize ksize, double sigma,
+    @Namespace("cv") public static native @OutputMat CvMat getGaborKernel(@ByVal CvSize ksize, double sigma,
             double theta, double lambd, double gamma, double psi/*=Math.PI*0.5*/, int ktype/*=CV_64F*/);
 
     public static final int
@@ -1298,51 +1298,50 @@ public class opencv_imgproc {
     @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getMorphologyColumnFilter(
             int op, int type, int ksize, int anchor/*=-1*/);
     @Namespace("cv") public static native @ByVal BaseFilterPtr getMorphologyFilter(
-            int op, int type, @Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/);
+            int op, int type, @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/);
     
     @Namespace("cv") public static native @ByVal CvScalar morphologyDefaultBorderValue();
 
-    @Namespace("cv") public static native @ByVal FilterEnginePtr createMorphologyFilter(int op, int type, @Adapter("ArrayAdapter") CvMat kernel,
+    @Namespace("cv") public static native @ByVal FilterEnginePtr createMorphologyFilter(int op, int type, @InputArray CvMat kernel,
             @ByVal CvPoint anchor/*=Point(-1,-1)*/, int rowBorderType/*=BORDER_CONSTANT*/, int columnBorderType/*=-1*/,
             @ByVal CvScalar borderValue/*=morphologyDefaultBorderValue()*/);
 
-    @Namespace("cv") public static native void medianBlur(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ksize);
-    @Namespace("cv") public static native void GaussianBlur(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst,
+    @Namespace("cv") public static native void medianBlur(@InputArray CvArr src, @InputArray CvArr dst, int ksize);
+    @Namespace("cv") public static native void GaussianBlur(@InputArray CvArr src, @InputArray CvArr dst,
             @ByVal CvSize ksize, double sigmaX, double sigmaY/*=0*/, int borderType/*=BORDER_DEFAULT*/);
-    @Namespace("cv") public static native void bilateralFilter(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int d,
+    @Namespace("cv") public static native void bilateralFilter(@InputArray CvArr src, @InputArray CvArr dst, int d,
             double sigmaColor, double sigmaSpace, int borderType/*=BORDER_DEFAULT*/);
-    @Namespace("cv") public static native void boxFilter(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ddepth,
+    @Namespace("cv") public static native void boxFilter(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
             @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, @Cast("bool") boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
-    @Namespace("cv") public static native void blur(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst,
+    @Namespace("cv") public static native void blur(@InputArray CvArr src, @InputArray CvArr dst,
             @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, int borderType/*=BORDER_DEFAULT*/);
-    @Namespace("cv") public static native void filter2D(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ddepth,
-            @Adapter("ArrayAdapter") CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
-    @Namespace("cv") public static native void sepFilter2D(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr dst, int ddepth,
-            @Adapter("ArrayAdapter") CvMat kernelX, @Adapter("ArrayAdapter") CvMat kernelY, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void filter2D(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
+            @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void sepFilter2D(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
+            @InputArray CvMat kernelX, @InputArray CvMat kernelY, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
 
     @Namespace("cv") public static native void eigen2x2(float[] a, float[] e, int n);
     @Namespace("cv") public static native void eigen2x2(FloatPointer a, FloatPointer e, int n);
 
-    @Namespace("cv") public static native double PSNR(@Adapter("ArrayAdapter") CvArr src1, @Adapter("ArrayAdapter") CvArr src2);
+    @Namespace("cv") public static native double PSNR(@InputArray CvArr src1, @InputArray CvArr src2);
 
-    @Namespace("cv") public static native @Adapter("Point2dAdapter") CvPoint2D64f phaseCorrelate(@Adapter("ArrayAdapter") CvArr src1,
-            @Adapter("ArrayAdapter") CvArr src2, @Adapter("ArrayAdapter") CvArr window/*=null*/);
-    @Namespace("cv") public static native void createHanningWindow(@Adapter(value="ArrayAdapter", out=true) CvMat dst,
-            @ByVal CvSize winSize, int type);
+    @Namespace("cv") public static native @Adapter("Point2dAdapter") CvPoint2D64f phaseCorrelate(@InputArray CvArr src1,
+            @InputArray CvArr src2, @InputArray CvArr window/*=null*/);
+    @Namespace("cv") public static native void createHanningWindow(@OutputArray CvMat dst, @ByVal CvSize winSize, int type);
 
     public static final int
             PROJ_SPHERICAL_ORTHO = 0,
             PROJ_SPHERICAL_EQRECT = 1;
 
     @Namespace("cv") public static native float initWideAngleProjMap(
-            @Adapter("ArrayAdapter") CvMat cameraMatrix, @Adapter("ArrayAdapter") CvMat distCoeffs,
+            @InputArray CvMat cameraMatrix, @InputArray CvMat distCoeffs,
             @ByVal CvSize imageSize, int destImageWidth, int m1type,
-            @Adapter("ArrayAdapter") CvArr map1, @Adapter("ArrayAdapter") CvArr map2,
+            @InputArray CvArr map1, @InputArray CvArr map2,
             int projType/*=PROJ_SPHERICAL_EQRECT*/, double alpha/*=0*/);
 
-    @Namespace("cv") public static native float EMD(@Adapter("ArrayAdapter") CvArr signature1,
-            @Adapter("ArrayAdapter") CvArr signature2, int distType, @Adapter("ArrayAdapter") CvArr cost/*=null*/,
-            float[] lowerBound/*=null*/, @Adapter("ArrayAdapter") CvArr flow/*=null*/);
+    @Namespace("cv") public static native float EMD(@InputArray CvArr signature1,
+            @InputArray CvArr signature2, int distType, @InputArray CvArr cost/*=null*/,
+            float[] lowerBound/*=null*/, @InputArray CvArr flow/*=null*/);
 
     public static final int
             GC_BGD    = 0,
@@ -1354,10 +1353,10 @@ public class opencv_imgproc {
             GC_INIT_WITH_MASK  = 1,
             GC_EVAL            = 2;
 
-    @Namespace("cv") public static native void grabCut(@Adapter("ArrayAdapter") CvArr img, @Adapter("ArrayAdapter") CvArr mask, @ByVal CvRect rect,
-            @Adapter(value="ArrayAdapter", out=true) CvMat bgdModel, @Adapter(value="ArrayAdapter", out=true) CvMat fgdModel, int iterCount, int mode/*=GC_EVAL*/);
+    @Namespace("cv") public static native void grabCut(@InputArray CvArr img, @InputArray CvArr mask,
+            @ByVal CvRect rect, @OutputArray CvMat bgdModel, @OutputArray CvMat fgdModel, int iterCount, int mode/*=GC_EVAL*/);
 
-    @Namespace("cv") public static native @Cast("bool") boolean isContourConvex(@Adapter("ArrayAdapter") CvArr contour);
-    @Namespace("cv") public static native float intersectConvexConvex(@Adapter("ArrayAdapter") CvArr _p1, @Adapter("ArrayAdapter") CvArr _p2,
-            @Adapter(value="ArrayAdapter", out=true) CvMat _p12, @Cast("bool") boolean handleNested/*=true*/);
+    @Namespace("cv") public static native @Cast("bool") boolean isContourConvex(@InputArray CvArr contour);
+    @Namespace("cv") public static native float intersectConvexConvex(@InputArray CvArr _p1,
+            @InputArray CvArr _p2, @OutputArray CvMat _p12, @Cast("bool") boolean handleNested/*=true*/);
 }

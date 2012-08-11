@@ -65,6 +65,7 @@ import com.googlecode.javacpp.annotation.ByPtrRef;
 import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
+import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
@@ -406,36 +407,36 @@ public class opencv_calib3d {
         EPNP=CV_EPNP,
         P3P=CV_P3P;
 
-    @Namespace("cv") public static native boolean solvePnP(@Adapter("ArrayAdapter") CvMat objectPoints,
-            @Adapter("ArrayAdapter") CvMat imagePoints, @Adapter("ArrayAdapter") CvMat cameraMatrix,
-            @Adapter("ArrayAdapter") CvMat distCoeffs,  @Adapter(value="ArrayAdapter", out=true) CvMat rvec,
-            @Adapter(value="ArrayAdapter", out=true) CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=ITERATIVE*/);
-    @Namespace("cv") public static native void solvePnPRansac(@Adapter("ArrayAdapter") CvMat objectPoints,
-            @Adapter("ArrayAdapter") CvMat imagePoints, @Adapter("ArrayAdapter") CvMat cameraMatrix,
-            @Adapter("ArrayAdapter") CvMat distCoeffs,  @Adapter("ArrayAdapter") CvMat rvec,
-            @Adapter("ArrayAdapter") CvMat tvec, boolean useExtrinsicGuess/*=false*/,
+    @Namespace("cv") public static native boolean solvePnP(@InputArray CvMat objectPoints,
+            @InputArray CvMat imagePoints, @InputArray CvMat cameraMatrix,
+            @InputArray CvMat distCoeffs,  @OutputArray CvMat rvec,
+            @OutputArray CvMat tvec, boolean useExtrinsicGuess/*=false*/, int flags/*=ITERATIVE*/);
+    @Namespace("cv") public static native void solvePnPRansac(@InputArray CvMat objectPoints,
+            @InputArray CvMat imagePoints, @InputArray CvMat cameraMatrix,
+            @InputArray CvMat distCoeffs,  @InputArray CvMat rvec,
+            @InputArray CvMat tvec, boolean useExtrinsicGuess/*=false*/,
             int iterationsCount/*=100*/, float reprojectionError/*=8.0*/, int minInliersCount/*=100*/,
-            @Adapter(value="ArrayAdapter", out=true) CvMat inliers/*=noArray()*/, int flags/*=ITERATIVE*/);
+            @OutputArray CvMat inliers/*=noArray()*/, int flags/*=ITERATIVE*/);
 
-    @Namespace("cv") public static native boolean find4QuadCornerSubpix(@Adapter("ArrayAdapter") CvArr img,
-            @Adapter("ArrayAdapter") CvArr corners, @ByVal CvSize region_size);
+    @Namespace("cv") public static native boolean find4QuadCornerSubpix(@InputArray CvArr img,
+            @InputArray CvArr corners, @ByVal CvSize region_size);
     
     public static final int CALIB_CB_SYMMETRIC_GRID = 1, CALIB_CB_ASYMMETRIC_GRID = 2,
             CALIB_CB_CLUSTERING = 4;
-    @Namespace("cv") public static native boolean findCirclesGrid(@Adapter("ArrayAdapter") CvArr image, @ByVal CvSize patternSize,
-            @Adapter(value="ArrayAdapter", out=true) CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/,
+    @Namespace("cv") public static native boolean findCirclesGrid(@InputArray CvArr image, @ByVal CvSize patternSize,
+            @OutputArray CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/,
             @ByRef FeatureDetectorPtr blobDetector/*=new SimpleBlobDetector()*/);
-    @Namespace("cv") public static native boolean findCirclesGridDefault(@Adapter("ArrayAdapter") CvArr image, @ByVal CvSize patternSize,
-             @Adapter(value="ArrayAdapter", out=true) CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/);
+    @Namespace("cv") public static native boolean findCirclesGridDefault(@InputArray CvArr image, @ByVal CvSize patternSize,
+            @OutputArray CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/);
 
-    @Namespace("cv") public static native float rectify3Collinear(@Adapter("ArrayAdapter") CvMat cameraMatrix1,
-            @Adapter("ArrayAdapter") CvMat distCoeffs1, @Adapter("ArrayAdapter") CvMat cameraMatrix2, @Adapter("ArrayAdapter") CvMat distCoeffs2,
-            @Adapter("ArrayAdapter") CvMat cameraMatrix3, @Adapter("ArrayAdapter") CvMat distCoeffs3, @ByRef Point2fVectorVector imgpt1, @ByRef Point2fVectorVector imgpt3,
-            @ByVal CvSize imageSize, @Adapter("ArrayAdapter") CvMat R12, @Adapter("ArrayAdapter") CvMat T12, @Adapter("ArrayAdapter") CvMat R13, @Adapter("ArrayAdapter") CvMat T13,
-            @Adapter("ArrayAdapter") CvMat R1, @Adapter("ArrayAdapter") CvMat R2, @Adapter("ArrayAdapter") CvMat R3,
-            @Adapter("ArrayAdapter") CvMat P1, @Adapter("ArrayAdapter") CvMat P2, @Adapter("ArrayAdapter") CvMat P3,
-            @Adapter("ArrayAdapter") CvMat Q,  double alpha, @ByVal CvSize newImgSize,
-            @Adapter("RectAdapter") CvRect roi1, @Adapter("RectAdapter") CvRect roi2, int flags);
+    @Namespace("cv") public static native float rectify3Collinear(@InputArray CvMat cameraMatrix1, @InputArray CvMat distCoeffs1,
+            @InputArray CvMat cameraMatrix2, @InputArray CvMat distCoeffs2, @InputArray CvMat cameraMatrix3, @InputArray CvMat distCoeffs3,
+            @ByRef Point2fVectorVector imgpt1, @ByRef Point2fVectorVector imgpt3, @ByVal CvSize imageSize,
+            @InputArray CvMat R12, @InputArray CvMat T12, @InputArray CvMat R13, @InputArray CvMat T13,
+            @InputArray CvMat R1, @InputArray CvMat R2, @InputArray CvMat R3,
+            @InputArray CvMat P1, @InputArray CvMat P2, @InputArray CvMat P3,
+            @InputArray CvMat Q,  double alpha, @ByVal CvSize newImgSize,
+            @Const @Adapter("RectAdapter") CvRect roi1, @Const @Adapter("RectAdapter") CvRect roi2, int flags);
 
     @NoOffset @Namespace("cv") public static class StereoBM extends Pointer {
         static { load(); }
@@ -452,8 +453,8 @@ public class opencv_calib3d {
                 BASIC_PRESET=0, FISH_EYE_PRESET=1, NARROW_PRESET=2;
 
         public native void init(int preset, int ndisparities/*=0*/, int SADWindowSize/*=21*/);
-        public native @Name("operator()") void compute(@Adapter("ArrayAdapter") CvArr left,
-                @Adapter("ArrayAdapter") CvArr right, @Adapter("ArrayAdapter") CvArr disparity, int disptype/*=CV_16S*/);
+        public native @Name("operator()") void compute(@InputArray CvArr left,
+                @InputArray CvArr right, @InputArray CvArr disparity, int disptype/*=CV_16S*/);
 
         public native CvStereoBMState state(); public native StereoBM state(CvStereoBMState state);
     }
@@ -475,8 +476,7 @@ public class opencv_calib3d {
 
         public static final int DISP_SHIFT=4, DISP_SCALE = (1<<DISP_SHIFT);
 
-        public native @Name("operator()") void compute(@Adapter("ArrayAdapter") CvArr left,
-                @Adapter("ArrayAdapter") CvArr right, @Adapter("ArrayAdapter") CvArr disp);
+        public native @Name("operator()") void compute(@InputArray CvArr left, @InputArray CvArr right, @InputArray CvArr disp);
 
         public native int minDisparity();        public native StereoSGBM minDisparity(int minDisparity);
         public native int numberOfDisparities(); public native StereoSGBM numberOfDisparities(int numberOfDisparities);
@@ -490,13 +490,12 @@ public class opencv_calib3d {
         public native int disp12MaxDiff();       public native StereoSGBM disp12MaxDiff(int disp12MaxDiff);
         public native boolean fullDP();          public native StereoSGBM fullDP(boolean fullDP);
 
-//        protected native @Adapter("MatAdapter") CvMat buffer();
+//        protected native @OutputMat CvMat buffer();
     }
 
-    @Namespace("cv") public static native void filterSpeckles(@Adapter("ArrayAdapter") CvArr img, double newVal,
-            int maxSpeckleSize, double maxDiff, @Adapter("ArrayAdapter") CvArr buf);
+    @Namespace("cv") public static native void filterSpeckles(@InputArray CvArr img, double newVal,
+            int maxSpeckleSize, double maxDiff, @InputArray CvArr buf);
 
-    @Namespace("cv") public static native int estimateAffine3D(@Adapter("ArrayAdapter") CvArr src,
-            @Adapter("ArrayAdapter") CvArr dst, @Adapter(value="ArrayAdapter", out=true) CvMat out,
-            @Adapter(value="ArrayAdapter", out=true) CvMat inliers, double ransacThreshold/*=3*/, double confidence/*=0.99*/);
+    @Namespace("cv") public static native int estimateAffine3D(@InputArray CvArr src, @InputArray CvArr dst,
+            @OutputArray CvMat out, @OutputArray CvMat inliers, double ransacThreshold/*=3*/, double confidence/*=0.99*/);
 }

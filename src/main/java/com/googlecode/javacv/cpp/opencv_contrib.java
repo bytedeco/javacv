@@ -77,6 +77,7 @@ import com.googlecode.javacpp.annotation.Opaque;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 import com.googlecode.javacpp.annotation.ValueGetter;
+import com.googlecode.javacpp.annotation.StdVector;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -179,7 +180,7 @@ public class opencv_contrib {
         public native double calcValue();
         public native CvFuzzyCurve newCurve();
 
-        @NoOffset @Adapter("VectorAdapter<CvFuzzyCurve>")
+        @NoOffset @Const @StdVector
         public native CvFuzzyCurve curves(); public native CvFuzzyFunction curves(CvFuzzyCurve curves);
     }
 
@@ -285,14 +286,14 @@ public class opencv_contrib {
         }
         public Octree(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(@Adapter("VectorAdapter<CvPoint3D32f,cv::Point3f>")
+        private native void allocate(@Const @StdVector("CvPoint3D32f,cv::Point3f")
                 CvPoint3D32f points, int maxLevels/*=10*/, int minPoints/*=20*/);
 
-        public native void buildTree(@Adapter("VectorAdapter<CvPoint3D32f,cv::Point3f>")
+        public native void buildTree(@Const @StdVector("CvPoint3D32f,cv::Point3f")
                 CvPoint3D32f points, int maxLevels/*=10*/, int minPoints/*=20*/);
         public native void getPointsWithinSphere(@ByVal CvPoint3D32f center, float radius,
-                @Adapter(value="VectorAdapter<CvPoint3D32f,cv::Point3f>", out=true) CvPoint3D32f points);
-        public native @Adapter("VectorAdapter<cv::Octree::Node>") Node getNodes();
+                @StdVector("CvPoint3D32f,cv::Point3f") CvPoint3D32f points);
+        public native @StdVector Node getNodes();
     }
 
     @NoOffset @Namespace("cv") public static class Mesh3D extends Pointer {
@@ -301,7 +302,7 @@ public class opencv_contrib {
         public Mesh3D(@ByVal CvPoint3D32f vtx) { allocate(vtx); }
         public Mesh3D(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(@Adapter("VectorAdapter<CvPoint3D32f,cv::Point3f>") CvPoint3D32f vtx);
+        private native void allocate(@Const @StdVector("CvPoint3D32f,cv::Point3f") CvPoint3D32f vtx);
 
         @Opaque public static class EmptyMeshException extends Pointer {
             static { load(); }
@@ -313,14 +314,14 @@ public class opencv_contrib {
         public native void clearOctree();
         public native float estimateResolution(float tryRatio/*=0.1f*/);
         public native void computeNormals(float normalRadius, int minNeighbors/*=20*/);
-        public native void computeNormals(@Adapter("VectorAdapter<int>") int[] subset, float normalRadius, int minNeighbors/*=20*/);
+        public native void computeNormals(@Const @StdVector int[] subset, float normalRadius, int minNeighbors/*=20*/);
 
-        public native void writeAsVrml(String file, @Adapter("VectorAdapter<CvScalar, cv::Scalar>") CvScalar colors/*=null*/);
+        public native void writeAsVrml(String file, @Const @StdVector("CvScalar, cv::Scalar") CvScalar colors/*=null*/);
 
-        @Adapter("VectorAdapter<CvPoint3D32f,cv::Point3f>")
-        public native CvPoint3D32f vtx();     public native Mesh3D vtx(CvPoint3D32f vtx);
-        @Adapter("VectorAdapter<CvPoint3D32f,cv::Point3f>")
-        public native CvPoint3D32f normals(); public native Mesh3D normals(CvPoint3D32f normals);
+        @StdVector("CvPoint3D32f,cv::Point3f")
+        public native CvPoint3D32f vtx();     public native Mesh3D vtx(@Const CvPoint3D32f vtx);
+        @StdVector("CvPoint3D32f,cv::Point3f")
+        public native CvPoint3D32f normals(); public native Mesh3D normals(@Const CvPoint3D32f normals);
         public native float resolution();     public native Mesh3D resolution(float resolution);
         public native @ByRef Octree octree(); public native Mesh3D octree(Octree octree);
 
@@ -367,15 +368,15 @@ public class opencv_contrib {
 
         public native void setLogger(@Cast("std::ostream*") Pointer log);
         public native void selectRandomSubset(float ratio);
-        public native void setSubset(@Adapter("VectorAdapter<int>") int[] subset);
+        public native void setSubset(@Const @StdVector int[] subset);
         public native void compute();
 
         public native void match(@ByRef SpinImageModel scene, @ByRef Vec2iVectorVector result);
 
-        public native @Adapter("MatAdapter") IplImage packRandomScaledSpins(@Cast("bool") boolean separateScale/*=false*/, @Cast("size_t") long xCount/*=10*/, @Cast("size_t") long yCount/*=10*/);
+        public native @OutputMat IplImage packRandomScaledSpins(@Cast("bool") boolean separateScale/*=false*/, @Cast("size_t") long xCount/*=10*/, @Cast("size_t") long yCount/*=10*/);
 
         public native long getSpinCount();
-        public native @Adapter("MatAdapter") IplImage getSpinImage(@Cast("size_t") long index);
+        public native @OutputMat IplImage getSpinImage(@Cast("size_t") long index);
         public native @ByVal CvPoint3D32f getSpinVertex(@Cast("size_t") long index);
         public native @ByVal CvPoint3D32f getSpinNormal(@Cast("size_t") long index);
 
@@ -397,13 +398,11 @@ public class opencv_contrib {
 //
 //        protected native void defaultParams();
 //
-//        protected native void matchSpinToModel(IplImage spin,
-//                @Adapter(value="VectorAdapter<int>",out=true) IntPointer indeces,
-//                @Adapter(value="VectorAdapter<float>",out=true) FloatPointer corrCoeffs,
-//                @Cast("bool") boolean useExtremeOutliers/*=true*/);
+//        protected native void matchSpinToModel(IplImage spin, @StdVector IntPointer indeces,
+//                @StdVector FloatPointer corrCoeffs, @Cast("bool") boolean useExtremeOutliers/*=true*/);
 //
-//        protected native void repackSpinImages(@Adapter(value="VectorAdapter<uchar>",out=true)
-//                @Cast("uchar*") BytePointer mask, IplImage spinImages, @Cast("bool") boolean reAlloc/*=true*/);
+//        protected native void repackSpinImages(@StdVector @Cast("uchar*") BytePointer mask,
+//                IplImage spinImages, @Cast("bool") boolean reAlloc/*=true*/);
 //
 //        protected native vector<int> subset;
 //        protected native Mesh3D mesh;
@@ -450,15 +449,15 @@ public class opencv_contrib {
                 int _nangles/*=DEFAULT_NUM_ANGLES*/);
         private native void allocate(@ByRef SelfSimDescriptor ss);
 
-        public native @Name("operator=") @ByRef SelfSimDescriptor copy(@ByRef SelfSimDescriptor ss);
+        public native @Name("operator=") @ByRef SelfSimDescriptor put(@ByRef SelfSimDescriptor ss);
 
         public native long getDescriptorSize();
         public native @ByVal CvSize getGridSize(@ByVal CvSize imgsize, @ByVal CvSize winStride);
 
-        public native void compute(@Adapter("MatAdapter") CvArr img, @Adapter(value="VectorAdapter<float>", out=true) FloatPointer descriptors,
-                @ByVal CvSize winStride/*=Size()*/, @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint locations/*=null*/);
-        public native void computeLogPolarMapping(@Adapter("MatAdapter") CvArr mappingMask);
-        public native void SSD(@Adapter("MatAdapter") CvArr img, @ByVal CvPoint pt, @Adapter("MatAdapter") CvArr ssd);
+        public native void compute(@InputMat CvArr img, @StdVector FloatPointer descriptors,
+                @ByVal CvSize winStride/*=Size()*/, @Const @StdVector("CvPoint,cv::Point") CvPoint locations/*=null*/);
+        public native void computeLogPolarMapping(@InputMat CvArr mappingMask);
+        public native void SSD(@InputMat CvArr img, @ByVal CvPoint pt, @InputMat CvArr ssd);
 
         public native int smallSize();               public native SelfSimDescriptor smallSize(int smallSize);
         public native int largeSize();               public native SelfSimDescriptor largeSize(int largeSize);
@@ -477,10 +476,10 @@ public class opencv_contrib {
 //        public    Fjac(Pointer p) { super(p); }
 //        protected Fjac() { allocate(); }
 //        protected final native void allocate();
-//        public native void call(int i, int j, @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat point_params,
-//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat cam_params,
-//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat A,
-//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat B, Pointer data);
+//        public native void call(int i, int j, @Cast("cv::Mat&") @InputMat CvMat point_params,
+//                @Cast("cv::Mat&") @InputMat CvMat cam_params,
+//                @Cast("cv::Mat&") @InputMat CvMat A,
+//                @Cast("cv::Mat&") @InputMat CvMat B, Pointer data);
 //    }
 //
 //    public static class Func extends FunctionPointer {
@@ -488,9 +487,9 @@ public class opencv_contrib {
 //        public    Func(Pointer p) { super(p); }
 //        protected Func() { allocate(); }
 //        protected final native void allocate();
-//        public native void call(int i, int j, @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat point_params,
-//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat cam_params,
-//                @Cast("cv::Mat&") @Adapter("MatAdapter") CvMat estim, Pointer data);
+//        public native void call(int i, int j, @Cast("cv::Mat&") @InputMat CvMat point_params,
+//                @Cast("cv::Mat&") @InputMat CvMat cam_params,
+//                @Cast("cv::Mat&") @InputMat CvMat estim, Pointer data);
 //    }
 //
 //    public static class BundleAdjustCallback extends FunctionPointer {
@@ -505,31 +504,31 @@ public class opencv_contrib {
 //        static { load(); }
 //        public LevMarqSparse() { allocate(); }
 //        public LevMarqSparse(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
-//                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
-//                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data,
+//                @InputMat CvMat visibility, @InputMat CvMat P0,
+//                @InputMat CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data,
 //                BundleAdjustCallback cb, Pointer user_data) {
 //            allocate(npoints, ncameras, nPointParams, nCameraParams, nErrParams, visibility, P0, X, criteria, fjac, func, data, cb, user_data);
 //        }
 //        public LevMarqSparse(Pointer p) { super(p); }
 //        private native void allocate();
 //        private native void allocate(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
-//                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
-//                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data,
+//                @InputMat CvMat visibility, @InputMat CvMat P0,
+//                @InputMat CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data,
 //                BundleAdjustCallback cb, Pointer user_data);
 //
 //        public native void run(int npoints, int ncameras, int nPointParams, int nCameraParams, int nErrParams,
-//                @Adapter("MatAdapter") CvMat visibility, @Adapter("MatAdapter") CvMat P0,
-//                @Adapter("MatAdapter") CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data);
+//                @InputMat CvMat visibility, @InputMat CvMat P0,
+//                @InputMat CvMat X, @ByVal CvTermCriteria criteria, Fjac fjac, Func func, Pointer data);
 //
 //        public native void clear();
 //
 //        // useful function to do simple bundle adjastment tasks
-//        public static native void bundleAdjust(@Adapter("VectorAdapter<CvPoint3D32f,cv::Point3d>") CvPoint3D32f points,
+//        public static native void bundleAdjust(@Const @StdVector("CvPoint3D32f,cv::Point3d") CvPoint3D32f points,
 //                @ByRef Point2dVectorVector imagePoints, @ByRef IntVectorVector visibility,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray cameraMatrix,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray R,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray T,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray distCoeffs,
+//                @Const @StdVector("CvMat*,cv::Mat") CvMatArray cameraMatrix,
+//                @Const @StdVector("CvMat*,cv::Mat") CvMatArray R,
+//                @Const @StdVector("CvMat*,cv::Mat") CvMatArray T,
+//                @Const @StdVector("CvMat*,cv::Mat") CvMatArray distCoeffs,
 //                @ByVal CvTermCriteria criteria/*=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON)*/,
 //                BundleAdjustCallback cb/*=null*/, Pointer user_data/*=null*/);
 //
@@ -585,10 +584,10 @@ public class opencv_contrib {
 //        public native Pointer user_data();       public native LevMarqSparse user_data(Pointer user_data);
 //    }
 
-    @Namespace("cv") public static native int chamerMatching(@Adapter("MatAdapter") CvArr img,
-            @Adapter("MatAdapter") CvArr templ, @ByRef PointVectorVector results,
-            @Adapter(value="VectorAdapter<float>", out=true) FloatPointer cost,
-            double templScale/*=1*/, int maxMatches/*=20*/, double minMatchDistance/*=1.0*/, int padX/*=3*/,
+    @Namespace("cv") public static native int chamerMatching(@InputMat CvArr img,
+            @InputMat CvArr templ, @ByRef PointVectorVector results,
+            @StdVector FloatPointer cost, double templScale/*=1*/,
+            int maxMatches/*=20*/, double minMatchDistance/*=1.0*/, int padX/*=3*/,
             int padY/*=3*/, int scales/*=5*/, double minScale/*=0.6*/, double maxScale/*=1.6*/,
             double orientationWeight/*=0.5*/, double truncate/*=20*/);
 
@@ -610,8 +609,8 @@ public class opencv_contrib {
                 CYCLE_O = 0, CYCLE_V = 1,
                 PENALIZATION_TICHONOV = 0, PENALIZATION_CHARBONNIER = 1, PENALIZATION_PERONA_MALIK = 2;
 
-        public native @Name("operator()") void compute(@Adapter("MatAdapter") CvArr left,
-                @Adapter("MatAdapter") CvArr right, @Adapter("MatAdapter") CvArr disp);
+        public native @Name("operator()") void compute(@InputMat CvArr left,
+                @InputMat CvArr right, @InputMat CvArr disp);
 
         public native int levels();        public native StereoVar levels(int levels);
         public native double pyrScale();   public native StereoVar pyrScale(double pyrScale);
@@ -627,7 +626,7 @@ public class opencv_contrib {
         public native int flags();         public native StereoVar flags(int flags);
     }
 
-    @Namespace("cv") public static native void polyfit(CvMat srcx, CvMat srcy, @Adapter("MatAdapter") CvMat dst, int order);
+    @Namespace("cv") public static native void polyfit(CvMat srcx, CvMat srcy, @InputMat CvMat dst, int order);
 
 
     @Namespace("cv") public static class Directory extends Pointer {
@@ -641,7 +640,7 @@ public class opencv_contrib {
         public static native @ByVal StringVector GetListFolders(String path, String exten/*="*"*/, boolean addPath/*=true*/);
     }
 
-    @Namespace("cv") public static native  void generateColors(@Adapter("VectorAdapter<CvScalar,cv::Scalar>") CvScalar colors,
+    @Namespace("cv") public static native void generateColors(@Const @StdVector("CvScalar,cv::Scalar") CvScalar colors,
             long count, long factor/*=100*/);
 
 
@@ -649,12 +648,12 @@ public class opencv_contrib {
             ROTATION          = 1,
             TRANSLATION       = 2,
             RIGID_BODY_MOTION = 4;
-    @Namespace("cv") public static native boolean RGBDOdometry(@Adapter("MatAdapter") CvMat Rt, CvMat initRt,
+    @Namespace("cv") public static native boolean RGBDOdometry(@InputMat CvMat Rt, CvMat initRt,
             IplImage image0, IplImage depth0, IplImage mask0,
             IplImage image1, IplImage depth1, IplImage mask1,
             CvMat cameraMatrix, float minDepth/*=0*/, float maxDepth/*=4*/, float maxDepthDiff/*=0.07*/,
-            @Adapter("VectorAdapter<int>") IntPointer iterCounts/*=null*/,
-            @Adapter("VectorAdapter<float>") FloatPointer minGradientMagnitudes/*=null*/,
+            @Const @StdVector IntPointer iterCounts/*=null*/,
+            @Const @StdVector FloatPointer minGradientMagnitudes/*=null*/,
             int transformType/*=RIGID_BODY_MOTION*/);
 
     @Namespace("cv") public static class LogPolar_Interp extends Pointer {
@@ -669,11 +668,11 @@ public class opencv_contrib {
         private native void allocate(int w, int h, @ByVal CvPoint center, int R/*=70*/, double ro0/*=3.0*/,
                 int interp/*=INTER_LINEAR*/, int full/*=1*/, int S/*=117*/, int sp/*=1*/);
 
-        public native @Adapter("MatAdapter") CvMat to_cortical(CvMat source);
-        public native @Adapter("MatAdapter") CvMat to_cartesian(CvMat source);
+        public native @OutputMat CvMat to_cortical(CvMat source);
+        public native @OutputMat CvMat to_cartesian(CvMat source);
 
-//        protected native @Adapter("MatAdapter") CvMat Rsri();
-//        protected native @Adapter("MatAdapter") CvMat Csri();
+//        protected native @OutputMat CvMat Rsri();
+//        protected native @OutputMat CvMat Csri();
 //
 //        protected native int S();
 //        protected native int R();
@@ -689,8 +688,8 @@ public class opencv_contrib {
 //        protected native double q();
 //        protected native int interp();
 //
-//        protected native @Adapter("MatAdapter") CvMat ETAyx();
-//        protected native @Adapter("MatAdapter") CvMat CSIyx();
+//        protected native @OutputMat CvMat ETAyx();
+//        protected native @OutputMat CvMat CSIyx();
 //
 //        protected native void create_map(int M, int N, int R, int S, double ro0);
     }
@@ -707,14 +706,14 @@ public class opencv_contrib {
         private native void allocate(int w, int h, @ByVal CvPoint center, int R/*=70*/,
                 double ro0/*=3.0*/, int full/*=1*/, int S/*=117*/, int sp/*=1*/);
 
-        public native @Adapter("MatAdapter") CvMat to_cortical(CvMat source);
-        public native @Adapter("MatAdapter") CvMat to_cartesian(CvMat source);
+        public native @OutputMat CvMat to_cortical(CvMat source);
+        public native @OutputMat CvMat to_cartesian(CvMat source);
 
-//        protected native @Adapter("MatAdapter") CvMat Rsri();
-//        protected native @Adapter("MatAdapter") CvMat Csri();
-//        protected native @Adapter("VectorAdapter<int>") IntPointer Rsr();
-//        protected native @Adapter("VectorAdapter<int>") IntPointer Csr();
-//        protected native @Adapter("VectorAdapter<double>") DoublePointer Wsr();
+//        protected native @OutputMat CvMat Rsri();
+//        protected native @OutputMat CvMat Csri();
+//        protected native @StdVector IntPointer Rsr();
+//        protected native @StdVector IntPointer Csr();
+//        protected native @StdVector DoublePointer Wsr();
 
 //        protected native int S();
 //        protected native int R();
@@ -736,13 +735,13 @@ public class opencv_contrib {
 //            public kernel(Pointer p) { super(p); }
 //            private native void allocate();
 //
-//            public native @Adapter("VectorAdapter<double>") DoublePointer weights();
+//            public native @StdVector DoublePointer weights();
 //            public native int w();
 //        }
 //
-//        protected native @Adapter("MatAdapter") CvMat ETAyx();
-//        protected native @Adapter("MatAdapter") CvMat CSIyx();
-//        protected native @Adapter("VectorAdapter<kernel>") kernel w_ker_2D();
+//        protected native @OutputMat CvMat ETAyx();
+//        protected native @OutputMat CvMat CSIyx();
+//        protected native @StdVector kernel w_ker_2D();
 //
 //        protected native void create_map(int M, int N, int R, int S, double ro0);
     }
@@ -769,8 +768,8 @@ public class opencv_contrib {
         private native void allocate(int w, int h, @ByVal CvPoint center, int R/*=70*/, double ro0/*=3.0*/,
                 double smin/*=0.25*/, int full/*=1*/, int S/*=117*/, int sp/*=1*/);
 
-        public native @Adapter("MatAdapter") CvMat to_cortical(CvMat source);
-        public native @Adapter("MatAdapter") CvMat to_cartesian(CvMat source);
+        public native @OutputMat CvMat to_cortical(CvMat source);
+        public native @OutputMat CvMat to_cartesian(CvMat source);
 
 //        protected static class pixel extends Pointer {
 //            static { load(); }
@@ -795,17 +794,17 @@ public class opencv_contrib {
 //        protected native double a();
 //        protected native double q();
 //        protected native vector<vector<pixel> > L();
-//        protected native @Adapter("VectorAdapter<double>") DoublePointer A();
+//        protected native @StdVector DoublePointer A();
 //
 //        protected native void subdivide_recursively(double x, double y, int i, int j, double length, double smin);
 //        protected native boolean get_uv(double x, double y, @ByRef int[] u, @ByRef int[] v);
 //        protected native void create_map(int M, int N, int R, int S, double ro0, double smin);
     }
 
-    @Namespace("cv") public static native @Adapter("MatAdapter") CvMat subspaceProject(@Adapter("ArrayAdapter") CvArr W,
-            @Adapter("ArrayAdapter") CvArr mean, @Adapter("ArrayAdapter") CvArr src);
-    @Namespace("cv") public static native @Adapter("MatAdapter") CvMat subspaceReconstruct(@Adapter("ArrayAdapter") CvArr W,
-            @Adapter("ArrayAdapter") CvArr mean, @Adapter("ArrayAdapter") CvArr src);
+    @Namespace("cv") public static native @OutputMat CvMat subspaceProject(@InputArray CvArr W,
+            @InputArray CvArr mean, @InputArray CvArr src);
+    @Namespace("cv") public static native @OutputMat CvMat subspaceReconstruct(@InputArray CvArr W,
+            @InputArray CvArr mean, @InputArray CvArr src);
 
     @Namespace("cv") public static class LDA extends Pointer {
         static { Loader.load(); }
@@ -817,31 +816,31 @@ public class opencv_contrib {
         public LDA(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(int num_components);
-        private native void allocate(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") int[] labels, int num_components/*=0*/);
-        private native void allocate(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels, int num_components/*=0*/);
-        private native void allocate(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") IntPointer labels, int num_components/*=0*/);
+        private native void allocate(@InputArray CvArr src, @InputArray int[] labels, int num_components/*=0*/);
+        private native void allocate(@InputArray CvArr src, @InputArray CvArr labels, int num_components/*=0*/);
+        private native void allocate(@InputArray CvArr src, @InputArray IntPointer labels, int num_components/*=0*/);
 
         public native void save(String filename);
         public native void load(String filename);
-        public native void save(@Adapter("FileStorageAdapter") CvFileStorage fs);
-        public native void load(@Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void save(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void load(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
 
-        public native void compute(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") int[] labels);
-        public native void compute(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels);
-        public native void compute(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") IntPointer labels);
-        public native @Adapter("MatAdapter") CvMat project(@Adapter("ArrayAdapter") CvArr src);
-        public native @Adapter("MatAdapter") CvMat reconstruct(@Adapter("ArrayAdapter") CvArr src);
-        public native @Adapter("MatAdapter") CvMat eigenvectors();
-        public native @Adapter("MatAdapter") CvMat eigenvalues();
+        public native void compute(@InputArray CvArr src, @InputArray int[] labels);
+        public native void compute(@InputArray CvArr src, @InputArray CvArr labels);
+        public native void compute(@InputArray CvArr src, @InputArray IntPointer labels);
+        public native @OutputMat CvMat project(@InputArray CvArr src);
+        public native @OutputMat CvMat reconstruct(@InputArray CvArr src);
+        public native @OutputMat CvMat eigenvectors();
+        public native @OutputMat CvMat eigenvalues();
 
 //        protected native boolean _dataAsRow();
 //        protected native int _num_components();
-//        protected native @Adapter("MatAdapter") CvMat _eigenvectors();
-//        protected native @Adapter("MatAdapter") CvMat _eigenvalues();
+//        protected native @OutputMat CvMat _eigenvectors();
+//        protected native @OutputMat CvMat _eigenvalues();
 //
-//        protected native void lda(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") int[] labels);
-//        protected native void lda(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") CvArr labels);
-//        protected native void lda(@Adapter("ArrayAdapter") CvArr src, @Adapter("ArrayAdapter") IntPointer labels);
+//        protected native void lda(@InputArray CvArr src, @InputArray int[] labels);
+//        protected native void lda(@InputArray CvArr src, @InputArray CvArr labels);
+//        protected native void lda(@InputArray CvArr src, @InputArray IntPointer labels);
     }
 
     @Namespace("cv") public static class FaceRecognizer extends Algorithm {
@@ -849,15 +848,15 @@ public class opencv_contrib {
         public FaceRecognizer() { }
         public FaceRecognizer(Pointer p) { super(p); }
 
-        public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") int[] labels);
-        public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") CvArr labels);
-        public /*abstract*/ native void train(@ByRef MatVector src, @Adapter("ArrayAdapter") IntPointer labels);
-        public /*abstract*/ native int predict(@Adapter("ArrayAdapter") CvArr src);
-        public /*abstract*/ native void predict(@Adapter("ArrayAdapter") CvArr src, @ByRef int[] label, @ByRef double[] dist);
+        public /*abstract*/ native void train(@ByRef MatVector src, @InputArray int[] labels);
+        public /*abstract*/ native void train(@ByRef MatVector src, @InputArray CvArr labels);
+        public /*abstract*/ native void train(@ByRef MatVector src, @InputArray IntPointer labels);
+        public /*abstract*/ native int predict(@InputArray CvArr src);
+        public /*abstract*/ native void predict(@InputArray CvArr src, @ByRef int[] label, @ByRef double[] dist);
         public native void save(String filename);
         public native void load(String filename);
-        public native void save(@Adapter("FileStorageAdapter") CvFileStorage fs);
-        public native void load(@Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void save(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void load(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
     }
     @Name("cv::Ptr<cv::FaceRecognizer>")
     public static class FaceRecognizerPtr extends Pointer {
@@ -889,8 +888,8 @@ public class opencv_contrib {
         COLORMAP_PINK = 10,
         COLORMAP_HOT = 11;
 
-    @Namespace("cv") public static native void applyColorMap(@Adapter("ArrayAdapter") CvArr src,
-            @Adapter(value="ArrayAdapter") CvArr dst, int colormap);
+    @Namespace("cv") public static native void applyColorMap(@InputArray CvArr src,
+            @InputArray CvArr dst, int colormap);
 
 
     // enum RETINA_COLORSAMPLINGMETHOD
@@ -960,12 +959,12 @@ public class opencv_contrib {
         public native @ByVal CvSize outputSize();
 
         public native void setup(String retinaParameterFile/*=""*/, @Cast("bool") boolean applyDefaultSetupOnFailure/*=true*/);
-        public native void setup(@Adapter("FileStorageAdapter") CvFileStorage fs, @Cast("bool") boolean applyDefaultSetupOnFailure/*=true*/);
+        public native void setup(@Const @Adapter("FileStorageAdapter") CvFileStorage fs, @Cast("bool") boolean applyDefaultSetupOnFailure/*=true*/);
         public native void setup(@ByVal RetinaParameters newParameters);
         public native @ByVal RetinaParameters getParameters();
         public native @ByRef String printSetup();
         public native void write(String fs);
-        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
         public native void setupOPLandIPLParvoChannel(@Cast("bool") boolean colorMode/*=true*/, @Cast("bool") boolean normaliseOutput/*=true*/,
                 double photoreceptorsLocalAdaptationSensitivity/*=0.7*/, double photoreceptorsTemporalConstant/*=0.5*/,
                 double photoreceptorsSpatialConstant/*=0.53*/, double horizontalCellsGain/*=0*/,
@@ -973,10 +972,10 @@ public class opencv_contrib {
         public native void setupIPLMagnoChannel(@Cast("bool") boolean normaliseOutput/*=true*/, double parasolCells_beta/*=0*/,
                 double parasolCells_tau/*=0*/, double parasolCells_k/*=7*/, double amacrinCellsTemporalCutFrequency/*=1.2*/,
                 double V0CompressionParameter/*=0.95*/, double localAdaptintegration_tau/*=0*/, double localAdaptintegration_k/*=7*/);
-        public native void run(@Adapter("MatAdapter") CvArr inputImage);
-        public native void getParvo(@Adapter("MatAdapter") CvArr retinaOutput_parvo);
+        public native void run(@InputMat CvArr inputImage);
+        public native void getParvo(@InputMat CvArr retinaOutput_parvo);
         //public native void getParvo(@ByRef std::valarray<float> retinaOutput_parvo);
-        public native void getMagno(@Adapter("MatAdapter") CvArr retinaOutput_magno);
+        public native void getMagno(@InputMat CvArr retinaOutput_magno);
         //public native void getMagno(@ByRef std::valarray<float> retinaOutput_magno);
         //public native @Const @ByRef std::valarray<float> getMagno();
         //public native @Const @ByRef std::valarray<float> getParvo();
@@ -989,7 +988,7 @@ public class opencv_contrib {
 //        protected native std::valarray<float> _inputBuffer();
 //        protected native RetinaFilter _retinaFilter();
 //        protected native void _convertValarrayGrayBuffer2cvMat(@ByRef std::valarray<float> grayMatrixToConvert,
-//                int nbRows, int nbColumns, @Cast("bool") boolean colorMode, @Adapter("MatAdapter") CvArr outBuffer);
+//                int nbRows, int nbColumns, @Cast("bool") boolean colorMode, @InputMat CvArr outBuffer);
 //        protected native @Cast("bool") boolean _convertCvMat2ValarrayBuffer(CvMat inputMatToConvert, @ByRef std::valarray<float> outputValarrayMatrix);
 //        protected native void _init(String parametersSaveFile, @ByVal CvSize inputSize, @Cast("bool") boolean colorMode,
 //                @Cast("cv::RETINA_COLORSAMPLINGMETHOD") int colorSamplingMethod/*=RETINA_COLOR_BAYER*/,
@@ -1006,7 +1005,7 @@ public class opencv_contrib {
         private native void allocate();
         private native void allocate(long n);
 
-        @Adapter("RectAdapter")
+        @Const @Adapter("RectAdapter")
         public native @Index CvRect first(long i); public native RectIntPairVector first(long i, CvRect rect);
         public native @Index int second(long i);   public native RectIntPairVector second(long i, int integer);
     }
@@ -1043,7 +1042,7 @@ public class opencv_contrib {
         public native boolean setParameters(@ByRef Parameters params);
         public native @Const @ByRef Parameters getParameters();
 
-        public native void getObjects(@Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true) CvRect result);
+        public native void getObjects(@StdVector("CvRect,cv::Rect") CvRect result);
         public native void getObjects(@ByRef RectIntPairVector result);
 
 //        @Opaque protected class SeparateDetectionWorkPtr extends Pointer { };
@@ -1075,7 +1074,7 @@ public class opencv_contrib {
 //            private native void allocate();
 //            private native void allocate(@ByVal CvRect rect);
 //
-//            public native @Adapter("VectorAdapter<CvRect,cv::Rect>") CvRect lastPositions();
+//            public native @StdVector("CvRect,cv::Rect") CvRect lastPositions();
 //
 //            public native int numDetectedFrames();
 //            public native int numFramesNotDetected();
@@ -1085,17 +1084,17 @@ public class opencv_contrib {
 //        }
 //
 //        protected native int numTrackedSteps();
-//        protected native @Adapter("VectorAdapter<TrackedObject>") TrackedObject trackedObjects();
+//        protected native @StdVector TrackedObject trackedObjects();
 //
-//        protected native @Adapter("VectorAdapter<float>") FloatPointer weightsPositionsSmoothing();
-//        protected native @Adapter("VectorAdapter<float>") FloatPointer weightsSizesSmoothing();
+//        protected native @StdVector FloatPointer weightsPositionsSmoothing();
+//        protected native @StdVector FloatPointer weightsSizesSmoothing();
 //
 //        protected native @ByRef CascadeClassifier cascadeForTracking();
 //
-//        protected native void updateTrackedObjects(@Adapter("VectorAdapter<CvRect,cv::Rect>") CvRect detectedObjects);
+//        protected native void updateTrackedObjects(@Const @StdVector("CvRect,cv::Rect") CvRect detectedObjects);
 //        protected native @ByVal CvRect calcTrackedObjectPositionToShow(int i);
 //        protected native void detectInRegion(IplImage img, @ByVal CvRect r,
-//                @Adapter(value="VectorAdapter<CvRect,cv::Rect>", out=true) CvRect detectedObjectsInRegions);
+//                @StdVector("CvRect,cv::Rect") CvRect detectedObjectsInRegions);
     }
 
     
@@ -1122,15 +1121,13 @@ public class opencv_contrib {
 
         public static final int H = 0, HS = 1, HSV = 2;
 
-        public native int tracking_type();       public native CvMeanShiftTrackerParams tracking_type(int tracking_type);
-        @Adapter("VectorAdapter<float>")
-        public native FloatPointer h_range();    public native CvMeanShiftTrackerParams h_range(FloatPointer h_range);
-        @Adapter("VectorAdapter<float>")
-        public native FloatPointer s_range();    public native CvMeanShiftTrackerParams s_range(FloatPointer s_range);
-        @Adapter("VectorAdapter<float>")
-        public native FloatPointer v_range();    public native CvMeanShiftTrackerParams v_range(FloatPointer v_range);
-        @ByRef
-        public native CvTermCriteria term_crit(); public native CvMeanShiftTrackerParams term_crit(CvTermCriteria term_crit);
+        public native int tracking_type(); public native CvMeanShiftTrackerParams tracking_type(int tracking_type);
+
+        public native @Const @StdVector FloatPointer h_range(); public native CvMeanShiftTrackerParams h_range(FloatPointer h_range);
+        public native @Const @StdVector FloatPointer s_range(); public native CvMeanShiftTrackerParams s_range(FloatPointer s_range);
+        public native @Const @StdVector FloatPointer v_range(); public native CvMeanShiftTrackerParams v_range(FloatPointer v_range);
+
+        public native @ByRef CvTermCriteria term_crit(); public native CvMeanShiftTrackerParams term_crit(CvTermCriteria term_crit);
     }
 
     @NoOffset @Namespace("cv") public static class CvFeatureTrackerParams extends Pointer {
@@ -1187,9 +1184,9 @@ public class opencv_contrib {
 
         public native @MemberGetter @ByRef CvMeanShiftTrackerParams params();
 
-        public native void newTrackingWindow(@Adapter("MatAdapter") IplImage image, @ByVal CvRect selection);
-        public native @ByVal CvBox2D updateTrackingWindow(@Adapter("MatAdapter") IplImage image);
-        public native @Adapter("MatAdapter") IplImage getHistogramProjection(int type);
+        public native void newTrackingWindow(@InputMat IplImage image, @ByVal CvRect selection);
+        public native @ByVal CvBox2D updateTrackingWindow(@InputMat IplImage image);
+        public native @OutputMat IplImage getHistogramProjection(int type);
         public native void setTrackingWindow(@ByVal CvRect _window);
         public native @ByVal CvRect getTrackingWindow();
         public native @ByVal CvBox2D getTrackingEllipse();
@@ -1206,13 +1203,13 @@ public class opencv_contrib {
 //        private native void allocate();
         private native void allocate(@ByVal CvFeatureTrackerParams params);
 
-        public native @MemberGetter @Adapter("MatAdapter") CvMat disp_matches();
+        public native @MemberGetter @InputMat CvMat disp_matches();
         public native @MemberGetter @ByRef CvFeatureTrackerParams params();
 
-        public native void newTrackingWindow(@Adapter("MatAdapter") IplImage image, @ByVal CvRect selection);
-        public native @ByVal CvRect updateTrackingWindow(@Adapter("MatAdapter") IplImage image);
-        public native @ByVal CvRect updateTrackingWindowWithSIFT(@Adapter("MatAdapter") IplImage image);
-        public native @ByVal CvRect updateTrackingWindowWithFlow(@Adapter("MatAdapter") IplImage image);
+        public native void newTrackingWindow(@InputMat IplImage image, @ByVal CvRect selection);
+        public native @ByVal CvRect updateTrackingWindow(@InputMat IplImage image);
+        public native @ByVal CvRect updateTrackingWindowWithSIFT(@InputMat IplImage image);
+        public native @ByVal CvRect updateTrackingWindowWithFlow(@InputMat IplImage image);
         public native void setTrackingWindow(@ByVal CvRect _window);
         public native @ByVal CvRect getTrackingWindow();
         public native @ByVal CvPoint2D32f getTrackingCenter();
@@ -1230,8 +1227,8 @@ public class opencv_contrib {
 
         public native @MemberGetter @ByRef CvHybridTrackerParams params();
 
-        public native void newTracker(@Adapter("MatAdapter") IplImage image, @ByVal CvRect selection);
-        public native void updateTracker(@Adapter("MatAdapter") IplImage image);
+        public native void newTracker(@InputMat IplImage image, @ByVal CvRect selection);
+        public native void updateTracker(@InputMat IplImage image);
         public native @ByVal CvRect getTrackingWindow();
     }
 

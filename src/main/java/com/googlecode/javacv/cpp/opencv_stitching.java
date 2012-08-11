@@ -72,6 +72,7 @@ import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
+import com.googlecode.javacpp.annotation.StdVector;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -107,11 +108,11 @@ public class opencv_stitching {
 
         public /*abstract*/ native @ByVal CvPoint2D32f warpPoint(@ByVal CvPoint2D32f pt, CvMat K, CvMat R);
         public /*abstract*/ native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
-                @Adapter("MatAdapter") IplImage xmap, @Adapter("MatAdapter") IplImage ymap);
+                @InputMat IplImage xmap, @InputMat IplImage ymap);
         public /*abstract*/ native @ByVal CvPoint warp(IplImage src, CvMat K, CvMat R,
-                int interp_mode, int border_mode, @Adapter("MatAdapter") IplImage dst);
+                int interp_mode, int border_mode, @InputMat IplImage dst);
         public /*abstract*/ native void warpBackward(IplImage src, CvMat K, CvMat R,
-                int interp_mode, int border_mode, @ByVal CvSize dst_size, @Adapter("MatAdapter") IplImage dst);
+                int interp_mode, int border_mode, @ByVal CvSize dst_size, @InputMat IplImage dst);
         public /*abstract*/ native @ByVal CvRect warpRoi(@ByVal CvSize src_size, CvMat K, CvMat R);
     }
 
@@ -147,11 +148,11 @@ public class opencv_stitching {
 //    @Namespace("cv::detail") public static class RotationWarperBase extends RotationWarper {
 //        public native @ByVal CvPoint2D32f warpPoint(@ByVal CvPoint2D32f pt, CvMat K, CvMat R);
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
-//                @Adapter("MatAdapter") IplImage xmap, @Adapter("MatAdapter") IplImage ymap);
+//                @InputMat IplImage xmap, @InputMat IplImage ymap);
 //        public native @ByVal CvPoint warp(IplImage src, CvMat K, CvMat R,
-//                int interp_mode, int border_mode, @Adapter("MatAdapter") IplImage dst);
+//                int interp_mode, int border_mode, @InputMat IplImage dst);
 //        public native void warpBackward(IplImage src, CvMat K, CvMat R,
-//                int interp_mode, int border_mode, @ByVal CvSize dst_size, @Adapter("MatAdapter") IplImage dst);
+//                int interp_mode, int border_mode, @ByVal CvSize dst_size, @InputMat IplImage dst);
 //        public native @ByVal CvRect warpRoi(@ByVal CvSize src_size, CvMat K, CvMat R);
 //
 //        protected native void detectResultRoi(@ByVal CvSize src_size, @ByRef CvPoint dst_tl, @ByRef CvPoint dst_br);
@@ -178,9 +179,9 @@ public class opencv_stitching {
 
 //        public native @ByVal CvPoint2D32f warpPoint(@ByVal CvPoint2D32f pt, CvMat K, CvMat R);
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
-//                @Adapter("MatAdapter") IplImage xmap, @Adapter("MatAdapter") IplImage ymap);
+//                @InputMat IplImage xmap, @InputMat IplImage ymap);
 //        public native @ByVal CvPoint warp(IplImage src, CvMat K, CvMat R,
-//                int interp_mode, int border_mode, @Adapter("MatAdapter") IplImage dst);
+//                int interp_mode, int border_mode, @InputMat IplImage dst);
 //        public native @ByVal CvRect warpRoi(@ByVal CvSize src_size, CvMat K, CvMat R);
 
 //        protected void detectResultRoi(@ByVal CvSize src_size, @ByRef CvPoint dst_tl, @ByRef CvPoint dst_br);
@@ -349,13 +350,13 @@ public class opencv_stitching {
         private native void allocate(float scale/*=1.0*/);
 
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
-//                @Adapter("MatAdapter") IplImage xmap, @Adapter("MatAdapter") IplImage ymap);
+//                @InputMat IplImage xmap, @InputMat IplImage ymap);
         public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R, CvMat T,
-                @Adapter("MatAdapter") IplImage xmap, @Adapter("MatAdapter") IplImage ymap);
+                @InputMat IplImage xmap, @InputMat IplImage ymap);
 //        public native @ByVal CvPoint warp(IplImage src, CvMat K, CvMat R,
-//                int interp_mode, int border_mode, @Adapter("MatAdapter") IplImage dst);
+//                int interp_mode, int border_mode, @InputMat IplImage dst);
         public native @ByVal CvPoint warp(IplImage src, CvMat K, CvMat R, CvMat T,
-                int interp_mode, int border_mode, @Adapter("MatAdapter") IplImage dst);
+                int interp_mode, int border_mode, @InputMat IplImage dst);
 
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
 //                @ByRef GpuMat xmap, @ByRef GpuMat ymap);
@@ -375,9 +376,9 @@ public class opencv_stitching {
         private native void allocate(float scale);
 
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
-//                @Adapter("MatAdapter") IplImage xmap, @Adapter("MatAdapter") IplImage ymap);
+//                @InputMat IplImage xmap, @InputMat IplImage ymap);
 //        public native @ByVal CvPoint warp(IplImage src, CvMat K, CvMat R,
-//                int interp_mode, int border_mode, @Adapter("MatAdapter") IplImage dst);
+//                int interp_mode, int border_mode, @InputMat IplImage dst);
 
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
 //                @ByRef GpuMat xmap, @ByRef GpuMat ymap);
@@ -392,9 +393,9 @@ public class opencv_stitching {
         private native void allocate(float scale);
 
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
-//                @Adapter("MatAdapter") IplImage xmap, @Adapter("MatAdapter") IplImage ymap);
+//                @InputMat IplImage xmap, @InputMat IplImage ymap);
 //        public native @ByVal CvPoint warp(IplImage src, CvMat K, CvMat R,
-//                int interp_mode, int border_mode, @Adapter("MatAdapter") IplImage dst);
+//                int interp_mode, int border_mode, @InputMat IplImage dst);
 
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
 //                @ByRef GpuMat xmap, @ByRef GpuMat ymap);
@@ -627,9 +628,9 @@ public class opencv_stitching {
         public native int img_idx();        public native ImageFeatures img_idx(int img_idx);
         @ByVal
         public native CvSize img_size();    public native ImageFeatures img_size(CvSize img_size);
-        @Adapter("VectorAdapter<cv::KeyPoint>")
+        @Const @StdVector
         public native KeyPoint keypoints(); public native ImageFeatures keypoints(KeyPoint keypoints);
-        @Adapter("MatAdapter")
+        @InputMat
         public native CvMat descriptors();  public native ImageFeatures descriptors(CvMat descriptors);
     }
 
@@ -639,8 +640,7 @@ public class opencv_stitching {
         public FeaturesFinder(Pointer p) { super(p); }
 
         public native @Name("operator()") void find(IplImage image, @ByRef ImageFeatures features);
-        public native @Name("operator()") void find(IplImage image, @ByRef ImageFeatures features,
-                @Adapter("VectorAdapter<CvRect,cv::Rect>") CvRect rois);
+        public native @Name("operator()") void find(IplImage image, @ByRef ImageFeatures features, @Const @StdVector("CvRect,cv::Rect") CvRect rois);
         public native void collectGarbage();
 
 //        protected /*abstract*/ void find(IplImage image, @ByRef ImageFeatures features);
@@ -706,16 +706,16 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(@ByRef MatchesInfo other);
 
-        public native @Name("operator=") @Const @ByRef MatchesInfo copy(@ByRef MatchesInfo other);
+        public native @Name("operator=") @Const @ByRef MatchesInfo put(@ByRef MatchesInfo other);
 
         public native int src_img_idx();          public native MatchesInfo src_img_idx(int src_img_idx);
         public native int dst_img_idx();          public native MatchesInfo dst_img_idx(int dst_img_idx);
-        @Adapter("VectorAdapter<cv::DMatch>")
+        @Const @StdVector
         public native DMatch matches();           public native MatchesInfo matches(DMatch matches);
-        @Adapter("VectorAdapter<uchar>") @Cast("uchar*")
+        @Const @StdVector @Cast("uchar*")
         public native BytePointer inliers_mask(); public native MatchesInfo inliers_mask(BytePointer inliers_mask);
         public native int num_inliers();          public native MatchesInfo num_inliers(int num_inliers);
-        @Adapter("MatAdapter")
+        @InputMat
         public native CvMat H();                  public native MatchesInfo H(CvMat H);
         public native double confidence();        public native MatchesInfo confidence(double confidence);
     }
@@ -727,8 +727,8 @@ public class opencv_stitching {
 
         public native @Name("operator()") void match(@ByRef ImageFeatures features1,
                 @ByRef ImageFeatures features2, @ByRef MatchesInfo matches_info);
-        public native @Name("operator()") void match(@Adapter("VectorAdapter<cv::detail::ImageFeatures>") ImageFeatures features,
-                @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches, CvMat mask/*=null*/);
+        public native @Name("operator()") void match(@Const @StdVector ImageFeatures features,
+                @Const @StdVector MatchesInfo pairwise_matches, CvMat mask/*=null*/);
 
         public native @Cast("bool") boolean isThreadSafe();
 
@@ -785,32 +785,27 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(@ByRef CameraParams other);
 
-        public native @Name("operator=") @Const @ByRef CameraParams copy(@ByRef CameraParams other);
+        public native @Name("operator=") @Const @ByRef CameraParams put(@ByRef CameraParams other);
 
-        public native @Adapter("MatAdapter") CvMat K();
+        public native @OutputMat CvMat K();
 
-        public native double focal();  public native CameraParams focal(double focal);
-        public native double aspect(); public native CameraParams aspect(double aspect);
-        public native double ppx();    public native CameraParams ppx(double ppx);
-        public native double ppy();    public native CameraParams ppy(double ppy);
-        @Adapter("MatAdapter")
-        public native CvMat R();       public native CameraParams R(CvMat R);
-        @Adapter("MatAdapter")
-        public native CvMat t();       public native CameraParams t(CvMat t);
+        public native double focal();      public native CameraParams focal(double focal);
+        public native double aspect();     public native CameraParams aspect(double aspect);
+        public native double ppx();        public native CameraParams ppx(double ppx);
+        public native double ppy();        public native CameraParams ppy(double ppy);
+        public native @InputMat CvMat R(); public native CameraParams R(CvMat R);
+        public native @InputMat CvMat t(); public native CameraParams t(CvMat t);
     }
 
 
     // #include "detail/autocalib.hpp"
-    @Namespace("cv::detail") public static native void focalsFromHomography(@Adapter("MatAdapter") CvArr H,
+    @Namespace("cv::detail") public static native void focalsFromHomography(@InputMat CvArr H,
             @ByRef double[] f0, @ByRef double[] f1, @ByRef @Cast("bool*") boolean[] f0_ok, @ByRef @Cast("bool*") boolean[] f1_ok);
 
-    @Namespace("cv::detail") public static native void estimateFocal(
-            @Adapter("VectorAdapter<cv::detail::ImageFeatures>") ImageFeatures features,
-            @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches,
-            @Adapter("VectorAdapter<double>") double[] focals);
+    @Namespace("cv::detail") public static native void estimateFocal(@Const @StdVector ImageFeatures features,
+            @Const @StdVector MatchesInfo pairwise_matches, @Const @StdVector double[] focals);
 
-    @Namespace("cv::detail") public static native @Cast("bool") boolean calibrateRotatingCamera(
-            @ByRef MatVector Hs, @Adapter("MatAdapter") CvArr K);
+    @Namespace("cv::detail") public static native @Cast("bool") boolean calibrateRotatingCamera(@ByRef MatVector Hs, @InputMat CvArr K);
 
 
     // #include "detail/util.hpp"
@@ -826,10 +821,8 @@ public class opencv_stitching {
         public native int findSetByElem(int elem);
         public native int mergeSets(int set1, int set2);
 
-        @Adapter("VectorAdapter<int>")
-        public native IntPointer parent(); public native DisjointSets parent(IntPointer parent);
-        @Adapter("VectorAdapter<int>")
-        public native IntPointer size();   public native DisjointSets size(IntPointer size);
+        public native @Const @StdVector IntPointer parent(); public native DisjointSets parent(IntPointer parent);
+        public native @Const @StdVector IntPointer size();   public native DisjointSets size(IntPointer size);
     }
 
     @NoOffset @Namespace("cv::detail") public static class GraphEdge extends Pointer {
@@ -862,15 +855,15 @@ public class opencv_stitching {
     }
 
     @Namespace("cv::detail") public static native @Cast("bool") boolean overlapRoi(@ByVal CvPoint tl1,
-            @ByVal CvPoint tl2, @ByVal CvSize sz1, @ByVal CvSize sz2, @Adapter("RectAdapter") CvRect roi);
+            @ByVal CvPoint tl2, @ByVal CvSize sz1, @ByVal CvSize sz2, @Const @Adapter("RectAdapter") CvRect roi);
     @Namespace("cv::detail") public static native @ByVal CvRect resultRoi(
-            @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector images);
+            @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector images);
     @Namespace("cv::detail") public static native @ByVal CvRect resultRoi(
-            @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @Adapter("VectorAdapter<CvSize,cv::Size>") CvSize sizes);
+            @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @Const @StdVector("CvSize,cv::Size") CvSize sizes);
     @Namespace("cv::detail") public static native @ByVal CvPoint resultTl(
-            @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners);
+            @Const @StdVector("CvPoint,cv::Point") CvPoint corners);
 
-    @Namespace("cv::detail") public static native void selectRandomSubset(int count, int size, @Adapter("VectorAdapter<int>") int[] subset);
+    @Namespace("cv::detail") public static native void selectRandomSubset(int count, int size, @Const @StdVector int[] subset);
 
     @Namespace("cv::detail") public static native @ByRef IntPointer stitchingLogLevel();
 
@@ -881,15 +874,11 @@ public class opencv_stitching {
         public Estimator() { }
         public Estimator(Pointer p) { super(p); }
 
-        public native @Name("operator()") void estimate(
-                @Adapter("VectorAdapter<cv::detail::ImageFeatures>") ImageFeatures features,
-                @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches,
-                @Adapter("VectorAdapter<cv::detail::CameraParams>") CameraParams cameras);
+        public native @Name("operator()") void estimate(@Const @StdVector ImageFeatures features,
+                @Const @StdVector MatchesInfo pairwise_matches, @Const @StdVector CameraParams cameras);
 
-//        protected /*abstract*/ native void estimate(
-//                @Adapter("VectorAdapter<cv::detail::ImageFeatures>") ImageFeatures features,
-//                @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches,
-//                @Adapter("VectorAdapter<cv::detail::CameraParams>") CameraParams cameras);
+//        protected /*abstract*/ native void estimate(@Const @StdVector ImageFeatures features,
+//                @Const @StdVector MatchesInfo pairwise_matches, @Const @StdVector CameraParams cameras);
     }
 
     @Namespace("cv::detail") public static class HomographyBasedEstimator extends Estimator {
@@ -908,7 +897,7 @@ public class opencv_stitching {
         public BundleAdjusterBase() { }
         public BundleAdjusterBase(Pointer p) { super(p); }
 
-        public native @Adapter("MatAdapter") CvMat refinementMask();
+        public native @OutputMat CvMat refinementMask();
         public native void setRefinementMask(CvMat mask);
 
         public native double confThresh();
@@ -919,17 +908,15 @@ public class opencv_stitching {
 
 //        protected native BundleAdjusterBase(int num_params_per_cam, int num_errs_per_measurement);
 //
-//        protected native void estimate(
-//                @Adapter("VectorAdapter<cv::detail::ImageFeatures>") ImageFeatures features,
-//                @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches,
-//                @Adapter("VectorAdapter<cv::detail::CameraParams>") CameraParams cameras);
+//        protected native void estimate(@Const @StdVector ImageFeatures features,
+//                @Const @StdVector MatchesInfo pairwise_matches, @Const @StdVector CameraParams cameras);
 //
-//        protected /*abstract*/ native void setUpInitialCameraParams(@Adapter("VectorAdapter<CameraParams>") CameraParams cameras);
-//        protected /*abstract*/ native void obtainRefinedCameraParams(@Adapter("VectorAdapter<CameraParams>") CameraParams cameras);
-//        protected /*abstract*/ native void calcError(@Adapter("MatAdapter") CvMat err);
-//        protected /*abstract*/ native void calcJacobian(@Adapter("MatAdapter") CvMat jac);
+//        protected /*abstract*/ native void setUpInitialCameraParams(@Const @StdVector CameraParams cameras);
+//        protected /*abstract*/ native void obtainRefinedCameraParams(@Const @StdVector CameraParams cameras);
+//        protected /*abstract*/ native void calcError(@InputMat CvMat err);
+//        protected /*abstract*/ native void calcJacobian(@InputMat CvMat jac);
 //
-//        protected native @Adapter("MatAdapter") CvMat refinement_mask_();
+//        protected native @OutputMat CvMat refinement_mask_();
 //
 //        protected native int num_images_();
 //        protected native int total_num_matches_();
@@ -942,7 +929,7 @@ public class opencv_stitching {
 //
 //        protected native double conf_thresh_();
 //        protected native CvTermCriteria term_criteria_();
-//        protected native @Adapter("MatAdapter") CvMat cam_params_();
+//        protected native @OutputMat CvMat cam_params_();
 //        protected native std::vector<std::pair<int,int> > edges_();
     }
 
@@ -978,13 +965,11 @@ public class opencv_stitching {
 
     @Namespace("cv::detail") public static native void waveCorrect(@ByRef MatVector rmats, @Cast("cv::detail::WaveCorrectKind") int kind);
     @Namespace("cv::detail") public static native @ByRef String matchesGraphAsString(@ByRef StringVector pathes,
-            @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches,  float conf_threshold);
-    @Namespace("cv::detail") public static native @Adapter("VectorAdapter<int>") IntPointer leaveBiggestComponent(
-            @Adapter("VectorAdapter<cv::detail::ImageFeatures>") ImageFeatures features,
-            @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches, float conf_threshold);
+            @Const @StdVector MatchesInfo pairwise_matches,  float conf_threshold);
+    @Namespace("cv::detail") public static native @StdVector IntPointer leaveBiggestComponent(
+            @Const @StdVector ImageFeatures features, @Const @StdVector MatchesInfo pairwise_matches, float conf_threshold);
     @Namespace("cv::detail") public static native void findMaxSpanningTree(int num_images,
-            @Adapter("VectorAdapter<cv::detail::MatchesInfo>") MatchesInfo pairwise_matches,
-            @ByRef Graph span_tree, @Adapter("VectorAdapter<int>") int[] centers);
+            @Const @StdVector MatchesInfo pairwise_matches, @ByRef Graph span_tree, @Const @StdVector int[] centers);
 
 
     // #include "detail/exposure_compensate.hpp"
@@ -997,7 +982,7 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(long n);
 
-        @Adapter("MatAdapter")
+        @InputMat
         public native @Index CvMat first(long i); public native MatBytePairVector first(long i, CvMat mat);
         public native @Index byte second(long i); public native MatBytePairVector second(long i, byte uchar);
     }
@@ -1010,12 +995,12 @@ public class opencv_stitching {
         public static final int NO = 0, GAIN = 1, GAIN_BLOCKS = 2;
         public static native @ByVal ExposureCompensatorPtr createDefault(int type);
 
-        public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
+        public native void feed(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
                 @ByRef MatVector images, @ByRef MatVector masks);
-        public /*abstract*/ native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
+        public /*abstract*/ native void feed(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
                 @ByRef MatVector images, @ByRef MatBytePairVector masks);
         public /*abstract*/ native void apply(int index, @ByVal CvPoint corner,
-                @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
+                @InputMat CvArr image, @InputMat CvArr mask);
     }
 
     @Name("cv::Ptr<cv::detail::ExposureCompensator>")
@@ -1035,10 +1020,10 @@ public class opencv_stitching {
         public NoExposureCompensator(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
+//        public native void feed(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
 //                @ByRef MatVector images, @ByRef MatBytePairVector masks);
 //        public native void apply(int index, @ByVal CvPoint corner,
-//                @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
+//                @InputMat CvArr image, @InputMat CvArr mask);
 
     }
 
@@ -1048,12 +1033,12 @@ public class opencv_stitching {
         public GainCompensator(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
+//        public native void feed(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
 //                @ByRef MatVector images, @ByRef MatBytePairVector masks);
 //        public native void apply(int index, @ByVal CvPoint corner,
-//                @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
+//                @InputMat CvArr image, @InputMat CvArr mask);
 
-        public native @Adapter("VectorAdapter<double>") DoublePointer gains();
+        public native @StdVector DoublePointer gains();
     }
 
     @Namespace("cv::detail") public static class BlocksGainCompensator extends ExposureCompensator {
@@ -1064,10 +1049,10 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(int bl_width/*=32*/, int bl_height/*=32*/);
 
-//        public native void feed(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
+//        public native void feed(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
 //                @ByRef MatVector images, @ByRef MatBytePairVector masks);
 //        public native void apply(int index, @ByVal CvPoint corner,
-//                @Adapter("MatAdapter") CvArr image, @Adapter("MatAdapter") CvArr mask);
+//                @InputMat CvArr image, @InputMat CvArr mask);
     }
 
 
@@ -1078,7 +1063,7 @@ public class opencv_stitching {
         public SeamFinder(Pointer p) { super(p); }
 
         public /*abstract*/ native void find(@ByRef MatVector src,
-                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector masks);
+                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
     }
 
     @Name("cv::Ptr<cv::detail::SeamFinder>")
@@ -1099,7 +1084,7 @@ public class opencv_stitching {
         private native void allocate();
 
 //        public native void find(@ByRef MatVector src,
-//                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector masks);
+//                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
     }
 
     @Namespace("cv::detail") public static class PairwiseSeamFinder extends SeamFinder {
@@ -1108,7 +1093,7 @@ public class opencv_stitching {
         public PairwiseSeamFinder(Pointer p) { super(p); }
 
 //        public native void find(@ByRef MatVector src,
-//                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector masks);
+//                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
 
 //        protected native void run();
 //        protected /*abstract*/ native void findInPair(@Cast("size_t") long first, @Cast("size_t") long second, @ByVal CvRect roi);
@@ -1126,7 +1111,7 @@ public class opencv_stitching {
         private native void allocate();
 
 //        public native void find(@ByRef MatVector src,
-//                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector masks);
+//                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
     }
 
     public interface GraphCutSeamFinderBase {
@@ -1146,7 +1131,7 @@ public class opencv_stitching {
                 float terminal_cost/*=10000*/, float bad_region_penalty/*=1000*/);
 
 //        public native void find(@ByRef MatVector src,
-//                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector masks);
+//                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
     }
 
     @Platform(not="android") @Namespace("cv::detail") public static class GraphCutSeamFinderGpu extends PairwiseSeamFinder implements GraphCutSeamFinderBase {
@@ -1162,7 +1147,7 @@ public class opencv_stitching {
                 float terminal_cost/*=10000*/, float bad_region_penalty/*=1000*/);
 
 //        public native void find(@ByRef MatVector src,
-//                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector masks);
+//                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
         public native void findInPair(@Cast("size_t") long first, @Cast("size_t") long second, @ByVal CvRect roi);
     }
 
@@ -1177,14 +1162,14 @@ public class opencv_stitching {
         public static final int NO = 0, FEATHER = 1, MULTI_BAND = 2;
         public static native @ByVal BlenderPtr createDefault(int type, @Cast("bool") boolean try_gpu/*=false*/);
 
-        public native void prepare(@Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners,
-                @Adapter("VectorAdapter<CvSize,cv::Size>") CvSize sizes);
+        public native void prepare(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
+                @Const @StdVector("CvSize,cv::Size") CvSize sizes);
         public native void prepare(@ByVal CvRect dst_roi);
-        public native void feed(@Adapter("MatAdapter") CvArr img, @Adapter("MatAdapter") CvArr mask, @ByVal CvPoint tl);
-        public native void blend(@Adapter("MatAdapter") CvArr dst, @Adapter("MatAdapter") CvArr dst_mask);
+        public native void feed(@InputMat CvArr img, @InputMat CvArr mask, @ByVal CvPoint tl);
+        public native void blend(@InputMat CvArr dst, @InputMat CvArr dst_mask);
 
-//        protected native @Adapter("MatAdapter") CvMat dst_();
-//        protected native @Adapter("MatAdapter") CvMat dst_mask_();
+//        protected native @OutputMat CvMat dst_();
+//        protected native @OutputMat CvMat dst_mask_();
 //        protected native @ByVal CvRect dst_roi_();
     }
 
@@ -1211,11 +1196,11 @@ public class opencv_stitching {
         public native void setSharpness(float val);
 
 //        public native void prepare(@ByVal CvRect dst_roi);
-//        public native void feed(@Adapter("MatAdapter") CvArr img, @Adapter("MatAdapter") CvArr mask, @ByVal CvPoint tl);
-//        public native void blend(@Adapter("MatAdapter") CvArr dst, @Adapter("MatAdapter") CvArr dst_mask);
+//        public native void feed(@InputMat CvArr img, @InputMat CvArr mask, @ByVal CvPoint tl);
+//        public native void blend(@InputMat CvArr dst, @InputMat CvArr dst_mask);
 
         public native @ByVal CvRect createWeightMaps(@ByRef MatVector masks,
-                @Adapter("VectorAdapter<CvPoint,cv::Point>") CvPoint corners, @ByRef MatVector weight_maps);
+                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector weight_maps);
     }
 
     @Namespace("cv::detail") public static class MultiBandBlender extends Blender {
@@ -1232,15 +1217,15 @@ public class opencv_stitching {
         public native void setNumBands(int val);
 
 //        public native void prepare(@ByVal CvRect dst_roi);
-//        public native void feed(@Adapter("MatAdapter") CvArr img, @Adapter("MatAdapter") CvArr mask, @ByVal CvPoint tl);
-//        public native void blend(@Adapter("MatAdapter") CvArr dst, @Adapter("MatAdapter") CvArr dst_mask);
+//        public native void feed(@InputMat CvArr img, @InputMat CvArr mask, @ByVal CvPoint tl);
+//        public native void blend(@InputMat CvArr dst, @InputMat CvArr dst_mask);
     }
 
-    @Namespace("cv::detail") public static native void normalizeUsingWeightMap(@Adapter("MatAdapter") CvArr weight, @Adapter("MatAdapter") CvArr src);
-    @Namespace("cv::detail") public static native void createWeightMap(@Adapter("MatAdapter") CvArr mask, float sharpness, @Adapter("MatAdapter") CvArr weight);
+    @Namespace("cv::detail") public static native void normalizeUsingWeightMap(@InputMat CvArr weight, @InputMat CvArr src);
+    @Namespace("cv::detail") public static native void createWeightMap(@InputMat CvArr mask, float sharpness, @InputMat CvArr weight);
 
-    @Namespace("cv::detail") public static native void createLaplacePyr(@Adapter("MatAdapter") CvArr img, int num_levels, @ByRef MatVector pyr);
-    @Namespace("cv::detail") public static native void createLaplacePyrGpu(@Adapter("MatAdapter") CvArr img, int num_levels, @ByRef MatVector pyr);
+    @Namespace("cv::detail") public static native void createLaplacePyr(@InputMat CvArr img, int num_levels, @ByRef MatVector pyr);
+    @Namespace("cv::detail") public static native void createLaplacePyrGpu(@InputMat CvArr img, int num_levels, @ByRef MatVector pyr);
 
     @Namespace("cv::detail") public static native void restoreImageFromLaplacePyr(@ByRef MatVector pyr);
     @Namespace("cv::detail") public static native void restoreImageFromLaplacePyrGpu(@ByRef MatVector pyr);
@@ -1260,15 +1245,11 @@ public class opencv_stitching {
         public native /* Status */ int estimateTransform(@ByRef MatVector images);
         public native /* Status */ int estimateTransform(@ByRef MatVector images, @ByRef RectVectorVector rois);
 
-        public native /* Status */ int composePanorama(
-                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
-        public native /* Status */ int composePanorama(@ByRef MatVector images,
-                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
+        public native /* Status */ int composePanorama(@OutputArray IplImage pano);
+        public native /* Status */ int composePanorama(@ByRef MatVector images, @OutputArray IplImage pano);
 
-        public native /* Status */ int stitch(@ByRef MatVector images,
-                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
-        public native /* Status */ int stitch(@ByRef MatVector images, @ByRef RectVectorVector rois,
-                @Adapter(value="ArrayAdapter", out=true) IplImage pano);
+        public native /* Status */ int stitch(@ByRef MatVector images, @OutputArray IplImage pano);
+        public native /* Status */ int stitch(@ByRef MatVector images, @ByRef RectVectorVector rois, @OutputArray IplImage pano);
 
         public native double registrationResol();
         public native void setRegistrationResol(double resol_mpx);
@@ -1294,7 +1275,7 @@ public class opencv_stitching {
         public native @ByVal FeaturesMatcherPtr featuresMatcher();
         public native void setFeaturesMatcher(@ByVal FeaturesMatcherPtr features_matcher);
 
-        public native @Adapter("MatAdapter") IplImage matchingMask();
+        public native @OutputMat IplImage matchingMask();
         public native void setMatchingMask(IplImage mask);
 
         public native @ByVal BundleAdjusterBasePtr bundleAdjuster();

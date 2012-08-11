@@ -13,6 +13,7 @@
     <tstamp>
         <format property="TIMESTAMP" pattern="yyyyMMddhhmm" timezone=""/>
     </tstamp>
+    <property name="jar.classpath" value="./" />
     <manifest file="manifest.mf">
         <section name="com/googlecode/javacv/">
             <attribute name="Implementation-Title" value="JavaCV"/>

@@ -76,6 +76,7 @@ import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
+import com.googlecode.javacpp.annotation.StdVector;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -610,40 +611,33 @@ public class opencv_ml {
 
         public native void clear();
 
-        public native @Cast("bool") boolean train(@Adapter("ArrayAdapter") CvArr samples,
-                       @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods/*=null*/,
-                       @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/,
-                       @Adapter(value="ArrayAdapter", out=true) CvMat probs/*=null*/);
+        public native @Cast("bool") boolean train(@InputArray CvArr samples,
+                @OutputArray CvMat logLikelihoods/*=null*/, @OutputArray CvMat labels/*=null*/,
+                @OutputArray CvMat probs/*=null*/);
 
-        public native @Cast("bool") boolean trainE(@Adapter("ArrayAdapter") CvArr samples,
-                        @Adapter("ArrayAdapter") CvArr means0,
-                        @Adapter("ArrayAdapter") CvArr covs0/*=null*/,
-                        @Adapter("ArrayAdapter") CvArr weights0/*=null*/,
-                        @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods/*=null*/,
-                        @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/,
-                        @Adapter(value="ArrayAdapter", out=true) CvMat probs/*=null*/);
+        public native @Cast("bool") boolean trainE(@InputArray CvArr samples,
+                @InputArray CvArr means0, @InputArray CvArr covs0/*=null*/,
+                @InputArray CvArr weights0/*=null*/, @OutputArray CvMat logLikelihoods/*=null*/,
+                @OutputArray CvMat labels/*=null*/, @OutputArray CvMat probs/*=null*/);
 
-        public native @Cast("bool") boolean trainM(@Adapter("ArrayAdapter") CvArr samples,
-                        @Adapter("ArrayAdapter") CvArr probs0,
-                        @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods/*=null*/,
-                        @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/,
-                        @Adapter(value="ArrayAdapter", out=true) CvMat probs/*=null*/);
+        public native @Cast("bool") boolean trainM(@InputArray CvArr samples,
+                @InputArray CvArr probs0, @OutputArray CvMat logLikelihoods/*=null*/,
+                @OutputArray CvMat labels/*=null*/, @OutputArray CvMat probs/*=null*/);
 
-        public native @ByVal CvScalar predict(@Adapter("ArrayAdapter") CvArr sample, @Adapter(value="ArrayAdapter", out=true) CvMat probs);
+        public native @ByVal CvScalar predict(@InputArray CvArr sample, @OutputArray CvMat probs);
 
         public native @Cast("bool") boolean isTrained();
 
 //        public native AlgorithmInfo info();
-//        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+//        public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 
-//        protected native void setTrainData(int startStep, CvMat samples,
-//                @Adapter("MatAdapter") CvMat probs0, @Adapter("MatAdapter") CvMat means0,
-//                @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covs0, @Adapter("MatAdapter") CvMat weights0);
+//        protected native void setTrainData(int startStep, CvMat samples, @InputMat CvMat probs0, @InputMat CvMat means0,
+//                @Const @StdVector("CvMat*,cv::Mat") CvMatArray covs0, @InputMat CvMat weights0);
 //
 //        protected native @Cast("bool") boolean doTrain(int startStep,
-//                @Adapter(value="ArrayAdapter", out=true) CvMat logLikelihoods,
-//                @Adapter(value="ArrayAdapter", out=true) CvMat labels,
-//                @Adapter(value="ArrayAdapter", out=true) CvMat probs);
+//                @OutputArray CvMat logLikelihoods,
+//                @OutputArray CvMat labels,
+//                @OutputArray CvMat probs);
 //        protected native void eStep();
 //        protected native void mStep();
 //
@@ -651,26 +645,26 @@ public class opencv_ml {
 //        protected native void decomposeCovs();
 //        protected native void computeLogWeightDivDet();
 //
-//        protected native @ByVal CvScalar computeProbabilities(CvMat sample, @Adapter("MatAdapter") CvMat probs);
+//        protected native @ByVal CvScalar computeProbabilities(CvMat sample, @InputMat CvMat probs);
 //
 //        protected native int nclusters();
 //        protected native int covMatType();
 //        protected native int maxIters();
 //        protected native double epsilon();
 //
-//        protected native @Adapter("MatAdapter") CvMat trainSamples();
-//        protected native @Adapter("MatAdapter") CvMat trainProbs();
-//        protected native @Adapter("MatAdapter") CvMat trainLogLikelihoods();
-//        protected native @Adapter("MatAdapter") CvMat trainLabels();
+//        protected native @OutputMat CvMat trainSamples();
+//        protected native @OutputMat CvMat trainProbs();
+//        protected native @OutputMat CvMat trainLogLikelihoods();
+//        protected native @OutputMat CvMat trainLabels();
 //
-//        protected native @Adapter("MatAdapter") CvMat weights();
-//        protected native @Adapter("MatAdapter") CvMat means();
-//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covs();
+//        protected native @OutputMat CvMat weights();
+//        protected native @OutputMat CvMat means();
+//        protected native @StdVector("CvMat*,cv::Mat") CvMatArray covs();
 //
-//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covsEigenValues();
-//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray covsRotateMats();
-//        protected native @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray invCovsEigenValues();
-//        protected native @Adapter("MatAdapter") CvMat logWeightDivDet();
+//        protected native @StdVector("CvMat*,cv::Mat") CvMatArray covsEigenValues();
+//        protected native @StdVector("CvMat*,cv::Mat") CvMatArray covsRotateMats();
+//        protected native @StdVector("CvMat*,cv::Mat") CvMatArray invCovsEigenValues();
+//        protected native @OutputMat CvMat logWeightDivDet();
     }
 
 
@@ -890,7 +884,7 @@ public class opencv_ml {
         public native CvSet cv_heap();         public native CvDTreeTrainData cv_heap(CvSet cv_heap);
         public native CvSet nv_heap();         public native CvDTreeTrainData nv_heap(CvSet nv_heap);
 
-        public native @Adapter("RNGAdapter") CvRNG rng(); public native CvDTreeTrainData rng(CvRNG rng);
+        public native @Const @Adapter("RNGAdapter") CvRNG rng(); public native CvDTreeTrainData rng(CvRNG rng);
     }
 
     @NoOffset public static class CvDTree extends CvStatModel {
@@ -903,8 +897,7 @@ public class opencv_ml {
                 CvMat sampleIdx/*=null*/, CvMat varType/*=null*/, CvMat missingDataMask/*=null*/,
                 @ByVal CvDTreeParams params/*=CvDTreeParams()*/);
         public native boolean train(CvMLData trainData, @ByVal CvDTreeParams params/*=CvDTreeParams()*/);
-        public native float calc_error(CvMLData trainData, int type,
-                @Adapter(value="VectorAdapter<float>", out=true) FloatPointer resp/*=null*/);
+        public native float calc_error(CvMLData trainData, int type, @StdVector FloatPointer resp/*=null*/);
         public native boolean train(CvDTreeTrainData trainData, CvMat subsampleIdx);
         public native CvDTreeNode predict(CvMat sample, CvMat missingDataMask/*=0*/, boolean preprocessedInput/*=false*/);
         public native @Const CvMat get_var_importance();
@@ -1031,8 +1024,7 @@ public class opencv_ml {
         public native @Const CvMat get_var_importance();
         public native float get_proximity(CvMat sample1, CvMat sample2, CvMat missing1/*=null*/, CvMat missing2/*=null*/);
 
-        public native float calc_error(CvMLData data, int type, 
-                @Adapter(value="VectorAdapter<float>", out=true) FloatPointer resp/*=null*/);
+        public native float calc_error(CvMLData data, int type, @StdVector FloatPointer resp/*=null*/);
 
         public native float get_train_error();
 
@@ -1205,8 +1197,7 @@ public class opencv_ml {
         public native float predict(CvMat sample, CvMat missing/*=null*/, CvMat weak_responses/*=null*/,
                 @ByVal CvSlice slice/*=CV_WHOLE_SEQ*/, boolean raw_mode/*=false*/, boolean return_sum/*=false*/);
 
-        public native float calc_error(CvMLData _data, int type, 
-                @Adapter(value="VectorAdapter<float>", out=true) FloatPointer resp/*=null*/);
+        public native float calc_error(CvMLData _data, int type, @StdVector FloatPointer resp/*=null*/);
         public native void prune(@ByVal CvSlice slice);
 //        public native void clear();
 //
@@ -1296,8 +1287,7 @@ public class opencv_ml {
                 @ByVal CvSlice slice/*=CV_WHOLE_SEQ*/, int k/*=-1*/);
 
 //        public native void clear();
-        public native float calc_error(CvMLData _data, int type,
-                @Adapter(value="VectorAdapter<float>", out=true) FloatPointer resp/*=null*/);
+        public native float calc_error(CvMLData _data, int type, @StdVector FloatPointer resp/*=null*/);
 
 //        public native void write(CvFileStorage fs, String name);
 //        public native void read(CvFileStorage fs, CvFileNode node);

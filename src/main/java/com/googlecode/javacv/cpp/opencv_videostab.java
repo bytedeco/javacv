@@ -58,7 +58,6 @@ package com.googlecode.javacv.cpp;
 
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.Pointer;
-import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByRef;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
@@ -68,6 +67,7 @@ import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
+import com.googlecode.javacpp.annotation.StdVector;
 
 import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -101,9 +101,9 @@ public class opencv_videostab {
         public ISparseOptFlowEstimator() { }
         public ISparseOptFlowEstimator(Pointer p) { super(p); }
 
-        public /*abstract*/ native void run(@Adapter("ArrayAdapter") CvArr frame0, @Adapter("ArrayAdapter") CvArr frame1,
-                @Adapter("ArrayAdapter") CvArr points0, @Adapter("ArrayAdapter") CvArr points1,
-                @Adapter("ArrayAdapter") CvArr status,  @Adapter("ArrayAdapter") CvArr errors);
+        public /*abstract*/ native void run(@InputArray CvArr frame0, @InputArray CvArr frame1,
+                @InputArray CvArr points0, @InputArray CvArr points1,
+                @InputArray CvArr status,  @InputArray CvArr errors);
     }
 
     @Name("cv::Ptr<cv::videostab::ISparseOptFlowEstimator>")
@@ -122,8 +122,8 @@ public class opencv_videostab {
         public IDenseOptFlowEstimator() { }
         public IDenseOptFlowEstimator(Pointer p) { super(p); }
 
-        public /*abstract*/ native void run(@Adapter("ArrayAdapter") CvArr frame0, @Adapter("ArrayAdapter") CvArr frame1,
-                @Adapter("ArrayAdapter") CvArr flowX, @Adapter("ArrayAdapter") CvArr flowY, @Adapter("ArrayAdapter") CvArr errors);
+        public /*abstract*/ native void run(@InputArray CvArr frame0, @InputArray CvArr frame1,
+                @InputArray CvArr flowX, @InputArray CvArr flowY, @InputArray CvArr errors);
     }
 
     @Name("cv::Ptr<cv::videostab::IDenseOptFlowEstimator>")
@@ -165,9 +165,9 @@ public class opencv_videostab {
         public SparsePyrLkOptFlowEstimator(Pointer p) { super(p); }
         private native void allocate();
 
-        public native void run(@Adapter("ArrayAdapter") CvArr frame0, @Adapter("ArrayAdapter") CvArr frame1,
-                @Adapter("ArrayAdapter") CvArr points0, @Adapter("ArrayAdapter") CvArr points1,
-                @Adapter("ArrayAdapter") CvArr status,  @Adapter("ArrayAdapter") CvArr errors);
+        public native void run(@InputArray CvArr frame0, @InputArray CvArr frame1,
+                @InputArray CvArr points0, @InputArray CvArr points1,
+                @InputArray CvArr status,  @InputArray CvArr errors);
 
         public PyrLkOptFlowEstimatorBase getPyrLkOptFlowEstimatorBase() { return castPyrLkOptFlowEstimatorBase(this); }
         public ISparseOptFlowEstimator getISparseOptFlowEstimator() { return castISparseOptFlowEstimator(this); }
@@ -185,8 +185,8 @@ public class opencv_videostab {
         public DensePyrLkOptFlowEstimatorGpu(Pointer p) { super(p); }
         private native void allocate();
 
-        public native void run(@Adapter("ArrayAdapter") CvArr frame0, @Adapter("ArrayAdapter") CvArr frame1,
-                @Adapter("ArrayAdapter") CvArr flowX, @Adapter("ArrayAdapter") CvArr flowY, @Adapter("ArrayAdapter") CvArr errors);
+        public native void run(@InputArray CvArr frame0, @InputArray CvArr frame1,
+                @InputArray CvArr flowX, @InputArray CvArr flowY, @InputArray CvArr errors);
 
         public PyrLkOptFlowEstimatorBase getPyrLkOptFlowEstimatorBase() { return castPyrLkOptFlowEstimatorBase(this); }
         public IDenseOptFlowEstimator getIDenseOptFlowEstimator() { return castIDenseOptFlowEstimator(this); }
@@ -201,9 +201,9 @@ public class opencv_videostab {
             LINEAR_SIMILARITY = 2,
             AFFINE = 3;
 
-    @Namespace("cv::videostab") public static native @Adapter("MatAdapter") CvMat estimateGlobalMotionLeastSquares(
-            @Adapter("VectorAdapter<CvPoint2D32f,cv::Point2f>") CvPoint2D32f points0,
-            @Adapter("VectorAdapter<CvPoint2D32f,cv::Point2f>") CvPoint2D32f points1,
+    @Namespace("cv::videostab") public static native @OutputMat CvMat estimateGlobalMotionLeastSquares(
+            @Const @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f points0,
+            @Const @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f points1,
             int model/*=AFFINE*/, float[] rmse/*=null*/);
 
     @NoOffset @Namespace("cv::videostab") public static class RansacParams extends Pointer {
@@ -225,9 +225,9 @@ public class opencv_videostab {
         static RansacParams affine2dMotionStd() { return new RansacParams(6, 0.5f, 0.5f, 0.99f); }
     }
 
-    @Namespace("cv::videostab") public static native @Adapter("MatAdapter") CvMat estimateGlobalMotionRobust(
-            @Adapter("VectorAdapter<CvPoint2D32f,cv::Point2f>") CvPoint2D32f points0,
-            @Adapter("VectorAdapter<CvPoint2D32f,cv::Point2f>") CvPoint2D32f points1,
+    @Namespace("cv::videostab") public static native @OutputMat CvMat estimateGlobalMotionRobust(
+            @Const @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f points0,
+            @Const @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f points1,
             int model/*=AFFINE*/, @ByRef RansacParams params/*=RansacParams.affine2dMotionStd()*/,
             float[] rmse/*=null*/, int[] ninliers/*=null*/);
 
@@ -236,7 +236,7 @@ public class opencv_videostab {
         public IGlobalMotionEstimator() { }
         public IGlobalMotionEstimator(Pointer p) { super(p); }
 
-        public /*absstract*/ native @Adapter("MatAdapter") CvMat estimate(IplImage frame0, IplImage frame1);
+        public /*absstract*/ native @OutputMat CvMat estimate(IplImage frame0, IplImage frame1);
     }
 
     @Name("cv::Ptr<cv::videostab::IGlobalMotionEstimator>")
@@ -274,11 +274,11 @@ public class opencv_videostab {
         public native void setMinInlierRatio(float val);
         public native float minInlierRatio();
 
-//        public native @Adapter("MatAdapter") CvMat estimate(IplImage frame0, IplImage frame1);
+//        public native @OutputMat CvMat estimate(IplImage frame0, IplImage frame1);
     }
 
-    @Namespace("cv::videostab") public static native @Adapter("MatAdapter") CvMat getMotion(int from, int to, @Adapter("MatAdapter") CvMat motions, int size);
-    @Namespace("cv::videostab") public static native @Adapter("MatAdapter") CvMat getMotion(int from, int to, @Adapter("VectorAdapter<CvMat*,cv::Mat>") CvMatArray motions);
+//    @Namespace("cv::videostab") public static native @OutputMat CvMat getMotion(int from, int to, CvMatArray motions, int size);
+    @Namespace("cv::videostab") public static native @OutputMat CvMat getMotion(int from, int to, @ByRef MatVector motions);
 
 
     // #include "opencv2/videostab/motion_stabilizing.hpp"
@@ -287,7 +287,7 @@ public class opencv_videostab {
         public IMotionStabilizer() { }
         public IMotionStabilizer(Pointer p) { super(p); }
 
-        public /*abstract*/ native void stabilize(@Adapter("MatAdapter") CvMat motions, int size, @Adapter("MatAdapter") CvMat stabilizationMotions);
+        public /*abstract*/ native void stabilize(@InputMat CvMat motions, int size, @InputMat CvMat stabilizationMotions);
     }
 
     @Name("cv::Ptr<cv::videostab::IMotionStabilizer>")
@@ -311,8 +311,8 @@ public class opencv_videostab {
 
         public native void update();
 
-        public /*abstract*/ native @Adapter("MatAdapter") CvMat stabilize(int index, @Adapter("MatAdapter") CvMat motions, int size);
-//        public native void stabilize(@Adapter("MatAdapter") CvMat motions, int size, @Adapter("MatAdapter") CvMat stabilizationMotions);
+        public /*abstract*/ native @OutputMat CvMat stabilize(int index, @InputMat CvMat motions, int size);
+//        public native void stabilize(@InputMat CvMat motions, int size, @InputMat CvMat stabilizationMotions);
 
 //        protected native int radius_();
     }
@@ -339,10 +339,10 @@ public class opencv_videostab {
 
 //        public native void update();
 
-//        public native @Adapter("MatAdapter") CvMat stabilize(int index, @Adapter("MatAdapter") CvMat motions, int size);
+//        public native @OutputMat CvMat stabilize(int index, @InputMat CvMat motions, int size);
     }
 
-    @Namespace("cv::videostab") public static native @Adapter("MatAdapter") CvMat ensureInclusionConstraint(CvMat M, @ByVal CvSize size, float trimRatio);
+    @Namespace("cv::videostab") public static native @OutputMat CvMat ensureInclusionConstraint(CvMat M, @ByVal CvSize size, float trimRatio);
     @Namespace("cv::videostab") public static native float estimateOptimalTrimRatio(CvMat M, @ByVal CvSize size);
 
 
@@ -353,7 +353,7 @@ public class opencv_videostab {
         public IFrameSource(Pointer p) { super(p); }
 
         public /*abstract*/ native void reset();
-        public /*abstract*/ native @Adapter("MatAdapter") IplImage nextFrame();
+        public /*abstract*/ native @OutputMat IplImage nextFrame();
     }
 
     @Name("cv::Ptr<cv::videostab::IFrameSource>")
@@ -374,7 +374,7 @@ public class opencv_videostab {
         private native void allocate();
 
 //        public /*abstract*/ native void reset();
-//        public /*abstract*/ native @Adapter("MatAdapter") IplImage nextFrame();
+//        public /*abstract*/ native @OutputMat IplImage nextFrame();
     }
 
     @Namespace("cv::videostab") public static class VideoFileSource extends IFrameSource {
@@ -388,7 +388,7 @@ public class opencv_videostab {
         private native void allocate(String path, @Cast("bool") boolean volatileFrame/*=false*/);
 
 //        public /*abstract*/ native void reset();
-//        public /*abstract*/ native @Adapter("MatAdapter") IplImage nextFrame();
+//        public /*abstract*/ native @OutputMat IplImage nextFrame();
 
         public native int frameCount();
         public native double fps();
@@ -444,7 +444,7 @@ public class opencv_videostab {
 //
 //        public native Inpaint run(IplImage mask, Inpaint inpaint);
 //
-//        public native @Adapter("MatAdapter") IplImage distanceMap();
+//        public native @OutputMat IplImage distanceMap();
 //    }
 
 
@@ -471,7 +471,7 @@ public class opencv_videostab {
 
         public native void update();
 
-        public /*abstract*/ native void inpaint(int idx, @Adapter("MatAdapter") IplImage frame, @Adapter("MatAdapter") IplImage mask);
+        public /*abstract*/ native void inpaint(int idx, @InputMat IplImage frame, @InputMat IplImage mask);
 
 //        protected native int radius_();
 //        protected native MatVector frames_();
@@ -497,7 +497,7 @@ public class opencv_videostab {
         public NullInpainter(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native void inpaint(int idx, @Adapter("MatAdapter") IplImage frame, @Adapter("MatAdapter") IplImage mask);
+//        public native void inpaint(int idx, @InputMat IplImage frame, @InputMat IplImage mask);
     }
 
     @Namespace("cv::videostab") public static class InpaintingPipeline extends InpainterBase {
@@ -574,11 +574,11 @@ public class opencv_videostab {
     }
 
     @Namespace("cv::videostab") public static native void calcFlowMask(IplImage flowX, IplImage flowY,
-            IplImage errors, float maxError, IplImage mask0, IplImage mask1, @Adapter("MatAdapter") IplImage flowMask);
+            IplImage errors, float maxError, IplImage mask0, IplImage mask1, @InputMat IplImage flowMask);
 
     @Namespace("cv::videostab") public static native void completeFrameAccordingToFlow(IplImage flowMask,
             IplImage flowX, IplImage flowY, IplImage frame1,  IplImage mask1, float distThresh,
-            @Adapter("MatAdapter") IplImage frame0, @Adapter("MatAdapter") IplImage mask0);
+            @InputMat IplImage frame0, @InputMat IplImage mask0);
 
     // #include "opencv2/videostab/deblurring.hpp"
     @Namespace("cv::videostab") public static native float calcBlurriness(IplImage frame);
@@ -597,12 +597,12 @@ public class opencv_videostab {
         public native void setMotions(@Const @ByRef MatVector val);
         public native @Const @ByRef MatVector motions();
 
-        public native void setBlurrinessRates(@Adapter("VectorAdapter<float>") FloatPointer val);
-        public native @Adapter("VectorAdapter<float>") FloatPointer blurrinessRates();
+        public native void setBlurrinessRates(@Const @StdVector FloatPointer val);
+        public native @StdVector FloatPointer blurrinessRates();
 
         public native void update();
 
-        public /*abstract*/ native void deblur(int idx, @Adapter("MatAdapter") IplImage frame);
+        public /*abstract*/ native void deblur(int idx, @InputMat IplImage frame);
 
 //        protected native int radius_();
 //        protected native MatVector frames_();
@@ -627,7 +627,7 @@ public class opencv_videostab {
         public NullDeblurer(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native void deblur(int idx, @Adapter("MatAdapter") IplImage frame);
+//        public native void deblur(int idx, @InputMat IplImage frame);
     }
 
     @Namespace("cv::videostab") public static class WeightingDeblurer extends DeblurerBase {
@@ -639,7 +639,7 @@ public class opencv_videostab {
         public native void setSensitivity(float val);
         public native float sensitivity();
 
-//        public native void deblur(int idx, @Adapter("MatAdapter") IplImage frame);
+//        public native void deblur(int idx, @InputMat IplImage frame);
     }
 
 
@@ -677,11 +677,11 @@ public class opencv_videostab {
         public native @ByVal InpainterBasePtr inpainter();
 
 //        protected native void setUp(int cacheSize, IplImage frame);
-//        protected native @Adapter("MatAdapter") IplImage nextStabilizedFrame();
+//        protected native @OutputMat IplImage nextStabilizedFrame();
 //        protected native @Cast("bool") boolean doOneIteration();
 //        protected native void stabilizeFrame(CvMat stabilizationMotion);
 //
-//        protected /*abstract*/ native void setUp(@Adapter("MatAdapter") IplImage firstFrame);
+//        protected /*abstract*/ native void setUp(@InputMat IplImage firstFrame);
 //        protected /*abstract*/ native void stabilizeFrame();
 //        protected /*abstract*/ native void estimateMotion();
 //
@@ -696,13 +696,13 @@ public class opencv_videostab {
 //        protected native int borderMode_();
 //
 //        protected native @ByVal CvSize frameSize_();
-//        protected native @Adapter("MatAdapter") IplImage frameMask_();
+//        protected native @OutputMat IplImage frameMask_();
 //        protected native int curPos_();
 //        protected native int curStabilizedPos_();
 //        protected native @Cast("bool") boolean doDeblurring_();
-//        protected native @Adapter("MatAdapter") IplImage preProcessedFrame_();
+//        protected native @OutputMat IplImage preProcessedFrame_();
 //        protected native @Cast("bool") boolean doInpainting_();
-//        protected native @Adapter("MatAdapter") IplImage inpaintingMask_();
+//        protected native @OutputMat IplImage inpaintingMask_();
 //        protected native @ByRef MatVector frames_();
 //        protected native @ByRef MatVector motions_();
 //        protected native @ByRef FloatVector blurrinessRates_();
@@ -724,7 +724,7 @@ public class opencv_videostab {
         public native @ByVal MotionFilterBasePtr motionFilter();
 
         public native void reset();
-        public native @Adapter("MatAdapter") IplImage nextFrame();
+        public native @OutputMat IplImage nextFrame();
 
         public StabilizerBase getStabilizerBase() { return castStabilizerBase(this); }
         public IFrameSource getIFrameSource() { return castIFrameSource(this); }
@@ -746,7 +746,7 @@ public class opencv_videostab {
         public native @Cast("bool") boolean mustEstimateTrimaRatio();
 
         public native void reset();
-        public native @Adapter("MatAdapter") IplImage nextFrame();
+        public native @OutputMat IplImage nextFrame();
 
         public native @ByVal MatVector motions();
 

@@ -58,7 +58,6 @@ package com.googlecode.javacv.cpp;
 
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.Pointer;
-import com.googlecode.javacpp.annotation.Adapter;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
 import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
@@ -217,18 +216,18 @@ public class opencv_video {
             OPTFLOW_LK_GET_MIN_EIGENVALS = CV_LKFLOW_GET_MIN_EIGENVALS,
             OPTFLOW_FARNEBACK_GAUSSIAN  = 256;
 
-    @Namespace("cv") public static native int buildOpticalFlowPyramid(@Adapter("ArrayAdapter") CvArr img,
-            @Adapter(value="ArrayAdapter", out=true) IplImageArray pyramid, @ByVal CvSize winSize,
-            int maxLevel, @Cast("bool") boolean withDerivatives/*=true*/, int pyrBorder/*=BORDER_REFLECT_101*/,
+    @Namespace("cv") public static native int buildOpticalFlowPyramid(@InputArray CvArr img,
+            @OutputArray IplImageArray pyramid, @ByVal CvSize winSize, int maxLevel,
+            @Cast("bool") boolean withDerivatives/*=true*/, int pyrBorder/*=BORDER_REFLECT_101*/,
             int derivBorder/*=BORDER_CONSTANT*/, @Cast("bool") boolean tryReuseInputImage/*=true*/);
-    @Namespace("cv") public static native void calcOpticalFlowPyrLK(@Adapter("ArrayAdapter") IplImageArray prevImg,
-            @Adapter("ArrayAdapter") IplImageArray nextImg, @Adapter("ArrayAdapter") CvArr prevPts,
-            @Adapter("ArrayAdapter") CvArr nextPts, @Adapter("ArrayAdapter") CvArr status,
-            @Adapter("ArrayAdapter") CvArr err, @ByVal CvSize winSize/*=Size(21,21)*/, int maxLevel/*=3*/,
+    @Namespace("cv") public static native void calcOpticalFlowPyrLK(@InputArray IplImageArray prevImg,
+            @InputArray IplImageArray nextImg, @InputArray CvArr prevPts,
+            @InputArray CvArr nextPts, @InputArray CvArr status,
+            @InputArray CvArr err, @ByVal CvSize winSize/*=Size(21,21)*/, int maxLevel/*=3*/,
             @ByVal CvTermCriteria criteria/*=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01)*/,
             int flags/*=0*/, double minEigThreshold/*=1e-4*/);
-    @Namespace("cv") public static native void calcOpticalFlowFarneback(@Adapter("ArrayAdapter") IplImageArray prev,
-            @Adapter("ArrayAdapter") IplImageArray next, @Adapter("ArrayAdapter") CvArr flow, double pyr_scale,
+    @Namespace("cv") public static native void calcOpticalFlowFarneback(@InputArray IplImageArray prev,
+            @InputArray IplImageArray next, @InputArray CvArr flow, double pyr_scale,
             int levels, int winsize, int iterations, int poly_n, double poly_sigma, int flags);
 
 
@@ -237,10 +236,10 @@ public class opencv_video {
         public BackgroundSubtractor() { }
         public BackgroundSubtractor(Pointer p) { super(p); }
 
-        public native @Name("operator()") void apply(@Adapter("ArrayAdapter") CvArr image,
-                @Adapter("ArrayAdapter") CvArr fgmask, double learningRate/*=0*/);
+        public native @Name("operator()") void apply(@InputArray CvArr image,
+                @InputArray CvArr fgmask, double learningRate/*=0*/);
 
-        public native void getBackgroundImage(@Adapter("ArrayAdapter") CvArr backgroundImage);
+        public native void getBackgroundImage(@InputArray CvArr backgroundImage);
     }
 
     @NoOffset @Namespace("cv") public static class BackgroundSubtractorMOG extends BackgroundSubtractor {
@@ -253,8 +252,8 @@ public class opencv_video {
         private native void allocate();
         private native void allocate(int history, int nmixtures, double backgroundRatio, double noiseSigma/*=0*/);
 
-//        public native @Name("operator()") void apply(@Adapter("ArrayAdapter") CvArr image,
-//                @Adapter("ArrayAdapter") CvArr fgmask, double learningRate/*=0*/);
+//        public native @Name("operator()") void apply(@InputArray CvArr image,
+//                @InputArray CvArr fgmask, double learningRate/*=0*/);
 
         public native void initialize(@ByVal CvSize frameSize, int frameType);
 
@@ -262,7 +261,7 @@ public class opencv_video {
 
 //        protected native @ByVal CvSize frameSize(); protected native BackgroundSubtractorMOG frameSize(CvSize frameSize);
 //        protected native int frameType();           protected native BackgroundSubtractorMOG frameType(int frameType);
-//        @Adapter("MatAdapter")
+//        @InputMat
 //        protected native IplImage bgmodel();        protected native BackgroundSubtractorMOG bgmodel(IplImage bgmodel);
 //        protected native int nframes();             protected native BackgroundSubtractorMOG nframes(int nframes);
 //        protected native int history();             protected native BackgroundSubtractorMOG history(int history);
@@ -282,10 +281,10 @@ public class opencv_video {
         private native void allocate();
         private native void allocate(int history, float varThreshold, boolean bShadowDetection/*=true*/);
 
-//        public native @Name("operator()") void apply(@Adapter("ArrayAdapter") CvArr image,
-//                @Adapter("ArrayAdapter") CvArr fgmask, double learningRate/*=-1*/);
+//        public native @Name("operator()") void apply(@InputArray CvArr image,
+//                @InputArray CvArr fgmask, double learningRate/*=-1*/);
 //
-//        public native void getBackgroundImage(@Adapter("ArrayAdapter") CvArr backgroundImage);
+//        public native void getBackgroundImage(@InputArray CvArr backgroundImage);
 
         public native void initialize(@ByVal CvSize frameSize, int frameType);
 
@@ -293,9 +292,9 @@ public class opencv_video {
 
 //        protected native @ByVal CvSize frameSize();   protected native BackgroundSubtractorMOG2 frameSize(CvSize frameSize);
 //        protected native int frameType();             protected native BackgroundSubtractorMOG2 frameType(int frameType);
-//        @Adapter("MatAdapter")
+//        @InputMat
 //        protected native IplImage bgmodel();          protected native BackgroundSubtractorMOG2 bgmodel(IplImage bgmodel);
-//        @Adapter("MatAdapter")
+//        @InputMat
 //        protected native IplImage bgmodelUsedModes(); protected native BackgroundSubtractorMOG2 bgmodelUsedModes(IplImage bgmodelUsedModes);
 //        protected native int nframes();               protected native BackgroundSubtractorMOG2 nframes(int nframes);
 //        protected native int history();               protected native BackgroundSubtractorMOG2 history(int history);

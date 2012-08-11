@@ -84,6 +84,7 @@ import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 import com.googlecode.javacpp.annotation.ValueGetter;
 import com.googlecode.javacpp.annotation.ValueSetter;
+import com.googlecode.javacpp.annotation.StdVector;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -103,6 +104,10 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.WritableRaster;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -4609,6 +4614,18 @@ public class opencv_core {
             String file_name, int line, Pointer userdata);
 
 
+    @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Const @Adapter("ArrayAdapter") public @interface InputArray { }
+
+    @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Adapter("ArrayAdapter") public @interface OutputArray { }
+
+    @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Const @Adapter("MatAdapter") public @interface InputMat { }
+
+    @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Adapter("MatAdapter") public @interface OutputMat { }
+
     @Name("std::vector<std::string>")
     public static class StringVector extends Pointer {
         static { load(); }
@@ -4637,10 +4654,10 @@ public class opencv_core {
         public native long size();
         public native void resize(@Cast("size_t") long n);
 
-        @Index @ValueGetter public native @Adapter("MatAdapter") CvMat getCvMat(@Cast("size_t") long i);
-        @Index @ValueGetter public native @Adapter("MatAdapter") CvMatND getCvMatND(@Cast("size_t") long i);
-        @Index @ValueGetter public native @Adapter("MatAdapter") IplImage getIplImage(@Cast("size_t") long i);
-        @Index @ValueSetter public native MatVector put(@Cast("size_t") long i, @Adapter("MatAdapter") CvArr value);
+        @Index @ValueGetter public native @OutputMat CvMat getCvMat(@Cast("size_t") long i);
+        @Index @ValueGetter public native @OutputMat CvMatND getCvMatND(@Cast("size_t") long i);
+        @Index @ValueGetter public native @OutputMat IplImage getIplImage(@Cast("size_t") long i);
+        @Index @ValueSetter public native MatVector put(@Cast("size_t") long i, @InputMat CvArr value);
     }
 
     @Name("std::vector<std::vector<char> >")
@@ -4755,10 +4772,10 @@ public class opencv_core {
 
     @Namespace("cv") public static native @ByRef String getBuildInformation();
 
-    @Namespace("cv") public static native void batchDistance(@Adapter("ArrayAdapter") CvArr src1,
-        @Adapter("ArrayAdapter") CvArr src2, @Adapter(value="ArrayAdapter", out=true) CvMat dist,
-        int dtype, @Adapter(value="ArrayAdapter", out=true) CvMat nidx, int normType/*=NORM_L2*/, int K/*=0*/,
-        @Adapter("ArrayAdapter") CvArr mask/*=null*/, int update/*=0*/, @Cast("bool") boolean crosscheck/*=false*/);
+    @Namespace("cv") public static native void batchDistance(@InputArray CvArr src1,
+            @InputArray CvArr src2, @OutputArray CvMat dist,
+            int dtype, @OutputArray CvMat nidx, int normType/*=NORM_L2*/, int K/*=0*/,
+            @InputArray CvArr mask/*=null*/, int update/*=0*/, @Cast("bool") boolean crosscheck/*=false*/);
 
     @NoOffset @Namespace("cv") public static class KDTree extends Pointer {
         static { load(); }
@@ -4792,45 +4809,36 @@ public class opencv_core {
             allocate(_points, _labels, copyAndReorderPoints);
         }
         private native void allocate();
-        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
-        private native void allocate(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
+        private native void allocate(@InputArray CvMat _points, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
+        private native void allocate(@InputArray CvMat _points, @InputArray CvMat _labels, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
 
-        public native void build(@Adapter("ArrayAdapter") CvMat _points, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
-        public native void build(@Adapter("ArrayAdapter") CvMat _points, @Adapter("ArrayAdapter") CvMat _labels, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
+        public native void build(@InputArray CvMat _points, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
+        public native void build(@InputArray CvMat _points, @InputArray CvMat _labels, @Cast("bool") boolean copyAndReorderPoints/*=false*/);
 
-        public native int findNearest(@Adapter("ArrayAdapter") CvMat vec, int K, int Emax,
-                @Adapter(value="ArrayAdapter", out=true) CvMat neighborsIdx,
-                @Adapter(value="ArrayAdapter", out=true) CvMat neighbors/*=null*/,
-                @Adapter(value="ArrayAdapter", out=true) CvMat dist/*=null*/,
-                @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/);
-        public native int findNearest(@Adapter("ArrayAdapter") FloatPointer vec, int K, int Emax,
-                @Adapter(value="ArrayAdapter", out=true) IntPointer neighborsIdx,
-                @Adapter(value="ArrayAdapter", out=true) CvMat neighbors/*=null*/,
-                @Adapter(value="ArrayAdapter", out=true) FloatPointer dist/*=null*/,
-                @Adapter(value="ArrayAdapter", out=true) IntPointer labels/*=null*/);
-        public native void findOrthoRange(@Adapter("ArrayAdapter") CvMat minBounds, @Adapter("ArrayAdapter") CvMat maxBounds,
-                @Adapter(value="ArrayAdapter", out=true) CvMat neighborsIdx,
-                @Adapter(value="ArrayAdapter", out=true) CvMat neighbors/*=null*/,
-                @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/);
-        public native void findOrthoRange(@Adapter("ArrayAdapter") FloatPointer minBounds, @Adapter("ArrayAdapter") FloatPointer maxBounds,
-                @Adapter(value="ArrayAdapter", out=true) IntPointer neighborsIdx,
-                @Adapter(value="ArrayAdapter", out=true) CvMat neighbors/*=null*/,
-                @Adapter(value="ArrayAdapter", out=true) IntPointer labels/*=null*/);
-        public native void getPoints(@Adapter("ArrayAdapter") CvMat idx, @Adapter(value="ArrayAdapter", out=true) CvMat pts,
-                @Adapter(value="ArrayAdapter", out=true) CvMat labels/*=null*/);
-        public native void getPoints(@Adapter("ArrayAdapter") FloatPointer idx, @Adapter(value="ArrayAdapter", out=true) CvMat pts,
-                @Adapter(value="ArrayAdapter", out=true) IntPointer labels/*=null*/);
+        public native int findNearest(@InputArray CvMat vec, int K, int Emax,
+                @OutputArray CvMat neighborsIdx, @OutputArray CvMat neighbors/*=null*/,
+                @OutputArray CvMat dist/*=null*/, @OutputArray CvMat labels/*=null*/);
+        public native int findNearest(@InputArray FloatPointer vec, int K, int Emax,
+                @OutputArray IntPointer neighborsIdx, @OutputArray CvMat neighbors/*=null*/,
+                @OutputArray FloatPointer dist/*=null*/, @OutputArray IntPointer labels/*=null*/);
+        public native void findOrthoRange(@InputArray CvMat minBounds, @InputArray CvMat maxBounds,
+                @OutputArray CvMat neighborsIdx, @OutputArray CvMat neighbors/*=null*/,
+                @OutputArray CvMat labels/*=null*/);
+        public native void findOrthoRange(@InputArray FloatPointer minBounds, @InputArray FloatPointer maxBounds,
+                @OutputArray IntPointer neighborsIdx, @OutputArray CvMat neighbors/*=null*/,
+                @OutputArray IntPointer labels/*=null*/);
+        public native void getPoints(@InputArray CvMat idx, @OutputArray CvMat pts,
+                @OutputArray CvMat labels/*=null*/);
+        public native void getPoints(@InputArray FloatPointer idx, @OutputArray CvMat pts,
+                @OutputArray IntPointer labels/*=null*/);
         public native @Const FloatPointer getPoint(int ptidx, int[] label/*=null*/);
         public native int dims();
 
-        @Adapter("VectorAdapter<cv::KDTree::Node>")
-        public native Node nodes();   public native KDTree nodes(Node nodes);
-        @Adapter("MatAdapter")
-        public native CvMat points(); public native KDTree points(CvMat points);
-        @Adapter("VectorAdapter<int>")
-        public native IntPointer labels(); public native KDTree labels(IntPointer labels);
-        public native int maxDepth(); public native KDTree maxDepth(int maxDepth);
-        public native int normType(); public native KDTree normType(int normType);
+        public native @Const @StdVector Node nodes();        public native KDTree nodes(Node nodes);
+        public native @InputMat CvMat points();              public native KDTree points(CvMat points);
+        public native @Const @StdVector IntPointer labels(); public native KDTree labels(IntPointer labels);
+        public native int maxDepth();                        public native KDTree maxDepth(int maxDepth);
+        public native int normType();                        public native KDTree normType(int normType);
     }
 
 
@@ -4857,7 +4865,7 @@ public class opencv_core {
         public native double getDouble(String name);
         public native @Cast("bool") boolean getBool(String name);
         public native @ByRef String getString(String name);
-        public native @Adapter("MatAdapter") CvMat getMat(String name);
+        public native @OutputMat CvMat getMat(String name);
         public native @ByVal MatVector getMatVector(String name);
         public native @ByVal AlgorithmPtr getAlgorithm(String name);
 
@@ -4873,8 +4881,8 @@ public class opencv_core {
         public native int paramType(String name);
         public native void getParams(@ByRef StringVector names);
 
-        public native void write(@Adapter("FileStorageAdapter") CvFileStorage fs);
-        public native void read(@Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 
         public static native void getList(@ByRef StringVector algorithms);
         public static native @ByVal AlgorithmPtr _create(String name);
@@ -4914,8 +4922,8 @@ public class opencv_core {
         public native int paramType(String name);
         public native void getParams(@ByRef StringVector names);
 
-        public native void write(Algorithm algo, @Adapter("FileStorageAdapter") CvFileStorage fs);
-        public native void read(Algorithm algo, @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+        public native void write(Algorithm algo, @Const @Adapter("FileStorageAdapter") CvFileStorage fs);
+        public native void read(Algorithm algo, @Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
         public native @ByRef String name();
 
 //        protected native AlgorithmInfoData data();

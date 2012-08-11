@@ -96,7 +96,7 @@ public class cvkernels {
             return setDstDstDot(dstDstDot);
         }
 
-        private native @Name("operator=") @ByRef KernelData copy(@ByRef KernelData x);
+        private native @Name("operator=") @ByRef KernelData put(@ByRef KernelData x);
     }
 
     private static class ParallelData {
@@ -134,7 +134,7 @@ public class cvkernels {
             }
             for (int j = 0; j < size; j++) {
                 KernelData d = pd[i].data.position(j);
-                d.copy(data.position(j));
+                d.put(data.position(j));
                 d.dstDstDot(d.dstDstDot()); // reset dstDstDot pointer
             }
         }

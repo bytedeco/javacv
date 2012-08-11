@@ -32,7 +32,7 @@ static inline void SetLibraryPath(const char *path) {
 
 class MatAdapter {
 public:
-    MatAdapter(CvArr* pointer, int size) : pointer(pointer), size(size),
+    MatAdapter(const CvArr* pointer, int size) : pointer((CvArr*)pointer), size(size),
             mat2(cv::cvarrToMat(pointer)), mat(mat2) { }
     MatAdapter(const cv::Mat& mat) : pointer(0), size(0), mat((cv::Mat&)mat) { }
     static void deallocate(CvArr* pointer) { 
@@ -58,8 +58,8 @@ public:
 
 class ArrayAdapter {
 public:
-    template<class T> ArrayAdapter(T* pointer, int size) : pointer(pointer), size(size),
-            mat(pointer ? std::vector<T>(pointer, pointer + size) : std::vector<T>(), true), arr2(mat), arr(arr2) { }
+    template<class T> ArrayAdapter(const T* pointer, int size) : pointer((T*)pointer), size(size),
+            mat(pointer ? std::vector<T>((T*)pointer, (T*)pointer + size) : std::vector<T>(), true), arr2(mat), arr(arr2) { }
     ArrayAdapter(const cv::_OutputArray& arr) : pointer(0), size(0), arr((cv::_OutputArray&)arr) { }
     static void deallocate(CvArr* pointer) {
         if (CV_IS_MAT(pointer)) {
@@ -95,19 +95,19 @@ public:
     cv::_OutputArray& arr;
 };
 
-template<> ArrayAdapter::ArrayAdapter(CvArr* pointer, int size) : pointer(pointer),
+template<> ArrayAdapter::ArrayAdapter(const CvArr* pointer, int size) : pointer((CvArr*)pointer),
         size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
-template<> ArrayAdapter::ArrayAdapter(CvMat* pointer, int size) : pointer(pointer),
+template<> ArrayAdapter::ArrayAdapter(const CvMat* pointer, int size) : pointer((CvMat*)pointer),
         size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
-template<> ArrayAdapter::ArrayAdapter(CvMatND* pointer, int size) : pointer(pointer),
+template<> ArrayAdapter::ArrayAdapter(const CvMatND* pointer, int size) : pointer((CvMatND*)pointer),
         size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
-template<> ArrayAdapter::ArrayAdapter(IplImage* pointer, int size) : pointer(pointer),
+template<> ArrayAdapter::ArrayAdapter(const IplImage* pointer, int size) : pointer((IplImage*)pointer),
         size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
 
 class RNGAdapter {
 public:
-    RNGAdapter(CvRNG* pointer, int size) :
-        pointer(pointer), size(size), rng2(*pointer), rng(rng2) { }
+    RNGAdapter(const CvRNG* pointer, int size) :
+        pointer((CvRNG*)pointer), size(size), rng2(*pointer), rng(rng2) { }
     RNGAdapter(const cv::RNG &rng) :
         pointer(new CvRNG(rng.state)), size(0), rng((cv::RNG&)rng) { }
     RNGAdapter(const cv::RNG *rng) :
@@ -125,8 +125,8 @@ public:
 
 class FileStorageAdapter {
 public:
-    FileStorageAdapter(CvFileStorage* pointer, int size) :
-        size(size), fs2(pointer), fs(fs2) { fs.fs.addref(); }
+    FileStorageAdapter(const CvFileStorage* pointer, int size) :
+        size(size), fs2((CvFileStorage*)pointer), fs(fs2) { fs.fs.addref(); }
     FileStorageAdapter(const cv::FileStorage &fs) :
         size(0), fs((cv::FileStorage&)fs) { }
     static void deallocate(CvFileStorage* pointer) { }
@@ -141,7 +141,7 @@ public:
 
 class FileNodeAdapter {
 public:
-    FileNodeAdapter(CvFileStorage* pointer, int size, CvFileNode* pointer2, int size2) :
+    FileNodeAdapter(const CvFileStorage* pointer, int size, CvFileNode* pointer2, int size2) :
         size(size), size2(size2), fn2(pointer, pointer2), fn(fn2) { }
     FileNodeAdapter(const cv::FileNode& fn) :
         size(0), size2(0), fn((cv::FileNode&)fn) { }
@@ -158,7 +158,7 @@ public:
 
 class RectAdapter {
 public:
-    RectAdapter(CvRect* pointer, int size) : pointer(pointer), size(size),
+    RectAdapter(const CvRect* pointer, int size) : pointer((CvRect*)pointer), size(size),
             rect2(pointer ? cv::Rect(*pointer) : cv::Rect()), rect(rect2) { }
     RectAdapter(const cv::Rect& rect) :
         pointer(new CvRect), size(0), rect((cv::Rect&)rect) { }
@@ -175,7 +175,7 @@ public:
 
 class Point2dAdapter {
 public:
-    Point2dAdapter(CvPoint2D64f* pointer, int size) : pointer(pointer), size(size),
+    Point2dAdapter(const CvPoint2D64f* pointer, int size) : pointer((CvPoint2D64f*)pointer), size(size),
             point2d2(pointer ? cv::Point2d(pointer->x, pointer->y) : cv::Point2d()), point2d(point2d2) { }
     Point2dAdapter(const cv::Point2d& point2d) :
         pointer(new CvPoint2D64f), size(0), point2d((cv::Point2d&)point2d) { }

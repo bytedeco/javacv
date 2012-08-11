@@ -217,9 +217,10 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
- * Enhanced `FFmpegFrameRecorder` to support conversion between audio sample formats (for the experimental AAC encoder among other things) and to let two different threads call `record(samples)` and `record(image)` simultaneously, plus a couple of other untested features
+ * Switched the majority of `@Adapter` annotations to more concise ones as allowed by new capabilities of JavaCPP
+ * Fixed `FFmpegFrameGrabber.getLengthInFrames()` (issue #231)
+ * Enhanced `FFmpegFrameRecorder` to support conversion between audio sample formats (for the experimental AAC encoder among other things) and to let two different threads call `record(samples)` and `record(image)` simultaneously, plus a couple of other features like `setFrameNumber()`, which lets users skip image frames
  * Added a `javacpp.skip` property to the `pom.xml`, such that a command like `mvn package -Pall -Djavacpp.skip=true` only recompiles the Java source files
- * 
 
 ===July 21, 2012 version 0.2===
  * Provided new `javacv-linux-arm.jar` build thanks to Jeremy Nicola (issue #184)

@@ -147,7 +147,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             oc = null;
         }
 
-        if (img_convert_ctx != null && !img_convert_ctx.isNull()) {
+        if (img_convert_ctx != null) {
             sws_freeContext(img_convert_ctx);
             img_convert_ctx = null;
         }
@@ -272,7 +272,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     @Override public int getLengthInFrames() {
         // best guess...
-        return (int)(1000000 * getFrameRate() / getLengthInTime());
+        return (int)(getLengthInTime() * getFrameRate() / 1000000);
     }
     @Override public long getLengthInTime() {
         return oc.duration() * 1000000 / AV_TIME_BASE;
