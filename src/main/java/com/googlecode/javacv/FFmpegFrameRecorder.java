@@ -53,6 +53,7 @@ import com.googlecode.javacpp.DoublePointer;
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Loader;
+import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.ShortPointer;
 import java.io.File;
@@ -67,6 +68,7 @@ import static com.googlecode.javacv.cpp.avcodec.*;
 import static com.googlecode.javacv.cpp.avformat.*;
 import static com.googlecode.javacv.cpp.avutil.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.swresample.*;
 import static com.googlecode.javacv.cpp.swscale.*;
 
 /**
@@ -165,9 +167,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_free(frame);
             frame = null;
         }
-        if (samplesPointer != null) {
-            av_free(samplesPointer);
-            samplesPointer = null;
+        if (samples_out != null) {
+            av_free(samples_out);
+            samples_out = null;
         }
         if (audio_outbuf != null) {
             av_free(audio_outbuf);
@@ -188,6 +190,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_free(oc);
             oc = null;
         }
+
+        if (img_convert_ctx != null) {
+            sws_freeContext(img_convert_ctx);
+            img_convert_ctx = null;
+        }
+
+        if (samples_convert_ctx != null) {
+            swr_free(samples_convert_ctx);
+            samples_convert_ctx = null;
+        }
     }
     @Override protected void finalize() throws Throwable {
         super.finalize();
@@ -200,13 +212,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private BytePointer video_outbuf;
     private int video_outbuf_size;
     private AVFrame frame;
-    private BytePointer samplesPointer;
-    private byte[] byteArray;
-    private short[] shortArray;
-    private int[] intArray;
-    private float[] floatArray;
-    private double[] doubleArray;
-    private int arrayPosition;
+    private Pointer samples_in;
+    private BytePointer samples_out;
     private BytePointer audio_outbuf;
     private int audio_outbuf_size;
     private int audio_input_frame_size;
@@ -216,6 +223,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVCodecContext video_c, audio_c;
     private AVStream video_st, audio_st;
     private SwsContext img_convert_ctx;
+    private SwrContext samples_convert_ctx;
     private AVPacket video_pkt, audio_pkt;
     private int[] got_video_packet, got_audio_packet;
 
@@ -386,6 +394,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             audio_c.bit_rate(audioBitrate);
             audio_c.sample_rate(sampleRate);
             audio_c.channels(audioChannels);
+            audio_c.channel_layout(av_get_default_channel_layout(audioChannels));
             if (sampleFormat != AV_SAMPLE_FMT_NONE) {
                 audio_c.sample_fmt(sampleFormat);
             } else if (audio_c.codec_id() == CODEC_ID_AAC &&
@@ -488,16 +497,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             //int bufferSize = audio_input_frame_size * audio_c.bits_per_raw_sample()/8 * audio_c.channels();
             int bufferSize = av_samples_get_buffer_size(null, audio_c.channels(), audio_input_frame_size, audio_c.sample_fmt(), 1);
-            samplesPointer = new BytePointer(av_malloc(bufferSize)).capacity(bufferSize);
-            switch (audio_c.sample_fmt()) {
-                case AV_SAMPLE_FMT_U8:  byteArray   = new byte  [bufferSize];   break;
-                case AV_SAMPLE_FMT_S16: shortArray  = new short [bufferSize/2]; break;
-                case AV_SAMPLE_FMT_S32: intArray    = new int   [bufferSize/4]; break;
-                case AV_SAMPLE_FMT_FLT: floatArray  = new float [bufferSize/4]; break;
-                case AV_SAMPLE_FMT_DBL: doubleArray = new double[bufferSize/8]; break;
-                default: assert false;
-            }
-            arrayPosition = 0;
+            samples_out = new BytePointer(av_malloc(bufferSize)).capacity(bufferSize);
 
             /* allocate the audio frame */
             if ((frame = avcodec_alloc_frame()) == null) {
@@ -639,91 +639,88 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
         int ret;
-        int sampleFormat = audio_c.sample_fmt();
-        int sampleSize = audio_c.bits_per_raw_sample()/8;
 
-        while (samples.hasRemaining()) {
-            if (samples instanceof ByteBuffer) {
-                ByteBuffer b = (ByteBuffer)samples;
-                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
-                    int sample = (b.get() & 0xFF) - 128;
-                    switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)(sample + 128); break;
-                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)(sample << 8); break;
-                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = sample << 24; break;
-                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample * (1.0f / Byte.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample * (1.0 / Byte.MAX_VALUE); break;
-                        default: assert false;
-                    }
-                }
-            } else if (samples instanceof ShortBuffer) {
-                ShortBuffer b = (ShortBuffer)samples;
-                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
-                    short sample = b.get();
-                    switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)((sample >> 8) + 128); break;
-                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = sample; break;
-                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = sample << 16; break;
-                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample * (1.0f / Short.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample * (1.0 / Short.MAX_VALUE); break;
-                        default: assert false;
-                    }
-                }
-            } else if (samples instanceof IntBuffer) {
-                IntBuffer b = (IntBuffer)samples;
-                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
-                    int sample = b.get();
-                    switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)((sample >> 24) + 128); break;
-                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)(sample >> 16); break;
-                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = sample; break;
-                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample * (1.0f / Integer.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample * (1.0 / Integer.MAX_VALUE); break;
-                        default: assert false;
-                    }
-                }
-            } else if (samples instanceof FloatBuffer) {
-                FloatBuffer b = (FloatBuffer)samples;
-                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
-                    float sample = b.get();
-                    switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)(Math.round(sample * Byte.MAX_VALUE) + 128); break;
-                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)Math.round(sample * Short.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = (int)Math.round(sample * Integer.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = sample; break;
-                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample; break;
-                        default: assert false;
-                    }
-                }
-            } else if (samples instanceof DoubleBuffer) {
-                DoubleBuffer b = (DoubleBuffer)samples;
-                while (sampleSize * arrayPosition < samplesPointer.capacity() && b.hasRemaining()) {
-                    double sample = b.get();
-                    switch (sampleFormat) {
-                        case AV_SAMPLE_FMT_U8:  byteArray[arrayPosition++] = (byte)(Math.round(sample * Byte.MAX_VALUE) + 128); break;
-                        case AV_SAMPLE_FMT_S16: shortArray[arrayPosition++] = (short)Math.round(sample * Short.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_S32: intArray[arrayPosition++] = (int)Math.round(sample * Integer.MAX_VALUE); break;
-                        case AV_SAMPLE_FMT_FLT: floatArray[arrayPosition++] = (float)sample; break;
-                        case AV_SAMPLE_FMT_DBL: doubleArray[arrayPosition++] = sample; break;
-                        default: assert false;
-                    }
-                }
+        int inputSize = samples.limit() - samples.position();
+        int inputFormat = AV_SAMPLE_FMT_NONE;
+        int inputDepth = 0;
+        int outputDepth = av_get_bytes_per_sample(audio_c.sample_fmt());
+        if (samples instanceof ByteBuffer) {
+            ByteBuffer b = (ByteBuffer)samples;
+            inputFormat = AV_SAMPLE_FMT_U8;
+            inputDepth = 1;
+            if (samples_in instanceof BytePointer && samples_in.capacity() >= inputSize && b.hasArray()) {
+                ((BytePointer)samples_in).position(0).put(b.array(), b.position(), inputSize);
             } else {
-                assert false;
+                samples_in = new BytePointer(b);
             }
-            if (sampleSize * arrayPosition >= samplesPointer.capacity()) {
-                switch (sampleFormat) {
-                    case AV_SAMPLE_FMT_U8:                    samplesPointer. put(byteArray);   break;
-                    case AV_SAMPLE_FMT_S16: new ShortPointer (samplesPointer).put(shortArray);  break;
-                    case AV_SAMPLE_FMT_S32: new IntPointer   (samplesPointer).put(intArray);    break;
-                    case AV_SAMPLE_FMT_FLT: new FloatPointer (samplesPointer).put(floatArray);  break;
-                    case AV_SAMPLE_FMT_DBL: new DoublePointer(samplesPointer).put(doubleArray); break;
-                    default: assert false;
-                }
-                arrayPosition = 0;
+        } else if (samples instanceof ShortBuffer) {
+            ShortBuffer b = (ShortBuffer)samples;
+            inputFormat = AV_SAMPLE_FMT_S16;
+            inputDepth = 2;
+            if (samples_in instanceof ShortPointer && samples_in.capacity() >= inputSize && b.hasArray()) {
+                ((ShortPointer)samples_in).position(0).put(b.array(), samples.position(), inputSize);
+            } else {
+                samples_in = new ShortPointer(b);
+            }
+        } else if (samples instanceof IntBuffer) {
+            IntBuffer b = (IntBuffer)samples;
+            inputFormat = AV_SAMPLE_FMT_S32;
+            inputDepth = 4;
+            if (samples_in instanceof IntPointer && samples_in.capacity() >= inputSize && b.hasArray()) {
+                ((IntPointer)samples_in).position(0).put(b.array(), samples.position(), inputSize);
+            } else {
+                samples_in = new IntPointer(b);
+            }
+        } else if (samples instanceof FloatBuffer) {
+            FloatBuffer b = (FloatBuffer)samples;
+            inputFormat = AV_SAMPLE_FMT_FLT;
+            inputDepth = 4;
+            if (samples_in instanceof FloatPointer && samples_in.capacity() >= inputSize && b.hasArray()) {
+                ((FloatPointer)samples_in).position(0).put(b.array(), b.position(), inputSize);
+            } else {
+                samples_in = new FloatPointer(b);
+            }
+        } else if (samples instanceof DoubleBuffer) {
+            DoubleBuffer b = (DoubleBuffer)samples;
+            inputFormat = AV_SAMPLE_FMT_DBL;
+            inputDepth = 8;
+            if (samples_in instanceof DoublePointer && samples_in.capacity() >= inputSize && b.hasArray()) {
+                ((DoublePointer)samples_in).position(0).put(b.array(), b.position(), inputSize);
+            } else {
+                samples_in = new DoublePointer(b);
+            }
+        } else {
+            throw new Exception("Audio samples Buffer has unsupported type: " + samples);
+        }
 
+        if (samples_convert_ctx == null) {
+            samples_convert_ctx = swr_alloc_set_opts(null,
+                    audio_c.channel_layout(), audio_c.sample_fmt(), audio_c.sample_rate(),
+                    audio_c.channel_layout(), inputFormat,          audio_c.sample_rate(), 0, null);
+            if (samples_convert_ctx == null) {
+                throw new Exception("swr_alloc_set_opts() error: Cannot allocate the conversion context.");
+            } else if ((ret = swr_init(samples_convert_ctx)) < 0) {
+                throw new Exception("swr_init() error " + ret + ": Cannot initialize the conversion context.");
+            }
+        }
+
+        BytePointer samples_in_bytes = new BytePointer(samples_in).
+                position(samples_in.position() * inputDepth).
+                limit((samples_in.position() + inputSize) * inputDepth);
+        while (samples_in_bytes.position() < samples_in_bytes.limit()) {
+            int inputCount = (samples_in_bytes.limit() - samples_in_bytes.position()) / (audioChannels * inputDepth);
+            int outputCount = (samples_out.limit() - samples_out.position()) / (audioChannels * outputDepth);
+            int count = Math.min(inputCount, outputCount);
+            if ((ret = swr_convert(samples_convert_ctx, samples_out, count, samples_in_bytes, count)) < 0) {
+                throw new Exception("swr_convert() error " + ret + ": Cannot convert audio samples.");
+            }
+            samples_in_bytes.position(samples_in_bytes.position() + ret * audioChannels * inputDepth);
+            samples_out.position(samples_out.position() + ret * audioChannels * outputDepth);
+
+            if (samples_out.position() >= samples_out.limit()) {
+                samples_out.position(0);
                 frame.nb_samples(audio_input_frame_size);
-                avcodec_fill_audio_frame(frame, audioChannels, sampleFormat, samplesPointer, samplesPointer.capacity(), 0);
+                avcodec_fill_audio_frame(frame, audio_c.channels(), audio_c.sample_fmt(), samples_out, samples_out.limit(), 0);
 
                 av_init_packet(audio_pkt);
                 audio_pkt.data(audio_outbuf);

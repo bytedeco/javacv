@@ -42,6 +42,7 @@
 
 package com.googlecode.javacv.cpp;
 
+import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
@@ -176,6 +177,9 @@ public class swresample {
     public static native int swr_convert(SwrContext s,
                   @Cast("uint8_t**") PointerPointer out, int out_count,
             @Cast("const uint8_t**") PointerPointer in , int in_count);
+    public static native int swr_convert(SwrContext s,
+                  @Cast("uint8_t**") @ByPtrPtr BytePointer out, int out_count,
+            @Cast("const uint8_t**") @ByPtrPtr BytePointer in , int in_count);
 
     /**
      * Convert the next timestamp from input to output
