@@ -33,7 +33,6 @@
  */
 import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.Pointer;
-import com.googlecode.javacpp.PointerPointer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -125,7 +124,7 @@ public class FaceRecognition {
       cvEigenDecomposite(
               trainingFaceImgArr[i], // obj
               nEigens, // nEigObjs
-              new PointerPointer(eigenVectArr), // eigInput (Pointer)
+              eigenVectArr, // eigInput (Pointer)
               0, // ioFlags
               null, // userData (Pointer)
               pAvgTrainImg, // avg
@@ -192,7 +191,7 @@ public class FaceRecognition {
       cvEigenDecomposite(
               testFaceImgArr[i], // obj
               nEigens, // nEigObjs
-              new PointerPointer(eigenVectArr), // eigInput (Pointer)
+              eigenVectArr, // eigInput (Pointer)
               0, // ioFlags
               null, // userData
               pAvgTrainImg, // avg
@@ -370,8 +369,8 @@ public class FaceRecognition {
     // compute average image, eigenvalues, and eigenvectors
     cvCalcEigenObjects(
             nTrainFaces, // nObjects
-            new PointerPointer(trainingFaceImgArr), // input
-            new PointerPointer(eigenVectArr), // output
+            trainingFaceImgArr, // input
+            eigenVectArr, // output
             CV_EIGOBJ_NO_CALLBACK, // ioFlags
             0, // ioBufSize
             null, // userData

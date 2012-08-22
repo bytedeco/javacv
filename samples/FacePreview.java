@@ -85,12 +85,12 @@ public class FacePreview extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Hide the window title.
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         super.onCreate(savedInstanceState);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        // Hide the window title.
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         // Create our Preview view and set it as the content of our activity.
         try {
@@ -167,9 +167,9 @@ class FaceView extends View implements Camera.PreviewCallback {
             }
         }
 
+        cvClearMemStorage(storage);
         faces = cvHaarDetectObjects(grayImage, classifier, storage, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
         postInvalidate();
-        cvClearMemStorage(storage);
     }
 
     @Override

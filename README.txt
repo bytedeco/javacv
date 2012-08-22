@@ -36,7 +36,7 @@ To modify the source code, please note that the project files were created for:
  * Maven 2 or 3  http://maven.apache.org/download.html
  * JavaCPP  http://code.google.com/p/javacpp/
 
-To rebuild, simply call the usual `mvn package` command. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP.
+To rebuild, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP.
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
@@ -217,6 +217,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Fixed up the samples a bit (issue #229 and issue #230)
  * Switched the majority of `@Adapter` annotations to more concise ones as allowed by new capabilities of JavaCPP
  * Fixed `FFmpegFrameGrabber.getLengthInFrames()` (issue #231)
  * Enhanced `FFmpegFrameRecorder` to support conversion between audio sample formats (for the experimental AAC encoder among other things) and to let two different threads call `record(samples)` and `record(image)` simultaneously, plus a couple of other features like `setFrameNumber()`, which lets users skip image frames
