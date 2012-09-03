@@ -4952,4 +4952,15 @@ public class opencv_core {
         public native Algorithm.Setter setter();        public native Param setter(Algorithm.Setter setter);
         public native @ByRef String help();             public native Param help(String help);
     }
+
+
+    public static class Predicate extends FunctionPointer {
+        static { load(); }
+        public    Predicate(Pointer p) { super(p); }
+        protected Predicate() { allocate(); }
+        protected final native void allocate();
+        public native boolean call(Pointer a, Pointer b);
+    }
+    public static native @Name("cv::partition<void*>") int partition(@StdVector PointerPointer _vec,
+            @StdVector IntPointer labels, @ByRef Predicate predicate);
 }

@@ -236,10 +236,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     // best guess for timestamp in microseconds...
     @Override public long getTimestamp() {
-        return (long)(getFrameNumber() * 1000000 / getFrameRate());
+        return Math.round(getFrameNumber() * 1000000L / getFrameRate());
     }
     @Override public void setTimestamp(long timestamp)  {
-        setTimestamp((int)(timestamp * getFrameRate() / 1000000));
+        setFrameNumber((int)Math.round(timestamp * getFrameRate() / 1000000L));
     }
 
     public void start() throws Exception {

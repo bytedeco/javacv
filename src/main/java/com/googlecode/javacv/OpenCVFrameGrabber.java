@@ -157,7 +157,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
                 (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_COUNT);
     }
     @Override public long getLengthInTime() {
-        return Math.round(getLengthInFrames() * 1000000 / getFrameRate());
+        return Math.round(getLengthInFrames() * 1000000L / getFrameRate());
     }
 
     public void start() throws Exception {
