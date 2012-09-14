@@ -114,12 +114,12 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
     private FlyCaptureImage raw_image = new FlyCaptureImage();
     private FlyCaptureImage conv_image = new FlyCaptureImage();
     private IplImage temp_image, return_image = null;
-    private int[] regOut = new int[1];
-    private float[] outFloat = new float[1];
-    private float[] gammaOut = new float[1];
+    private final int[] regOut = new int[1];
+    private final float[] outFloat = new float[1];
+    private final float[] gammaOut = new float[1];
 
     @Override public double getGamma() {
-        return gammaOut[0];
+        return Float.isNaN(gammaOut[0]) || Float.isInfinite(gammaOut[0]) || gammaOut[0] == 0.0f ? 2.2 : gammaOut[0];
     }
 
     @Override public int getImageWidth() {

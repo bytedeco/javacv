@@ -172,6 +172,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private BytePointer     buffer_rgb;
     private AVFrame         samples_frame;
     private AVPacket        pkt, pkt2;
+    private int             sizeof_pkt;
     private int[]           got_frame;
     private SwsContext      img_convert_ctx;
     private IplImage        return_image;
@@ -286,6 +287,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         audio_c         = null;
         pkt             = new AVPacket();
         pkt2            = new AVPacket();
+        sizeof_pkt      = pkt.sizeof();
         got_frame       = new int[1];
         return_image    = null;
         frameGrabbed    = false;
@@ -536,7 +538,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 }
             } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
                 if (pkt2.size() <= 0) {
-                    pkt2.put(pkt);
+                    // HashMap is unacceptably slow on Android
+                    // pkt2.put(pkt);
+                    BytePointer.memcpy(pkt2, pkt, sizeof_pkt);
                 }
                 avcodec_get_frame_defaults(samples_frame);
                 // Decode audio frame

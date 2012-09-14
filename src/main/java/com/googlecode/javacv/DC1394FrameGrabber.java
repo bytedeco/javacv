@@ -132,12 +132,12 @@ public class DC1394FrameGrabber extends FrameGrabber {
     private dc1394video_frame_t frame = null;
     private dc1394video_frame_t enqueue_image = null;
     private IplImage temp_image, return_image = null;
-    private int[] out = new int[1];
-    private float[] outFloat = new float[1];
-    private float[] gammaOut = new float[1];
+    private final int[] out = new int[1];
+    private final float[] outFloat = new float[1];
+    private final float[] gammaOut = new float[1];
 
     @Override public double getGamma() {
-        return gammaOut[0];
+        return Float.isNaN(gammaOut[0]) || Float.isInfinite(gammaOut[0]) || gammaOut[0] == 0.0f ? 2.2 : gammaOut[0];
     }
 
     @Override public int getImageWidth() {
