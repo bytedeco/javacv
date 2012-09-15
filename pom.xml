@@ -29,9 +29,13 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
-    <platform.name>${os.name}-${os.arch}</platform.name>
-    <javacpp.options></javacpp.options>
-    <javacpp.skip>false</javacpp.skip>
+    <javacpp.skip>false</javacpp.skip>  <!-- To skip native compilation phase: -Djavacpp.cpp=true -->
+    <platform.name>${os.name}-${os.arch}</platform.name> <!-- For Android: -Dplatform.name=android-arm -->
+    <platform.root></platform.root>     <!-- For Android: -Dplatform.root=<path/to/android-ndk-r8> -->
+    <compiler.path></compiler.path>     <!-- For Android: -Dcompiler.path=<path/to/arm-linux-androideabi-g++> -->
+    <javacpp.options></javacpp.options> <!-- To pass other options to JavaCPP -->
+    <!-- Reinclude the following with profiles, either all: -Pall
+         or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
     <exclude.artoolkitplus>**/cpp/ARToolKitPlus.java</exclude.artoolkitplus>
     <exclude.markers>**/Marke*.java</exclude.markers>
     <exclude.calibration>**/*Calibrator.java</exclude.calibration>
@@ -134,7 +138,7 @@
                 <CL>&quot;/I${env.SDKDIR}/Include/&quot;</CL>
               </environmentVariables>
               <executable>java</executable>
-              <commandlineArgs>-jar "${com.googlecode.javacpp:javacpp:jar}" -properties ${platform.name} ${javacpp.options} -classpath "${project.build.outputDirectory}" -jarprefix "${project.build.directory}/${project.artifactId}" com.googlecode.javacv.cpp.*</commandlineArgs>
+              <commandlineArgs>-jar "${com.googlecode.javacpp:javacpp:jar}" -properties ${platform.name} -Dplatform.root=${platform.root} -Dcompiler.path=${compiler.path} ${javacpp.options} -classpath "${project.build.outputDirectory}" -jarprefix "${project.build.directory}/${project.artifactId}" com.googlecode.javacv.cpp.*</commandlineArgs>
             </configuration>
           </execution>
         </executions>

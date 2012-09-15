@@ -36,7 +36,7 @@ To modify the source code, please note that the project files were created for:
  * Maven 2 or 3  http://maven.apache.org/download.html
  * JavaCPP  http://code.google.com/p/javacpp/
 
-To rebuild, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android].
+To rebuild, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
 
@@ -55,7 +55,7 @@ Eclipse (Java SE 6 or 7):
  # Locate the JAR files, select them, and click OK.
 
 Eclipse (Android 2.2 or newer):
- # Follow the instructions on this page: http://developer.android.com/resources/tutorials/hello-world.html
+ # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
  # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.2-android-arm.zip`, and `ffmpeg-0.11.1-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
@@ -219,10 +219,10 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 ==Changes==
  * Added missing `opencv_core.partition()` function (issue #144)
  * Fixed up the samples a bit (issue #229 and issue #230)
- * Switched the majority of `@Adapter` annotations to more concise ones as allowed by new capabilities of JavaCPP
+ * Switched the majority of `@Adapter` annotations to more concise ones like `@StdVector` as allowed by new capabilities of JavaCPP
  * Fixed `FFmpegFrameGrabber.getLengthInFrames()` and `OpenCVFrameGrabber.getLengthInTime()` (issue #231 and issue #236)
  * Enhanced `FFmpegFrameRecorder` to support conversion between audio sample formats (for the experimental AAC encoder among other things) and to let two different threads call `record(samples)` and `record(image)` simultaneously, plus a couple of other features like `setFrameNumber()`, which lets users skip image frames
- * Added a `javacpp.skip` property to the `pom.xml`, such that a command like `mvn package -Pall -Djavacpp.skip=true` only recompiles the Java source files
+ * Added a `javacpp.skip` property to `pom.xml`, such that a command like `mvn package -Pall -Djavacpp.skip=true` only recompiles the Java source files, but also added `platform.root` and `compiler.path`, which map directly to JavaCPP's for convenience
 
 ===July 21, 2012 version 0.2===
  * Provided new `javacv-linux-arm.jar` build thanks to Jeremy Nicola (issue #184)
