@@ -31,7 +31,7 @@
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
     <javacpp.skip>false</javacpp.skip>  <!-- To skip native compilation phase: -Djavacpp.cpp=true -->
     <platform.name>${os.name}-${os.arch}</platform.name> <!-- For Android: -Dplatform.name=android-arm -->
-    <platform.root></platform.root>     <!-- For Android: -Dplatform.root=<path/to/android-ndk-r8> -->
+    <platform.root></platform.root>     <!-- For Android: -Dplatform.root=<path/to/android-ndk-r8b> -->
     <compiler.path></compiler.path>     <!-- For Android: -Dcompiler.path=<path/to/arm-linux-androideabi-g++> -->
     <javacpp.options></javacpp.options> <!-- To pass other options to JavaCPP -->
     <!-- Reinclude the following with profiles, either all: -Pall

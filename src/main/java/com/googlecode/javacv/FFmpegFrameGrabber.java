@@ -51,6 +51,7 @@ import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.PointerPointer;
 import java.io.File;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 import static com.googlecode.javacv.cpp.avcodec.*;
@@ -171,6 +172,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVFrame         picture, picture_rgb;
     private BytePointer     buffer_rgb;
     private AVFrame         samples_frame;
+    private BytePointer     samples_ptr;
+    private Buffer          samples_buf;
     private AVPacket        pkt, pkt2;
     private int             sizeof_pkt;
     private int[]           got_frame;
@@ -322,7 +325,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_dict_set(options, "channels", "" + audioChannels, 0);
         }
         if ((ret = avformat_open_input(oc, filename, f, options)) < 0) {
-            throw new Exception("avformat_open_input() error " + ret + ": Could not open input \"" + filename + "\".");
+            throw new Exception("avformat_open_input() error " + ret + ": Could not open input \"" + filename + "\". (Has setFormat() been called?)");
         }
         av_dict_free(options);
 
@@ -555,18 +558,23 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         /* if a frame has been decoded, output it */
                         int data_size = av_samples_get_buffer_size(null, audio_c.channels(),
                                 samples_frame.nb_samples(), audio_c.sample_fmt(), 1);
-                        ByteBuffer samples = samples_frame.data(0).capacity(data_size).asBuffer();
                         done = true;
                         frame.image = null;
-                        frame.samples = samples;
-                        switch (samples_frame.format()) {
-                            case AV_SAMPLE_FMT_U8:  frame.samples = samples; break;
-                            case AV_SAMPLE_FMT_S16: frame.samples = samples.asShortBuffer(); break;
-                            case AV_SAMPLE_FMT_S32: frame.samples = samples.asIntBuffer(); break;
-                            case AV_SAMPLE_FMT_FLT: frame.samples = samples.asFloatBuffer(); break;
-                            case AV_SAMPLE_FMT_DBL: frame.samples = samples.asDoubleBuffer(); break;
-                            default: assert false;
+                        BytePointer p = samples_frame.data(0);
+                        if (!p.equals(samples_ptr) || samples_ptr.capacity() < data_size) {
+                            samples_ptr  = p.capacity(data_size);
+                            ByteBuffer b = p.asBuffer();
+                            switch (samples_frame.format()) {
+                                case AV_SAMPLE_FMT_U8:  samples_buf = b; break;
+                                case AV_SAMPLE_FMT_S16: samples_buf = b.asShortBuffer(); break;
+                                case AV_SAMPLE_FMT_S32: samples_buf = b.asIntBuffer(); break;
+                                case AV_SAMPLE_FMT_FLT: samples_buf = b.asFloatBuffer(); break;
+                                case AV_SAMPLE_FMT_DBL: samples_buf = b.asDoubleBuffer(); break;
+                                default: assert false;
+                            }
                         }
+                        frame.samples = samples_buf.position(0).
+                                limit(data_size / av_get_bytes_per_sample(samples_frame.format()));
                     }
                 }
             }
