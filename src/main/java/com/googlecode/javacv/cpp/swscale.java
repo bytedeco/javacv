@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from swscale.h include file from
- * FFmpeg 0.11.1, which are covered by the following copyright notice:
+ * FFmpeg 1.0, which are covered by the following copyright notice:
  *
  * Copyright (C) 2001-2011 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -76,9 +76,15 @@ public class swscale {
      *     external api for the swscale stuff
      */
 
+    // #include "version.h"
+    /**
+     * @file
+     * swscale version macros
+     */
+
     public static final int LIBSWSCALE_VERSION_MAJOR = 2;
     public static final int LIBSWSCALE_VERSION_MINOR = 1;
-    public static final int LIBSWSCALE_VERSION_MICRO = 100;
+    public static final int LIBSWSCALE_VERSION_MICRO = 101;
 
     public static final int    LIBSWSCALE_VERSION_INT = AV_VERSION_INT(LIBSWSCALE_VERSION_MAJOR,
                                                                        LIBSWSCALE_VERSION_MINOR,
@@ -269,7 +275,13 @@ public class swscale {
             IntPointer srcStride, int srcSliceY, int srcSliceH,  @Cast("uint8_t**") @ByPtrPtr BytePointer dst, IntPointer dstStride);
 
     /**
-     * @param inv_table the yuv2rgb coefficients, normally ff_yuv2rgb_coeffs[x]
+     * @param dstRange flag indicating the while-black range of the output (1=jpeg / 0=mpeg)
+     * @param srcRange flag indicating the while-black range of the input (1=jpeg / 0=mpeg)
+     * @param table the yuv2rgb coefficients describing the output yuv space, normally ff_yuv2rgb_coeffs[x]
+     * @param inv_table the yuv2rgb coefficients describing the input yuv space, normally ff_yuv2rgb_coeffs[x]
+     * @param brightness 16.16 fixed point brightness correction
+     * @param contrast 16.16 fixed point contrast correction
+     * @param saturation 16.16 fixed point saturation correction
      * @return -1 if not supported
      */
     public static native int sws_setColorspaceDetails(SwsContext c, int inv_table[/*4*/], int srcRange,

@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avcodec.h and other libavcodec include files from
- * FFmpeg 0.11.1, which are covered by the following copyright notice:
+ * FFmpeg 1.0, which are covered by the following copyright notice:
  *
  * copyright (c) 2001 Fabrice Bellard
  *
@@ -52,6 +52,7 @@ import com.googlecode.javacpp.PointerPointer;
 import com.googlecode.javacpp.ShortPointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
 import com.googlecode.javacpp.annotation.ByRef;
+import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.MemberGetter;
@@ -97,7 +98,7 @@ public class avcodec {
      */
 
     public static final int LIBAVCODEC_VERSION_MAJOR = 54;
-    public static final int LIBAVCODEC_VERSION_MINOR = 23;
+    public static final int LIBAVCODEC_VERSION_MINOR = 59;
     public static final int LIBAVCODEC_VERSION_MICRO = 100;
 
     public static final int    LIBAVCODEC_VERSION_INT = AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR,
@@ -161,358 +162,437 @@ public class avcodec {
      * If you add a codec ID to this list, add it so that
      * 1. no value of a existing codec ID changes (that would break ABI),
      * 2. Give it a value which when taken as ASCII is recognized uniquely by a human as this specific codec.
-     *    This ensures that 2 forks can independently add CodecIDs without producing conflicts.
+     *    This ensures that 2 forks can independently add AVCodecIDs without producing conflicts.
+     *
+     * After adding new codec IDs, do not forget to add an entry to the codec
+     * descriptor list and bump libavcodec minor version.
      */
-    public static final int // enum CodecID {
-            CODEC_ID_NONE = 0,
+    public static final int // enum AVCodecID {
+            AV_CODEC_ID_NONE = 0,
 
             /* video codecs */
-            CODEC_ID_MPEG1VIDEO         = 1,
-            CODEC_ID_MPEG2VIDEO         = 2, ///< preferred ID for MPEG-1/2 video decoding
-            CODEC_ID_MPEG2VIDEO_XVMC    = 3,
-            CODEC_ID_H261               = 4,
-            CODEC_ID_H263               = 5,
-            CODEC_ID_RV10               = 6,
-            CODEC_ID_RV20               = 7,
-            CODEC_ID_MJPEG              = 8,
-            CODEC_ID_MJPEGB             = 9,
-            CODEC_ID_LJPEG              = 10,
-            CODEC_ID_SP5X               = 11,
-            CODEC_ID_JPEGLS             = 12,
-            CODEC_ID_MPEG4              = 13,
-            CODEC_ID_RAWVIDEO           = 14,
-            CODEC_ID_MSMPEG4V1          = 15,
-            CODEC_ID_MSMPEG4V2          = 16,
-            CODEC_ID_MSMPEG4V3          = 17,
-            CODEC_ID_WMV1               = 18,
-            CODEC_ID_WMV2               = 19,
-            CODEC_ID_H263P              = 20,
-            CODEC_ID_H263I              = 21,
-            CODEC_ID_FLV1               = 22,
-            CODEC_ID_SVQ1               = 23,
-            CODEC_ID_SVQ3               = 24,
-            CODEC_ID_DVVIDEO            = 25,
-            CODEC_ID_HUFFYUV            = 26,
-            CODEC_ID_CYUV               = 27,
-            CODEC_ID_H264               = 28,
-            CODEC_ID_INDEO3             = 29,
-            CODEC_ID_VP3                = 30,
-            CODEC_ID_THEORA             = 31,
-            CODEC_ID_ASV1               = 32,
-            CODEC_ID_ASV2               = 33,
-            CODEC_ID_FFV1               = 34,
-            CODEC_ID_4XM                = 35,
-            CODEC_ID_VCR1               = 36,
-            CODEC_ID_CLJR               = 37,
-            CODEC_ID_MDEC               = 38,
-            CODEC_ID_ROQ                = 39,
-            CODEC_ID_INTERPLAY_VIDEO    = 40,
-            CODEC_ID_XAN_WC3            = 41,
-            CODEC_ID_XAN_WC4            = 42,
-            CODEC_ID_RPZA               = 43,
-            CODEC_ID_CINEPAK            = 44,
-            CODEC_ID_WS_VQA             = 45,
-            CODEC_ID_MSRLE              = 46,
-            CODEC_ID_MSVIDEO1           = 47,
-            CODEC_ID_IDCIN              = 48,
-            CODEC_ID_8BPS               = 49,
-            CODEC_ID_SMC                = 50,
-            CODEC_ID_FLIC               = 51,
-            CODEC_ID_TRUEMOTION1        = 52,
-            CODEC_ID_VMDVIDEO           = 53,
-            CODEC_ID_MSZH               = 54,
-            CODEC_ID_ZLIB               = 55,
-            CODEC_ID_QTRLE              = 56,
-            CODEC_ID_SNOW               = 57,
-            CODEC_ID_TSCC               = 58,
-            CODEC_ID_ULTI               = 59,
-            CODEC_ID_QDRAW              = 60,
-            CODEC_ID_VIXL               = 61,
-            CODEC_ID_QPEG               = 62,
-            CODEC_ID_PNG                = 63,
-            CODEC_ID_PPM                = 64,
-            CODEC_ID_PBM                = 65,
-            CODEC_ID_PGM                = 66,
-            CODEC_ID_PGMYUV             = 67,
-            CODEC_ID_PAM                = 68,
-            CODEC_ID_FFVHUFF            = 69,
-            CODEC_ID_RV30               = 70,
-            CODEC_ID_RV40               = 71,
-            CODEC_ID_VC1                = 72,
-            CODEC_ID_WMV3               = 73,
-            CODEC_ID_LOCO               = 74,
-            CODEC_ID_WNV1               = 75,
-            CODEC_ID_AASC               = 76,
-            CODEC_ID_INDEO2             = 77,
-            CODEC_ID_FRAPS              = 78,
-            CODEC_ID_TRUEMOTION2        = 79,
-            CODEC_ID_BMP                = 80,
-            CODEC_ID_CSCD               = 81,
-            CODEC_ID_MMVIDEO            = 82,
-            CODEC_ID_ZMBV               = 83,
-            CODEC_ID_AVS                = 84,
-            CODEC_ID_SMACKVIDEO         = 85,
-            CODEC_ID_NUV                = 86,
-            CODEC_ID_KMVC               = 87,
-            CODEC_ID_FLASHSV            = 88,
-            CODEC_ID_CAVS               = 89,
-            CODEC_ID_JPEG2000           = 90,
-            CODEC_ID_VMNC               = 91,
-            CODEC_ID_VP5                = 92,
-            CODEC_ID_VP6                = 93,
-            CODEC_ID_VP6F               = 94,
-            CODEC_ID_TARGA              = 95,
-            CODEC_ID_DSICINVIDEO        = 96,
-            CODEC_ID_TIERTEXSEQVIDEO    = 97,
-            CODEC_ID_TIFF               = 98,
-            CODEC_ID_GIF                = 99,
-            CODEC_ID_DXA                = 100,
-            CODEC_ID_DNXHD              = 101,
-            CODEC_ID_THP                = 102,
-            CODEC_ID_SGI                = 103,
-            CODEC_ID_C93                = 104,
-            CODEC_ID_BETHSOFTVID        = 105,
-            CODEC_ID_PTX                = 106,
-            CODEC_ID_TXD                = 107,
-            CODEC_ID_VP6A               = 108,
-            CODEC_ID_AMV                = 109,
-            CODEC_ID_VB                 = 110,
-            CODEC_ID_PCX                = 111,
-            CODEC_ID_SUNRAST            = 112,
-            CODEC_ID_INDEO4             = 113,
-            CODEC_ID_INDEO5             = 114,
-            CODEC_ID_MIMIC              = 115,
-            CODEC_ID_RL2                = 116,
-            CODEC_ID_ESCAPE124          = 117,
-            CODEC_ID_DIRAC              = 118,
-            CODEC_ID_BFI                = 119,
-            CODEC_ID_CMV                = 120,
-            CODEC_ID_MOTIONPIXELS       = 121,
-            CODEC_ID_TGV                = 122,
-            CODEC_ID_TGQ                = 123,
-            CODEC_ID_TQI                = 124,
-            CODEC_ID_AURA               = 125,
-            CODEC_ID_AURA2              = 126,
-            CODEC_ID_V210X              = 127,
-            CODEC_ID_TMV                = 128,
-            CODEC_ID_V210               = 129,
-            CODEC_ID_DPX                = 130,
-            CODEC_ID_MAD                = 131,
-            CODEC_ID_FRWU               = 132,
-            CODEC_ID_FLASHSV2           = 133,
-            CODEC_ID_CDGRAPHICS         = 134,
-            CODEC_ID_R210               = 135,
-            CODEC_ID_ANM                = 136,
-            CODEC_ID_BINKVIDEO          = 137,
-            CODEC_ID_IFF_ILBM           = 138,
-            CODEC_ID_IFF_BYTERUN1       = 139,
-            CODEC_ID_KGV1               = 140,
-            CODEC_ID_YOP                = 141,
-            CODEC_ID_VP8                = 142,
-            CODEC_ID_PICTOR             = 143,
-            CODEC_ID_ANSI               = 144,
-            CODEC_ID_A64_MULTI          = 145,
-            CODEC_ID_A64_MULTI5         = 146,
-            CODEC_ID_R10K               = 147,
-            CODEC_ID_MXPEG              = 148,
-            CODEC_ID_LAGARITH           = 149,
-            CODEC_ID_PRORES             = 150,
-            CODEC_ID_JV                 = 151,
-            CODEC_ID_DFA                = 152,
-            CODEC_ID_WMV3IMAGE          = 153,
-            CODEC_ID_VC1IMAGE           = 154,
-            CODEC_ID_UTVIDEO            = 155,
-            CODEC_ID_BMV_VIDEO          = 156,
-            CODEC_ID_VBLE               = 157,
-            CODEC_ID_DXTORY             = 158,
-            CODEC_ID_V410               = 159,
-            CODEC_ID_XWD                = 160,
-            CODEC_ID_CDXL               = 161,
-            CODEC_ID_XBM                = 162,
-            CODEC_ID_ZEROCODEC          = 163,
-            CODEC_ID_Y41P               = MKBETAG('Y','4','1','P'),
-            CODEC_ID_ESCAPE130          = MKBETAG('E','1','3','0'),
-            CODEC_ID_EXR                = MKBETAG('0','E','X','R'),
-            CODEC_ID_AVRP               = MKBETAG('A','V','R','P'),
+            AV_CODEC_ID_MPEG1VIDEO         = 1,
+            AV_CODEC_ID_MPEG2VIDEO         = 2, ///< preferred ID for MPEG-1/2 video decoding
+            AV_CODEC_ID_MPEG2VIDEO_XVMC    = 3,
+            AV_CODEC_ID_H261               = 4,
+            AV_CODEC_ID_H263               = 5,
+            AV_CODEC_ID_RV10               = 6,
+            AV_CODEC_ID_RV20               = 7,
+            AV_CODEC_ID_MJPEG              = 8,
+            AV_CODEC_ID_MJPEGB             = 9,
+            AV_CODEC_ID_LJPEG              = 10,
+            AV_CODEC_ID_SP5X               = 11,
+            AV_CODEC_ID_JPEGLS             = 12,
+            AV_CODEC_ID_MPEG4              = 13,
+            AV_CODEC_ID_RAWVIDEO           = 14,
+            AV_CODEC_ID_MSMPEG4V1          = 15,
+            AV_CODEC_ID_MSMPEG4V2          = 16,
+            AV_CODEC_ID_MSMPEG4V3          = 17,
+            AV_CODEC_ID_WMV1               = 18,
+            AV_CODEC_ID_WMV2               = 19,
+            AV_CODEC_ID_H263P              = 20,
+            AV_CODEC_ID_H263I              = 21,
+            AV_CODEC_ID_FLV1               = 22,
+            AV_CODEC_ID_SVQ1               = 23,
+            AV_CODEC_ID_SVQ3               = 24,
+            AV_CODEC_ID_DVVIDEO            = 25,
+            AV_CODEC_ID_HUFFYUV            = 26,
+            AV_CODEC_ID_CYUV               = 27,
+            AV_CODEC_ID_H264               = 28,
+            AV_CODEC_ID_INDEO3             = 29,
+            AV_CODEC_ID_VP3                = 30,
+            AV_CODEC_ID_THEORA             = 31,
+            AV_CODEC_ID_ASV1               = 32,
+            AV_CODEC_ID_ASV2               = 33,
+            AV_CODEC_ID_FFV1               = 34,
+            AV_CODEC_ID_4XM                = 35,
+            AV_CODEC_ID_VCR1               = 36,
+            AV_CODEC_ID_CLJR               = 37,
+            AV_CODEC_ID_MDEC               = 38,
+            AV_CODEC_ID_ROQ                = 39,
+            AV_CODEC_ID_INTERPLAY_VIDEO    = 40,
+            AV_CODEC_ID_XAN_WC3            = 41,
+            AV_CODEC_ID_XAN_WC4            = 42,
+            AV_CODEC_ID_RPZA               = 43,
+            AV_CODEC_ID_CINEPAK            = 44,
+            AV_CODEC_ID_WS_VQA             = 45,
+            AV_CODEC_ID_MSRLE              = 46,
+            AV_CODEC_ID_MSVIDEO1           = 47,
+            AV_CODEC_ID_IDCIN              = 48,
+            AV_CODEC_ID_8BPS               = 49,
+            AV_CODEC_ID_SMC                = 50,
+            AV_CODEC_ID_FLIC               = 51,
+            AV_CODEC_ID_TRUEMOTION1        = 52,
+            AV_CODEC_ID_VMDVIDEO           = 53,
+            AV_CODEC_ID_MSZH               = 54,
+            AV_CODEC_ID_ZLIB               = 55,
+            AV_CODEC_ID_QTRLE              = 56,
+            AV_CODEC_ID_SNOW               = 57,
+            AV_CODEC_ID_TSCC               = 58,
+            AV_CODEC_ID_ULTI               = 59,
+            AV_CODEC_ID_QDRAW              = 60,
+            AV_CODEC_ID_VIXL               = 61,
+            AV_CODEC_ID_QPEG               = 62,
+            AV_CODEC_ID_PNG                = 63,
+            AV_CODEC_ID_PPM                = 64,
+            AV_CODEC_ID_PBM                = 65,
+            AV_CODEC_ID_PGM                = 66,
+            AV_CODEC_ID_PGMYUV             = 67,
+            AV_CODEC_ID_PAM                = 68,
+            AV_CODEC_ID_FFVHUFF            = 69,
+            AV_CODEC_ID_RV30               = 70,
+            AV_CODEC_ID_RV40               = 71,
+            AV_CODEC_ID_VC1                = 72,
+            AV_CODEC_ID_WMV3               = 73,
+            AV_CODEC_ID_LOCO               = 74,
+            AV_CODEC_ID_WNV1               = 75,
+            AV_CODEC_ID_AASC               = 76,
+            AV_CODEC_ID_INDEO2             = 77,
+            AV_CODEC_ID_FRAPS              = 78,
+            AV_CODEC_ID_TRUEMOTION2        = 79,
+            AV_CODEC_ID_BMP                = 80,
+            AV_CODEC_ID_CSCD               = 81,
+            AV_CODEC_ID_MMVIDEO            = 82,
+            AV_CODEC_ID_ZMBV               = 83,
+            AV_CODEC_ID_AVS                = 84,
+            AV_CODEC_ID_SMACKVIDEO         = 85,
+            AV_CODEC_ID_NUV                = 86,
+            AV_CODEC_ID_KMVC               = 87,
+            AV_CODEC_ID_FLASHSV            = 88,
+            AV_CODEC_ID_CAVS               = 89,
+            AV_CODEC_ID_JPEG2000           = 90,
+            AV_CODEC_ID_VMNC               = 91,
+            AV_CODEC_ID_VP5                = 92,
+            AV_CODEC_ID_VP6                = 93,
+            AV_CODEC_ID_VP6F               = 94,
+            AV_CODEC_ID_TARGA              = 95,
+            AV_CODEC_ID_DSICINVIDEO        = 96,
+            AV_CODEC_ID_TIERTEXSEQVIDEO    = 97,
+            AV_CODEC_ID_TIFF               = 98,
+            AV_CODEC_ID_GIF                = 99,
+            AV_CODEC_ID_DXA                = 100,
+            AV_CODEC_ID_DNXHD              = 101,
+            AV_CODEC_ID_THP                = 102,
+            AV_CODEC_ID_SGI                = 103,
+            AV_CODEC_ID_C93                = 104,
+            AV_CODEC_ID_BETHSOFTVID        = 105,
+            AV_CODEC_ID_PTX                = 106,
+            AV_CODEC_ID_TXD                = 107,
+            AV_CODEC_ID_VP6A               = 108,
+            AV_CODEC_ID_AMV                = 109,
+            AV_CODEC_ID_VB                 = 110,
+            AV_CODEC_ID_PCX                = 111,
+            AV_CODEC_ID_SUNRAST            = 112,
+            AV_CODEC_ID_INDEO4             = 113,
+            AV_CODEC_ID_INDEO5             = 114,
+            AV_CODEC_ID_MIMIC              = 115,
+            AV_CODEC_ID_RL2                = 116,
+            AV_CODEC_ID_ESCAPE124          = 117,
+            AV_CODEC_ID_DIRAC              = 118,
+            AV_CODEC_ID_BFI                = 119,
+            AV_CODEC_ID_CMV                = 120,
+            AV_CODEC_ID_MOTIONPIXELS       = 121,
+            AV_CODEC_ID_TGV                = 122,
+            AV_CODEC_ID_TGQ                = 123,
+            AV_CODEC_ID_TQI                = 124,
+            AV_CODEC_ID_AURA               = 125,
+            AV_CODEC_ID_AURA2              = 126,
+            AV_CODEC_ID_V210X              = 127,
+            AV_CODEC_ID_TMV                = 128,
+            AV_CODEC_ID_V210               = 129,
+            AV_CODEC_ID_DPX                = 130,
+            AV_CODEC_ID_MAD                = 131,
+            AV_CODEC_ID_FRWU               = 132,
+            AV_CODEC_ID_FLASHSV2           = 133,
+            AV_CODEC_ID_CDGRAPHICS         = 134,
+            AV_CODEC_ID_R210               = 135,
+            AV_CODEC_ID_ANM                = 136,
+            AV_CODEC_ID_BINKVIDEO          = 137,
+            AV_CODEC_ID_IFF_ILBM           = 138,
+            AV_CODEC_ID_IFF_BYTERUN1       = 139,
+            AV_CODEC_ID_KGV1               = 140,
+            AV_CODEC_ID_YOP                = 141,
+            AV_CODEC_ID_VP8                = 142,
+            AV_CODEC_ID_PICTOR             = 143,
+            AV_CODEC_ID_ANSI               = 144,
+            AV_CODEC_ID_A64_MULTI          = 145,
+            AV_CODEC_ID_A64_MULTI5         = 146,
+            AV_CODEC_ID_R10K               = 147,
+            AV_CODEC_ID_MXPEG              = 148,
+            AV_CODEC_ID_LAGARITH           = 149,
+            AV_CODEC_ID_PRORES             = 150,
+            AV_CODEC_ID_JV                 = 151,
+            AV_CODEC_ID_DFA                = 152,
+            AV_CODEC_ID_WMV3IMAGE          = 153,
+            AV_CODEC_ID_VC1IMAGE           = 154,
+            AV_CODEC_ID_UTVIDEO            = 155,
+            AV_CODEC_ID_BMV_VIDEO          = 156,
+            AV_CODEC_ID_VBLE               = 157,
+            AV_CODEC_ID_DXTORY             = 158,
+            AV_CODEC_ID_V410               = 159,
+            AV_CODEC_ID_XWD                = 160,
+            AV_CODEC_ID_CDXL               = 161,
+            AV_CODEC_ID_XBM                = 162,
+            AV_CODEC_ID_ZEROCODEC          = 163,
+            AV_CODEC_ID_MSS1               = 164,
+            AV_CODEC_ID_MSA1               = 165,
+            AV_CODEC_ID_TSCC2              = 166,
+            AV_CODEC_ID_MTS2               = 167,
+            AV_CODEC_ID_CLLC               = 168,
+            AV_CODEC_ID_MSS2               = 169,
+            AV_CODEC_ID_Y41P               = MKBETAG('Y','4','1','P'),
+            AV_CODEC_ID_ESCAPE130          = MKBETAG('E','1','3','0'),
+            AV_CODEC_ID_EXR                = MKBETAG('0','E','X','R'),
+            AV_CODEC_ID_AVRP               = MKBETAG('A','V','R','P'),
 
-            CODEC_ID_G2M                = MKBETAG( 0 ,'G','2','M'),
-            CODEC_ID_AVUI               = MKBETAG('A','V','U','I'),
-            CODEC_ID_AYUV               = MKBETAG('A','Y','U','V'),
-            CODEC_ID_V308               = MKBETAG('V','3','0','8'),
-            CODEC_ID_V408               = MKBETAG('V','4','0','8'),
-            CODEC_ID_YUV4               = MKBETAG('Y','U','V','4'),
+            AV_CODEC_ID_G2M                = MKBETAG( 0 ,'G','2','M'),
+            AV_CODEC_ID_AVUI               = MKBETAG('A','V','U','I'),
+            AV_CODEC_ID_AYUV               = MKBETAG('A','Y','U','V'),
+            AV_CODEC_ID_V308               = MKBETAG('V','3','0','8'),
+            AV_CODEC_ID_V408               = MKBETAG('V','4','0','8'),
+            AV_CODEC_ID_YUV4               = MKBETAG('Y','U','V','4'),
+            AV_CODEC_ID_SANM               = MKBETAG('S','A','N','M'),
+            AV_CODEC_ID_PAF_VIDEO          = MKBETAG('P','A','F','V'),
+            AV_CODEC_ID_AVRN               = MKBETAG('A','V','R','n'),
+            AV_CODEC_ID_CPIA               = MKBETAG('C','P','I','A'),
 
             /* various PCM "codecs" */
-            CODEC_ID_FIRST_AUDIO        = 0x10000, ///< A dummy id pointing at the start of audio codecs
-            CODEC_ID_PCM_S16LE          = 0x10000,
-            CODEC_ID_PCM_S16BE          = 0x10000 + 1,
-            CODEC_ID_PCM_U16LE          = 0x10000 + 2,
-            CODEC_ID_PCM_U16BE          = 0x10000 + 3,
-            CODEC_ID_PCM_S8             = 0x10000 + 4,
-            CODEC_ID_PCM_U8             = 0x10000 + 5,
-            CODEC_ID_PCM_MULAW          = 0x10000 + 6,
-            CODEC_ID_PCM_ALAW           = 0x10000 + 7,
-            CODEC_ID_PCM_S32LE          = 0x10000 + 8,
-            CODEC_ID_PCM_S32BE          = 0x10000 + 9,
-            CODEC_ID_PCM_U32LE          = 0x10000 + 10,
-            CODEC_ID_PCM_U32BE          = 0x10000 + 11,
-            CODEC_ID_PCM_S24LE          = 0x10000 + 12,
-            CODEC_ID_PCM_S24BE          = 0x10000 + 13,
-            CODEC_ID_PCM_U24LE          = 0x10000 + 14,
-            CODEC_ID_PCM_U24BE          = 0x10000 + 15,
-            CODEC_ID_PCM_S24DAUD        = 0x10000 + 16,
-            CODEC_ID_PCM_ZORK           = 0x10000 + 17,
-            CODEC_ID_PCM_S16LE_PLANAR   = 0x10000 + 18,
-            CODEC_ID_PCM_DVD            = 0x10000 + 19,
-            CODEC_ID_PCM_F32BE          = 0x10000 + 20,
-            CODEC_ID_PCM_F32LE          = 0x10000 + 21,
-            CODEC_ID_PCM_F64BE          = 0x10000 + 22,
-            CODEC_ID_PCM_F64LE          = 0x10000 + 23,
-            CODEC_ID_PCM_BLURAY         = 0x10000 + 24,
-            CODEC_ID_PCM_LXF            = 0x10000 + 25,
-            CODEC_ID_S302M              = 0x10000 + 26,
-            CODEC_ID_PCM_S8_PLANAR      = 0x10000 + 26,
+            AV_CODEC_ID_FIRST_AUDIO        = 0x10000, ///< A dummy id pointing at the start of audio codecs
+            AV_CODEC_ID_PCM_S16LE          = 0x10000,
+            AV_CODEC_ID_PCM_S16BE          = 0x10000 + 1,
+            AV_CODEC_ID_PCM_U16LE          = 0x10000 + 2,
+            AV_CODEC_ID_PCM_U16BE          = 0x10000 + 3,
+            AV_CODEC_ID_PCM_S8             = 0x10000 + 4,
+            AV_CODEC_ID_PCM_U8             = 0x10000 + 5,
+            AV_CODEC_ID_PCM_MULAW          = 0x10000 + 6,
+            AV_CODEC_ID_PCM_ALAW           = 0x10000 + 7,
+            AV_CODEC_ID_PCM_S32LE          = 0x10000 + 8,
+            AV_CODEC_ID_PCM_S32BE          = 0x10000 + 9,
+            AV_CODEC_ID_PCM_U32LE          = 0x10000 + 10,
+            AV_CODEC_ID_PCM_U32BE          = 0x10000 + 11,
+            AV_CODEC_ID_PCM_S24LE          = 0x10000 + 12,
+            AV_CODEC_ID_PCM_S24BE          = 0x10000 + 13,
+            AV_CODEC_ID_PCM_U24LE          = 0x10000 + 14,
+            AV_CODEC_ID_PCM_U24BE          = 0x10000 + 15,
+            AV_CODEC_ID_PCM_S24DAUD        = 0x10000 + 16,
+            AV_CODEC_ID_PCM_ZORK           = 0x10000 + 17,
+            AV_CODEC_ID_PCM_S16LE_PLANAR   = 0x10000 + 18,
+            AV_CODEC_ID_PCM_DVD            = 0x10000 + 19,
+            AV_CODEC_ID_PCM_F32BE          = 0x10000 + 20,
+            AV_CODEC_ID_PCM_F32LE          = 0x10000 + 21,
+            AV_CODEC_ID_PCM_F64BE          = 0x10000 + 22,
+            AV_CODEC_ID_PCM_F64LE          = 0x10000 + 23,
+            AV_CODEC_ID_PCM_BLURAY         = 0x10000 + 24,
+            AV_CODEC_ID_PCM_LXF            = 0x10000 + 25,
+            AV_CODEC_ID_S302M              = 0x10000 + 26,
+            AV_CODEC_ID_PCM_S8_PLANAR      = 0x10000 + 26,
 
             /* various ADPCM codecs */
-            CODEC_ID_ADPCM_IMA_QT       = 0x11000,
-            CODEC_ID_ADPCM_IMA_WAV      = 0x11000 + 1,
-            CODEC_ID_ADPCM_IMA_DK3      = 0x11000 + 2,
-            CODEC_ID_ADPCM_IMA_DK4      = 0x11000 + 3,
-            CODEC_ID_ADPCM_IMA_WS       = 0x11000 + 4,
-            CODEC_ID_ADPCM_IMA_SMJPEG   = 0x11000 + 5,
-            CODEC_ID_ADPCM_MS           = 0x11000 + 6,
-            CODEC_ID_ADPCM_4XM          = 0x11000 + 7,
-            CODEC_ID_ADPCM_XA           = 0x11000 + 8,
-            CODEC_ID_ADPCM_ADX          = 0x11000 + 9,
-            CODEC_ID_ADPCM_EA           = 0x11000 + 10,
-            CODEC_ID_ADPCM_G726         = 0x11000 + 11,
-            CODEC_ID_ADPCM_CT           = 0x11000 + 12,
-            CODEC_ID_ADPCM_SWF          = 0x11000 + 13,
-            CODEC_ID_ADPCM_YAMAHA       = 0x11000 + 14,
-            CODEC_ID_ADPCM_SBPRO_4      = 0x11000 + 15,
-            CODEC_ID_ADPCM_SBPRO_3      = 0x11000 + 16,
-            CODEC_ID_ADPCM_SBPRO_2      = 0x11000 + 17,
-            CODEC_ID_ADPCM_THP          = 0x11000 + 18,
-            CODEC_ID_ADPCM_IMA_AMV      = 0x11000 + 19,
-            CODEC_ID_ADPCM_EA_R1        = 0x11000 + 20,
-            CODEC_ID_ADPCM_EA_R3        = 0x11000 + 21,
-            CODEC_ID_ADPCM_EA_R2        = 0x11000 + 22,
-            CODEC_ID_ADPCM_IMA_EA_SEAD  = 0x11000 + 23,
-            CODEC_ID_ADPCM_IMA_EA_EACS  = 0x11000 + 24,
-            CODEC_ID_ADPCM_EA_XAS       = 0x11000 + 25,
-            CODEC_ID_ADPCM_EA_MAXIS_XA  = 0x11000 + 26,
-            CODEC_ID_ADPCM_IMA_ISS      = 0x11000 + 27,
-            CODEC_ID_ADPCM_G722         = 0x11000 + 28,
-            CODEC_ID_ADPCM_IMA_APC      = 0x11000 + 29,
+            AV_CODEC_ID_ADPCM_IMA_QT       = 0x11000,
+            AV_CODEC_ID_ADPCM_IMA_WAV      = 0x11000 + 1,
+            AV_CODEC_ID_ADPCM_IMA_DK3      = 0x11000 + 2,
+            AV_CODEC_ID_ADPCM_IMA_DK4      = 0x11000 + 3,
+            AV_CODEC_ID_ADPCM_IMA_WS       = 0x11000 + 4,
+            AV_CODEC_ID_ADPCM_IMA_SMJPEG   = 0x11000 + 5,
+            AV_CODEC_ID_ADPCM_MS           = 0x11000 + 6,
+            AV_CODEC_ID_ADPCM_4XM          = 0x11000 + 7,
+            AV_CODEC_ID_ADPCM_XA           = 0x11000 + 8,
+            AV_CODEC_ID_ADPCM_ADX          = 0x11000 + 9,
+            AV_CODEC_ID_ADPCM_EA           = 0x11000 + 10,
+            AV_CODEC_ID_ADPCM_G726         = 0x11000 + 11,
+            AV_CODEC_ID_ADPCM_CT           = 0x11000 + 12,
+            AV_CODEC_ID_ADPCM_SWF          = 0x11000 + 13,
+            AV_CODEC_ID_ADPCM_YAMAHA       = 0x11000 + 14,
+            AV_CODEC_ID_ADPCM_SBPRO_4      = 0x11000 + 15,
+            AV_CODEC_ID_ADPCM_SBPRO_3      = 0x11000 + 16,
+            AV_CODEC_ID_ADPCM_SBPRO_2      = 0x11000 + 17,
+            AV_CODEC_ID_ADPCM_THP          = 0x11000 + 18,
+            AV_CODEC_ID_ADPCM_IMA_AMV      = 0x11000 + 19,
+            AV_CODEC_ID_ADPCM_EA_R1        = 0x11000 + 20,
+            AV_CODEC_ID_ADPCM_EA_R3        = 0x11000 + 21,
+            AV_CODEC_ID_ADPCM_EA_R2        = 0x11000 + 22,
+            AV_CODEC_ID_ADPCM_IMA_EA_SEAD  = 0x11000 + 23,
+            AV_CODEC_ID_ADPCM_IMA_EA_EACS  = 0x11000 + 24,
+            AV_CODEC_ID_ADPCM_EA_XAS       = 0x11000 + 25,
+            AV_CODEC_ID_ADPCM_EA_MAXIS_XA  = 0x11000 + 26,
+            AV_CODEC_ID_ADPCM_IMA_ISS      = 0x11000 + 27,
+            AV_CODEC_ID_ADPCM_G722         = 0x11000 + 28,
+            AV_CODEC_ID_ADPCM_IMA_APC      = 0x11000 + 29,
+            AV_CODEC_ID_VIMA               = MKBETAG('V','I','M','A'),
 
             /* AMR */
-            CODEC_ID_AMR_NB             = 0x12000,
-            CODEC_ID_AMR_WB             = 0x12000 + 1,
+            AV_CODEC_ID_AMR_NB             = 0x12000,
+            AV_CODEC_ID_AMR_WB             = 0x12000 + 1,
 
             /* RealAudio codecs*/
-            CODEC_ID_RA_144             = 0x13000,
-            CODEC_ID_RA_288             = 0x13000 + 1,
+            AV_CODEC_ID_RA_144             = 0x13000,
+            AV_CODEC_ID_RA_288             = 0x13000 + 1,
 
             /* various DPCM codecs */
-            CODEC_ID_ROQ_DPCM           = 0x14000,
-            CODEC_ID_INTERPLAY_DPCM     = 0x14000 + 1,
-            CODEC_ID_XAN_DPCM           = 0x14000 + 2,
-            CODEC_ID_SOL_DPCM           = 0x14000 + 3,
+            AV_CODEC_ID_ROQ_DPCM           = 0x14000,
+            AV_CODEC_ID_INTERPLAY_DPCM     = 0x14000 + 1,
+            AV_CODEC_ID_XAN_DPCM           = 0x14000 + 2,
+            AV_CODEC_ID_SOL_DPCM           = 0x14000 + 3,
 
             /* audio codecs */
-            CODEC_ID_MP2                = 0x15000,
-            CODEC_ID_MP3                = 0x15000 + 1, ///< preferred ID for decoding MPEG audio layer 1, 2 or 3
-            CODEC_ID_AAC                = 0x15000 + 2,
-            CODEC_ID_AC3                = 0x15000 + 3,
-            CODEC_ID_DTS                = 0x15000 + 4,
-            CODEC_ID_VORBIS             = 0x15000 + 5,
-            CODEC_ID_DVAUDIO            = 0x15000 + 6,
-            CODEC_ID_WMAV1              = 0x15000 + 7,
-            CODEC_ID_WMAV2              = 0x15000 + 8,
-            CODEC_ID_MACE3              = 0x15000 + 9,
-            CODEC_ID_MACE6              = 0x15000 + 10,
-            CODEC_ID_VMDAUDIO           = 0x15000 + 11,
-            CODEC_ID_FLAC               = 0x15000 + 12,
-            CODEC_ID_MP3ADU             = 0x15000 + 13,
-            CODEC_ID_MP3ON4             = 0x15000 + 14,
-            CODEC_ID_SHORTEN            = 0x15000 + 15,
-            CODEC_ID_ALAC               = 0x15000 + 16,
-            CODEC_ID_WESTWOOD_SND1      = 0x15000 + 17,
-            CODEC_ID_GSM                = 0x15000 + 18, ///< as in Berlin toast format
-            CODEC_ID_QDM2               = 0x15000 + 19,
-            CODEC_ID_COOK               = 0x15000 + 20,
-            CODEC_ID_TRUESPEECH         = 0x15000 + 21,
-            CODEC_ID_TTA                = 0x15000 + 22,
-            CODEC_ID_SMACKAUDIO         = 0x15000 + 23,
-            CODEC_ID_QCELP              = 0x15000 + 24,
-            CODEC_ID_WAVPACK            = 0x15000 + 25,
-            CODEC_ID_DSICINAUDIO        = 0x15000 + 26,
-            CODEC_ID_IMC                = 0x15000 + 27,
-            CODEC_ID_MUSEPACK7          = 0x15000 + 28,
-            CODEC_ID_MLP                = 0x15000 + 29,
-            CODEC_ID_GSM_MS             = 0x15000 + 30, /* as found in WAV */
-            CODEC_ID_ATRAC3             = 0x15000 + 31,
-            CODEC_ID_VOXWARE            = 0x15000 + 32,
-            CODEC_ID_APE                = 0x15000 + 33,
-            CODEC_ID_NELLYMOSER         = 0x15000 + 34,
-            CODEC_ID_MUSEPACK8          = 0x15000 + 35,
-            CODEC_ID_SPEEX              = 0x15000 + 36,
-            CODEC_ID_WMAVOICE           = 0x15000 + 37,
-            CODEC_ID_WMAPRO             = 0x15000 + 38,
-            CODEC_ID_WMALOSSLESS        = 0x15000 + 39,
-            CODEC_ID_ATRAC3P            = 0x15000 + 40,
-            CODEC_ID_EAC3               = 0x15000 + 41,
-            CODEC_ID_SIPR               = 0x15000 + 42,
-            CODEC_ID_MP1                = 0x15000 + 43,
-            CODEC_ID_TWINVQ             = 0x15000 + 44,
-            CODEC_ID_TRUEHD             = 0x15000 + 45,
-            CODEC_ID_MP4ALS             = 0x15000 + 46,
-            CODEC_ID_ATRAC1             = 0x15000 + 47,
-            CODEC_ID_BINKAUDIO_RDFT     = 0x15000 + 48,
-            CODEC_ID_BINKAUDIO_DCT      = 0x15000 + 49,
-            CODEC_ID_AAC_LATM           = 0x15000 + 50,
-            CODEC_ID_QDMC               = 0x15000 + 51,
-            CODEC_ID_CELT               = 0x15000 + 52,
-            CODEC_ID_G723_1             = 0x15000 + 53,
-            CODEC_ID_G729               = 0x15000 + 54,
-            CODEC_ID_8SVX_EXP           = 0x15000 + 55,
-            CODEC_ID_8SVX_FIB           = 0x15000 + 56,
-            CODEC_ID_BMV_AUDIO          = 0x15000 + 57,
-            CODEC_ID_RALF               = 0x15000 + 58,
-            CODEC_ID_FFWAVESYNTH        = MKBETAG('F','F','W','S'),
-            CODEC_ID_8SVX_RAW           = MKBETAG('8','S','V','X'),
-            CODEC_ID_SONIC              = MKBETAG('S','O','N','C'),
-            CODEC_ID_SONIC_LS           = MKBETAG('S','O','N','L'),
+            AV_CODEC_ID_MP2                = 0x15000,
+            AV_CODEC_ID_MP3                = 0x15000 + 1, ///< preferred ID for decoding MPEG audio layer 1, 2 or 3
+            AV_CODEC_ID_AAC                = 0x15000 + 2,
+            AV_CODEC_ID_AC3                = 0x15000 + 3,
+            AV_CODEC_ID_DTS                = 0x15000 + 4,
+            AV_CODEC_ID_VORBIS             = 0x15000 + 5,
+            AV_CODEC_ID_DVAUDIO            = 0x15000 + 6,
+            AV_CODEC_ID_WMAV1              = 0x15000 + 7,
+            AV_CODEC_ID_WMAV2              = 0x15000 + 8,
+            AV_CODEC_ID_MACE3              = 0x15000 + 9,
+            AV_CODEC_ID_MACE6              = 0x15000 + 10,
+            AV_CODEC_ID_VMDAUDIO           = 0x15000 + 11,
+            AV_CODEC_ID_FLAC               = 0x15000 + 12,
+            AV_CODEC_ID_MP3ADU             = 0x15000 + 13,
+            AV_CODEC_ID_MP3ON4             = 0x15000 + 14,
+            AV_CODEC_ID_SHORTEN            = 0x15000 + 15,
+            AV_CODEC_ID_ALAC               = 0x15000 + 16,
+            AV_CODEC_ID_WESTWOOD_SND1      = 0x15000 + 17,
+            AV_CODEC_ID_GSM                = 0x15000 + 18, ///< as in Berlin toast format
+            AV_CODEC_ID_QDM2               = 0x15000 + 19,
+            AV_CODEC_ID_COOK               = 0x15000 + 20,
+            AV_CODEC_ID_TRUESPEECH         = 0x15000 + 21,
+            AV_CODEC_ID_TTA                = 0x15000 + 22,
+            AV_CODEC_ID_SMACKAUDIO         = 0x15000 + 23,
+            AV_CODEC_ID_QCELP              = 0x15000 + 24,
+            AV_CODEC_ID_WAVPACK            = 0x15000 + 25,
+            AV_CODEC_ID_DSICINAUDIO        = 0x15000 + 26,
+            AV_CODEC_ID_IMC                = 0x15000 + 27,
+            AV_CODEC_ID_MUSEPACK7          = 0x15000 + 28,
+            AV_CODEC_ID_MLP                = 0x15000 + 29,
+            AV_CODEC_ID_GSM_MS             = 0x15000 + 30, /* as found in WAV */
+            AV_CODEC_ID_ATRAC3             = 0x15000 + 31,
+            AV_CODEC_ID_VOXWARE            = 0x15000 + 32,
+            AV_CODEC_ID_APE                = 0x15000 + 33,
+            AV_CODEC_ID_NELLYMOSER         = 0x15000 + 34,
+            AV_CODEC_ID_MUSEPACK8          = 0x15000 + 35,
+            AV_CODEC_ID_SPEEX              = 0x15000 + 36,
+            AV_CODEC_ID_WMAVOICE           = 0x15000 + 37,
+            AV_CODEC_ID_WMAPRO             = 0x15000 + 38,
+            AV_CODEC_ID_WMALOSSLESS        = 0x15000 + 39,
+            AV_CODEC_ID_ATRAC3P            = 0x15000 + 40,
+            AV_CODEC_ID_EAC3               = 0x15000 + 41,
+            AV_CODEC_ID_SIPR               = 0x15000 + 42,
+            AV_CODEC_ID_MP1                = 0x15000 + 43,
+            AV_CODEC_ID_TWINVQ             = 0x15000 + 44,
+            AV_CODEC_ID_TRUEHD             = 0x15000 + 45,
+            AV_CODEC_ID_MP4ALS             = 0x15000 + 46,
+            AV_CODEC_ID_ATRAC1             = 0x15000 + 47,
+            AV_CODEC_ID_BINKAUDIO_RDFT     = 0x15000 + 48,
+            AV_CODEC_ID_BINKAUDIO_DCT      = 0x15000 + 49,
+            AV_CODEC_ID_AAC_LATM           = 0x15000 + 50,
+            AV_CODEC_ID_QDMC               = 0x15000 + 51,
+            AV_CODEC_ID_CELT               = 0x15000 + 52,
+            AV_CODEC_ID_G723_1             = 0x15000 + 53,
+            AV_CODEC_ID_G729               = 0x15000 + 54,
+            AV_CODEC_ID_8SVX_EXP           = 0x15000 + 55,
+            AV_CODEC_ID_8SVX_FIB           = 0x15000 + 56,
+            AV_CODEC_ID_BMV_AUDIO          = 0x15000 + 57,
+            AV_CODEC_ID_RALF               = 0x15000 + 58,
+            AV_CODEC_ID_IAC                = 0x15000 + 59,
+            AV_CODEC_ID_ILBC               = 0x15000 + 60,
+            AV_CODEC_ID_FFWAVESYNTH        = MKBETAG('F','F','W','S'),
+            AV_CODEC_ID_8SVX_RAW           = MKBETAG('8','S','V','X'),
+            AV_CODEC_ID_SONIC              = MKBETAG('S','O','N','C'),
+            AV_CODEC_ID_SONIC_LS           = MKBETAG('S','O','N','L'),
+            AV_CODEC_ID_PAF_AUDIO          = MKBETAG('P','A','F','A'),
+            AV_CODEC_ID_OPUS               = MKBETAG('O','P','U','S'),
 
             /* subtitle codecs */
-            CODEC_ID_FIRST_SUBTITLE     = 0x17000, ///< A dummy ID pointing at the start of subtitle codecs.
-            CODEC_ID_DVD_SUBTITLE       = 0x17000,
-            CODEC_ID_DVB_SUBTITLE       = 0x17000 + 1,
-            CODEC_ID_TEXT               = 0x17000 + 2,  ///< raw UTF-8 text
-            CODEC_ID_XSUB               = 0x17000 + 3,
-            CODEC_ID_SSA                = 0x17000 + 4,
-            CODEC_ID_MOV_TEXT           = 0x17000 + 5,
-            CODEC_ID_HDMV_PGS_SUBTITLE  = 0x17000 + 6,
-            CODEC_ID_DVB_TELETEXT       = 0x17000 + 7,
-            CODEC_ID_SRT                = 0x17000 + 8,
-            CODEC_ID_MICRODVD           = MKBETAG('m','D','V','D'),
-            CODEC_ID_EIA_608            = MKBETAG('c','6','0','8'),
-            CODEC_ID_JACOSUB            = MKBETAG('J','S','U','B'),
+            AV_CODEC_ID_FIRST_SUBTITLE     = 0x17000, ///< A dummy ID pointing at the start of subtitle codecs.
+            AV_CODEC_ID_DVD_SUBTITLE       = 0x17000,
+            AV_CODEC_ID_DVB_SUBTITLE       = 0x17000 + 1,
+            AV_CODEC_ID_TEXT               = 0x17000 + 2,  ///< raw UTF-8 text
+            AV_CODEC_ID_XSUB               = 0x17000 + 3,
+            AV_CODEC_ID_SSA                = 0x17000 + 4,
+            AV_CODEC_ID_MOV_TEXT           = 0x17000 + 5,
+            AV_CODEC_ID_HDMV_PGS_SUBTITLE  = 0x17000 + 6,
+            AV_CODEC_ID_DVB_TELETEXT       = 0x17000 + 7,
+            AV_CODEC_ID_SRT                = 0x17000 + 8,
+            AV_CODEC_ID_MICRODVD           = MKBETAG('m','D','V','D'),
+            AV_CODEC_ID_EIA_608            = MKBETAG('c','6','0','8'),
+            AV_CODEC_ID_JACOSUB            = MKBETAG('J','S','U','B'),
+            AV_CODEC_ID_SAMI               = MKBETAG('S','A','M','I'),
+            AV_CODEC_ID_REALTEXT           = MKBETAG('R','T','X','T'),
+            AV_CODEC_ID_SUBVIEWER          = MKBETAG('S','u','b','V'),
+            AV_CODEC_ID_SUBRIP             = MKBETAG('S','R','i','p'),
+            AV_CODEC_ID_WEBVTT             = MKBETAG('W','V','T','T'),
 
             /* other specific kind of codecs (generally used for attachments) */
-            CODEC_ID_FIRST_UNKNOWN      = 0x18000, ///< A dummy ID pointing at the start of various fake codecs.
-            CODEC_ID_TTF                = 0x18000,
-            CODEC_ID_BINTEXT            = MKBETAG('B','T','X','T'),
-            CODEC_ID_XBIN               = MKBETAG('X','B','I','N'),
-            CODEC_ID_IDF                = MKBETAG( 0 ,'I','D','F'),
+            AV_CODEC_ID_FIRST_UNKNOWN      = 0x18000, ///< A dummy ID pointing at the start of various fake codecs.
+            AV_CODEC_ID_TTF                = 0x18000,
+            AV_CODEC_ID_BINTEXT            = MKBETAG('B','T','X','T'),
+            AV_CODEC_ID_XBIN               = MKBETAG('X','B','I','N'),
+            AV_CODEC_ID_IDF                = MKBETAG( 0 ,'I','D','F'),
+            AV_CODEC_ID_OTF                = MKBETAG( 0 ,'O','T','F'),
 
-            CODEC_ID_PROBE              = 0x19000, ///< codec_id is not known (like CODEC_ID_NONE) but lavf should attempt to identify it
+            AV_CODEC_ID_PROBE              = 0x19000, ///< codec_id is not known (like AV_CODEC_ID_NONE) but lavf should attempt to identify it
 
-            CODEC_ID_MPEG2TS            = 0x20000, /**< _FAKE_ codec to indicate a raw MPEG-2 TS
+            AV_CODEC_ID_MPEG2TS            = 0x20000, /**< _FAKE_ codec to indicate a raw MPEG-2 TS
                                                     * stream (only used by libavformat) */
-            CODEC_ID_MPEG4SYSTEMS       = 0x20001, /**< _FAKE_ codec to indicate a MPEG-4 Systems
+            AV_CODEC_ID_MPEG4SYSTEMS       = 0x20001, /**< _FAKE_ codec to indicate a MPEG-4 Systems
                                                     * stream (only used by libavformat) */
-            CODEC_ID_FFMETADATA         = 0x21000; ///< Dummy codec for streams containing only metadata information.
+            AV_CODEC_ID_FFMETADATA         = 0x21000; ///< Dummy codec for streams containing only metadata information.
+
+    /**
+     * This struct describes the properties of a single codec described by an
+     * AVCodecID.
+     * @see avcodec_get_descriptor()
+     */
+    public static class AVCodecDescriptor extends Pointer {
+        static { load(); }
+        public AVCodecDescriptor() { allocate(); }
+        public AVCodecDescriptor(int size) { allocateArray(size); }
+        public AVCodecDescriptor(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        @Override public AVCodecDescriptor position(int position) {
+            return (AVCodecDescriptor)super.position(position);
+        }
+
+        @Cast("AVCodecID")
+        public native int id();                public native AVCodecDescriptor id  (int id);
+        @Cast("AVMediaType")
+        public native int type();              public native AVCodecDescriptor type(int type);
+        /**
+         * Name of the codec described by this descriptor. It is non-empty and
+         * unique for each codec descriptor. It should contain alphanumeric
+         * characters and '_' only.
+         */
+        @Cast("const char*")
+        public native BytePointer name();      public native AVCodecDescriptor name(BytePointer name);
+        /**
+         * A more descriptive name for this codec. May be NULL.
+         */
+        @Cast("const char*")
+        public native BytePointer long_name(); public native AVCodecDescriptor long_name(BytePointer name);
+        /**
+         * Codec properties, a combination of AV_CODEC_PROP_* flags.
+         */
+        public native int props();             public native AVCodecDescriptor props(int props);
+    }
+
+    /**
+     * Codec uses only intra compression.
+     * Video codecs only.
+     */
+    public static final int AV_CODEC_PROP_INTRA_ONLY   = (1 << 0);
+    /**
+     * Codec supports lossy compression. Audio and video codecs only.
+     * @note a codec may support both lossy and lossless
+     * compression modes
+     */
+    public static final int AV_CODEC_PROP_LOSSY        = (1 << 1);
+    /**
+     * Codec supports lossless compression. Audio and video codecs only.
+     */
+    public static final int AV_CODEC_PROP_LOSSLESS     = (1 << 2);
 
     /**
      * @ingroup lavc_decoding
@@ -780,6 +860,10 @@ public class avcodec {
      */
     public static final int CODEC_CAP_VARIABLE_FRAME_SIZE = 0x10000;
     /**
+     * Codec is intra only.
+     */
+    public static final int CODEC_CAP_INTRA_ONLY       = 0x40000000;
+    /**
      * Codec is lossless.
      */
     public static final int CODEC_CAP_LOSSLESS         = 0x80000000;
@@ -912,7 +996,28 @@ public class avcodec {
              * u8    vertical MV predictor for block number 3
              * @endcode
              */
-            AV_PKT_DATA_H263_MB_INFO  = 3;
+            AV_PKT_DATA_H263_MB_INFO  = 3,
+
+            /**
+             * Recommmends skipping the specified number of samples
+             * @code
+             * u32le number of samples to skip from start of this packet
+             * u32le number of samples to skip from end of this packet
+             * u8    reason for start skip
+             * u8    reason for end   skip (0=padding silence, 1=convergence)
+             * @endcode
+             */
+            AV_PKT_DATA_SKIP_SAMPLES  = 70,
+
+            /**
+             * An AV_PKT_DATA_JP_DUALMONO side data packet indicates that
+             * the packet may contain "dual mono" audio specific to Japanese DTV
+             * and if it is true, recommends only the selected channel to be used.
+             * @code
+             * u8    selected channels (0=mail/left, 1=sub/right, 2=both)
+             * @endcode
+             */
+            AV_PKT_DATA_JP_DUALMONO   = 71;
 
     public static class AVPacket extends Pointer {
         static { load(); }
@@ -1382,6 +1487,47 @@ public class avcodec {
          * - decoding: Read by user.
          */
         public native long pkt_pos();                        public native AVFrame pkt_pos(long pkt_pos);
+
+        /**
+         * duration of the corresponding packet, expressed in
+         * AVStream->time_base units, 0 if unknown.
+         * Code outside libavcodec should access this field using:
+         * av_frame_get_pkt_duration(frame)
+         * - encoding: unused
+         * - decoding: Read by user.
+         */
+        public native long pkt_duration();                   public native AVFrame pkt_duration(long pkt_duration);
+
+        /**
+         * metadata.
+         * Code outside libavcodec should access this field using:
+         * av_frame_get_metadata(frame)
+         * - encoding: Set by user.
+         * - decoding: Set by libavcodec.
+         */
+        public native AVDictionary metadata();               public native AVFrame metadata(AVDictionary metadata);
+
+        /**
+         * decode error flags of the frame, set to a combination of
+         * FF_DECODE_ERROR_xxx flags if the decoder produced a frame, but there
+         * were errors during the decoding.
+         * Code outside libavcodec should access this field using:
+         * av_frame_get_decode_error_flags(frame)
+         * - encoding: unused
+         * - decoding: set by libavcodec, read by user.
+         */
+        public native int decode_error_flags();              public native AVFrame decode_error_flags(int decode_error_flags);
+        public static final int FF_DECODE_ERROR_INVALID_BITSTREAM  = 1;
+        public static final int FF_DECODE_ERROR_MISSING_REFERENCE  = 2;
+
+        /**
+         * number of audio channels, only used for audio.
+         * Code outside libavcodec should access this field using:
+         * av_frame_get_channels(frame)
+         * - encoding: unused
+         * - decoding: Read by user.
+         */
+        public native long channels();                       public native AVFrame channels(long channels);
     }
 
     /**
@@ -1390,13 +1536,21 @@ public class avcodec {
      * they should not be accessed directly outside libavcodec.
      */
     public static native long av_frame_get_best_effort_timestamp(AVFrame frame);
-    public static native long av_frame_get_pkt_pos              (AVFrame frame);
-    public static native long av_frame_get_channel_layout       (AVFrame frame);
-    public static native int  av_frame_get_sample_rate          (AVFrame frame);
     public static native void av_frame_set_best_effort_timestamp(AVFrame frame, long val);
+    public static native long av_frame_get_pkt_duration         (AVFrame frame);
+    public static native void av_frame_set_pkt_duration         (AVFrame frame, long val);
+    public static native long av_frame_get_pkt_pos              (AVFrame frame);
     public static native void av_frame_set_pkt_pos              (AVFrame frame, long val);
+    public static native long av_frame_get_channel_layout       (AVFrame frame);
     public static native void av_frame_set_channel_layout       (AVFrame frame, long val);
+    public static native int  av_frame_get_channels             (AVFrame frame);
+    public static native void av_frame_set_channels             (AVFrame frame, int  val);
+    public static native int  av_frame_get_sample_rate          (AVFrame frame);
     public static native void av_frame_set_sample_rate          (AVFrame frame, int  val);
+    public static native AVDictionary  av_frame_get_metadata    (AVFrame frame);
+    public static native void          av_frame_set_metadata    (AVFrame frame, AVDictionary val);
+    public static native int  av_frame_get_decode_error_flags   (AVFrame frame);
+    public static native void av_frame_set_decode_error_flags   (AVFrame frame, int  val);
 
     @Opaque public static class AVCodecInternal extends Pointer {
         public AVCodecInternal() { }
@@ -1442,9 +1596,9 @@ public class avcodec {
 
         @Cast("AVMediaType") /* see AVMEDIA_TYPE_xxx */
         public native int codec_type();                  public native AVCodecContext codec_type(int codec_type);
-        public native AVCodec codec();                   public native AVCodecContext codec(AVCodec codec);
+        public native @Const AVCodec codec();            public native AVCodecContext codec(AVCodec codec);
         public native String codec_name();               public native AVCodecContext codec_name(String codec_name);
-        @Cast("CodecID") /* see CODEC_ID_xxx */
+        @Cast("AVCodecID") /* see AV_CODEC_ID_xxx */
         public native int codec_id();                    public native AVCodecContext codec_id(int codec_id);
 
         /**
@@ -1622,7 +1776,7 @@ public class avcodec {
         /**
          * Pixel format, see PIX_FMT_xxx.
          * May be set by the demuxer if known from headers.
-         * May be overriden by the decoder if it knows better.
+         * May be overridden by the decoder if it knows better.
          * - encoding: Set by user.
          * - decoding: Set by user if known, overridden by libavcodec if known
          */
@@ -2391,7 +2545,7 @@ public class avcodec {
 
         /**
          * ratecontrol qmin qmax limiting method
-         * 0-> clipping, 1-> use a nice continous function to limit qscale wthin qmin/qmax.
+         * 0-> clipping, 1-> use a nice continuous function to limit qscale wthin qmin/qmax.
          * - encoding: Set by user.
          * - decoding: unused
          */
@@ -2947,6 +3101,10 @@ public class avcodec {
                 FF_PROFILE_AAC_LOW  = 1,
                 FF_PROFILE_AAC_SSR  = 2,
                 FF_PROFILE_AAC_LTP  = 3,
+                FF_PROFILE_AAC_HE   = 4,
+                FF_PROFILE_AAC_HE_V2 = 28,
+                FF_PROFILE_AAC_LD   = 22,
+                FF_PROFILE_AAC_ELD  = 38,
 
                 FF_PROFILE_DTS         = 20,
                 FF_PROFILE_DTS_ES      = 30,
@@ -3069,6 +3227,25 @@ public class avcodec {
         public native long vbv_delay();                  public native AVCodecContext vbv_delay(long vbv_delay);
 
         /**
+         * Timebase in which pkt_dts/pts and AVPacket.dts/pts are.
+         * Code outside libavcodec should access this field using:
+         * avcodec_set_pkt_timebase(avctx)
+         * - encoding unused.
+         * - decodimg set by user
+         */
+        public native @ByRef AVRational pkt_timebase();  public native AVCodecContext pkt_timebase(AVRational pkt_timebase);
+
+        /**
+         * AVCodecDescriptor
+         * Code outside libavcodec should access this field using:
+         * avcodec_get_codec_descriptior(avctx)
+         * - encoding: unused.
+         * - decoding: set by libavcodec.
+         */
+        public native @Const AVCodecDescriptor codec_descriptor();
+        public native AVCodecContext codec_descriptor(AVCodecDescriptor codec_descriptor);
+
+        /**
          * Current statistics for PTS correction.
          * - decoding: maintained and used by libavcodec, not intended to be used by user apps
          * - encoding: unused
@@ -3082,6 +3259,12 @@ public class avcodec {
         public native long pts_correction_last_dts();       /// DTS of the last frame
         public native AVCodecContext pts_correction_last_dts(long pts_correction_last_dts); 
     }
+    @ByVal
+    public static native AVRational av_codec_get_pkt_timebase           (AVCodecContext avctx);
+    public static native void       av_codec_set_pkt_timebase           (AVCodecContext avctx, @ByVal AVRational val);
+    @Const
+    public static native AVCodecDescriptor av_codec_get_codec_descriptor(AVCodecContext avctx);
+    public static native void              av_codec_set_codec_descriptor(AVCodecContext avctx, AVCodecDescriptor desc);
 
     /**
      * AVProfile.
@@ -3139,7 +3322,7 @@ public class avcodec {
         public native BytePointer long_name();            public native AVCodec long_name(BytePointer long_name);
         @Cast("AVMediaType")
         public native int type();                         public native AVCodec type(int type);
-        @Cast("CodecID")
+        @Cast("AVCodecID")
         public native int id();                           public native AVCodec id(int id);
         /**
          * Codec capabilities.
@@ -3198,9 +3381,9 @@ public class avcodec {
         /**
          * Codec implemented by the hardware accelerator.
          *
-         * See CODEC_ID_xxx
+         * See AV_CODEC_ID_xxx
          */
-        @Cast("CodecID")
+        @Cast("AVCodecID")
         public native int id();                    public native AVHWAccel id(int id);
 
         /**
@@ -3373,7 +3556,7 @@ public class avcodec {
 
         /**
          * 0 terminated ASS/SSA compatible event line.
-         * The pressentation of this is unaffected by the other values in this
+         * The presentation of this is unaffected by the other values in this
          * struct.
          */
         @Cast("char *")
@@ -3519,7 +3702,7 @@ public class avcodec {
 
     /**
      * Allocate an AVFrame and set its fields to default values.  The resulting
-     * struct can be deallocated by simply calling av_free().
+     * struct must be freed using avcodec_free_frame().
      *
      * @return An AVFrame filled with default values or NULL on failure.
      * @see avcodec_get_frame_defaults
@@ -3529,9 +3712,21 @@ public class avcodec {
     /**
      * Set the fields of the given AVFrame to default values.
      *
-     * @param pic The AVFrame of which the fields should be set to default values.
+     * @param frame The AVFrame of which the fields should be set to default values.
      */
-    public static native void avcodec_get_frame_defaults(AVFrame pic);
+    public static native void avcodec_get_frame_defaults(AVFrame frame);
+
+    /**
+     * Free the frame and any dynamically allocated objects in it,
+     * e.g. extended_data.
+     *
+     * @param frame frame to be freed. The pointer will be set to NULL.
+     *
+     * @warning this function does NOT free the data buffers themselves
+     * (it does not know how, since they might have been allocated with
+     *  a custom get_buffer()).
+     */
+    public static native void avcodec_free_frame(@ByPtrPtr AVFrame frame);
 
     /**
      * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
@@ -3546,7 +3741,7 @@ public class avcodec {
      * @code
      * avcodec_register_all();
      * av_dict_set(&opts, "b", "2.5M", 0);
-     * codec = avcodec_find_decoder(CODEC_ID_H264);
+     * codec = avcodec_find_decoder(AV_CODEC_ID_H264);
      * if (!codec)
      *     exit(1);
      *
@@ -3606,6 +3801,9 @@ public class avcodec {
     /**
      * Initialize optional fields of a packet with default values.
      *
+     * Note, this does not touch the data and size members, which have to be
+     * initialized separately.
+     *
      * @param pkt packet
      */
     public static native void av_init_packet(AVPacket pkt);
@@ -3641,6 +3839,13 @@ public class avcodec {
      * packet is allocated if it was not really allocated.
      */
     public static native int av_dup_packet(AVPacket pkt);
+
+    /**
+     * Copy packet, including contents
+     *
+     * @return 0 on success, negative AVERROR on fail
+     */
+    public static native int av_copy_packet(AVPacket dst, AVPacket src);
 
     /**
      * Free a packet.
@@ -3699,10 +3904,10 @@ public class avcodec {
     /**
      * Find a registered decoder with a matching codec ID.
      *
-     * @param id CodecID of the requested decoder
+     * @param id AVCodecID of the requested decoder
      * @return A decoder if one was found, NULL otherwise.
      */
-    public static native AVCodec avcodec_find_decoder(@Cast("CodecID") int id);
+    public static native AVCodec avcodec_find_decoder(@Cast("AVCodecID") int id);
 
     /**
      * Find a registered decoder with the specified name.
@@ -4114,10 +4319,10 @@ public class avcodec {
     /**
      * Find a registered encoder with a matching codec ID.
      *
-     * @param id CodecID of the requested encoder
+     * @param id AVCodecID of the requested encoder
      * @return An encoder if one was found, NULL otherwise.
      */
-    public static native AVCodec avcodec_find_encoder(@Cast("CodecID") int id);
+    public static native AVCodec avcodec_find_encoder(@Cast("AVCodecID") int id);
 
     /**
      * Find a registered encoder with the specified name.
@@ -4140,11 +4345,12 @@ public class avcodec {
      *                  The user can supply an output buffer by setting
      *                  avpkt->data and avpkt->size prior to calling the
      *                  function, but if the size of the user-provided data is not
-     *                  large enough, encoding will fail. All other AVPacket fields
-     *                  will be reset by the encoder using av_init_packet(). If
-     *                  avpkt->data is NULL, the encoder will allocate it.
-     *                  The encoder will set avpkt->size to the size of the
-     *                  output packet.
+     *                  large enough, encoding will fail. If avpkt->data and
+     *                  avpkt->size are set, avpkt->destruct must also be set. All
+     *                  other AVPacket fields will be reset by the encoder using
+     *                  av_init_packet(). If avpkt->data is NULL, the encoder will
+     *                  allocate it. The encoder will set avpkt->size to the size
+     *                  of the output packet.
      *
      *                  If this function fails or produces no output, avpkt will be
      *                  freed using av_free_packet() (i.e. avpkt->destruct will be
@@ -4325,15 +4531,9 @@ public class avcodec {
      */
 
     /**
-     * Allocate memory for a picture.  Call avpicture_free() to free it.
+     * Fill in the AVPicture fields, always assume a linesize alignment of 1.
      *
-     * @see avpicture_fill()
-     *
-     * @param picture the picture to be filled in
-     * @param pix_fmt the format of the picture
-     * @param width the width of the picture
-     * @param height the height of the picture
-     * @return zero if successful, a negative value if not
+     * @see av_image_fill_arrays()
      */
     public static native int avpicture_alloc(AVPicture picture, @Cast("PixelFormat") int pix_fmt, int width, int height);
 
@@ -4370,19 +4570,10 @@ public class avcodec {
             @Cast("PixelFormat") int pix_fmt, int width, int height);
 
     /**
-     * Copy pixel data from an AVPicture into a buffer.
-     * The data is stored compactly, without any gaps for alignment or padding
-     * which may be applied by avpicture_fill().
+     * Copy pixel data from an AVPicture into a buffer, always assume a
+     * linesize alignment of 1.
      *
-     * @see avpicture_get_size()
-     *
-     * @param[in] src AVPicture containing image data
-     * @param[in] pix_fmt The format in which the picture data is stored.
-     * @param[in] width the width of the image in pixels.
-     * @param[in] height the height of the image in pixels.
-     * @param[out] dest A buffer into which picture data will be copied.
-     * @param[in] dest_size The size of 'dest'.
-     * @return The number of bytes written to dest, or a negative value (error code) on error.
+     * @see av_image_copy_to_buffer()
      */
     public static native int avpicture_layout(AVPicture src, @Cast("PixelFormat") int pix_fmt,
             int width, int height, @Cast("unsigned char*") BytePointer dest, int dest_size);
@@ -4390,14 +4581,9 @@ public class avcodec {
     /**
      * Calculate the size in bytes that a picture of the given width and height
      * would occupy if stored in the given picture format.
-     * Note that this returns the size of a compact representation as generated
-     * by avpicture_layout(), which can be smaller than the size required for e.g.
-     * avpicture_fill().
+     * Always assume a linesize alignment of 1.
      *
-     * @param pix_fmt the given picture format
-     * @param width the width of the image
-     * @param height the height of the image
-     * @return Image data size in bytes or -1 on error (e.g. too large dimensions).
+     * @see av_image_get_buffer_size().
      */
     public static native int avpicture_get_size(@Cast("PixelFormat") int pix_fmt, int width, int height);
 
@@ -4407,7 +4593,7 @@ public class avcodec {
     public static native int avpicture_deinterlace(AVPicture dst, AVPicture src,
             @Cast("PixelFormat") int pix_fmt, int width, int height);
     /**
-     * Copy image src to dst. Wraps av_picture_data_copy() above.
+     * Copy image src to dst. Wraps av_image_copy().
      */
     public static native void av_picture_copy(AVPicture dst, AVPicture src,
             @Cast("PixelFormat") int pix_fmt, int width, int height);
@@ -4484,6 +4670,8 @@ public class avcodec {
             @Cast("PixelFormat") int src_pix_fmt, int has_alpha);
 
     /**
+     * @deprecated use avcodec_find_best_pix_fmt_of_2() instead.
+     * 
      * Find the best pixel format to convert to given a certain source pixel
      * format.  When converting from one pixel format to another, information loss
      * may occur.  For example, when converting from RGB24 to GRAY, the color
@@ -4507,7 +4695,28 @@ public class avcodec {
      * @param[out] loss_ptr Combination of flags informing you what kind of losses will occur.
      * @return The best pixel format to convert to or -1 if none was found.
      */
+    @Deprecated
     public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt(long pix_fmt_mask,
+            @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
+
+    /**
+     * Find the best pixel format to convert to given a certain source pixel
+     * format.  When converting from one pixel format to another, information loss
+     * may occur.  For example, when converting from RGB24 to GRAY, the color
+     * information will be lost. Similarly, other losses occur when converting from
+     * some formats to other formats. avcodec_find_best_pix_fmt_of_2() searches which of
+     * the given pixel formats should be used to suffer the least amount of loss.
+     * The pixel formats from which it chooses one, are determined by the
+     * pix_fmt_list parameter.
+     *
+     *
+     * @param[in] pix_fmt_list PIX_FMT_NONE terminated array of pixel formats to choose from
+     * @param[in] src_pix_fmt source pixel format
+     * @param[in] has_alpha Whether the source pixel format alpha channel is used.
+     * @param[out] loss_ptr Combination of flags informing you what kind of losses will occur.
+     * @return The best pixel format to convert to or -1 if none was found.
+     */
+    public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt_of_list(@Cast("PixelFormat*") int[] pix_fmt_list,
             @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
 
     /**
@@ -4515,7 +4724,7 @@ public class avcodec {
      * format and a selection of two destination pixel formats. When converting from
      * one pixel format to another, information loss may occur.  For example, when converting
      * from RGB24 to GRAY, the color information will be lost. Similarly, other losses occur when
-     * converting from some formats to other formats. avcodec_find_best_pix_fmt2() selects which of
+     * converting from some formats to other formats. avcodec_find_best_pix_fmt_of_2() selects which of
      * the given pixel formats should be used to suffer the least amount of loss.
      *
      * If one of the destination formats is PIX_FMT_NONE the other pixel format (if valid) will be
@@ -4527,8 +4736,8 @@ public class avcodec {
      * dst_pix_fmt2= PIX_FMT_GRAY8;
      * dst_pix_fmt3= PIX_FMT_RGB8;
      * loss= FF_LOSS_CHROMA; // don't care about chroma loss, so chroma loss will be ignored.
-     * dst_pix_fmt = avcodec_find_best_pix_fmt2(dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, alpha, &loss);
-     * dst_pix_fmt = avcodec_find_best_pix_fmt2(dst_pix_fmt, dst_pix_fmt3, src_pix_fmt, alpha, &loss);
+     * dst_pix_fmt = avcodec_find_best_pix_fmt_of_2(dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, alpha, &loss);
+     * dst_pix_fmt = avcodec_find_best_pix_fmt_of_2(dst_pix_fmt, dst_pix_fmt3, src_pix_fmt, alpha, &loss);
      * @endcode
      *
      * @param[in] dst_pix_fmt1 One of the two destination pixel formats to choose from
@@ -4540,6 +4749,9 @@ public class avcodec {
      *                               that occurs when converting from src to selected dst pixel format.
      * @return The best pixel format to convert to or -1 if none was found.
      */
+    public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt_of_2(@Cast("PixelFormat") int dst_pix_fmt1,
+            @Cast("PixelFormat") int dst_pix_fmt2, @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
+    @Deprecated
     public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt2(@Cast("PixelFormat") int dst_pix_fmt1,
             @Cast("PixelFormat") int dst_pix_fmt2, @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
 
@@ -4608,15 +4820,15 @@ public class avcodec {
      * @param[in] codec_id the codec
      * @return Number of bits per sample or zero if unknown for the given codec.
      */
-    public static native int av_get_bits_per_sample(@Cast("CodecID") int codec_id);
+    public static native int av_get_bits_per_sample(@Cast("AVCodecID") int codec_id);
 
     /**
      * Return the PCM codec associated with a sample format.
      * @param be  endianness, 0 for little, 1 for big,
      *            -1 (or anything else) for native
-     * @return  CODEC_ID_PCM_* or CODEC_ID_NONE
+     * @return  AV_CODEC_ID_PCM_* or AV_CODEC_ID_NONE
      */
-    public static native @Cast("CodecID") int av_get_pcm_codec(@Cast("AVSampleFormat") int fmt, int be);
+    public static native @Cast("AVCodecID") int av_get_pcm_codec(@Cast("AVSampleFormat") int fmt, int be);
 
     /**
      * Return codec bits per sample.
@@ -4626,7 +4838,7 @@ public class avcodec {
      * @param[in] codec_id the codec
      * @return Number of bits per sample or zero if unknown for the given codec.
      */
-    public static native int av_get_exact_bits_per_sample(@Cast("CodecID") int codec_id);
+    public static native int av_get_exact_bits_per_sample(@Cast("AVCodecID") int codec_id);
 
     /**
      * Return audio frame duration.
@@ -4739,6 +4951,12 @@ public class avcodec {
     public static native void av_fast_padded_malloc(Pointer ptr, @Cast("unsigned*") int[] size, @Cast("size_t") long min_size);
 
     /**
+     * Same behaviour av_fast_padded_malloc except that buffer will always
+     * be 0-initialized after call.
+     */
+    public static native void av_fast_padded_mallocz(Pointer ptr, @Cast("unsigned*") int[] size, @Cast("size_t") long min_size);
+
+    /**
      * Encode extradata length to a buffer. Used by xiph codecs.
      *
      * @param s buffer to write to; must be at least (v/255+1) bytes long
@@ -4818,13 +5036,13 @@ public class avcodec {
     /**
      * Get the type of the given codec.
      */
-    public static native @Cast("AVMediaType") int avcodec_get_type(@Cast("CodecID") int codec_id);
+    public static native @Cast("AVMediaType") int avcodec_get_type(@Cast("AVCodecID") int codec_id);
 
     /**
      * Get the name of a codec.
      * @return  a static string identifying the codec; never NULL
      */
-    public static native String avcodec_get_name(@Cast("CodecID") int id);
+    public static native String avcodec_get_name(@Cast("AVCodecID") int id);
 
     /**
      * @return a positive value if s is open (i.e. avcodec_open2() was called on it
@@ -4841,6 +5059,26 @@ public class avcodec {
      * @return a non-zero number if codec is a decoder, zero otherwise
      */
     public static native int av_codec_is_decoder(AVCodec codec);
+
+    /**
+     * @return descriptor for given codec ID or NULL if no descriptor exists.
+     */
+    public static native @Const AVCodecDescriptor avcodec_descriptor_get(@Cast("AVCodecID") int id);
+
+    /**
+     * Iterate over all codec descriptors known to libavcodec.
+     *
+     * @param prev previous descriptor. NULL to get the first descriptor.
+     *
+     * @return next descriptor or NULL after the last descriptor
+     */
+    public static native @Const AVCodecDescriptor avcodec_descriptor_next(AVCodecDescriptor prev);
+
+    /**
+     * @return codec descriptor with the given name or NULL if no such descriptor
+     *         exists.
+     */
+    public static native @Const AVCodecDescriptor avcodec_descriptor_get_by_name(String name);
 
     /**
      * @}

@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avformat.h and avio.h include files from
- * FFmpeg 0.11.1, which are covered by the following copyright notice:
+ * FFmpeg 1.0, which are covered by the following copyright notice:
  *
  * copyright (c) 2001 Fabrice Bellard
  *
@@ -89,8 +89,8 @@ public class avformat {
      */
 
     public static final int LIBAVFORMAT_VERSION_MAJOR = 54;
-    public static final int LIBAVFORMAT_VERSION_MINOR =  6;
-    public static final int LIBAVFORMAT_VERSION_MICRO = 100;
+    public static final int LIBAVFORMAT_VERSION_MINOR = 29;
+    public static final int LIBAVFORMAT_VERSION_MICRO = 104;
 
     public static final int    LIBAVFORMAT_VERSION_INT = AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR,
                                                                         LIBAVFORMAT_VERSION_MINOR,
@@ -436,6 +436,18 @@ public class avformat {
           * call the underlying seek function directly.
           */
         public native int direct();   public native AVIOContext direct(int direct);
+
+        /**
+         * Bytes read statistic
+         * This field is internal to libavformat and access from outside is not allowed.
+         */
+        public native long bytes_read(); public native AVIOContext bytes_read(long bytes_read);
+
+        /**
+         * seek statistic
+         * This field is internal to libavformat and access from outside is not allowed.
+         */
+        public native int seek_count();  public native AVIOContext seek_count(int seek_count);
     }
 
     /* unbuffered I/O */
@@ -467,6 +479,7 @@ public class avformat {
      * @param opaque An opaque pointer to user-specific data.
      * @param read_packet  A function for refilling the buffer, may be NULL.
      * @param write_packet A function for writing the buffer contents, may be NULL.
+     *        The function may not change the input buffers content.
      * @param seek A function for seeking to specified byte position, may be NULL.
      *
      * @return Allocated AVIOContext or NULL on failure.
@@ -546,8 +559,13 @@ public class avformat {
     /** @warning currently size is limited */
     public static native int avio_printf(AVIOContext s, String fmt);
 
+    /**
+     * Force flushing of buffered data to the output s.
+     *
+     * Force the buffered data to be immediately written to the output,
+     * without to wait to fill the internal buffer.
+     */
     public static native void avio_flush(AVIOContext s);
-
 
     /**
      * Read size bytes from AVIOContext into buf.
@@ -674,6 +692,9 @@ public class avformat {
      * Close the resource accessed by the AVIOContext s and free it.
      * This function can only be used if s was opened by avio_open().
      *
+     * The internal buffer is automatically flushed before closing the
+     * resource.
+     *
      * @return 0 on success, an AVERROR < 0 on error.
      */
     public static native int avio_close(AVIOContext s);
@@ -699,7 +720,6 @@ public class avformat {
 
     /**
      * Iterate through names of available protocols.
-     * @note it is recommended to use av_protocol_next() instead of this
      *
      * @param opaque A private pointer representing current protocol.
      *        It must be a pointer to NULL on first iteration and will
@@ -954,11 +974,11 @@ public class avformat {
         @Cast("const char*") /**< comma-separated filename extensions */
         public native BytePointer extensions();   public native AVOutputFormat extensions(BytePointer extensions);
         /* output support */
-        @Cast("CodecID")     /**< default audio codec */
+        @Cast("AVCodecID")     /**< default audio codec */
         public native int audio_codec();          public native AVOutputFormat audio_codec(int audio_codec);
-        @Cast("CodecID")     /**< default video codec */
+        @Cast("AVCodecID")     /**< default video codec */
         public native int video_codec();          public native AVOutputFormat video_codec(int video_codec);
-        @Cast("CodecID")     /**< default subtitle codec */
+        @Cast("AVCodecID")     /**< default subtitle codec */
         public native int subtitle_codec();       public native AVOutputFormat subtitle_codec(int subtitle_codec);
         /**
          * can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_RAWPICTURE,
@@ -970,7 +990,7 @@ public class avformat {
 
         /**
          * List of supported codec_id-codec_tag pairs, ordered by "better
-         * choice first". The arrays are all terminated by CODEC_ID_NONE.
+         * choice first". The arrays are all terminated by AV_CODEC_ID_NONE.
          */
         @Cast("const AVCodecTag * const *")
         public native PointerPointer codec_tag(); public native AVOutputFormat codec_tag(PointerPointer codec_tag);
@@ -1045,7 +1065,9 @@ public class avformat {
             AVSTREAM_PARSE_HEADERS    = 2, /**< Only parse headers, do not repack. */
             AVSTREAM_PARSE_TIMESTAMPS = 3, /**< full parsing and interpolation of timestamps for frames not starting on a packet boundary */
             AVSTREAM_PARSE_FULL_ONCE  = 4, /**< full parsing and repack of the first frame only, only implemented for H.264 currently */
-            AVSTREAM_PARSE_FULL_RAW   = MKTAG(0,'R','A','W'); /**< full parsing and repack with timestamp generation for raw */
+            AVSTREAM_PARSE_FULL_RAW   = MKTAG(0,'R','A','W'); /**< full parsing and repack with timestamp and position generation by parser for raw
+                                                                   this assumes that each packet in the file contains no demuxer level headers and
+                                                                   just codec level data, otherwise position generaion would fail */
 
     public static class AVIndexEntry extends Pointer {
         static { load(); }
@@ -1283,6 +1305,16 @@ public class avformat {
         public native AVDictionary metadata(); public native AVChapter metadata(AVDictionary metadata);
     }
 
+
+    /**
+     * The duration of a video can be estimated through various ways, and this enum can be used
+     * to know how the duration was estimated.
+     */
+    public static final int // enum AVDurationEstimationMethod {
+            AVFMT_DURATION_FROM_PTS      = 0, ///< Duration accurately estimated from PTSes
+            AVFMT_DURATION_FROM_STREAM   = 1, ///< Duration estimated from a stream with a known duration
+            AVFMT_DURATION_FROM_BITRATE  = 2; ///< Duration estimated from bitrate (less accurate)
+
     /**
      * Format I/O context.
      * New fields can be added to the end with minor version bumps.
@@ -1392,12 +1424,13 @@ public class avformat {
                 AVFMT_FLAG_IGNDTS      = 0x0008, ///< Ignore DTS on frames that contain both DTS & PTS
                 AVFMT_FLAG_NOFILLIN    = 0x0010, ///< Do not infer any values from other values, just return what is stored in the container
                 AVFMT_FLAG_NOPARSE     = 0x0020, ///< Do not use AVParsers, you also must set AVFMT_FLAG_NOFILLIN as the fillin code works on frames and no parsing -> no frames. Also seeking to frames can not work if parsing to find frame boundaries has been disabled
+                AVFMT_FLAG_NOBUFFER    = 0x0040, ///< Do not buffer frames when possible
                 AVFMT_FLAG_CUSTOM_IO   = 0x0080, ///< The caller has supplied a custom AVIOContext, don't avio_close() it.
                 AVFMT_FLAG_DISCARD_CORRUPT = 0x0100, ///< Discard frames marked corrupted
                 AVFMT_FLAG_MP4A_LATM   = 0x8000, ///< Enable RTP MP4A-LATM payload
                 AVFMT_FLAG_SORT_DTS   = 0x10000, ///< try to interleave outputted packets by dts (using this flag can slow demuxing down)
                 AVFMT_FLAG_PRIV_OPT   = 0x20000, ///< Enable use of private options by delaying codec open (this could be made default once all code is converted)
-                AVFMT_FLAG_KEEP_SIDE_DATA = 0x40000; ///< Dont merge side data but keep it separate.
+                AVFMT_FLAG_KEEP_SIDE_DATA = 0x40000; ///< Don't merge side data but keep it separate.
 
         /**
          * decoding: size of data to probe; encoding: unused.
@@ -1425,21 +1458,21 @@ public class avformat {
          * Forced video codec_id.
          * Demuxing: Set by user.
          */
-        @Cast("CodecID")
+        @Cast("AVCodecID")
         public native int video_codec_id();                 public native AVFormatContext video_codec_id(int video_codec_id);
 
         /**
          * Forced audio codec_id.
          * Demuxing: Set by user.
          */
-        @Cast("CodecID")
+        @Cast("AVCodecID")
         public native int audio_codec_id();                 public native AVFormatContext audio_codec_id(int audio_codec_id);
 
         /**
          * Forced subtitle codec_id.
          * Demuxing: Set by user.
          */
-        @Cast("CodecID")
+        @Cast("AVCodecID")
         public native int subtitle_codec_id();              public native AVFormatContext subtitle_codec_id(int subtitle_codec_id);
 
         /**
@@ -1539,6 +1572,64 @@ public class avformat {
          * - decoding: unused
          */
         public native int max_chunk_size();                 public native AVFormatContext max_chunk_size(int max_chunk_size);
+
+        /**
+         * forces the use of wallclock timestamps as pts/dts of packets
+         * This has undefined results in the presence of B frames.
+         * - encoding: unused
+         * - decoding: Set by user via AVOptions (NO direct access)
+         */
+        public native int use_wallclock_as_timestamps();    public native AVFormatContext use_wallclock_as_timestamps(int use_wallclock_as_timestamps);
+
+        /**
+         * Avoids negative timestamps during muxing
+         *  0 -> allow negative timestamps
+         *  1 -> avoid negative timestamps
+         * -1 -> choose automatically (default)
+         * Note, this is only works when interleave_packet_per_dts is in use
+         * - encoding: Set by user via AVOptions (NO direct access)
+         * - decoding: unused
+         */
+        public native int avoid_negative_ts();              public native AVFormatContext avoid_negative_ts(int avoid_negative_ts);
+
+        /**
+         * avio flags, used to force AVIO_FLAG_DIRECT.
+         * - encoding: unused
+         * - decoding: Set by user via AVOptions (NO direct access)
+         */
+        public native int avio_flags();                     public native AVFormatContext avio_flags(int avio_flags);
+
+        /**
+         * The duration field can be estimated through various ways, and this field can be used
+         * to know how the duration was estimated.
+         * - encoding: unused
+         * - decoding: Read by user via AVOptions (NO direct access)
+         */
+        @Cast("AVDurationEstimationMethod")
+        public native int duration_estimation_method();     public native AVFormatContext duration_estimation_method(int duration_estimation_method);
+    }
+
+    /**
+     * Returns the method used to set ctx->duration.
+     *
+     * @return AVFMT_DURATION_FROM_PTS, AVFMT_DURATION_FROM_STREAM, or AVFMT_DURATION_FROM_BITRATE.
+     */
+    public static native @Cast("AVDurationEstimationMethod") int av_fmt_ctx_get_duration_estimation_method(AVFormatContext ctx);
+
+    public static class AVPacketList extends Pointer {
+        static { load(); }
+        public AVPacketList() { allocate(); }
+        public AVPacketList(int size) { allocateArray(size); }
+        public AVPacketList(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        @Override public AVPacketList position(int position) {
+            return (AVPacketList)super.position(position);
+        }
+
+        public native @ByRef AVPacket pkt(); public native AVPacketList pkt(AVPacket pkt);
+        public native AVPacketList next();   public native AVPacketList next(AVPacketList next);
     }
 
 
@@ -2005,7 +2096,7 @@ public class avformat {
     /**
      * Guess the codec ID based upon muxer and filename.
      */
-    public static native @Cast("CodecID") int av_guess_codec(AVOutputFormat fmt, String short_name,
+    public static native @Cast("AVCodecID") int av_guess_codec(AVOutputFormat fmt, String short_name,
             String filename, String mime_type, @Cast("AVMediaType") int type);
 
     /**
@@ -2036,8 +2127,7 @@ public class avformat {
      * @ingroup libavf
      * @{
      *
-     * Miscelaneous utility functions related to both muxing and demuxing
-     * (or neither).
+     * Miscellaneous utility functions related to both muxing and demuxing (or neither).
      */
 
     /**
@@ -2090,13 +2180,13 @@ public class avformat {
     public static native void av_pkt_dump_log2(Pointer avcl, int level, AVPacket pkt, int dump_payload, AVStream st);
 
     /**
-     * Get the CodecID for the given codec tag tag.
-     * If no codec id is found returns CODEC_ID_NONE.
+     * Get the AVCodecID for the given codec tag tag.
+     * If no codec id is found returns AV_CODEC_ID_NONE.
      *
      * @param tags list of supported codec_id-codec_tag pairs, as stored
      * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
      */
-    public static native @Cast("CodecID") int av_codec_get_id(@ByPtrPtr AVCodecTag tags, @Cast("unsigned") int tag);
+    public static native @Cast("AVCodecID") int av_codec_get_id(@ByPtrPtr AVCodecTag tags, @Cast("unsigned") int tag);
 
     /**
      * Get the codec tag for the given codec id id.
@@ -2105,7 +2195,7 @@ public class avformat {
      * @param tags list of supported codec_id-codec_tag pairs, as stored
      * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
      */
-    public static native @Cast("unsigned") int av_codec_get_tag(@ByPtrPtr AVCodecTag tags, @Cast("CodecID") int id);
+    public static native @Cast("unsigned") int av_codec_get_tag(@ByPtrPtr AVCodecTag tags, @Cast("AVCodecID") int id);
 
     public static native int av_find_default_stream_index(AVFormatContext s);
 
@@ -2153,11 +2243,6 @@ public class avformat {
             int hostname_size, int[] port_ptr, @Cast("char*") byte[] path, int path_size, String url);
 
     public static native void av_dump_format(AVFormatContext ic, int index, String url, int is_output);
-
-    /**
-     * Get the current time in microseconds.
-     */
-    public static native long av_gettime();
 
     /**
      * Return in 'buf' the path with '%d' replaced by a number.
@@ -2213,31 +2298,35 @@ public class avformat {
      * @return 1 if codec with ID codec_id can be stored in ofmt, 0 if it cannot.
      *         A negative number if this information is not available.
      */
-    public static native int avformat_query_codec(AVOutputFormat ofmt, @Cast("CodecID") int codec_id, int std_compliance);
+    public static native int avformat_query_codec(AVOutputFormat ofmt, @Cast("AVCodecID") int codec_id, int std_compliance);
 
     /**
      * @defgroup riff_fourcc RIFF FourCCs
      * @{
-     * Get the tables mapping RIFF FourCCs to libavcodec CodecIDs. The tables are
+     * Get the tables mapping RIFF FourCCs to libavcodec AVCodecIDs. The tables are
      * meant to be passed to av_codec_get_id()/av_codec_get_tag() as in the
      * following code:
      * @code
      * uint32_t tag = MKTAG('H', '2', '6', '4');
      * const struct AVCodecTag *table[] = { avformat_get_riff_video_tags(), 0 };
-     * enum CodecID id = av_codec_get_id(table, tag);
+     * enum AVCodecID id = av_codec_get_id(table, tag);
      * @endcode
      */
     /**
-     * @return the table mapping RIFF FourCCs for video to libavcodec CodecID.
+     * @return the table mapping RIFF FourCCs for video to libavcodec AVCodecID.
      */
     public static native @Const AVCodecTag avformat_get_riff_video_tags();
     /**
-     * @return the table mapping RIFF FourCCs for audio to CodecID.
+     * @return the table mapping RIFF FourCCs for audio to AVCodecID.
      */
     public static native @Const AVCodecTag avformat_get_riff_audio_tags();
 
     /**
-     * Guesses the sample aspect ratio of a frame, based on both the stream and the
+     * @}
+     */
+
+    /**
+     * Guess the sample aspect ratio of a frame, based on both the stream and the
      * frame aspect ratio.
      *
      * Since the frame aspect ratio is set by the codec but the stream aspect ratio
@@ -2256,8 +2345,21 @@ public class avformat {
     public static native @ByVal AVRational av_guess_sample_aspect_ratio(AVFormatContext format, AVStream stream, AVFrame frame);
 
     /**
-     * @}
+     * Check if the stream st contained in s is matched by the stream specifier
+     * spec.
+     *
+     * See the "stream specifiers" chapter in the documentation for the syntax
+     * of spec.
+     *
+     * @return  >0 if st is matched by spec;
+     *          0  if st is not matched by spec;
+     *          AVERROR code if spec is invalid
+     *
+     * @note  A stream specifier can match several streams in the format.
      */
+    public static native int avformat_match_stream_specifier(AVFormatContext s, AVStream st, String spec);
+
+    public static native void avformat_queue_attached_pictures(AVFormatContext s);
 
     /**
      * @}

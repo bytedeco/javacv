@@ -19,7 +19,7 @@ To use JavaCV, you will need to download and install the following software:
   * For Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
- * FFmpeg 0.11.x  http://ffmpeg.org/download.html
+ * FFmpeg 1.0.x  http://ffmpeg.org/download.html
   * For Windows  http://ffmpeg.zeranoe.com/builds/  Known compatible builds:
    * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-20120720-git-85761ef-win32-shared.7z
    * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-20120720-git-85761ef-win64-shared.7z
@@ -34,7 +34,7 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
 
 To modify the source code, please note that the project files were created for:
  * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP  http://code.google.com/p/javacpp/
+ * JavaCPP 0.3  http://code.google.com/p/javacpp/
 
 To rebuild, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
 
@@ -58,7 +58,7 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.2-android-arm.zip`, and `ffmpeg-0.11.1-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.2-android-arm.zip`, and `ffmpeg-1.0-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -217,6 +217,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Upgraded supported FFmpeg API to the 1.0 release branch
+ * Appended to `StringVector` and `MatVector` new convenient bulk constructors and `put()` methods taking arrays of `String`, `IplImage`, `CvMat`, etc.
  * Included new `Blobs` module from David Grossman and the corresponding `BlobDemo` sample
  * Added missing `opencv_core.partition()` function (issue #144)
  * Fixed up the samples a bit (issue #229 and issue #230)

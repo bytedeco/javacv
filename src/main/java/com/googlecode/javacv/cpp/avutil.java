@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avutil.h and other libavutil include files from
- * FFmpeg 0.11.1, which are covered by the following copyright notice:
+ * FFmpeg 1.0, which are covered by the following copyright notice:
  *
  * copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -66,7 +66,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={"<libavutil/avutil.h>", "<libavutil/audioconvert.h>",
-        "<libavutil/cpu.h>", "<libavutil/dict.h>", "<libavutil/opt.h>", "<libavutil/samplefmt.h>"},
+        "<libavutil/cpu.h>", "<libavutil/dict.h>", "<libavutil/opt.h>", "<libavutil/samplefmt.h>", "<libavutil/imgutils.h>"},
         includepath=genericIncludepath, linkpath=genericLinkpath, link="avutil@.51"),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avutil-51"),
@@ -89,7 +89,7 @@ public class avutil {
     /*
      * @mainpage
      *
-     * @section libav_intro Introduction
+     * @section ffmpeg_intro Introduction
      *
      * This document describes the usage of the different libraries
      * provided by FFmpeg.
@@ -203,7 +203,17 @@ public class avutil {
 
     /**
      * @}
-     *
+     */
+
+
+    // #include "version.h"
+    /**
+     * @file
+     * @ingroup lavu
+     * Libavutil version macros
+     */
+
+    /**
      * @defgroup lavu_ver Version and Build diagnostics
      *
      * Macros and function useful to check at compiletime and at runtime
@@ -213,8 +223,8 @@ public class avutil {
      */
 
     public static final int LIBAVUTIL_VERSION_MAJOR = 51;
-    public static final int LIBAVUTIL_VERSION_MINOR = 54;
-    public static final int LIBAVUTIL_VERSION_MICRO = 100;
+    public static final int LIBAVUTIL_VERSION_MINOR = 73;
+    public static final int LIBAVUTIL_VERSION_MICRO = 101;
 
     public static final int    LIBAVUTIL_VERSION_INT = AV_VERSION_INT(LIBAVUTIL_VERSION_MAJOR,
                                                                       LIBAVUTIL_VERSION_MINOR,
@@ -229,6 +239,7 @@ public class avutil {
     /**
      * @}
      */
+
 
     /**
      * @addtogroup lavu_ver
@@ -406,11 +417,13 @@ public class avutil {
     public static final int
             AVERROR_BSF_NOT_FOUND      = FFERRTAG(0xF8,'B','S','F'), ///< Bitstream filter not found
             AVERROR_BUG                = FFERRTAG( 'B','U','G','!'), ///< Internal bug, also see AVERROR_BUG2
+            AVERROR_BUFFER_TOO_SMALL   = FFERRTAG( 'B','U','F','S'), ///< Buffer too small
             AVERROR_DECODER_NOT_FOUND  = FFERRTAG(0xF8,'D','E','C'), ///< Decoder not found
             AVERROR_DEMUXER_NOT_FOUND  = FFERRTAG(0xF8,'D','E','M'), ///< Demuxer not found
             AVERROR_ENCODER_NOT_FOUND  = FFERRTAG(0xF8,'E','N','C'), ///< Encoder not found
             AVERROR_EOF                = FFERRTAG( 'E','O','F',' '), ///< End of file
             AVERROR_EXIT               = FFERRTAG( 'E','X','I','T'), ///< Immediate exit was requested; the called function should not be restarted
+            AVERROR_EXTERNAL           = FFERRTAG( 'E','X','T',' '), ///< Generic error in an external library
             AVERROR_FILTER_NOT_FOUND   = FFERRTAG(0xF8,'F','I','L'), ///< Filter not found
             AVERROR_INVALIDDATA        = FFERRTAG( 'I','N','D','A'), ///< Invalid data found when processing input
             AVERROR_MUXER_NOT_FOUND    = FFERRTAG(0xF8,'M','U','X'), ///< Muxer not found
@@ -424,7 +437,9 @@ public class avutil {
      * it has been introduced in Libav after our AVERROR_BUG and with a modified value.
      */
             AVERROR_BUG2               = FFERRTAG( 'B','U','G',' '),
-            AVERROR_UNKNOWN            = FFERRTAG( 'U','N','K','N'); ///< Unknown error, typically from an external library
+            AVERROR_UNKNOWN            = FFERRTAG( 'U','N','K','N'), ///< Unknown error, typically from an external library
+
+            AV_ERROR_MAX_STRING_SIZE   = 64;
 
     /**
      * Put a description of the AVERROR code errnum in errbuf.
@@ -439,6 +454,25 @@ public class avutil {
      * cannot be found
      */
     public static native int av_strerror(int errnum, @Cast("char*") byte[] errbuf, @Cast("size_t") long errbuf_size);
+
+    /**
+     * Fill the provided buffer with a string containing an error string
+     * corresponding to the AVERROR code errnum.
+     *
+     * @param errbuf         a buffer
+     * @param errbuf_size    size in bytes of errbuf
+     * @param errnum         error code to describe
+     * @return the buffer in input, filled with the error description
+     * @see av_strerror()
+     */
+    public static native @Cast("char*") BytePointer av_make_error_string(@Cast("char*") BytePointer errbuf,
+            @Cast("size_t") long errbuf_size, int errnum);
+
+    /**
+     * Convenience macro, the return value should be used only directly in
+     * function arguments but never stand-alone.
+     */
+    public static native String av_err2str(int errnum);
 
     /**
      * @}
@@ -466,6 +500,17 @@ public class avutil {
      * @see av_mallocz()
      */
     public static native Pointer av_malloc(@Cast("size_t") long size);
+
+    /**
+     * Helper function to allocate a block of size * nmemb bytes with
+     * using av_malloc()
+     * @param nmemb Number of elements
+     * @param size Size of the single element
+     * @return Pointer to the allocated block, NULL if the block cannot
+     * be allocated.
+     * @see av_malloc()
+     */
+    public static native Pointer av_malloc_array(@Cast("size_t") long nmemb, @Cast("size_t") long size);
 
     /**
      * Allocate or reallocate a block of memory.
@@ -522,6 +567,18 @@ public class avutil {
      * @return Pointer to the allocated block, NULL if it cannot be allocated.
      */
     public static native Pointer av_calloc(@Cast("size_t") long nmemb, @Cast("size_t") long size);
+
+    /**
+     * Helper function to allocate a block of size * nmemb bytes with
+     * using av_mallocz()
+     * @param nmemb Number of elements
+     * @param size Size of the single element
+     * @return Pointer to the allocated block, NULL if the block cannot
+     * be allocated.
+     * @see av_mallocz()
+     * @see av_malloc_array()
+     */
+    public static native Pointer av_mallocz_array(@Cast("size_t") long nmemb, @Cast("size_t") long size);
 
     /**
      * Duplicate the string s.
@@ -657,6 +714,13 @@ public class avutil {
     public static native @ByVal AVRational av_sub_q(@ByVal AVRational b, @ByVal AVRational c);
 
     /**
+     * Invert a rational.
+     * @param q value
+     * @return 1 / q
+     */
+    public static native @ByVal AVRational av_inv_q(@ByVal AVRational q);
+
+    /**
      * Convert a double precision floating point number to a rational.
      * inf is expressed as {1,0} or {-1,0} depending on the sign.
      *
@@ -684,6 +748,10 @@ public class avutil {
      */
 
 
+    // #include "intfloat.h"
+    // ...
+
+
     // #include "mathematics.h"
     public static final double
             M_E           = 2.7182818284590452354,   /* e */
@@ -694,8 +762,8 @@ public class avutil {
             M_PI          = 3.14159265358979323846,  /* pi */
             M_SQRT1_2     = 0.70710678118654752440,  /* 1/sqrt(2) */
             M_SQRT2       = 1.41421356237309504880,  /* sqrt(2) */
-            NAN           = (0.0/0.0),
-            INFINITY      = (1.0/0.0);
+            NAN           = Float.intBitsToFloat(0x7fc00000),
+            INFINITY      = Float.intBitsToFloat(0x7f800000);
 
     /**
      * @addtogroup lavu_math
@@ -771,6 +839,19 @@ public class avutil {
 
 
     // #include "log.h"
+    public static final int // enum AVClassCategory {
+            AV_CLASS_CATEGORY_NA = 0,
+            AV_CLASS_CATEGORY_INPUT = 1,
+            AV_CLASS_CATEGORY_OUTPUT = 2,
+            AV_CLASS_CATEGORY_MUXER = 3,
+            AV_CLASS_CATEGORY_DEMUXER = 4,
+            AV_CLASS_CATEGORY_ENCODER = 5,
+            AV_CLASS_CATEGORY_DECODER = 6,
+            AV_CLASS_CATEGORY_FILTER = 7,
+            AV_CLASS_CATEGORY_BITSTREAM_FILTER = 8,
+            AV_CLASS_CATEGORY_SWSCALER = 9,
+            AV_CLASS_CATEGORY_SWRESAMPLER = 10;
+
     /**
      * Describe the class of an AVClass context structure. That is an
      * arbitrary struct of which the first field is a pointer to an
@@ -856,6 +937,24 @@ public class avutil {
             public native @Const AVClass call(@Const AVClass prev);
         }
         public native Child_class_next child_class_next(); public native AVClass child_class_next(Child_class_next child_class_next);
+
+        /**
+         * Category used for visualization (like color)
+         * This is only set if the category is equal for all objects using this class.
+         * available since version (51 << 16 | 56 << 8 | 100)
+         */
+        @Cast("AVClassCategory")
+        public native int category(); public native AVClass category(int category);
+
+        /**
+         * Callback to return the category.
+         * available since version (51 << 16 | 59 << 8 | 100)
+         */
+        public static class Get_category extends FunctionPointer {
+            static { load(); }
+            public native @Cast("AVClassCategory") int call(Pointer ctx);
+        }
+        public native Get_category get_category(); public native AVClass get_category(Get_category get_category);
     }
 
     /* av_log API */
@@ -928,6 +1027,7 @@ public class avutil {
     public static native void av_log_default_callback(Pointer ptr, int level,
             String fmt, @ByVal @Cast("va_list*") Pointer vl);
     public static native String av_default_item_name(Pointer ctx);
+    public static native @Cast("AVClassCategory") int av_default_get_category(Pointer ptr);
 
     /**
      * Format a line of log the same way as the default callback.
@@ -1078,7 +1178,7 @@ public class avutil {
             PIX_FMT_BGR48LE   = 68, ///< packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as little-endian
 
             //the following 10 formats have the disadvantage of needing 1 format for each bit depth, thus
-            //If you want to support multiple bit depths, then using PIX_FMT_YUV420P16* with the bpp stored seperately
+            //If you want to support multiple bit depths, then using PIX_FMT_YUV420P16* with the bpp stored separately
             //is better
             PIX_FMT_YUV420P9BE  = 69, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
             PIX_FMT_YUV420P9LE  = 70, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
@@ -1113,6 +1213,23 @@ public class avutil {
             PIX_FMT_YUVA444P=0x123+8, ///< planar YUV 4:4:4 32bpp, (1 Cr & Cb sample per 1x1 Y & A samples)
             PIX_FMT_YUVA422P=0x123+9, ///< planar YUV 4:2:2 24bpp, (1 Cr & Cb sample per 2x1 Y & A samples)
 
+            PIX_FMT_YUV420P12BE=0x123+9,  ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+            PIX_FMT_YUV420P12LE=0x123+10, ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+            PIX_FMT_YUV420P14BE=0x123+11, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+            PIX_FMT_YUV420P14LE=0x123+12, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+            PIX_FMT_YUV422P12BE=0x123+13, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+            PIX_FMT_YUV422P12LE=0x123+14, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+            PIX_FMT_YUV422P14BE=0x123+15, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+            PIX_FMT_YUV422P14LE=0x123+16, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+            PIX_FMT_YUV444P12BE=0x123+17, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+            PIX_FMT_YUV444P12LE=0x123+18, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+            PIX_FMT_YUV444P14BE=0x123+19, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+            PIX_FMT_YUV444P14LE=0x123+20, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+            PIX_FMT_GBRP12BE=0x123+21,    ///< planar GBR 4:4:4 36bpp, big endian
+            PIX_FMT_GBRP12LE=0x123+22,    ///< planar GBR 4:4:4 36bpp, little endian
+            PIX_FMT_GBRP14BE=0x123+23,    ///< planar GBR 4:4:4 42bpp, big endian
+            PIX_FMT_GBRP14LE=0x123+24,    ///< planar GBR 4:4:4 42bpp, little endian
+
             PIX_FMT_Y400A  = PIX_FMT_GRAY8A,
             PIX_FMT_GBR24P = PIX_FMT_GBRP,
 
@@ -1139,6 +1256,12 @@ public class avutil {
             PIX_FMT_YUV420P10 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P10BE : PIX_FMT_YUV420P10LE,
             PIX_FMT_YUV422P10 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P10BE : PIX_FMT_YUV422P10LE,
             PIX_FMT_YUV444P10 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P10BE : PIX_FMT_YUV444P10LE,
+            PIX_FMT_YUV420P12 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P12BE : PIX_FMT_YUV420P12LE,
+            PIX_FMT_YUV422P12 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P12BE : PIX_FMT_YUV422P12LE,
+            PIX_FMT_YUV444P12 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P12BE : PIX_FMT_YUV444P12LE,
+            PIX_FMT_YUV420P14 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P14BE : PIX_FMT_YUV420P14LE,
+            PIX_FMT_YUV422P14 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P14BE : PIX_FMT_YUV422P14LE,
+            PIX_FMT_YUV444P14 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P14BE : PIX_FMT_YUV444P14LE,
             PIX_FMT_YUV420P16 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P16BE : PIX_FMT_YUV420P16LE,
             PIX_FMT_YUV422P16 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P16BE : PIX_FMT_YUV422P16LE,
             PIX_FMT_YUV444P16 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P16BE : PIX_FMT_YUV444P16LE,
@@ -1147,6 +1270,8 @@ public class avutil {
             PIX_FMT_BGRA64 = AV_HAVE_BIGENDIAN() ? PIX_FMT_BGRA64BE : PIX_FMT_BGRA64LE,
             PIX_FMT_GBRP9  = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP9BE  : PIX_FMT_GBRP9LE,
             PIX_FMT_GBRP10 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP10BE : PIX_FMT_GBRP10LE,
+            PIX_FMT_GBRP12 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP12BE : PIX_FMT_GBRP12LE,
+            PIX_FMT_GBRP14 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP14BE : PIX_FMT_GBRP14LE,
             PIX_FMT_GBRP16 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP16BE : PIX_FMT_GBRP16LE;
 
 
@@ -1243,6 +1368,12 @@ public class avutil {
             AV_CH_LAYOUT_OCTAGONAL         = (AV_CH_LAYOUT_5POINT0|AV_CH_BACK_LEFT|AV_CH_BACK_CENTER|AV_CH_BACK_RIGHT),
             AV_CH_LAYOUT_STEREO_DOWNMIX    = (AV_CH_STEREO_LEFT|AV_CH_STEREO_RIGHT);
 
+    public static final int // enum AVMatrixEncoding {
+            AV_MATRIX_ENCODING_NONE  = 0,
+            AV_MATRIX_ENCODING_DOLBY = 1,
+            AV_MATRIX_ENCODING_DPLII = 2,
+            AV_MATRIX_ENCODING_NB    = 3;
+
     /**
      * @}
      */
@@ -1276,6 +1407,16 @@ public class avutil {
     public static native void av_get_channel_layout_string(@Cast("char*") BytePointer buf, int buf_size,
             int nb_channels, long channel_layout);
 
+    @Opaque public static class AVBPrint extends Pointer {
+        static { load(); }
+        public AVBPrint() { }
+        public AVBPrint(Pointer p) { super(p); }
+    }
+    /**
+     * Append a description of a channel layout to a bprint buffer.
+     */
+    public static native void av_bprint_channel_layout(AVBPrint bp, int nb_channels, long channel_layout);
+
     /**
      * Return the number of channels in the channel layout.
      */
@@ -1285,6 +1426,49 @@ public class avutil {
      * Return default channel layout for a given number of channels.
      */
     public static native long av_get_default_channel_layout(int nb_channels);
+
+    /**
+     * Get the index of a channel in channel_layout.
+     *
+     * @param channel a channel layout describing exactly one channel which must be
+     *                present in channel_layout.
+     *
+     * @return index of channel in channel_layout on success, a negative AVERROR
+     *         on error.
+     */
+    public static native int av_get_channel_layout_channel_index(long channel_layout, long channel);
+
+    /**
+     * Get the channel with the given index in channel_layout.
+     */
+    public static native long av_channel_layout_extract_channel(long channel_layout, int index);
+
+    /**
+     * Get the name of a given channel.
+     *
+     * @return channel name on success, NULL on error.
+     */
+    public static native String av_get_channel_name(long channel);
+
+    /**
+     * Get the description of a given channel.
+     *
+     * @param channel  a channel layout with a single channel
+     * @return  channel description on success, NULL on error
+     */
+    public static native String av_get_channel_description(long channel);
+
+    /**
+     * Get the value and name of a standard channel layout.
+     *
+     * @param[in]  index   index in an internal list, starting at 0
+     * @param[out] layout  channel layout mask
+     * @param[out] name    name of the layout
+     * @return  0  if the layout exists,
+     *          <0 if index is beyond the limits
+     */
+    public static native int av_get_standard_channel_layout(@Cast("unsigned") int index,
+            @Cast("uint64_t*") long[] layout, @Cast("const char**") @ByPtrPtr BytePointer name);
 
     /**
      * @}
@@ -1297,7 +1481,7 @@ public class avutil {
 
             /* lower 16 bits - CPU features */
             AV_CPU_FLAG_MMX          = 0x0001, ///< standard MMX
-            AV_CPU_FLAG_MMX2         = 0x0002, ///< SSE integer functions or AMD MMX ext
+            AV_CPU_FLAG_MMXEXT       = 0x0002, ///< SSE integer functions or AMD MMX ext
             AV_CPU_FLAG_3DNOW        = 0x0004, ///< AMD 3DNOW
             AV_CPU_FLAG_SSE          = 0x0008, ///< SSE functions
             AV_CPU_FLAG_SSE2         = 0x0010, ///< PIV SSE2 functions
@@ -1310,7 +1494,7 @@ public class avutil {
             AV_CPU_FLAG_SSE4         = 0x0100, ///< Penryn SSE4.1 functions
             AV_CPU_FLAG_SSE42        = 0x0200, ///< Nehalem SSE4.2 functions
             AV_CPU_FLAG_AVX          = 0x4000, ///< AVX functions: requires OS support even if YMM registers aren't used
-            AV_CPU_FLAG_CMOV      = 0x1000000, ///< supports cmov instruction
+            AV_CPU_FLAG_CMOV         = 0x1000, ///< supports cmov instruction
             AV_CPU_FLAG_XOP          = 0x0400, ///< Bulldozer XOP functions
             AV_CPU_FLAG_FMA4         = 0x0800, ///< Bulldozer FMA4 functions
             AV_CPU_FLAG_ALTIVEC      = 0x0001, ///< standard
@@ -1342,6 +1526,7 @@ public class avutil {
      * Please use av_parse_cpu_caps() when possible.
      * @return a combination of AV_CPU_* flags, negative on error.
      */
+    @Deprecated
     public static native int av_parse_cpu_flags(String s);
 
     /**
@@ -1440,6 +1625,14 @@ public class avutil {
     public static native AVDictionaryEntry av_dict_get(AVDictionary m, String key, AVDictionaryEntry prev, int flags);
 
     /**
+     * Get number of entries in dictionary.
+     *
+     * @param m dictionary
+     * @return  number of entries in dictionary
+     */
+    public static native int av_dict_count(AVDictionary m);
+
+    /**
      * Set the given entry in *pm, overwriting an existing entry.
      *
      * @param pm pointer to a pointer to a dictionary struct. If *pm is NULL
@@ -1510,7 +1703,7 @@ public class avutil {
      *
      * static const AVOption options[] = {
      *   { "test_int", "This is a test option of int type.", offsetof(test_struct, int_opt),
-     *     AV_OPT_TYPE_INT, { -1 }, INT_MIN, INT_MAX },
+     *     AV_OPT_TYPE_INT, { .i64 = -1 }, INT_MIN, INT_MAX },
      *   { "test_str", "This is a test option of string type.", offsetof(test_struct, str_opt),
      *     AV_OPT_TYPE_STRING },
      *   { "test_bin", "This is a test option of binary type.", offsetof(test_struct, bin_opt),
@@ -1569,7 +1762,7 @@ public class avutil {
      *      } child_struct;
      *      static const AVOption child_opts[] = {
      *          { "test_flags", "This is a test option of flags type.",
-     *            offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { 0 }, INT_MIN, INT_MAX },
+     *            offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { .i64 = 0 }, INT_MIN, INT_MAX },
      *          { NULL },
      *      };
      *      static const AVClass child_class = {
@@ -1616,8 +1809,8 @@ public class avutil {
      *      above, put the following into the child_opts array:
      *      @code
      *      { "test_flags", "This is a test option of flags type.",
-     *        offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { 0 }, INT_MIN, INT_MAX, "test_unit" },
-     *      { "flag1", "This is a flag with value 16", 0, AV_OPT_TYPE_CONST, { 16 }, 0, 0, "test_unit" },
+     *        offsetof(child_struct, flags_opt), AV_OPT_TYPE_FLAGS, { .i64 = 0 }, INT_MIN, INT_MAX, "test_unit" },
+     *      { "flag1", "This is a flag with value 16", 0, AV_OPT_TYPE_CONST, { .i64 = 16 }, 0, 0, "test_unit" },
      *      @endcode
      *
      * @section avoptions_use Using AVOptions
@@ -1671,7 +1864,9 @@ public class avutil {
         AV_OPT_TYPE_RATIONAL = 6,
         AV_OPT_TYPE_BINARY   = 7,  ///< offset must point to a pointer immediately followed by an int for the length
         AV_OPT_TYPE_CONST    = 128,
-        AV_OPT_TYPE_IMAGE_SIZE = MKBETAG('S','I','Z','E'); ///< offset must point to two consecutive integers
+        AV_OPT_TYPE_IMAGE_SIZE = MKBETAG('S','I','Z','E'), ///< offset must point to two consecutive integers
+        AV_OPT_TYPE_PIXEL_FMT  = MKBETAG('P','F','M','T');
+
 
     /**
      * AVOption
@@ -1709,13 +1904,13 @@ public class avutil {
         /**
          * the default value for scalar options
          */
+        @Name("default_val.i64")
+        public native long default_val_i64();        public native AVOption default_val_i64(long default_val_str);
         @Name("default_val.dbl") 
         public native double default_val_dbl();      public native AVOption default_val_dbl(double default_val_dbl);
         @Name("default_val.str") @Cast("const char*")
         public native BytePointer default_val_str(); public native AVOption default_val_str(BytePointer default_val_str);
         /* TODO those are unused now */
-        @Name("default_val.i64")
-        public native long default_val_i64();        public native AVOption default_val_i64(long default_val_str);
         @Name("default_val.q") @ByVal
         public native AVRational default_val_q();    public native AVOption default_val_q(AVRational default_val_q);
 
@@ -1729,7 +1924,8 @@ public class avutil {
                 AV_OPT_FLAG_METADATA       = 4, ///< some data extracted or inserted into the file like title, comment, ...
                 AV_OPT_FLAG_AUDIO_PARAM    = 8,
                 AV_OPT_FLAG_VIDEO_PARAM    = 16,
-                AV_OPT_FLAG_SUBTITLE_PARAM = 32;
+                AV_OPT_FLAG_SUBTITLE_PARAM = 32,
+                AV_OPT_FLAG_FILTERING_PARAM = (1<<16); ///< a generic parameter which can be set by the user for filtering
         //FIXME think about enc-audio, ... style flags
 
         /**
@@ -1949,6 +2145,7 @@ public class avutil {
     public static native int av_opt_set_int   (Pointer obj, String name, long               val, int search_flags);
     public static native int av_opt_set_double(Pointer obj, String name, double             val, int search_flags);
     public static native int av_opt_set_q     (Pointer obj, String name, @ByVal AVRational  val, int search_flags);
+    public static native int av_opt_set_bin   (Pointer obj, String name, @Cast("uint8_t*") BytePointer val, int size, int search_flags);
     /**
      * @}
      */
@@ -2115,16 +2312,20 @@ public class avutil {
             @Cast("AVSampleFormat") int sample_fmt, int align);
 
     /**
-     * Fill channel data pointers and linesize for samples with sample
+     * Fill plane data pointers and linesize for samples with sample
      * format sample_fmt.
      *
-     * The pointers array is filled with the pointers to the samples data:
+     * The audio_data array is filled with the pointers to the samples data planes:
      * for planar, set the start point of each channel's data within the buffer,
      * for packed, set the start point of the entire buffer only.
      *
-     * The linesize array is filled with the aligned size of each channel's data
-     * buffer for planar layout, or the aligned size of the buffer for all channels
-     * for packed layout.
+     * The value pointed to by linesize is set to the aligned size of each
+     * channel's data buffer for planar layout, or to the aligned size of the
+     * buffer for all channels for packed layout.
+     *
+     * The buffer in buf must be big enough to contain all the samples
+     * (use av_samples_get_buffer_size() to compute its minimum size),
+     * otherwise the audio_data pointers will point to invalid data.
      *
      * @see enum AVSampleFormat
      * The documentation for AVSampleFormat describes the data layout.
@@ -2187,4 +2388,176 @@ public class avutil {
      */
     public static native int av_samples_set_silence(@Cast("uint8_t**") PointerPointer audio_data, int offset,
             int nb_samples, int nb_channels, @Cast("AVSampleFormat") int sample_fmt);
+
+
+    // include "imgutils.h"
+    /**
+     * @file
+     * misc image utilities
+     *
+     * @addtogroup lavu_picture
+     * @{
+     */
+
+    /**
+     * Compute the max pixel step for each plane of an image with a
+     * format described by pixdesc.
+     *
+     * The pixel step is the distance in bytes between the first byte of
+     * the group of bytes which describe a pixel component and the first
+     * byte of the successive group in the same plane for the same
+     * component.
+     *
+     * @param max_pixsteps an array which is filled with the max pixel step
+     * for each plane. Since a plane may contain different pixel
+     * components, the computed max_pixsteps[plane] is relative to the
+     * component in the plane with the max pixel step.
+     * @param max_pixstep_comps an array which is filled with the component
+     * for each plane which has the max pixel step. May be NULL.
+     */
+    public static native void av_image_fill_max_pixsteps(int max_pixsteps[/*4*/], int max_pixstep_comps[/*4*/],
+            @Cast("AVPixFmtDescriptor*") int[] pixdesc);
+
+    /**
+     * Compute the size of an image line with format pix_fmt and width
+     * width for the plane plane.
+     *
+     * @return the computed size in bytes
+     */
+    public static native int av_image_get_linesize(@Cast("PixelFormat") int pix_fmt, int width, int plane);
+
+    /**
+     * Fill plane linesizes for an image with pixel format pix_fmt and
+     * width width.
+     *
+     * @param linesizes array to be filled with the linesize for each plane
+     * @return >= 0 in case of success, a negative error code otherwise
+     */
+    public static native int av_image_fill_linesizes(int linesizes[/*4*/], @Cast("PixelFormat") int pix_fmt, int width);
+
+    /**
+     * Fill plane data pointers for an image with pixel format pix_fmt and
+     * height height.
+     *
+     * @param data pointers array to be filled with the pointer for each image plane
+     * @param ptr the pointer to a buffer which will contain the image
+     * @param linesizes the array containing the linesize for each
+     * plane, should be filled by av_image_fill_linesizes()
+     * @return the size in bytes required for the image buffer, a negative
+     * error code in case of failure
+     */
+    public static native int av_image_fill_pointers(@Cast("uint8_t**") PointerPointer data/*[4]*/,
+            @Cast("PixelFormat") int pix_fmt, int height, @Cast("uint8_t*") BytePointer ptr, int linesizes[/*4*/]);
+
+    /**
+     * Allocate an image with size w and h and pixel format pix_fmt, and
+     * fill pointers and linesizes accordingly.
+     * The allocated image buffer has to be freed by using
+     * av_freep(&pointers[0]).
+     *
+     * @param align the value to use for buffer size alignment
+     * @return the size in bytes required for the image buffer, a negative
+     * error code in case of failure
+     */
+    public static native int av_image_alloc(@Cast("uint8_t**") PointerPointer pointers/*[4]*/, int linesizes[/*4*/],
+            int w, int h, @Cast("PixelFormat") int pix_fmt, int align);
+
+    /**
+     * Copy image plane from src to dst.
+     * That is, copy "height" number of lines of "bytewidth" bytes each.
+     * The first byte of each successive line is separated by *_linesize
+     * bytes.
+     *
+     * @param dst_linesize linesize for the image plane in dst
+     * @param src_linesize linesize for the image plane in src
+     */
+    public static native void av_image_copy_plane(@Cast("uint8_t*") BytePointer dst, int dst_linesize,
+            @Cast("uint8_t*") BytePointer src, int src_linesize, int bytewidth, int height);
+
+    /**
+     * Copy image in src_data to dst_data.
+     *
+     * @param dst_linesizes linesizes for the image in dst_data
+     * @param src_linesizes linesizes for the image in src_data
+     */
+    public static native void av_image_copy(@Cast("uint8_t**") PointerPointer dst_data/*[4]*/, int dst_linesizes[/*4*/],
+            @Cast("const uint8_t **") PointerPointer src_data/*[4]*/, int src_linesizes[/*4*/],
+            @Cast("PixelFormat") int pix_fmt, int width, int height);
+
+    /**
+     * Setup the data pointers and linesizes based on the specified image
+     * parameters and the provided array.
+     *
+     * The fields of the given image are filled in by using the src
+     * address which points to the image data buffer. Depending on the
+     * specified pixel format, one or multiple image data pointers and
+     * line sizes will be set.  If a planar format is specified, several
+     * pointers will be set pointing to the different picture planes and
+     * the line sizes of the different planes will be stored in the
+     * lines_sizes array. Call with src == NULL to get the required
+     * size for the src buffer.
+     *
+     * To allocate the buffer and fill in the dst_data and dst_linesize in
+     * one call, use av_image_alloc().
+     *
+     * @param dst_data      data pointers to be filled in
+     * @param dst_linesizes linesizes for the image in dst_data to be filled in
+     * @param src           buffer which will contain or contains the actual image data, can be NULL
+     * @param pix_fmt       the pixel format of the image
+     * @param width         the width of the image in pixels
+     * @param height        the height of the image in pixels
+     * @param align         the value used in src for linesize alignment
+     * @return the size in bytes required for src, a negative error code
+     * in case of failure
+     */
+    public static native int av_image_fill_arrays(@Cast("uint8_t**") PointerPointer dst_data/*[4]*/, int dst_linesize[/*4*/],
+            @Cast("uint8_t*") BytePointer src, @Cast("PixelFormat") int pix_fmt, int width, int height, int align);
+
+    /**
+     * Return the size in bytes of the amount of data required to store an
+     * image with the given parameters.
+     *
+     * @param[in] align the assumed linesize alignment
+     */
+    public static native int av_image_get_buffer_size(@Cast("PixelFormat") int pix_fmt, int width, int height, int align);
+
+    /**
+     * Copy image data from an image into a buffer.
+     *
+     * av_image_get_buffer_size() can be used to compute the required size
+     * for the buffer to fill.
+     *
+     * @param dst           a buffer into which picture data will be copied
+     * @param dst_size      the size in bytes of dst
+     * @param src_data      pointers containing the source image data
+     * @param src_linesizes linesizes for the image in src_data
+     * @param pix_fmt       the pixel format of the source image
+     * @param width         the width of the source image in pixels
+     * @param height        the height of the source image in pixels
+     * @param align         the assumed linesize alignment for dst
+     * @return the number of bytes written to dst, or a negative value
+     * (error code) on error
+     */
+    public static native int av_image_copy_to_buffer(@Cast("uint8_t*") BytePointer dst, int dst_size,
+            @Cast("const uint8_t * const*") PointerPointer src_data/*[4]*/, int src_linesize[/*4*/],
+            @Cast("PixelFormat") int pix_fmt, int width, int height, int align);
+
+    /**
+     * Check if the given dimension of an image is valid, meaning that all
+     * bytes of the image can be addressed with a signed int.
+     *
+     * @param w the width of the picture
+     * @param h the height of the picture
+     * @param log_offset the offset to sum to the log level for logging with log_ctx
+     * @param log_ctx the parent logging context, it may be NULL
+     * @return >= 0 if valid, a negative error code otherwise
+     */
+    public static native int av_image_check_size(@Cast("unsigned") int w, @Cast("unsigned") int h, int log_offset, Pointer log_ctx);
+
+    public static native int ff_set_systematic_pal2(@Cast("uint32_t*") int[/*256*/] pal, @Cast("PixelFormat") int pix_fmt);
+
+    /**
+     * @}
+     */
+
 }

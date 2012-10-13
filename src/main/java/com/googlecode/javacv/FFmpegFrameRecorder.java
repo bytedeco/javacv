@@ -123,12 +123,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.audioChannels = audioChannels;
 
         this.pixelFormat   = PIX_FMT_NONE;
-        this.videoCodec    = CODEC_ID_NONE;
+        this.videoCodec    = AV_CODEC_ID_NONE;
         this.videoBitrate  = 400000;
         this.frameRate     = 30;
 
         this.sampleFormat  = AV_SAMPLE_FMT_NONE;
-        this.audioCodec    = CODEC_ID_NONE;
+        this.audioCodec    = AV_CODEC_ID_NONE;
         this.audioBitrate  = 64000;
         this.sampleRate    = 44100;
 
@@ -152,11 +152,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             picture_buf = null;
         }
         if (picture != null) {
-            av_free(picture);
+            avcodec_free_frame(picture);
             picture = null;
         }
         if (tmp_picture != null) {
-            av_free(tmp_picture);
+            avcodec_free_frame(tmp_picture);
             tmp_picture = null;
         }
         if (video_outbuf != null) {
@@ -164,7 +164,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_outbuf = null;
         }
         if (frame != null) {
-            av_free(frame);
+            avcodec_free_frame(frame);
             frame = null;
         }
         if (samples_out != null) {
@@ -277,16 +277,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
            and initialize the codecs */
 
         if (imageWidth > 0 && imageHeight > 0) {
-            if (videoCodec != CODEC_ID_NONE) {
+            if (videoCodec != AV_CODEC_ID_NONE) {
                 oformat.video_codec(videoCodec);
             } else if ("flv".equals(format_name)) {
-                oformat.video_codec(CODEC_ID_FLV1);
+                oformat.video_codec(AV_CODEC_ID_FLV1);
             } else if ("mp4".equals(format_name)) {
-                oformat.video_codec(CODEC_ID_MPEG4);
+                oformat.video_codec(AV_CODEC_ID_MPEG4);
             } else if ("3gp".equals(format_name)) {
-                oformat.video_codec(CODEC_ID_H263);
+                oformat.video_codec(AV_CODEC_ID_H263);
             } else if ("avi".equals(format_name)) {
-                oformat.video_codec(CODEC_ID_HUFFYUV);
+                oformat.video_codec(AV_CODEC_ID_HUFFYUV);
             }
 
             /* find the video encoder */
@@ -318,22 +318,22 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             if (pixelFormat != PIX_FMT_NONE) {
                 video_c.pix_fmt(pixelFormat);
-            } else if (video_c.codec_id() == CODEC_ID_RAWVIDEO || video_c.codec_id() == CODEC_ID_PNG ||
-                       video_c.codec_id() == CODEC_ID_HUFFYUV  || video_c.codec_id() == CODEC_ID_FFV1) {
+            } else if (video_c.codec_id() == AV_CODEC_ID_RAWVIDEO || video_c.codec_id() == AV_CODEC_ID_PNG ||
+                       video_c.codec_id() == AV_CODEC_ID_HUFFYUV  || video_c.codec_id() == AV_CODEC_ID_FFV1) {
                 video_c.pix_fmt(PIX_FMT_RGB32);   // appropriate for common lossless formats
             } else {
                 video_c.pix_fmt(PIX_FMT_YUV420P); // lossy, but works with about everything
             }
 
-            if (video_c.codec_id() == CODEC_ID_MPEG2VIDEO) {
+            if (video_c.codec_id() == AV_CODEC_ID_MPEG2VIDEO) {
                 /* just for testing, we also add B frames */
                 video_c.max_b_frames(2);
-            } else if (video_c.codec_id() == CODEC_ID_MPEG1VIDEO) {
+            } else if (video_c.codec_id() == AV_CODEC_ID_MPEG1VIDEO) {
                 /* Needed to avoid using macroblocks in which some coeffs overflow.
                    This does not happen with normal video, it just happens here as
                    the motion of the chroma plane does not match the luma plane. */
                 video_c.mb_decision(2);
-            } else if (video_c.codec_id() == CODEC_ID_H263) {
+            } else if (video_c.codec_id() == AV_CODEC_ID_H263) {
                 // H.263 does not support any other resolution than the following
                 if (imageWidth <= 128 && imageHeight <= 96) {
                     video_c.width(128).height(96);
@@ -346,7 +346,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 } else {
                     video_c.width(1408).height(1152);
                 }
-            } else if (video_c.codec_id() == CODEC_ID_H264) {
+            } else if (video_c.codec_id() == AV_CODEC_ID_H264) {
                 // default to constrained baseline to produce content that plays back on anything,
                 // without any significant tradeoffs for most use cases
                 video_c.profile(AVCodecContext.FF_PROFILE_H264_CONSTRAINED_BASELINE);
@@ -368,12 +368,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
          * add an audio output stream
          */
         if (audioChannels > 0) {
-            if (audioCodec != CODEC_ID_NONE) {
+            if (audioCodec != AV_CODEC_ID_NONE) {
                 oformat.audio_codec(audioCodec);
             } else if ("flv".equals(format_name) || "mp4".equals(format_name) || "3gp".equals(format_name)) {
-                oformat.audio_codec(CODEC_ID_AAC);
+                oformat.audio_codec(AV_CODEC_ID_AAC);
             } else if ("avi".equals(format_name)) {
-                oformat.audio_codec(CODEC_ID_PCM_S16LE);
+                oformat.audio_codec(AV_CODEC_ID_PCM_S16LE);
             }
 
             /* find the audio encoder */
@@ -397,7 +397,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             audio_c.channel_layout(av_get_default_channel_layout(audioChannels));
             if (sampleFormat != AV_SAMPLE_FMT_NONE) {
                 audio_c.sample_fmt(sampleFormat);
-            } else if (audio_c.codec_id() == CODEC_ID_AAC &&
+            } else if (audio_c.codec_id() == AV_CODEC_ID_AAC &&
                     (audio_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
                 audio_c.sample_fmt(AV_SAMPLE_FMT_FLT);
             } else {
@@ -483,10 +483,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 audio_outbuf_size = FF_MIN_BUFFER_SIZE;
                 audio_input_frame_size = audio_outbuf_size / audio_c.channels();
                 switch (audio_c.codec_id()) {
-                    case CODEC_ID_PCM_S16LE:
-                    case CODEC_ID_PCM_S16BE:
-                    case CODEC_ID_PCM_U16LE:
-                    case CODEC_ID_PCM_U16BE:
+                    case AV_CODEC_ID_PCM_S16LE:
+                    case AV_CODEC_ID_PCM_S16BE:
+                    case AV_CODEC_ID_PCM_U16LE:
+                    case AV_CODEC_ID_PCM_U16BE:
                         audio_input_frame_size >>= 1;
                         break;
                     default:

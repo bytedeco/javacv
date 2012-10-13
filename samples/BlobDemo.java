@@ -70,7 +70,7 @@ public class BlobDemo
 
             for(int i = 1; i <= Blobs.MaxLabel; i++)
             {
-                double [] Region = Regions.RegionData[i];
+                double [] Region = Blobs.RegionData[i];
                 int Parent = (int) Region[Blobs.BLOBPARENT];
                 int Color = (int) Region[Blobs.BLOBCOLOR];
                 int MinX = (int) Region[Blobs.BLOBMINX];
@@ -206,7 +206,7 @@ public class BlobDemo
         CvMat mat = image.asCvMat();
         float TotalPixels = mat.cols() * mat.rows();
         //float BlackPixels = TotalPixels - WhitePixels;
-        return ((float) WhitePixels) / TotalPixels;
+        return WhitePixels / TotalPixels;
     }
   
     // Counterclockwise small angle rotation by skewing - Does not stretch border pixels

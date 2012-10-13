@@ -114,13 +114,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             buffer_rgb = null;
         }
         if (picture_rgb != null) {
-            av_free(picture_rgb);
+            avcodec_free_frame(picture_rgb);
             picture_rgb = null;
         }
 
         // Free the native format picture frame
         if (picture != null) {
-            av_free(picture);
+            avcodec_free_frame(picture);
             picture = null;
         }
 
@@ -132,7 +132,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         // Free the audio samples frame
         if (samples_frame != null) {
-            av_free(samples_frame);
+            avcodec_free_frame(samples_frame);
             samples_frame = null;
         }
 

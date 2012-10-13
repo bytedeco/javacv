@@ -4629,6 +4629,7 @@ public class opencv_core {
     @Name("std::vector<std::string>")
     public static class StringVector extends Pointer {
         static { load(); }
+        public StringVector(String ... array) { this(array.length); put(array); }
         public StringVector()       { allocate();  }
         public StringVector(long n) { allocate(n); }
         public StringVector(Pointer p) { super(p); }
@@ -4640,11 +4641,20 @@ public class opencv_core {
 
         @Index @ByRef public native String get(@Cast("size_t") long i);
         public native StringVector put(@Cast("size_t") long i, String value);
+
+        public StringVector put(String ... array) {
+            if (size() < array.length) { resize(array.length); }
+            for (int i = 0; i < array.length; i++) {
+                put(i, array[i]);
+            }
+            return this;
+        }
     }
 
     @Name("std::vector<cv::Mat>")
     public static class MatVector extends Pointer {
         static { load(); }
+        public MatVector(CvArr ... array) { this(array.length); put(array); }
         public MatVector()       { allocate();  }
         public MatVector(long n) { allocate(n); }
         public MatVector(Pointer p) { super(p); }
@@ -4658,6 +4668,14 @@ public class opencv_core {
         @Index @ValueGetter public native @OutputMat CvMatND getCvMatND(@Cast("size_t") long i);
         @Index @ValueGetter public native @OutputMat IplImage getIplImage(@Cast("size_t") long i);
         @Index @ValueSetter public native MatVector put(@Cast("size_t") long i, @InputMat CvArr value);
+
+        public MatVector put(CvArr ... array) {
+            if (size() < array.length) { resize(array.length); }
+            for (int i = 0; i < array.length; i++) {
+                put(i, array[i]);
+            }
+            return this;
+        }
     }
 
     @Name("std::vector<std::vector<char> >")

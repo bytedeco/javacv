@@ -19,9 +19,9 @@
  *
  *
  * This file was derived from swresample.h include file from
- * FFmpeg 0.11.1, which are covered by the following copyright notice:
+ * FFmpeg 1.0, which are covered by the following copyright notice:
  *
- * Copyright (C) 2011 Michael Niedermayer (michaelni@gmx.at)
+ * Copyright (C) 2011-2012 Michael Niedermayer (michaelni@gmx.at)
  *
  * This file is part of libswresample
  *
@@ -93,6 +93,12 @@ public class swresample {
         SWR_DITHER_RECTANGULAR         = 1,
         SWR_DITHER_TRIANGULAR          = 2,
         SWR_DITHER_TRIANGULAR_HIGHPASS = 3;
+
+    /** Resampling Filter Types */
+    public static final int // enum SwrFilterType {
+        SWR_FILTER_TYPE_CUBIC            = 0, /**< Cubic */
+        SWR_FILTER_TYPE_BLACKMAN_NUTTALL = 1, /**< Blackman Nuttall Windowed Sinc */
+        SWR_FILTER_TYPE_KAISER           = 2; /**< Kaiser Windowed Sinc */
 
     @Opaque public static class SwrContext extends Pointer {
         static { load(); }

@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avdevice.h include file from
- * FFmpeg 0.11.1, which are covered by the following copyright notice:
+ * FFmpeg 1.0, which are covered by the following copyright notice:
  *
  * This file is part of FFmpeg.
  *
@@ -61,6 +61,25 @@ import static com.googlecode.javacv.cpp.avutil.*;
 public class avdevice {
     static { load(avfilter.class); load(); }
 
+    // #include <version.h>
+    /**
+     * @file
+     * @ingroup lavd
+     * Libavdevice version macros
+     */
+
+    public static final int LIBAVDEVICE_VERSION_MAJOR = 54;
+    public static final int LIBAVDEVICE_VERSION_MINOR =  2;
+    public static final int LIBAVDEVICE_VERSION_MICRO = 101;
+
+    public static final int    LIBAVDEVICE_VERSION_INT = AV_VERSION_INT(LIBAVDEVICE_VERSION_MAJOR,
+                                                                        LIBAVDEVICE_VERSION_MINOR,
+                                                                        LIBAVDEVICE_VERSION_MICRO);
+    public static final String LIBAVDEVICE_VERSION     = AV_VERSION(LIBAVDEVICE_VERSION_MAJOR,
+                                                                    LIBAVDEVICE_VERSION_MINOR,
+                                                                    LIBAVDEVICE_VERSION_MICRO);
+    public static final int    LIBAVDEVICE_BUILD       = LIBAVDEVICE_VERSION_INT;
+
     /**
      * @file
      * @ingroup lavd
@@ -76,24 +95,12 @@ public class avdevice {
      * (de)muxers in libavdevice are of the AVFMT_NOFILE type (they use their own
      * I/O functions). The filename passed to avformat_open_input() often does not
      * refer to an actually existing file, but has some special device-specific
-     * meaning - e.g. for the x11grab device it is the display name.
+     * meaning - e.g. for x11grab it is the display name.
      *
      * To use libavdevice, simply call avdevice_register_all() to register all
      * compiled muxers and demuxers. They all use standard libavformat API.
      * @}
      */
-
-    public static final int LIBAVDEVICE_VERSION_MAJOR = 54;
-    public static final int LIBAVDEVICE_VERSION_MINOR =  0;
-    public static final int LIBAVDEVICE_VERSION_MICRO = 100;
-
-    public static final int    LIBAVDEVICE_VERSION_INT = AV_VERSION_INT(LIBAVDEVICE_VERSION_MAJOR,
-                                                                        LIBAVDEVICE_VERSION_MINOR,
-                                                                        LIBAVDEVICE_VERSION_MICRO);
-    public static final String LIBAVDEVICE_VERSION     = AV_VERSION(LIBAVDEVICE_VERSION_MAJOR,
-                                                                    LIBAVDEVICE_VERSION_MINOR,
-                                                                    LIBAVDEVICE_VERSION_MICRO);
-    public static final int    LIBAVDEVICE_BUILD       = LIBAVDEVICE_VERSION_INT;
 
     /**
      * Return the LIBAVDEVICE_VERSION_INT constant.

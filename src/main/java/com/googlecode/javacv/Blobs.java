@@ -354,14 +354,14 @@ public class Blobs
         double [] BorderRegion = RegionData[0];
         BorderRegion[BLOBLABEL] = 0.0;
         BorderRegion[BLOBPARENT] = -1.0;
-        BorderRegion[BLOBAREA] = (double)( Rows + Cols + 4 );   // Top, left, and 4 corners
+        BorderRegion[BLOBAREA] = Rows + Cols + 4;   // Top, left, and 4 corners
         BorderRegion[BLOBCOLOR] = FillColor;
-        BorderRegion[BLOBSUMX] = 0.5 * (double) ( (2.0 + Cols) * (Cols - 1.0) ) - Rows - 1 ;
-        BorderRegion[BLOBSUMY] = 0.5 * (double) ( (2.0 + Rows) * (Rows - 1.0) ) - Cols - 1 ;
+        BorderRegion[BLOBSUMX] = 0.5 * ( (2.0 + Cols) * (Cols - 1.0) ) - Rows - 1 ;
+        BorderRegion[BLOBSUMY] = 0.5 * ( (2.0 + Rows) * (Rows - 1.0) ) - Cols - 1 ;
         BorderRegion[BLOBMINX] = -1;
         BorderRegion[BLOBMINY] = -1;
-        BorderRegion[BLOBMAXX] = (double) ( Cols + 1.0 );
-        BorderRegion[BLOBMAXY] = (double) ( Rows + 1.0 );
+        BorderRegion[BLOBMAXX] = Cols + 1.0;
+        BorderRegion[BLOBMAXY] = Rows + 1.0;
         System.arraycopy(BorderRegion,0,RegionData[0],0,BLOBDATACOUNT); // RegionData[0] <- BorderRegion;
         
         //  The cells are identified this way
