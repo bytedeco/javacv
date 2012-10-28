@@ -23,6 +23,7 @@ package com.googlecode.javacv;
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.Loader;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -61,6 +62,10 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
 
         return descriptions;
     }
+
+    public static OpenKinectFrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
+    public static OpenKinectFrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static OpenKinectFrameGrabber createDefault(int deviceNumber)  throws Exception { return new OpenKinectFrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {

@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.4.2,
+ * This file is based on information found in features2d.hpp of OpenCV 2.4.3rc,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -84,7 +84,7 @@ import static com.googlecode.javacv.cpp.opencv_flann.*;
         include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d242", "opencv_flann242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_features2d243", "opencv_flann243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -255,7 +255,84 @@ public class opencv_features2d {
         public FeatureDetector getFeatureDetector() { return castFeatureDetector(this); }
         public DescriptorExtractor getDescriptorExtractor() { return castDescriptorExtractor(this); }
 
-//        public static native @ByVal Feature2DPtr create(String name);
+        public static native @ByVal Feature2DPtr create(String name);
+    }
+
+    @Namespace("cv") public static class BRISK extends Feature2D {
+        static { load(); }
+        public static final int kBytes = 32, HARRIS_SCORE=0, FAST_SCORE=1;
+        public BRISK() { allocate(); }
+        public BRISK(Pointer p) { super(p); }
+        public BRISK(int thresh/*=30*/, int octaves/*=3*/, float patternScale/*=1.0f*/) {
+            allocate(thresh, octaves, patternScale);
+        }
+        public BRISK(@StdVector float[] radiusList, @StdVector int[] numberList,
+                float dMax/*=5.85f*/, float dMin/*=8.2f*/, @StdVector int[] indexChange/*=null*/) {
+            allocate(radiusList, numberList, dMax, dMin, indexChange);
+        }
+        private native void allocate();
+        private native void allocate(int thresh/*=30*/, int octaves/*=3*/, float patternScale/*=1.0f*/);
+        private native void allocate(@StdVector float[] radiusList, @StdVector int[] numberList,
+                float dMax/*=5.85f*/, float dMin/*=8.2f*/, @StdVector int[] indexChange/*=null*/);
+
+        public native void generateKernel(@StdVector float[] radiusList, @StdVector int[] numberList,
+                float dMax/*=5.85f*/, float dMin/*=8.2f*/, @StdVector int[] indexChange/*=null*/);
+
+        public native int descriptorSize();
+        public native int descriptorType();
+
+        public native @Name("operator()") void compute(@InputArray CvArr image, @InputArray CvArr mask, @StdVector KeyPoint keypoints);
+
+        public native @Name("operator()") void compute(@InputArray CvArr image, @InputArray CvArr mask, @StdVector KeyPoint keypoints,
+                @OutputArray CvMat descriptors, boolean useProvidedKeypoints/*=false*/);
+
+        public native AlgorithmInfo info();
+
+//        protected native void computeImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @OutputMat CvMat descriptors);
+//        protected native void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
+//
+//        protected native void computeKeypointsNoOrientation(@InputArray CvArr image, @InputArray CvArr mask, @StdVector KeyPoint keypoints);
+//        protected native void computeDescriptorsAndOrOrientation(@InputArray CvArr image, @InputArray CvArr mask, @StdVector KeyPoint keypoints,
+//                @OutputArray CvMat descriptors, boolean doDescriptors, boolean doOrientation, boolean useProvidedKeypoints);
+//
+//        protected native int threshold();
+//        protected native int octaves();
+//
+//        protected static class BriskPatternPoint {
+//            public native float x();
+//            public native float y();
+//            public native float sigma();
+//        }
+//        protected static class BriskShortPair{
+//            public native @Cast("unsigned") int i();
+//            public native @Cast("unsigned") int j();
+//        }
+//        protected static class BriskLongPair{
+//            public native @Cast("unsigned") int i();
+//            public native @Cast("unsigned") int j();
+//            public native int weighted_dx();
+//            public native int weighted_dy();
+//        }
+//        protected native int smoothedIntensity(@InputMat CvArr image, @InputMat CvArr integral, float key_x, float key_y,
+//                @Cast("unsigned") int scale, @Cast("unsigned") int rot, @Cast("unsigned") int point);
+//
+//        protected native BriskPatternPoint patternPoints_();
+//        protected native @Cast("unsigned") int points_();
+//        protected native FloatPointer scaleList_();
+//        protected native @Cast("unsigned*") IntPointer sizeList_();
+//        protected native static @Cast("unsigned") int scales_();
+//        protected native static float scalerange_();
+//        protected native static @Cast("unsigned") int n_rot_();
+//
+//        protected native int strings_();
+//        protected native float dMax_();
+//        protected native float dMin_();
+//        protected native BriskShortPair shortPairs_();
+//        protected native BriskLongPair longPairs_();
+//        protected native @Cast("unsigned") int noShortPairs_();
+//        protected native @Cast("unsigned") int noLongPairs_();
+//
+//        protected native static float basicSize_();
     }
 
     @NoOffset @Namespace("cv") public static class ORB extends Feature2D {
@@ -423,9 +500,12 @@ public class opencv_features2d {
 
     @Namespace("cv") public static native void FAST(@InputArray CvArr image, @StdVector KeyPoint keypoints,
             int threshold, @Cast("bool") boolean nonmaxSupression/*=true*/);
+    @Namespace("cv") public static native void FASTX(@InputArray CvArr image, @StdVector KeyPoint keypoints,
+            int threshold, @Cast("bool") boolean nonmaxSupression, int type);
 
     @Namespace("cv") public static class FastFeatureDetector extends FeatureDetector {
         static { load(); }
+        public static final int TYPE_5_8 = 0, TYPE_7_12 = 1, TYPE_9_16 = 2;
         public FastFeatureDetector() { }
         public FastFeatureDetector(Pointer p) { super(p); }
         public FastFeatureDetector(int threshold/*=10*/, boolean nonmaxSuppression/*=true*/) {

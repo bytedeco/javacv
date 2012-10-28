@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in stitcher.hpp and all included
- * files of of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * files of of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -85,20 +85,20 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/stitching/stitcher.hpp>", "<opencv2/stitching/detail/autocalib.hpp>", "opencv_adapters.h"},
-        link={"opencv_stitching@.2.4", "opencv_video@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_objdetect@.2.4", "opencv_features2d@.2.4",
-              "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
+        link={"opencv_stitching@.2.4", "opencv_video@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_photo@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4",
+              "opencv_objdetect@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="android",
-        link={"opencv_stitching", "opencv_video", "opencv_nonfree", "opencv_objdetect", "opencv_features2d",
-              "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_stitching", "opencv_video", "opencv_legacy", "opencv_ml", "opencv_photo", "opencv_nonfree",
+              "opencv_objdetect", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_stitching242", "opencv_video242", "opencv_nonfree242", "opencv_gpu242", "opencv_objdetect242", "opencv_features2d242",
-              "opencv_flann242", "opencv_calib3d242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_stitching243", "opencv_video243", "opencv_legacy243", "opencv_ml243", "opencv_photo243", "opencv_nonfree243", "opencv_gpu243",
+              "opencv_objdetect243", "opencv_features2d243", "opencv_flann243", "opencv_calib3d243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_stitching {
-    static { load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_objdetect.class);
-             load(opencv_nonfree.class); load(opencv_video.class); load(); }
+    static { load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_objdetect.class); load(opencv_nonfree.class);
+             load(opencv_photo.class); load(opencv_ml.class); load(opencv_legacy.class); load(opencv_video.class); load(); }
 
     // #include "detail/warpers.hpp"
     @Namespace("cv::detail") public static class RotationWarper extends Pointer {
@@ -114,6 +114,9 @@ public class opencv_stitching {
         public /*abstract*/ native void warpBackward(IplImage src, CvMat K, CvMat R,
                 int interp_mode, int border_mode, @ByVal CvSize dst_size, @InputMat IplImage dst);
         public /*abstract*/ native @ByVal CvRect warpRoi(@ByVal CvSize src_size, CvMat K, CvMat R);
+
+        public native float getScale();
+        public native void setScale(float scale);
     }
 
     @Name("cv::Ptr<cv::detail::RotationWarper>")
@@ -155,6 +158,9 @@ public class opencv_stitching {
 //                int interp_mode, int border_mode, @ByVal CvSize dst_size, @InputMat IplImage dst);
 //        public native @ByVal CvRect warpRoi(@ByVal CvSize src_size, CvMat K, CvMat R);
 //
+//        public native float getScale();
+//        public native void setScale(float scale);
+//
 //        protected native void detectResultRoi(@ByVal CvSize src_size, @ByRef CvPoint dst_tl, @ByRef CvPoint dst_br);
 //        protected native void detectResultRoiByBorder(@ByVal CvSize src_size, @ByRef CvPoint dst_tl, @ByRef CvPoint dst_br);
 //
@@ -175,8 +181,8 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(float scale/*=1.0*/);
 
-        public native void setScale(float scale);
-
+//        public native void setScale(float scale);
+//
 //        public native @ByVal CvPoint2D32f warpPoint(@ByVal CvPoint2D32f pt, CvMat K, CvMat R);
 //        public native @ByVal CvRect buildMaps(@ByVal CvSize src_size, CvMat K, CvMat R,
 //                @InputMat IplImage xmap, @InputMat IplImage ymap);
@@ -1114,6 +1120,25 @@ public class opencv_stitching {
 //                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
     }
 
+    @Namespace("cv::detail") public static class DpSeamFinder extends SeamFinder {
+        static { load(); }
+
+        // enum CostFunction {
+        public static final int COLOR = 0, COLOR_GRAD = 1;
+
+        public DpSeamFinder() { allocate(); }
+        public DpSeamFinder(int costFunc/*=COLOR*/) { allocate(costFunc); }
+        public DpSeamFinder(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(@Cast("cv::detail::DpSeamFinder::CostFunction") int costFunc);
+
+        public native @Cast("cv::detail::DpSeamFinder::CostFunction") int costFunction();
+        public native void setCostFunction(@Cast("cv::detail::DpSeamFinder::CostFunction") int val);
+
+//        public native void find(@ByRef MatVector src,
+//                @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
+    }
+
     public interface GraphCutSeamFinderBase {
         public static final int COST_COLOR = 0, COST_COLOR_GRAD = 1;
     }
@@ -1242,15 +1267,6 @@ public class opencv_stitching {
 
         public static native @ByVal Stitcher createDefault(@Cast("bool") boolean try_use_gpu/*=false*/);
 
-        public native /* Status */ int estimateTransform(@ByRef MatVector images);
-        public native /* Status */ int estimateTransform(@ByRef MatVector images, @ByRef RectVectorVector rois);
-
-        public native /* Status */ int composePanorama(@OutputArray IplImage pano);
-        public native /* Status */ int composePanorama(@ByRef MatVector images, @OutputArray IplImage pano);
-
-        public native /* Status */ int stitch(@ByRef MatVector images, @OutputArray IplImage pano);
-        public native /* Status */ int stitch(@ByRef MatVector images, @ByRef RectVectorVector rois, @OutputArray IplImage pano);
-
         public native double registrationResol();
         public native void setRegistrationResol(double resol_mpx);
 
@@ -1292,5 +1308,18 @@ public class opencv_stitching {
 
         public native @ByVal BlenderPtr blender();
         public native void setBlender(@ByVal BlenderPtr blender);
+
+        public native /* Status */ int estimateTransform(@ByRef MatVector images);
+        public native /* Status */ int estimateTransform(@ByRef MatVector images, @ByRef RectVectorVector rois);
+
+        public native /* Status */ int composePanorama(@OutputArray IplImage pano);
+        public native /* Status */ int composePanorama(@ByRef MatVector images, @OutputArray IplImage pano);
+
+        public native /* Status */ int stitch(@ByRef MatVector images, @OutputArray IplImage pano);
+        public native /* Status */ int stitch(@ByRef MatVector images, @ByRef RectVectorVector rois, @OutputArray IplImage pano);
+
+        public native @StdVector IntPointer component();
+        public native @StdVector CameraParams cameras();
+        public native double workScale();
     }
 }

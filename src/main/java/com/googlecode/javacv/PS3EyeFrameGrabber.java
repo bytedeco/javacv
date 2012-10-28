@@ -21,6 +21,7 @@
 package com.googlecode.javacv;
 
 import cl.eye.CLCamera;
+import java.io.File;
 import java.lang.reflect.Field;
 import sun.misc.Unsafe;
 
@@ -71,6 +72,10 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
         }
         return descriptions;
     }
+
+    public static PS3EyeFrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
+    public static PS3EyeFrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static PS3EyeFrameGrabber createDefault(int deviceNumber)  throws Exception { return new PS3EyeFrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {

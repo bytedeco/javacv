@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -126,7 +126,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4"),
     @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath=windowsIncludepath,
-        link="opencv_core242", preload={"msvcr100", "msvcp100", "tbb"}),
+        link="opencv_core243", preload={"msvcr100", "msvcp100"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -146,18 +146,18 @@ public class opencv_core {
     public static final String genericLinkpath       = "/opt/local/lib/:/opt/local/lib64/:/usr/local/lib/:/usr/local/lib64/";
     public static final String windowsIncludepath    = "C:/opencv/build/include/";
     public static final String windowsx86Linkpath    = "C:/opencv/build/x86/vc10/lib/";
-    public static final String windowsx86Preloadpath = "C:/opencv/build/x86/vc10/bin/;C:/opencv/build/common/tbb/ia32/vc10/";
+    public static final String windowsx86Preloadpath = "C:/opencv/build/x86/vc10/bin/";
     public static final String windowsx64Linkpath    = "C:/opencv/build/x64/vc10/lib/";
-    public static final String windowsx64Preloadpath = "C:/opencv/build/x64/vc10/bin/;C:/opencv/build/common/tbb/intel64/vc10/";
+    public static final String windowsx64Preloadpath = "C:/opencv/build/x64/vc10/bin/";
     public static final String androidIncludepath    = "../include/";
     public static final String androidLinkpath       = "../lib/";
 
     public static final int
             CV_MAJOR_VERSION    = 2,
             CV_MINOR_VERSION    = 4,
-            CV_SUBMINOR_VERSION = 2;
+            CV_SUBMINOR_VERSION = 3;
 
-    public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
+    public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION + "-rc";
 
     @Opaque public static abstract class CvArr extends Pointer implements Cloneable {
         static { load(); }
@@ -403,8 +403,8 @@ public class opencv_core {
             IPL_BORDER_WRAP      = 3;
 
     public static class IplImage extends CvArr {
-        public IplImage() { allocate(); }
-        public IplImage(int size) { allocateArray(size); }
+        public IplImage() { allocate(); zero(); }
+        public IplImage(int size) { allocateArray(size); zero(); }
         public IplImage(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -1356,8 +1356,8 @@ public class opencv_core {
     public static final String CV_TYPE_NAME_MAT   = "opencv-matrix";
 
     public static class CvMat extends CvArr {
-        public CvMat() { allocate(); }
-        public CvMat(int size) { allocateArray(size); }
+        public CvMat() { allocate(); zero(); }
+        public CvMat(int size) { allocateArray(size); zero(); }
         public CvMat(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -1847,8 +1847,8 @@ public class opencv_core {
             CV_MAX_DIM_HEAP     = 1024;
 
     public static class CvMatND extends CvArr {
-        public CvMatND() { allocate(); }
-        public CvMatND(int size) { allocateArray(size); }
+        public CvMatND() { allocate(); zero(); }
+        public CvMatND(int size) { allocateArray(size); zero(); }
         public CvMatND(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -1915,8 +1915,8 @@ public class opencv_core {
     public static final String CV_TYPE_NAME_SPARSE_MAT = "opencv-sparse-matrix";
 
     public static class CvSparseMat extends CvArr {
-        public CvSparseMat() { allocate(); }
-        public CvSparseMat(int size) { allocateArray(size); }
+        public CvSparseMat() { allocate(); zero(); }
+        public CvSparseMat(int size) { allocateArray(size); zero(); }
         public CvSparseMat(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2802,8 +2802,8 @@ public class opencv_core {
 
     public static class CvMemStorage extends Pointer {
         static { load(); }
-        public CvMemStorage() { allocate(); }
-        public CvMemStorage(int size) { allocateArray(size); }
+        public CvMemStorage() { allocate(); zero(); }
+        public CvMemStorage(int size) { allocateArray(size); zero(); }
         public CvMemStorage(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2881,8 +2881,8 @@ public class opencv_core {
     }
 
     public static class CvSeq extends CvArr {
-        public CvSeq() { allocate(); }
-        public CvSeq(int size) { allocateArray(size); }
+        public CvSeq() { allocate(); zero(); }
+        public CvSeq(int size) { allocateArray(size); zero(); }
         public CvSeq(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2936,8 +2936,8 @@ public class opencv_core {
     }
 
     public static class CvSet extends CvSeq {
-        public CvSet() { allocate(); }
-        public CvSet(int size) { allocateArray(size); }
+        public CvSet() { allocate(); zero(); }
+        public CvSet(int size) { allocateArray(size); zero(); }
         public CvSet(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -3011,8 +3011,8 @@ public class opencv_core {
     }
 
     public static class CvGraph extends CvSet {
-        public CvGraph() { allocate(); }
-        public CvGraph(int size) { allocateArray(size); }
+        public CvGraph() { allocate(); zero(); }
+        public CvGraph(int size) { allocateArray(size); zero(); }
         public CvGraph(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -4130,8 +4130,8 @@ public class opencv_core {
 
     public static class CvGraphScanner extends Pointer {
         static { load(); }
-        public CvGraphScanner() { allocate(); }
-        public CvGraphScanner(int size) { allocateArray(size); }
+        public CvGraphScanner() { allocate(); zero(); }
+        public CvGraphScanner(int size) { allocateArray(size); zero(); }
         public CvGraphScanner(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -4961,7 +4961,7 @@ public class opencv_core {
         private native void allocate(int _type, @Cast("bool") boolean _readonly, int _offset,
                 Algorithm.Getter _getter/*=null*/, Algorithm.Setter _setter/*=null*/, String _help/*=""*/);
 
-        public static final int INT=0, BOOLEAN=1, REAL=2, STRING=3, MAT=4, MAT_VECTOR=5, ALGORITHM=6;
+        public static final int INT=0, BOOLEAN=1, REAL=2, STRING=3, MAT=4, MAT_VECTOR=5, ALGORITHM=6, FLOAT=7, UNSIGNED_INT=8, UINT64=9, SHORT=10;
 
         public native int type();                       public native Param type(int type);
         public native int offset();                     public native Param offset(int offset);

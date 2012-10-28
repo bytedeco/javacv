@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.4.2,
+ * This file is based on information found in highgui_c.h of OpenCV 2.4.3rc,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement
@@ -76,8 +76,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include="<opencv2/highgui/highgui_c.h>",
         link={"opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg242", "opencv_ffmpeg242_64"},
-        link={"opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg243", "opencv_ffmpeg243_64"},
+        link={"opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -271,6 +271,7 @@ public class opencv_highgui {
             CV_IMWRITE_JPEG_QUALITY              = 1,
             CV_IMWRITE_PNG_COMPRESSION           = 16,
             CV_IMWRITE_PNG_STRATEGY              = 17,
+            CV_IMWRITE_PNG_BILEVEL               = 18,
             CV_IMWRITE_PNG_STRATEGY_DEFAULT      = 0,
             CV_IMWRITE_PNG_STRATEGY_FILTERED     = 1,
             CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY = 2,
@@ -354,7 +355,9 @@ public class opencv_highgui {
 
             CV_CAP_XIAPI   = 1100,
 
-            CV_CAP_AVFOUNDATION = 1200;
+            CV_CAP_AVFOUNDATION = 1200,
+
+            CV_CAP_GIGANETIX = 1300;
 
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native int cvGrabFrame(CvCapture capture);
@@ -473,6 +476,13 @@ public class opencv_highgui {
             CV_CAP_PROP_IOS_DEVICE_WHITEBALANCE = 9004,
             CV_CAP_PROP_IOS_DEVICE_TORCH = 9005,
 
+            CV_CAP_PROP_GIGA_FRAME_OFFSET_X = 10001,
+            CV_CAP_PROP_GIGA_FRAME_OFFSET_Y = 10002,
+            CV_CAP_PROP_GIGA_FRAME_WIDTH_MAX = 10003,
+            CV_CAP_PROP_GIGA_FRAME_HEIGH_MAX = 10004,
+            CV_CAP_PROP_GIGA_FRAME_SENS_WIDTH = 10005,
+            CV_CAP_PROP_GIGA_FRAME_SENS_HEIGH = 10006,
+
             CV_CAP_OPENNI_DEPTH_MAP                 = 0,
             CV_CAP_OPENNI_POINT_CLOUD_MAP           = 1,
             CV_CAP_OPENNI_DISPARITY_MAP             = 2,
@@ -485,6 +495,8 @@ public class opencv_highgui {
             CV_CAP_OPENNI_VGA_30HZ     = 0,
             CV_CAP_OPENNI_SXGA_15HZ    = 1,
             CV_CAP_OPENNI_SXGA_30HZ    = 2,
+            CV_CAP_OPENNI_QVGA_30HZ    = 3,
+            CV_CAP_OPENNI_QVGA_60HZ    = 4,
 
             CV_CAP_ANDROID_COLOR_FRAME_BGR = 0,
             CV_CAP_ANDROID_COLOR_FRAME = CV_CAP_ANDROID_COLOR_FRAME_BGR,

@@ -31,6 +31,8 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
  * @author Samuel Audet
  */
 public class OpenCVFrameRecorder extends FrameRecorder {
+    public static OpenCVFrameRecorder createDefault(File f, int w, int h)   throws Exception { return new OpenCVFrameRecorder(f, w, h); }
+    public static OpenCVFrameRecorder createDefault(String f, int w, int h) throws Exception { return new OpenCVFrameRecorder(f, w, h); }
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {

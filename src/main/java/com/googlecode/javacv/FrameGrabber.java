@@ -172,7 +172,7 @@ public abstract class FrameGrabber {
     protected long sensorPattern = -1L;
     protected int pixelFormat = -1;
     protected double frameRate = 0;
-    protected int sampleFormat, sampleRate;
+    protected int sampleFormat = 0, sampleRate = 0;
     protected boolean triggerMode = false;
     protected int bpp = 0;
     protected int timeout = 10000;

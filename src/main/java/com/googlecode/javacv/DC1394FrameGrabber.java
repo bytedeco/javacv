@@ -22,6 +22,7 @@ package com.googlecode.javacv;
 
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -69,6 +70,10 @@ public class DC1394FrameGrabber extends FrameGrabber {
         dc1394_free(d);
         return descriptions;
     }
+
+    public static DC1394FrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
+    public static DC1394FrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static DC1394FrameGrabber createDefault(int deviceNumber)  throws Exception { return new DC1394FrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {

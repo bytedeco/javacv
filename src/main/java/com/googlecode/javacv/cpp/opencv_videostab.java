@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in videostab.hpp and all included
- * files of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * files of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -80,20 +80,20 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/videostab/videostab.hpp>", "opencv_adapters.h"},
-        link={"opencv_videostab@.2.4", "opencv_video@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_photo@.2.4", "opencv_objdetect@.2.4",
-              "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
+        link={"opencv_videostab@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_photo@.2.4",
+              "opencv_objdetect@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="android",
-        link={"opencv_videostab", "opencv_video", "opencv_nonfree", "opencv_photo", "opencv_objdetect", "opencv_features2d",
-              "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
+        link={"opencv_videostab", "opencv_legacy", "opencv_ml", "opencv_video", "opencv_nonfree", "opencv_photo",
+              "opencv_objdetect", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_videostab242", "opencv_video242", "opencv_nonfree242", "opencv_gpu242", "opencv_photo242", "opencv_objdetect242",
-              "opencv_features2d242", "opencv_flann242", "opencv_calib3d242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_videostab243", "opencv_legacy243", "opencv_ml243", "opencv_video243", "opencv_nonfree243", "opencv_gpu243", "opencv_photo243",
+              "opencv_objdetect243", "opencv_features2d243", "opencv_flann243", "opencv_calib3d243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_videostab {
-    static { load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_objdetect.class);
-             load(opencv_photo.class); load(opencv_nonfree.class); load(opencv_video.class); load(); }
+    static { load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_objdetect.class); load(opencv_photo.class);
+             load(opencv_nonfree.class); load(opencv_video.class); load(opencv_ml.class); load(opencv_legacy.class); load(); }
 
     // #include "opencv2/videostab/optical_flow.hpp"
     @Namespace("cv::videostab") public static class ISparseOptFlowEstimator extends Pointer {

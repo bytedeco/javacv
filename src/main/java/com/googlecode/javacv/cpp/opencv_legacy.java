@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in compat.hpp, legacy.hpp, and
- * blobtrack.hpp of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * blobtrack.hpp of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                        Intel License Agreement
  *                For Open Source Computer Vision Library
@@ -95,8 +95,8 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
         link={"opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4","opencv_nonfree@.2.4", "opencv_features2d@.2.4",
               "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_legacy242", "opencv_ml242", "opencv_video242", "opencv_nonfree242", "opencv_features2d242",
-              "opencv_flann242", "opencv_calib3d242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_legacy243", "opencv_ml243", "opencv_video243", "opencv_nonfree243", "opencv_features2d243",
+              "opencv_flann243", "opencv_calib3d243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -361,8 +361,8 @@ public class opencv_legacy {
 
     public static class CvImgObsInfo extends Pointer {
         static { load(); }
-        public CvImgObsInfo() { allocate(); }
-        public CvImgObsInfo(int size) { allocateArray(size); }
+        public CvImgObsInfo() { allocate(); zero(); }
+        public CvImgObsInfo(int size) { allocateArray(size); zero(); }
         public CvImgObsInfo(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -423,8 +423,8 @@ public class opencv_legacy {
 
     public static class CvEHMM extends Pointer {
         static { load(); }
-        public CvEHMM() { allocate(); }
-        public CvEHMM(int size) { allocateArray(size); }
+        public CvEHMM() { allocate(); zero(); }
+        public CvEHMM(int size) { allocateArray(size); zero(); }
         public CvEHMM(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -903,8 +903,8 @@ public class opencv_legacy {
 
     public static class CvContourTree extends CvSeq {
         static { load(); }
-        public CvContourTree() { allocate(); }
-        public CvContourTree(int size) { allocateArray(size); }
+        public CvContourTree() { allocate(); zero(); }
+        public CvContourTree(int size) { allocateArray(size); zero(); }
         public CvContourTree(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -1363,8 +1363,8 @@ public class opencv_legacy {
 
     public static class CvConDensation extends Pointer {
         static { load(); }
-        public CvConDensation() { allocate(); }
-        public CvConDensation(int size) { allocateArray(size); }
+        public CvConDensation() { allocate(); zero(); }
+        public CvConDensation(int size) { allocateArray(size); zero(); }
         public CvConDensation(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2450,8 +2450,8 @@ public class opencv_legacy {
 
     public static class CvStereoGCState extends Pointer {
         static { load(); }
-        public CvStereoGCState() { allocate(); }
-        public CvStereoGCState(int size) { allocateArray(size); }
+        public CvStereoGCState() { allocate(); zero(); }
+        public CvStereoGCState(int size) { allocateArray(size); zero(); }
         public CvStereoGCState(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2527,8 +2527,8 @@ public class opencv_legacy {
 
     public static class CvBGStatModel extends Pointer {
         static { load(); }
-        public CvBGStatModel() { allocate(); }
-        public CvBGStatModel(int size) { allocateArray(size); }
+        public CvBGStatModel() { allocate(); zero(); }
+        public CvBGStatModel(int size) { allocateArray(size); zero(); }
         public CvBGStatModel(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2683,8 +2683,8 @@ public class opencv_legacy {
 
     public static class CvFGDStatModel extends CvBGStatModel {
         static { load(); }
-        public CvFGDStatModel() { allocate(); }
-        public CvFGDStatModel(int size) { allocateArray(size); }
+        public CvFGDStatModel() { allocate(); zero(); }
+        public CvFGDStatModel(int size) { allocateArray(size); zero(); }
         public CvFGDStatModel(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2722,8 +2722,8 @@ public class opencv_legacy {
 
     public static class CvGaussBGStatModelParams extends CvBGStatModel {
         static { load(); }
-        public CvGaussBGStatModelParams() { allocate(); }
-        public CvGaussBGStatModelParams(int size) { allocateArray(size); }
+        public CvGaussBGStatModelParams() { allocate(); zero(); }
+        public CvGaussBGStatModelParams(int size) { allocateArray(size); zero(); }
         public CvGaussBGStatModelParams(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2777,8 +2777,8 @@ public class opencv_legacy {
 
     public static class CvGaussBGModel extends CvBGStatModel {
         static { load(); }
-        public CvGaussBGModel() { allocate(); }
-        public CvGaussBGModel(int size) { allocateArray(size); }
+        public CvGaussBGModel() { allocate(); zero(); }
+        public CvGaussBGModel(int size) { allocateArray(size); zero(); }
         public CvGaussBGModel(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -2820,8 +2820,8 @@ public class opencv_legacy {
 
     public static class CvBGCodeBookModel extends Pointer {
         static { load(); }
-        public CvBGCodeBookModel() { allocate(); }
-        public CvBGCodeBookModel(int size) { allocateArray(size); }
+        public CvBGCodeBookModel() { allocate(); zero(); }
+        public CvBGCodeBookModel(int size) { allocateArray(size); zero(); }
         public CvBGCodeBookModel(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);

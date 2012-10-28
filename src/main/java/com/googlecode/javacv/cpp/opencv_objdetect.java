@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in objdetect.hpp of OpenCV 2.4.2,
+ * This file is based on information found in objdetect.hpp of OpenCV 2.4.3rc,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -89,7 +89,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/objdetect/objdetect.hpp>", "opencv_adapters.h"},
         link={"opencv_objdetect@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_objdetect242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_objdetect243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -527,6 +527,25 @@ public class opencv_objdetect {
     }
 
 
+    @Namespace("cv") public static class DetectionROI extends Pointer {
+        static { load(); }
+        public DetectionROI() { allocate(); }
+        public DetectionROI(int size) { allocateArray(size); }
+        public DetectionROI(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        @Override public DetectionROI position(int position) {
+            return (DetectionROI)super.position(position);
+        }
+
+        public native double scale();              public native DetectionROI scale(double scale);
+        @StdVector("CvPoint,cv::Point")
+        public native CvPoint locations();         public native DetectionROI locations(CvPoint locations);
+        @StdVector
+        public native DoublePointer confidences(); public native DetectionROI confidences(DoublePointer confidences);
+    }
+
     @NoOffset @Namespace("cv") public static class HOGDescriptor extends Pointer {
         static { Loader.load(); }
         public HOGDescriptor() { allocate(); }
@@ -606,6 +625,16 @@ public class opencv_objdetect {
         @Const @StdVector
         public native FloatPointer svmDetector();  public native HOGDescriptor svmDetector(FloatPointer svmDetector);
         public native int nlevels();               public native HOGDescriptor nlevels(int nlevels);
+
+        public native void detectROI(@InputMat CvArr img, @Const @StdVector("CvPoint,cv::Point") CvPoint locations,
+                @StdVector("CvPoint,cv::Point") CvPoint foundLocations,
+                @StdVector DoublePointer confidences, double hitThreshold/*=0*/,
+                @ByVal CvSize winStride/*=cvSize(0,0)*/, @ByVal CvSize padding/*=cvSize(0,0)*/);
+
+        public native void detectMultiScaleROI(@InputMat CvArr img, @StdVector("CvRect,cv::Rect") CvRect foundLocations,
+                @StdVector DetectionROI locations, double hitThreshold/*=0*/, int groupThreshold/*=0*/);
+
+        public native void readALTModel(String modelfile);
     }
 
 

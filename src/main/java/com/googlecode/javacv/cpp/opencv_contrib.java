@@ -19,14 +19,16 @@
  *
  *
  * This file is based on information found in contrib.hpp, retina.hpp,
- * detection_based_tracker.hpp, and hybrid_tracker.hpp of OpenCV 2.4.2,
- * which are covered by the following copyright notice:
+ * detection_based_tracker.hpp, hybrid_tracker.hpp, and openfabmap.hpp
+ * of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                           License Agreement
  *                For Open Source Computer Vision Library
  *
  * Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
  * Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.
+ * Copyright (C) 2012 Arren Glover [aj.glover@qut.edu.au] and
+ *                    Will Maddern [w.maddern@qut.edu.au], all rights reserved.
  * Third party copyrights are property of their respective owners.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -93,8 +95,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         link={"opencv_contrib@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_objdetect@.2.4", "opencv_calib3d@.2.4",
               "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_contrib242", "opencv_ml242", "opencv_video242", "opencv_objdetect242", "opencv_calib3d242",
-              "opencv_features2d242", "opencv_flann242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_contrib243", "opencv_ml243", "opencv_video243", "opencv_objdetect243", "opencv_calib3d243",
+              "opencv_features2d243", "opencv_flann243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -810,15 +812,15 @@ public class opencv_contrib {
         static { Loader.load(); }
         public LDA() { allocate(); }
         public LDA(int num_components) { allocate(num_components); }
-        public LDA(CvMat src, int[] labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
-        public LDA(CvArr src, CvArr labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
-        public LDA(CvArr src, IntPointer labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
+        public LDA(MatVector src, int[] labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
+        public LDA(MatVector src, CvArr labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
+        public LDA(MatVector src, IntPointer labels, int num_components/*=0*/) { allocate(src, labels, num_components); }
         public LDA(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(int num_components);
-        private native void allocate(@InputArray CvArr src, @InputArray int[] labels, int num_components/*=0*/);
-        private native void allocate(@InputArray CvArr src, @InputArray CvArr labels, int num_components/*=0*/);
-        private native void allocate(@InputArray CvArr src, @InputArray IntPointer labels, int num_components/*=0*/);
+        private native void allocate(@ByRef MatVector src, @InputArray int[] labels, int num_components/*=0*/);
+        private native void allocate(@ByRef MatVector src, @InputArray CvArr labels, int num_components/*=0*/);
+        private native void allocate(@ByRef MatVector src, @InputArray IntPointer labels, int num_components/*=0*/);
 
         public native void save(String filename);
         public native void load(String filename);
@@ -838,9 +840,9 @@ public class opencv_contrib {
 //        protected native @OutputMat CvMat _eigenvectors();
 //        protected native @OutputMat CvMat _eigenvalues();
 //
-//        protected native void lda(@InputArray CvArr src, @InputArray int[] labels);
-//        protected native void lda(@InputArray CvArr src, @InputArray CvArr labels);
-//        protected native void lda(@InputArray CvArr src, @InputArray IntPointer labels);
+//        protected native void lda(@ByRef MatVector src, @InputArray int[] labels);
+//        protected native void lda(@ByRef MatVector src, @InputArray CvArr labels);
+//        protected native void lda(@ByRef MatVector src, @InputArray IntPointer labels);
     }
 
     @Namespace("cv") public static class FaceRecognizer extends Algorithm {
@@ -851,6 +853,9 @@ public class opencv_contrib {
         public /*abstract*/ native void train(@ByRef MatVector src, @InputArray int[] labels);
         public /*abstract*/ native void train(@ByRef MatVector src, @InputArray CvArr labels);
         public /*abstract*/ native void train(@ByRef MatVector src, @InputArray IntPointer labels);
+        public /*abstract*/ native void update(@ByRef MatVector src, @InputArray int[] labels);
+        public /*abstract*/ native void update(@ByRef MatVector src, @InputArray CvArr labels);
+        public /*abstract*/ native void update(@ByRef MatVector src, @InputArray IntPointer labels);
         public /*abstract*/ native int predict(@InputArray CvArr src);
         public /*abstract*/ native void predict(@InputArray CvArr src, @ByRef int[] label, @ByRef double[] dist);
         public native void save(String filename);
@@ -1232,4 +1237,257 @@ public class opencv_contrib {
         public native @ByVal CvRect getTrackingWindow();
     }
 
+
+    @Namespace("cv::of2") public static class IMatch extends Pointer {
+        static { load(); }
+        public IMatch() { allocate(); }
+        public IMatch(int _queryIdx, int _imgIdx, double _likelihood, double _match) {
+            allocate(_queryIdx, _imgIdx, _likelihood, _match);
+        }
+        public IMatch(int size) { allocateArray(size); }
+        public IMatch(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int _queryIdx, int _imgIdx, double _likelihood, double _match);
+        private native void allocateArray(int size);
+
+        @Override public IMatch position(int position) {
+            return (IMatch)super.position(position);
+        }
+
+        public native int queryIdx();      public native IMatch queryIdx(int queryIdx);
+        public native int imgIdx();        public native IMatch imgIdx(int imgIdx);
+
+        public native double likelihood(); public native IMatch likelihood(double likelihood);
+        public native double match();      public native IMatch match(double match);
+
+        public native @Name("operator<") boolean compare(@ByRef IMatch m);
+    }
+
+    @Namespace("cv::of2") public static class FabMap extends Pointer {
+        static { load(); }
+        public static final int
+                MEAN_FIELD = 1,
+                SAMPLED = 2,
+                NAIVE_BAYES = 4,
+                CHOW_LIU = 8,
+                MOTION_MODEL = 16;
+
+        protected FabMap() { }
+        public FabMap(CvArr clTree, double PzGe, double PzGNe, int flags) {
+            allocate(clTree, PzGe, PzGNe, flags);
+        }
+        public FabMap(CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/) {
+            allocate(clTree, PzGe, PzGNe, flags, numSamples);
+        }
+        public FabMap(Pointer p) { super(p); }
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags);
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/);
+
+        public /*abstract*/ native void addTraining(@InputMat CvArr queryImgDescriptor);
+        public /*abstract*/ native void addTraining(@ByRef MatVector queryImgDescriptors);
+
+        public /*abstract*/ native void add(@InputMat CvArr queryImgDescriptor);
+        public /*abstract*/ native void add(@ByRef MatVector queryImgDescriptors);
+
+        public native @Const @ByRef MatVector getTrainingImgDescriptors();
+        public native @Const @ByRef MatVector getTestImgDescriptors();
+
+        public native void compare(@InputMat CvArr queryImgDescriptor,
+                @StdVector IMatch matches, boolean addQuery/*=false*/,
+                @InputMat CvArr mask/*=null*/);
+        public native void compare(@InputMat CvArr queryImgDescriptor, @InputMat CvArr testImgDescriptors,
+                @StdVector IMatch matches, @InputMat CvArr mask/*=null*/);
+        public native void compare(@InputMat CvArr queryImgDescriptor, @ByRef MatVector testImgDescriptors,
+                @StdVector IMatch matches, @InputMat CvArr mask/*=null*/);
+        public native void compare(@ByRef MatVector queryImgDescriptors,
+                @StdVector IMatch matches, boolean addQuery/*=false*/, @InputMat CvArr mask/*=null*/);
+        public native void compare(@ByRef MatVector queryImgDescriptors,
+                @ByRef MatVector testImgDescriptors, @StdVector IMatch matches, @InputMat CvArr mask/*=null*/);
+
+//        protected native void compareImgDescriptor(@InputMat CvArr queryImgDescriptor,
+//                int queryIndex, @ByRef MatVector testImgDescriptors, @StdVector IMatch matches);
+//
+//        protected native void addImgDescriptor(@InputMat CvArr queryImgDescriptor);
+//
+//        protected /*abstract*/ native void getLikelihoods(@InputMat CvArr queryImgDescriptor,
+//                @ByRef MatVector testImgDescriptors, @StdVector IMatch matches);
+//        protected /*abstract*/ native double getNewPlaceLikelihood(@InputMat CvArr queryImgDescriptor);
+//
+//        protected native void normaliseDistribution(@StdVector IMatch matches);
+//
+//        protected native int pq(int q);
+//        protected native double Pzq(int q, boolean zq);
+//        protected native double PzqGzpq(int q, boolean zq, boolean zpq);
+//
+//        protected native double PzqGeq(boolean zq, boolean eq);
+//        protected native double PeqGL(int q, boolean Lzq, boolean eq);
+//        protected native double PzqGL(int q, boolean zq, boolean zpq, boolean Lzq);
+//        protected native double PzqGzpqL(int q, boolean zq, boolean zpq, boolean Lzq);
+//        protected native double (FabMap::*PzGL)(int q, boolean zq, boolean zpq, boolean Lzq);
+//
+//        protected native @OutputMat CvMat clTree();
+//        protected native @ByRef MatVector trainingImgDescriptors();
+//        protected native @ByRef MatVector testImgDescriptors();
+//        protected native @StdVector IMatch priorMatches();
+//
+//        protected native double PzGe();
+//        protected native double PzGNe();
+//        protected native double Pnew();
+//
+//        protected native double mBias();
+//        protected native double sFactor();
+//
+//        protected native int flags();
+//        protected native int numSamples();
+    }
+
+    @Namespace("cv::of2") public static class FabMap1 extends FabMap {
+        static { load(); }
+        public FabMap1(CvArr clTree, double PzGe, double PzGNe, int flags) {
+            allocate(clTree, PzGe, PzGNe, flags);
+        }
+        public FabMap1(CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/) {
+            allocate(clTree, PzGe, PzGNe, flags, numSamples);
+        }
+        public FabMap1(Pointer p) { super(p); }
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags);
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/);
+
+//        protected native void getLikelihoods(CvArr queryImgDescriptor,
+//                @ByRef MatVector testImgDescriptors, @StdVector IMatch matches);
+    }
+
+    @Namespace("cv::of2") public static class FabMapLUT extends FabMap {
+        static { load(); }
+        public FabMapLUT(CvArr clTree, double PzGe, double PzGNe, int flags) {
+            allocate(clTree, PzGe, PzGNe, flags);
+        }
+        public FabMapLUT(CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/, int precision/*=6*/) {
+            allocate(clTree, PzGe, PzGNe, flags, numSamples, precision);
+        }
+        public FabMapLUT(Pointer p) { super(p); }
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags);
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/, int precision/*=6*/);
+
+//        protected native void getLikelihoods(@InputMat CvArr queryImgDescriptor,
+//                @ByRef MatVector testImgDescriptors, @StdVector IMatch matches);
+//
+//        protected native int table(int i, int j);
+//
+//        protected native int precision();
+    }
+
+    @Namespace("cv::of2") public static class FabMapFBO extends FabMap {
+        static { load(); }
+        public FabMapFBO(CvArr clTree, double PzGe, double PzGNe, int flags) {
+            allocate(clTree, PzGe, PzGNe, flags);
+        }
+        public FabMapFBO(CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/,
+                double rejectionThreshold/*=1e-8*/, double PsGd/*=1e-8*/, int bisectionStart/*=512*/, int bisectionIts/*=9*/) {
+            allocate(clTree, PzGe, PzGNe, flags, numSamples,rejectionThreshold, PsGd, bisectionStart, bisectionIts);
+        }
+        public FabMapFBO(Pointer p) { super(p); }
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags);
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags, int numSamples/*=0*/,
+                double rejectionThreshold/*=1e-8*/, double PsGd/*=1e-8*/, int bisectionStart/*=512*/, int bisectionIts/*=9*/);
+
+//        protected native void getLikelihoods(@InputMat CvArr queryImgDescriptor,
+//                @ByRef MatVector testImgDescriptors, @StdVector IMatch matches);
+//
+//        protected static class WordStats extends Pointer {
+//            static { load(); }
+//            public WordStats() { allocate(); }
+//            public WordStats(int _q, double _info) { allocate(_q, _info); }
+//            public WordStats(int size) { allocateArray(size); }
+//            public WordStats(Pointer p) { super(p); }
+//            private native void allocate();
+//            private native void allocate(int _q, double _info);
+//            private native void allocateArray(int size);
+//
+//            @Override public WordStats position(int position) {
+//                return (WordStats)super.position(position);
+//            }
+//
+//            public native int q();
+//            public native double info();
+//            public native double V();
+//            public native double M();
+//
+//            public native @Name("operator<") boolean compare(@ByRef WordStats w);
+//        }
+//
+//        protected native void setWordStatistics(@ByRef MatVector queryImgDescriptor, @ByRef multiset<WordStats> wordData);
+//        protected native double limitbisection(double v, double m);
+//        protected native double bennettInequality(double v, double m, double delta);
+//        protected native static boolean compInfo(@ByRef WordStats first, @ByRef WordStats second);
+//
+//        protected native double PsGd();
+//        protected native double rejectionThreshold();
+//        protected native int bisectionStart();
+//        protected native int bisectionIts();
+    }
+
+    @Namespace("cv::of2") public static class FabMap2 extends FabMap {
+        static { load(); }
+        public FabMap2(CvArr clTree, double PzGe, double PzGNe, int flags) {
+            allocate(clTree, PzGe, PzGNe, flags);
+        }
+        public FabMap2(Pointer p) { super(p); }
+        private native void allocate(@InputMat CvArr clTree, double PzGe, double PzGNe, int flags);
+
+//        public native void addTraining(@InputMat CvArr queryImgDescriptors);
+//        public native void addTraining(@ByRef MatVector queryImgDescriptors);
+//
+//        public native void add(@InputMat CvArr queryImgDescriptors);
+//        public native void add(@ByRef MatVector queryImgDescriptors);
+
+//        protected native void getLikelihoods(@InputMat CvArr queryImgDescriptor,
+//                @ByRef MatVector testImgDescriptors, @StdVector IMatch matches);
+//        protected native double getNewPlaceLikelihood(@InputMat CvArr queryImgDescriptor);
+//
+//        protected native void getIndexLikelihoods(@ByRef MatVector queryImgDescriptor,
+//                @StdVector DoublePointer defaults, @ByRef map<int, vector<int> > invertedMap, @StdVector IMatch matches);
+//        protected native void addToIndex(const Mat& queryImgDescriptor,
+//                @StdVector DoublePointer defaults, @ByRef map<int, vector<int> > invertedMap);
+//
+//        protected native @StdVector DoublePointer d1();
+//        protected native @StdVector DoublePointer d2();
+//        protected native @StdVector DoublePointer d3();
+//        protected native @StdVector DoublePointer d4();
+//        protected native @ByRef IntVectorVector children();
+//
+//        protected native @StdVector DoublePointer trainingDefaults();
+//        protected native @ByRef map<int, vector<int> > trainingInvertedMap();
+//
+//        protected native @StdVector DoublePointer testDefaults();
+//        protected native @ByRef map<int, vector<int> > testInvertedMap();
+    }
+
+    @Namespace("cv::of2") public static class ChowLiuTree extends Pointer {
+        static { load(); }
+        public ChowLiuTree() { allocate(); }
+        public ChowLiuTree(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native void add(@InputMat CvArr imgDescriptor);
+        public native void add(@ByRef MatVector imgDescriptors);
+
+        public native @Const @ByRef MatVector getImgDescriptors();
+
+        public native @OutputMat CvMat make(double infoThreshold/*=0.0*/);
+    }
+
+    @Namespace("cv::of2") public static class BOWMSCTrainer extends opencv_features2d.BOWTrainer {
+        static { load(); }
+        public BOWMSCTrainer() { allocate(); }
+        public BOWMSCTrainer(double clusterSize/*=0.4*/) { allocate(clusterSize); }
+        public BOWMSCTrainer(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(double clusterSize/*=0.4*/);
+
+//        public native @OutputMat CvMat cluster();
+//        public native @OutputMat CvMat cluster(CvMat descriptors);
+
+//        protected native double clusterSize();
+    }
 }

@@ -22,6 +22,7 @@ package com.googlecode.javacv;
 
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Loader;
+import java.io.File;
 
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -42,6 +43,10 @@ public class VideoInputFrameGrabber extends FrameGrabber {
         }
         return descriptions;
     }
+
+    public static VideoInputFrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
+    public static VideoInputFrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static VideoInputFrameGrabber createDefault(int deviceNumber)  throws Exception { return new VideoInputFrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {

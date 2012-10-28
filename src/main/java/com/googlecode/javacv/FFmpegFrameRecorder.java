@@ -76,6 +76,8 @@ import static com.googlecode.javacv.cpp.swscale.*;
  * @author Samuel Audet
  */
 public class FFmpegFrameRecorder extends FrameRecorder {
+    public static FFmpegFrameRecorder createDefault(File f, int w, int h)   throws Exception { return new FFmpegFrameRecorder(f, w, h); }
+    public static FFmpegFrameRecorder createDefault(String f, int w, int h) throws Exception { return new FFmpegFrameRecorder(f, w, h); }
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {
@@ -367,7 +369,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         /*
          * add an audio output stream
          */
-        if (audioChannels > 0) {
+        if (audioChannels > 0 && audioBitrate > 0 && sampleRate > 0) {
             if (audioCodec != AV_CODEC_ID_NONE) {
                 oformat.audio_codec(audioCodec);
             } else if ("flv".equals(format_name) || "mp4".equals(format_name) || "3gp".equals(format_name)) {

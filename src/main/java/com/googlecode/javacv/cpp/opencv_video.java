@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in tracking.hpp and background_segm.hpp
- * of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -81,7 +81,7 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
         include={"<opencv2/video/video.hpp>", "opencv_adapters.h"},
         link={"opencv_video@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_video242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_video243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -138,8 +138,8 @@ public class opencv_video {
 
     public static class CvKalman extends Pointer {
         static { load(); }
-        public CvKalman() { allocate(); }
-        public CvKalman(int size) { allocateArray(size); }
+        public CvKalman() { allocate(); zero(); }
+        public CvKalman(int size) { allocateArray(size); zero(); }
         public CvKalman(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -229,6 +229,14 @@ public class opencv_video {
     @Namespace("cv") public static native void calcOpticalFlowFarneback(@InputArray IplImageArray prev,
             @InputArray IplImageArray next, @InputArray CvArr flow, double pyr_scale,
             int levels, int winsize, int iterations, int poly_n, double poly_sigma, int flags);
+    @Namespace("cv") public static native @OutputMat CvMat estimateRigidTransform(@InputArray CvArr src,
+            @InputArray CvArr dst, boolean fullAffine);
+    @Namespace("cv") public static native void calcOpticalFlowSF(@InputMat CvArr from, @InputMat CvArr to,
+            @InputMat CvArr flow, int layers, int averaging_block_size, int max_flow);
+    @Namespace("cv") public static native void calcOpticalFlowSF(@InputMat CvArr from, @InputMat CvArr to,
+            @InputMat CvArr flow, int layers, int averaging_block_size, int max_flow, double sigma_dist, double sigma_color,
+            int postprocess_window, double sigma_dist_fix, double sigma_color_fix, double occ_thr, int upscale_averaging_radius,
+            double upscale_sigma_dist, double upscale_sigma_color, double speed_up_thr);
 
 
     @Namespace("cv") public static class BackgroundSubtractor extends Algorithm {
@@ -309,5 +317,30 @@ public class opencv_video {
 //        protected native boolean bShadowDetection();  protected native BackgroundSubtractorMOG2 bShadowDetection(boolean bShadowDetection);
 //        protected native byte nShadowDetection();     protected native BackgroundSubtractorMOG2 nShadowDetection(byte nShadowDetection);
 //        protected native float fTau();                protected native BackgroundSubtractorMOG2 fTau(float fTau);
+    }
+
+    @NoOffset @Namespace("cv") public static class BackgroundSubtractorGMG extends BackgroundSubtractor {
+        static { load(); }
+        public BackgroundSubtractorGMG() { allocate(); }
+        public BackgroundSubtractorGMG(Pointer p) { super(p); }
+        private native void allocate();
+
+//        public native AlgorithmInfo info();
+
+        public native void initialize(@ByVal CvSize frameSize, double min, double max);
+
+//        public native @Name("operator()") void apply(@InputArray CvArr image,
+//                @InputArray CvArr fgmask, double learningRate/*=-1.0*/);
+
+        public native void release();
+
+        public native int     maxFeatures();             public native BackgroundSubtractorGMG maxFeatures(int maxFeatures);
+        public native double  learningRate();            public native BackgroundSubtractorGMG learningRate(double learningRate);
+        public native int     numInitializationFrames(); public native BackgroundSubtractorGMG numInitializationFrames(int numInitializationFrames);
+        public native int     quantizationLevels();      public native BackgroundSubtractorGMG quantizationLevels(int quantizationLevels);
+        public native double  backgroundPrior();         public native BackgroundSubtractorGMG backgroundPrior(double backgroundPrior);
+        public native double  decisionThreshold();       public native BackgroundSubtractorGMG decisionThreshold(double decisionThreshold);
+        public native int     smoothingRadius();         public native BackgroundSubtractorGMG smoothingRadius(int smoothingRadius);
+        public native boolean updateBackgroundModel();   public native BackgroundSubtractorGMG updateBackgroundModel(boolean updateBackgroundModel);
     }
 }

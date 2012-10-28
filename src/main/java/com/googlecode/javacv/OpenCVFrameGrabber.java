@@ -37,6 +37,10 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         throw new UnsupportedOperationException("Device enumeration not support by OpenCV.");
     }
 
+    public static OpenCVFrameGrabber createDefault(File deviceFile)   throws Exception { return new OpenCVFrameGrabber(deviceFile); }
+    public static OpenCVFrameGrabber createDefault(String devicePath) throws Exception { return new OpenCVFrameGrabber(devicePath); }
+    public static OpenCVFrameGrabber createDefault(int deviceNumber)  throws Exception { return new OpenCVFrameGrabber(deviceNumber); }
+
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {
         if (loadingException != null) {

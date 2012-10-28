@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in nonfree/features2d.hpp and
- * nonfree.hpp of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * nonfree.hpp of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -79,7 +79,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_nonfree@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_nonfree242", "opencv_features2d242", "opencv_flann242", "opencv_highgui242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_nonfree243", "opencv_features2d243", "opencv_flann243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

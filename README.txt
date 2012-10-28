@@ -15,7 +15,7 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.2  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.3rc  http://sourceforge.net/projects/opencvlibrary/files/
   * For Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
@@ -58,7 +58,7 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.2-android-arm.zip`, and `ffmpeg-1.0-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.3rc-android-arm.zip`, and `ffmpeg-1.0-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -217,6 +217,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Upgraded support to OpenCV 2.4.3rc (issue #233)
+ * When allocating an empty `IplImage`, `CvMat`, `CvBGCodeBookModel`, etc. its memory content now gets zeroed out, giving OpenCV a better chance of displaying an error message instead of crashing
  * Upgraded supported FFmpeg API to the 1.0 release branch
  * Appended to `StringVector` and `MatVector` new convenient bulk constructors and `put()` methods taking arrays of `String`, `IplImage`, `CvMat`, etc.
  * Included new `Blobs` module from David Grossman and the corresponding `BlobDemo` sample
@@ -224,7 +226,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
  * Fixed up the samples a bit (issue #229 and issue #230)
  * Switched the majority of `@Adapter` annotations to more concise ones like `@StdVector` as allowed by new capabilities of JavaCPP
  * Fixed `FFmpegFrameGrabber.getLengthInFrames()` and `OpenCVFrameGrabber.getLengthInTime()` (issue #231 and issue #236)
- * Enhanced `FFmpegFrameRecorder` to support conversion between audio sample formats (for the experimental AAC encoder among other things) and to let two different threads call `record(samples)` and `record(image)` simultaneously, plus a couple of other features like `setFrameNumber()`, which lets users skip image frames
+ * Enhanced `FFmpegFrameRecorder` to support conversion between audio sample formats (for the experimental AAC encoder among other things) and to let two different threads call `record(samples)` and `record(image)` simultaneously, plus a couple of other features like `setFrameNumber()`, which lets users skip image frames (achieving variable frame rate)
  * Added a `javacpp.skip` property to `pom.xml`, such that a command like `mvn package -Pall -Djavacpp.skip=true` only recompiles the Java source files, but also added `platform.root` and `compiler.path` properties, which map directly to JavaCPP's for convenience
 
 ===July 21, 2012 version 0.2===

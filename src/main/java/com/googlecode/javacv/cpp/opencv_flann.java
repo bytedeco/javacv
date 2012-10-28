@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in defines.h and miniflann.hpp
- * of OpenCV 2.4.2, which ares covered by the following copyright notice:
+ * of OpenCV 2.4.3rc, which ares covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -79,7 +79,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann242", "opencv_core242"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -112,7 +112,8 @@ public class opencv_flann {
             FLANN_DIST_CHI_SQUARE = 7,
             FLANN_DIST_CS         = 7,
             FLANN_DIST_KULLBACK_LEIBLER  = 8,
-            FLANN_DIST_KL                = 8;
+            FLANN_DIST_KL                = 8,
+            FLANN_DIST_HAMMING          = 9;
 
     @NoOffset @Namespace("cv::flann") public static class IndexParams extends Pointer {
         static { load(); }
@@ -177,6 +178,19 @@ public class opencv_flann {
         private native void allocate();
         private native void allocate(float target_precision/*=0.8*/, float build_weight/*=0.01*/,
                 float memory_weight/*=0*/, float sample_fraction/*=0.1*/);
+    }
+
+    @Namespace("cv::flann") public static class  HierarchicalClusteringIndexParams extends IndexParams {
+        static { load(); }
+        public HierarchicalClusteringIndexParams() { allocate(); }
+        public HierarchicalClusteringIndexParams(int branching/*=32*/,
+                int centers_init/*=FLANN_CENTERS_RANDOM*/, int trees/*=4*/, int leaf_size/*=100*/) {
+            allocate(branching, centers_init, trees, leaf_size);
+        }
+        public HierarchicalClusteringIndexParams(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int branching/*=32*/, @Cast("cvflann::flann_centers_init_t")
+                int centers_init/*=FLANN_CENTERS_RANDOM*/, int trees/*=4*/, int leaf_size/*=100*/);
     }
 
     @Namespace("cv::flann") public static class KMeansIndexParams extends IndexParams {

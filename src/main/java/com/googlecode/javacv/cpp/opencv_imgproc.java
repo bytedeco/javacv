@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -89,7 +89,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>", "opencv_adapters.h"},
         link={"opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -772,8 +772,8 @@ public class opencv_imgproc {
 
     public static class IplConvKernel extends Pointer {
         static { load(); }
-        public IplConvKernel() { allocate(); }
-        public IplConvKernel(int size) { allocateArray(size); }
+        public IplConvKernel() { allocate(); zero(); }
+        public IplConvKernel(int size) { allocateArray(size); zero(); }
         public IplConvKernel(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -810,8 +810,8 @@ public class opencv_imgproc {
 
     public static class IplConvKernelFP extends Pointer {
         static { load(); }
-        public IplConvKernelFP() { allocate(); }
-        public IplConvKernelFP(int size) { allocateArray(size); }
+        public IplConvKernelFP() { allocate(); zero(); }
+        public IplConvKernelFP(int size) { allocateArray(size); zero(); }
         public IplConvKernelFP(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -920,8 +920,8 @@ public class opencv_imgproc {
 
     public static class CvHistogram extends Pointer {
         static { load(); }
-        public CvHistogram() { allocate(); }
-        public CvHistogram(int size) { allocateArray(size); }
+        public CvHistogram() { allocate(); zero(); }
+        public CvHistogram(int size) { allocateArray(size); zero(); }
         public CvHistogram(Pointer p) { super(p); }
         private native void allocate();
         private native void allocateArray(int size);
@@ -1323,10 +1323,50 @@ public class opencv_imgproc {
     @Namespace("cv") public static native void eigen2x2(float[] a, float[] e, int n);
     @Namespace("cv") public static native void eigen2x2(FloatPointer a, FloatPointer e, int n);
 
+
+    public static final int
+            GHT_POSITION = 0,
+            GHT_SCALE = 1,
+            GHT_ROTATION = 2;
+
+    @Namespace("cv") public static class GeneralizedHough extends Algorithm {
+        static { load(); }
+        public GeneralizedHough() { }
+        public GeneralizedHough(Pointer p) { super(p); }
+
+        public static native @ByVal GeneralizedHoughPtr create(int method);
+
+        public native void setTemplate(@InputArray CvArr templ, int cannyThreshold/*=100*/, @ByVal CvPoint templCenter/*=cvPoint(-1,-1)*/);
+        public native void setTemplate(@InputArray CvArr edges, @InputArray CvArr dx, @InputArray CvArr dy, @ByVal CvPoint templCenter/*=cvPoint(-1,-1)*/);
+
+        public native void detect(@InputArray CvArr image, @OutputArray CvMat positions, @OutputArray CvMat votes/*=null*/, int cannyThreshold/*=100*/);
+        public native void detect(@InputArray CvArr edges, @InputArray CvArr dx, @InputArray CvArr dy, @OutputArray CvMat positions, @OutputArray CvMat votes/*=null*/);
+
+        public native void release();
+
+//        protected /*abstract*/ native void setTemplateImpl(CvArr edges, CvArr dx, CvArr dy, @ByVal CvPoint templCenter);
+//        protected /*abstract*/ native void detectImpl(CvArr edges, CvArr dx, CvArr dy, @OutputArray CvMat positions, @OutputArray CvMat votes);
+//        protected /*abstract*/ native void releaseImpl();
+    }
+
+    @Name("cv::Ptr<cv::GeneralizedHough>")
+    public static class GeneralizedHoughPtr extends Pointer {
+        static { load(); }
+        public GeneralizedHoughPtr()       { allocate();  }
+        public GeneralizedHoughPtr(Pointer p) { super(p); }
+        private native void allocate();
+
+        public native GeneralizedHough get();
+        public native GeneralizedHoughPtr put(GeneralizedHough value);
+    }
+
+
     @Namespace("cv") public static native double PSNR(@InputArray CvArr src1, @InputArray CvArr src2);
 
     @Namespace("cv") public static native @Adapter("Point2dAdapter") CvPoint2D64f phaseCorrelate(@InputArray CvArr src1,
             @InputArray CvArr src2, @InputArray CvArr window/*=null*/);
+    @Namespace("cv") public static native @Adapter("Point2dAdapter") CvPoint2D64f phaseCorrelateRes(@InputArray CvArr src1,
+            @InputArray CvArr src2, @InputArray CvArr window, double[] response/*=null*/);
     @Namespace("cv") public static native void createHanningWindow(@OutputArray CvMat dst, @ByVal CvSize winSize, int type);
 
     public static final int

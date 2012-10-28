@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in photo_c.h and photo.hpp
- * of OpenCV 2.4.2, which are covered by the following copyright notice:
+ * of OpenCV 2.4.3rc, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -56,6 +56,8 @@
 
 package com.googlecode.javacv.cpp;
 
+import com.googlecode.javacpp.annotation.ByRef;
+import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.Platform;
 import com.googlecode.javacpp.annotation.Properties;
 
@@ -71,7 +73,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/photo/photo_c.h>", "<opencv2/photo/photo.hpp>", "opencv_adapters.h"},
         link={"opencv_photo@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_photo242", "opencv_imgproc242", "opencv_core242"}),
+        link={"opencv_photo243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -83,4 +85,19 @@ public class opencv_photo {
             CV_INPAINT_TELEA   = 1;
 
     public static native void cvInpaint(CvArr src, CvArr mask, CvArr dst, double inpaintRange, int flags);
+
+
+    @Namespace("cv") public static native void fastNlMeansDenoising(@InputArray CvArr src, @InputArray CvArr dst,
+            float h/*=3*/, int templateWindowSize/*=7*/, int searchWindowSize/*=21*/);
+
+    @Namespace("cv") public static native void fastNlMeansDenoisingColored(@InputArray CvArr src, @InputArray CvArr dst,
+            float h/*=3*/, float hColor/*=3*/, int templateWindowSize/*=7*/, int searchWindowSize/*=21*/);
+
+    @Namespace("cv") public static native void fastNlMeansDenoisingMulti(@ByRef MatVector srcImgs, @InputArray CvArr dst,
+            int imgToDenoiseIndex, int temporalWindowSize, float h/*=3*/,
+            int templateWindowSize/*=7*/, int searchWindowSize/*=21*/);
+
+    @Namespace("cv") public static native void fastNlMeansDenoisingColoredMulti(@ByRef MatVector srcImgs, @InputArray CvArr dst,
+            int imgToDenoiseIndex, int temporalWindowSize, float h/*=3*/, float hColor/*=3*/,
+            int templateWindowSize/*=7*/, int searchWindowSize/*=21*/);
 }
