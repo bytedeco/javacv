@@ -20,7 +20,7 @@
  *
  * This file is based on information found in contrib.hpp, retina.hpp,
  * detection_based_tracker.hpp, hybrid_tracker.hpp, and openfabmap.hpp
- * of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                           License Agreement
  *                For Open Source Computer Vision Library
@@ -863,20 +863,13 @@ public class opencv_contrib {
         public native void save(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
         public native void load(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
     }
-    @Name("cv::Ptr<cv::FaceRecognizer>")
-    public static class FaceRecognizerPtr extends Pointer {
-        static { load(); }
-        public FaceRecognizerPtr()       { allocate();  }
-        public FaceRecognizerPtr(Pointer p) { super(p); }
-        private native void allocate();
 
-        public native FaceRecognizer get();
-        public native FaceRecognizerPtr put(FaceRecognizer value);
-    }
-
-    @Namespace("cv") public static native @ByVal FaceRecognizerPtr createEigenFaceRecognizer(int num_components/*=0*/, double threshold/*=DBL_MAX*/);
-    @Namespace("cv") public static native @ByVal FaceRecognizerPtr createFisherFaceRecognizer(int num_components/*=0*/, double threshold/*=DBL_MAX*/);
-    @Namespace("cv") public static native @ByVal FaceRecognizerPtr createLBPHFaceRecognizer(int radius/*=1*/,
+    @Namespace("cv") public static native @Ptr FaceRecognizer createEigenFaceRecognizer();
+    @Namespace("cv") public static native @Ptr FaceRecognizer createFisherFaceRecognizer();
+    @Namespace("cv") public static native @Ptr FaceRecognizer createLBPHFaceRecognizer();
+    @Namespace("cv") public static native @Ptr FaceRecognizer createEigenFaceRecognizer(int num_components/*=0*/, double threshold/*=DBL_MAX*/);
+    @Namespace("cv") public static native @Ptr FaceRecognizer createFisherFaceRecognizer(int num_components/*=0*/, double threshold/*=DBL_MAX*/);
+    @Namespace("cv") public static native @Ptr FaceRecognizer createLBPHFaceRecognizer(int radius/*=1*/,
             int neighbors/*=8*/, int grid_x/*=8*/, int grid_y/*=8*/, double threshold/*=DBL_MAX*/);
 
     public static final int
@@ -1238,7 +1231,7 @@ public class opencv_contrib {
     }
 
 
-    @Namespace("cv::of2") public static class IMatch extends Pointer {
+    @NoOffset @Namespace("cv::of2") public static class IMatch extends Pointer {
         static { load(); }
         public IMatch() { allocate(); }
         public IMatch(int _queryIdx, int _imgIdx, double _likelihood, double _match) {

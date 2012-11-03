@@ -73,8 +73,8 @@ import static com.googlecode.javacv.cpp.avutil.*;
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class avutil {
     static { load(); }
-    public static final String genericIncludepath = "/opt/local/include/ffmpeg/:/usr/local/include/ffmpeg/:/opt/local/include/:/usr/include/ffmpeg/";
-    public static final String genericLinkpath    = "/opt/local/lib/:/opt/local/lib64/:/usr/local/lib/:/usr/local/lib64/";
+    public static final String genericIncludepath = "/usr/local/include/ffmpeg/:/usr/local/include/:/opt/local/include/ffmpeg/:/opt/local/include/:/usr/include/ffmpeg/";
+    public static final String genericLinkpath    = "/usr/local/lib/:/usr/local/lib64/:/opt/local/lib/:/opt/local/lib64/";
     public static final String windowsIncludepath = "C:/MinGW/local/include/ffmpeg/;C:/MinGW/include/ffmpeg/;C:/MinGW/local/include/;src/main/resources/com/googlecode/javacv/cpp/";
     public static final String windowsLinkpath    = "C:/MinGW/local/lib/;C:/MinGW/lib/";
     public static final String windowsPreloadpath = "C:/MinGW/local/bin/;C:/MinGW/bin/";
@@ -472,7 +472,7 @@ public class avutil {
      * Convenience macro, the return value should be used only directly in
      * function arguments but never stand-alone.
      */
-    public static native String av_err2str(int errnum);
+//    public static native String av_err2str(int errnum);
 
     /**
      * @}
@@ -2554,7 +2554,7 @@ public class avutil {
      */
     public static native int av_image_check_size(@Cast("unsigned") int w, @Cast("unsigned") int h, int log_offset, Pointer log_ctx);
 
-    public static native int ff_set_systematic_pal2(@Cast("uint32_t*") int[/*256*/] pal, @Cast("PixelFormat") int pix_fmt);
+//    public static native int ff_set_systematic_pal2(@Cast("uint32_t*") int[/*256*/] pal, @Cast("PixelFormat") int pix_fmt);
 
     /**
      * @}

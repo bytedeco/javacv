@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -142,8 +142,8 @@ public class opencv_core {
             }
         }
     }
-    public static final String genericIncludepath    = "/opt/local/include/";
-    public static final String genericLinkpath       = "/opt/local/lib/:/opt/local/lib64/:/usr/local/lib/:/usr/local/lib64/";
+    public static final String genericIncludepath    = "/usr/local/include:/opt/local/include/";
+    public static final String genericLinkpath       = "/usr/local/lib/:/usr/local/lib64/:/opt/local/lib/:/opt/local/lib64/";
     public static final String windowsIncludepath    = "C:/opencv/build/include/";
     public static final String windowsx86Linkpath    = "C:/opencv/build/x86/vc10/lib/";
     public static final String windowsx86Preloadpath = "C:/opencv/build/x86/vc10/bin/";
@@ -157,7 +157,7 @@ public class opencv_core {
             CV_MINOR_VERSION    = 4,
             CV_SUBMINOR_VERSION = 3;
 
-    public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION + "-rc";
+    public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
 
     @Opaque public static abstract class CvArr extends Pointer implements Cloneable {
         static { load(); }
@@ -167,6 +167,7 @@ public class opencv_core {
 
     @Name("CvArr*")
     public static class CvArrArray extends Pointer {
+        static { load(); }
         public CvArrArray(CvArr ... array) { this(array.length); put(array); position(0); }
         public CvArrArray(int size) { allocateArray(size); }
         public CvArrArray(Pointer p) { super(p); }
@@ -2034,9 +2035,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + x() + ", " + y() + "; " + width() + ", " + height() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + x() + ", " + y() + "; " + width() + ", " + height() + ")";
                 }
@@ -2179,9 +2183,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + x() + ", " + y() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + x() + ", " + y() + ")";
                 }
@@ -2263,9 +2270,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + x() + ", " + y() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + x() + ", " + y() + ")";
                 }
@@ -2356,9 +2366,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + x() + ", " + y() + ", " + z() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + x() + ", " + y() + ", " + z() + ")";
                 }
@@ -2438,9 +2451,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + (float)x() + ", " + (float)y() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + (float)x() + ", " + (float)y() + ")";
                 }
@@ -2522,9 +2538,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + (float)x() + ", " + (float)y() + ", " + (float)z() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + (float)x() + ", " + (float)y() + ", " + (float)z() + ")";
                 }
@@ -2560,9 +2579,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + width() + ", " + height() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + width() + ", " + height() + ")";
                 }
@@ -2599,9 +2621,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + width() + ", " + height() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + width() + ", " + height() + ")";
                 }
@@ -2638,9 +2663,12 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + center() + ", " + size() + ", " + angle() + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
                     s += (i == 0 ? "(" : " (") + center() + ", " + size() + ", " + angle() + ")";
                 }
@@ -2742,12 +2770,16 @@ public class opencv_core {
             if (isNull()) {
                 return super.toString();
             } else {
+                if (capacity() == 0) {
+                    return "(" + (float)val(0) + ", " + (float)val(1) + ", " +
+                            (float)val(2) + ", " + (float)val(3) + ")";
+                }
                 String s = "";
                 int p = position();
-                for (int i = 0; i == 0 || i < capacity(); i++) {
+                for (int i = 0; i < capacity(); i++) {
                     position(i);
-                    s += (i == 0 ? "(" : " (") + (float)val(0) + ", " +
-                            (float)val(1) + ", " + (float)val(2) + ", " + (float)val(3) + ")";
+                    s += (i == 0 ? "(" : " (") + (float)val(0) + ", " + (float)val(1) + ", " +
+                            (float)val(2) + ", " + (float)val(3) + ")";
                 }
                 position(p);
                 return s;
@@ -4626,6 +4658,11 @@ public class opencv_core {
     @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.PARAMETER})
     @Adapter("MatAdapter") public @interface OutputMat { }
 
+    @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.PARAMETER})
+    @Cast({"cv::Ptr", "&"}) @Adapter("PtrAdapter") public @interface Ptr { 
+        String value() default ""; /* template type */
+    }
+
     @Name("std::vector<std::string>")
     public static class StringVector extends Pointer {
         static { load(); }
@@ -4860,17 +4897,6 @@ public class opencv_core {
     }
 
 
-    @Name("cv::Ptr<cv::Algorithm>")
-    public static class AlgorithmPtr extends Pointer {
-        static { load(); }
-        public AlgorithmPtr()       { allocate();  }
-        public AlgorithmPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native Algorithm get();
-        public native AlgorithmPtr put(Algorithm value);
-    }
-
     @Namespace("cv") public static class Algorithm extends Pointer {
         static { load(); }
         public Algorithm() { allocate(); }
@@ -4885,7 +4911,7 @@ public class opencv_core {
         public native @ByRef String getString(String name);
         public native @OutputMat CvMat getMat(String name);
         public native @ByVal MatVector getMatVector(String name);
-        public native @ByVal AlgorithmPtr getAlgorithm(String name);
+        public native @Const @Ptr Algorithm getAlgorithm(String name);
 
         public native void set(String name, int value);
         public native void set(String name, double value);
@@ -4893,7 +4919,7 @@ public class opencv_core {
         public native void set(String name, String value);
         public native void set(String name, CvMat value);
         public native void set(String name, @ByRef MatVector value);
-        public native void set(String name, @ByRef AlgorithmPtr value);
+        public native void set(String name, @Ptr Algorithm value);
 
         public native @ByRef String paramHelp(String name);
         public native int paramType(String name);
@@ -4903,7 +4929,7 @@ public class opencv_core {
         public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 
         public static native void getList(@ByRef StringVector algorithms);
-        public static native @ByVal AlgorithmPtr _create(String name);
+        public static native @Ptr Algorithm _create(String name);
 
         public static class Constructor extends FunctionPointer {
             static { load(); }

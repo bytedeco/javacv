@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in defines.h and miniflann.hpp
- * of OpenCV 2.4.3rc, which ares covered by the following copyright notice:
+ * of OpenCV 2.4.3, which ares covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library

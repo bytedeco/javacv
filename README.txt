@@ -15,7 +15,7 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.3rc  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.3  http://sourceforge.net/projects/opencvlibrary/files/
   * For Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
@@ -58,7 +58,7 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.3rc-android-arm.zip`, and `ffmpeg-1.0-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.3-android-arm.zip`, and `ffmpeg-1.0-android-arm.zip` directly into the newly created "libs/armeabi" folder, without creating any new subdirectories.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -217,7 +217,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
- * Upgraded support to OpenCV 2.4.3rc (issue #233)
+ * Upgraded support to OpenCV 2.4.3 (issue #233)
+ * Implemented better, more transparent, handling of `cv::Ptr`
  * When allocating an empty `IplImage`, `CvMat`, `CvBGCodeBookModel`, etc. its memory content now gets zeroed out, giving OpenCV a better chance of displaying an error message instead of crashing
  * Upgraded supported FFmpeg API to the 1.0 release branch
  * Appended to `StringVector` and `MatVector` new convenient bulk constructors and `put()` methods taking arrays of `String`, `IplImage`, `CvMat`, etc.

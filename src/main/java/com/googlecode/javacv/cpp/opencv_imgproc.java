@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -1138,8 +1138,8 @@ public class opencv_imgproc {
     @NoOffset @Namespace("cv") public static class FilterEngine extends Pointer {
         static { load(); }
         public FilterEngine() { allocate(); }
-        public FilterEngine(@ByRef BaseFilterPtr _filter2D, @ByRef BaseRowFilterPtr _rowFilter,
-                @ByRef BaseColumnFilterPtr _columnFilter, int srcType, int dstType, int bufType,
+        public FilterEngine(@Ptr BaseFilter _filter2D, @Ptr BaseRowFilter _rowFilter,
+                @Ptr BaseColumnFilter _columnFilter, int srcType, int dstType, int bufType,
                 int _rowBorderType/*=BORDER_REPLICATE*/, int _columnBorderType/*=-1*/,
                 @ByVal CvScalar _borderValue/*=Scalar()*/) {
             allocate(_filter2D, _rowFilter, _columnFilter, srcType, dstType, bufType,
@@ -1147,13 +1147,13 @@ public class opencv_imgproc {
         }
         public FilterEngine(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(@ByRef BaseFilterPtr _filter2D, @ByRef BaseRowFilterPtr _rowFilter,
-                @ByRef BaseColumnFilterPtr _columnFilter, int srcType, int dstType, int bufType,
+        private native void allocate(@Ptr BaseFilter _filter2D, @Ptr BaseRowFilter _rowFilter,
+                @Ptr BaseColumnFilter _columnFilter, int srcType, int dstType, int bufType,
                 int _rowBorderType/*=BORDER_REPLICATE*/, int _columnBorderType/*=-1*/,
                 @ByVal CvScalar _borderValue/*=Scalar()*/);
 
-        public native void init(@ByRef BaseFilterPtr _filter2D, @ByRef BaseRowFilterPtr _rowFilter,
-                @ByRef BaseColumnFilterPtr _columnFilter, int srcType, int dstType, int bufType,
+        public native void init(@Ptr BaseFilter _filter2D, @Ptr BaseRowFilter _rowFilter,
+                @Ptr BaseColumnFilter _columnFilter, int srcType, int dstType, int bufType,
                 int _rowBorderType/*=BORDER_REPLICATE*/, int _columnBorderType/*=-1*/,
                 @ByVal CvScalar _borderValue/*=Scalar()*/);
 
@@ -1201,53 +1201,9 @@ public class opencv_imgproc {
         @Const @StdVector @Cast("uchar**")
         public native PointerPointer rows();          public native FilterEngine rows(PointerPointer rows);
 
-        public native @ByRef BaseFilterPtr filter2D();           public native FilterEngine filter2D(BaseFilterPtr filter2D);
-        public native @ByRef BaseRowFilterPtr rowFilter();       public native FilterEngine rowFilter(BaseRowFilterPtr rowFilter);
-        public native @ByRef BaseColumnFilterPtr columnFilter(); public native FilterEngine columnFilter(BaseColumnFilterPtr columnFilter);
-    }
-
-    @Name("cv::Ptr<cv::BaseFilter>")
-    public static class BaseFilterPtr extends Pointer {
-        static { load(); }
-        public BaseFilterPtr()       { allocate();  }
-        public BaseFilterPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native BaseFilter get();
-        public native BaseFilterPtr put(BaseFilter value);
-    }
-
-    @Name("cv::Ptr<cv::BaseRowFilter>")
-    public static class BaseRowFilterPtr extends Pointer {
-        static { load(); }
-        public BaseRowFilterPtr()       { allocate();  }
-        public BaseRowFilterPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native BaseRowFilter get();
-        public native BaseRowFilterPtr put(BaseRowFilter value);
-    }
-
-    @Name("cv::Ptr<cv::BaseColumnFilter>")
-    public static class BaseColumnFilterPtr extends Pointer {
-        static { load(); }
-        public BaseColumnFilterPtr()       { allocate();  }
-        public BaseColumnFilterPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native BaseColumnFilter get();
-        public native BaseColumnFilterPtr put(BaseColumnFilter value);
-    }
-
-    @Name("cv::Ptr<cv::FilterEngine>")
-    public static class FilterEnginePtr extends Pointer {
-        static { load(); }
-        public FilterEnginePtr()       { allocate();  }
-        public FilterEnginePtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native FilterEngine get();
-        public native FilterEnginePtr put(FilterEngine value);
+        public native @Const @Ptr BaseFilter filter2D();           public native FilterEngine filter2D(BaseFilter filter2D);
+        public native @Const @Ptr BaseRowFilter rowFilter();       public native FilterEngine rowFilter(BaseRowFilter rowFilter);
+        public native @Const @Ptr BaseColumnFilter columnFilter(); public native FilterEngine columnFilter(BaseColumnFilter columnFilter);
     }
 
     public static final int
@@ -1256,34 +1212,34 @@ public class opencv_imgproc {
 
     @Namespace("cv") public static native int getKernelType(@InputArray CvMat kernel, @ByVal CvPoint anchor);
 
-    @Namespace("cv") public static native @ByVal BaseRowFilterPtr getLinearRowFilter(int srcType, int bufType,
+    @Namespace("cv") public static native @Ptr BaseRowFilter getLinearRowFilter(int srcType, int bufType,
             @InputArray CvMat kernel, int anchor, int symmetryType);
-    @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getLinearColumnFilter(int bufType, int dstType,
+    @Namespace("cv") public static native @Ptr BaseColumnFilter getLinearColumnFilter(int bufType, int dstType,
             @InputArray CvMat kernel, int anchor, int symmetryType, double delta/*=0*/, int bits/*=0*/);
-    @Namespace("cv") public static native @ByVal BaseFilterPtr getLinearFilter(int srcType, int dstType,
+    @Namespace("cv") public static native @Ptr BaseFilter getLinearFilter(int srcType, int dstType,
             @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int bits/*=0*/);
 
-    @Namespace("cv") public static native @ByVal FilterEnginePtr createSeparableLinearFilter(int srcType, int dstType,
+    @Namespace("cv") public static native @Ptr FilterEngine createSeparableLinearFilter(int srcType, int dstType,
             @InputArray CvMat rowKernel, @InputArray CvMat columnKernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
             int rowBorderType/*=BORDER_DEFAULT*/, int columnBorderType/*=-1*/, @ByVal CvScalar borderValue/*=Scalar()*/);
-    @Namespace("cv") public static native @ByVal FilterEnginePtr createLinearFilter(int srcType, int dstType,
+    @Namespace("cv") public static native @Ptr FilterEngine createLinearFilter(int srcType, int dstType,
             @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/,
             int rowBorderType/*=BORDER_DEFAULT*/, int columnBorderType/*=-1*/, @ByVal CvScalar borderValue/*=Scalar()*/);
 
     @Namespace("cv") public static native @OutputMat CvMat getGaussianKernel(int ksize, double sigma, int ktype/*=CV_64F*/);
-    @Namespace("cv") public static native @ByVal FilterEnginePtr createGaussianFilter(int type, @ByVal CvSize ksize,
+    @Namespace("cv") public static native @Ptr FilterEngine createGaussianFilter(int type, @ByVal CvSize ksize,
             double sigma1, double sigma2/*=0*/, int borderType/*=BORDER_DEFAULT*/);
 
     @Namespace("cv") public static native void getDerivKernels(@OutputArray CvMat kx, @OutputArray CvMat ky,
             int dx, int dy, int ksize, @Cast("bool") boolean normalize/*=false*/, int ktype/*=CV_32F*/);
-    @Namespace("cv") public static native @ByVal FilterEnginePtr createDerivFilter(int srcType, int dstType,
+    @Namespace("cv") public static native @Ptr FilterEngine createDerivFilter(int srcType, int dstType,
             int dx, int dy, int ksize, int borderType/*=BORDER_DEFAULT*/);
     
-    @Namespace("cv") public static native @ByVal BaseRowFilterPtr getRowSumFilter(int srcType, int sumType,
+    @Namespace("cv") public static native @Ptr BaseRowFilter getRowSumFilter(int srcType, int sumType,
             int ksize, int anchor/*=-1*/);
-    @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getColumnSumFilter( int sumType, int dstType,
+    @Namespace("cv") public static native @Ptr BaseColumnFilter getColumnSumFilter( int sumType, int dstType,
             int ksize, int anchor/*=-1*/, double scale/*=1*/);
-    @Namespace("cv") public static native @ByVal FilterEnginePtr createBoxFilter(int srcType, int dstType, @ByVal CvSize ksize,
+    @Namespace("cv") public static native @Ptr FilterEngine createBoxFilter(int srcType, int dstType, @ByVal CvSize ksize,
             @ByVal CvPoint anchor/*=Point(-1,-1)*/, @Cast("bool") boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native @OutputMat CvMat getGaborKernel(@ByVal CvSize ksize, double sigma,
             double theta, double lambd, double gamma, double psi/*=Math.PI*0.5*/, int ktype/*=CV_64F*/);
@@ -1293,16 +1249,16 @@ public class opencv_imgproc {
             MORPH_OPEN=CV_MOP_OPEN, MORPH_CLOSE=CV_MOP_CLOSE,
             MORPH_GRADIENT=CV_MOP_GRADIENT, MORPH_TOPHAT=CV_MOP_TOPHAT, MORPH_BLACKHAT=CV_MOP_BLACKHAT;
 
-    @Namespace("cv") public static native @ByVal BaseRowFilterPtr getMorphologyRowFilter(
+    @Namespace("cv") public static native @Ptr BaseRowFilter getMorphologyRowFilter(
             int op, int type, int ksize, int anchor/*=-1*/);
-    @Namespace("cv") public static native @ByVal BaseColumnFilterPtr getMorphologyColumnFilter(
+    @Namespace("cv") public static native @Ptr BaseColumnFilter getMorphologyColumnFilter(
             int op, int type, int ksize, int anchor/*=-1*/);
-    @Namespace("cv") public static native @ByVal BaseFilterPtr getMorphologyFilter(
+    @Namespace("cv") public static native @Ptr BaseFilter getMorphologyFilter(
             int op, int type, @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/);
     
     @Namespace("cv") public static native @ByVal CvScalar morphologyDefaultBorderValue();
 
-    @Namespace("cv") public static native @ByVal FilterEnginePtr createMorphologyFilter(int op, int type, @InputArray CvMat kernel,
+    @Namespace("cv") public static native @Ptr FilterEngine createMorphologyFilter(int op, int type, @InputArray CvMat kernel,
             @ByVal CvPoint anchor/*=Point(-1,-1)*/, int rowBorderType/*=BORDER_CONSTANT*/, int columnBorderType/*=-1*/,
             @ByVal CvScalar borderValue/*=morphologyDefaultBorderValue()*/);
 
@@ -1334,7 +1290,7 @@ public class opencv_imgproc {
         public GeneralizedHough() { }
         public GeneralizedHough(Pointer p) { super(p); }
 
-        public static native @ByVal GeneralizedHoughPtr create(int method);
+        public static native @Ptr GeneralizedHough create(int method);
 
         public native void setTemplate(@InputArray CvArr templ, int cannyThreshold/*=100*/, @ByVal CvPoint templCenter/*=cvPoint(-1,-1)*/);
         public native void setTemplate(@InputArray CvArr edges, @InputArray CvArr dx, @InputArray CvArr dy, @ByVal CvPoint templCenter/*=cvPoint(-1,-1)*/);
@@ -1347,17 +1303,6 @@ public class opencv_imgproc {
 //        protected /*abstract*/ native void setTemplateImpl(CvArr edges, CvArr dx, CvArr dy, @ByVal CvPoint templCenter);
 //        protected /*abstract*/ native void detectImpl(CvArr edges, CvArr dx, CvArr dy, @OutputArray CvMat positions, @OutputArray CvMat votes);
 //        protected /*abstract*/ native void releaseImpl();
-    }
-
-    @Name("cv::Ptr<cv::GeneralizedHough>")
-    public static class GeneralizedHoughPtr extends Pointer {
-        static { load(); }
-        public GeneralizedHoughPtr()       { allocate();  }
-        public GeneralizedHoughPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native GeneralizedHough get();
-        public native GeneralizedHoughPtr put(GeneralizedHough value);
     }
 
 

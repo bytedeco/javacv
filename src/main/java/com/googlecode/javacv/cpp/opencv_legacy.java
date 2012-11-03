@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in compat.hpp, legacy.hpp, and
- * blobtrack.hpp of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * blobtrack.hpp of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                        Intel License Agreement
  *                For Open Source Computer Vision Library
@@ -2172,17 +2172,6 @@ public class opencv_legacy {
     }
 
 
-    @Name("cv::Ptr<cv::OneWayDescriptorBase>")
-    public static class OneWayDescriptorBasePtr extends Pointer {
-        static { load(); }
-        public OneWayDescriptorBasePtr()       { allocate();  }
-        public OneWayDescriptorBasePtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native OneWayDescriptorBase get();
-        public native OneWayDescriptorBasePtr put(OneWayDescriptorBase value);
-    }
-
     @Namespace("cv") public static class OneWayDescriptorMatcher extends GenericDescriptorMatcher {
         static { load(); }
         @NoOffset public static class Params extends Pointer {
@@ -2229,7 +2218,7 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocate(@ByRef Params params);
 
-        public native void initialize(@ByRef Params params, @ByRef OneWayDescriptorBasePtr base/*=OneWayDescriptorBasePtr()*/);
+        public native void initialize(@ByRef Params params, @Ptr OneWayDescriptorBase base/*=OneWayDescriptorBasePtr()*/);
 
 //        public native void clear();
 //        public native void train();
@@ -2237,14 +2226,14 @@ public class opencv_legacy {
 //        public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
 //        public native boolean empty();
-//        public native GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
+//        public native @Ptr GenericDescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
 //                @ByRef DMatchVectorVector matches, int k, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected native void radiusMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
 //                @ByRef DMatchVectorVector matches, float maxDistance, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
-//        protected native @ByRef OneWayDescriptorBasePtr base();
+//        protected native @Const @Ptr OneWayDescriptorBase base();
 //        protected native Params params();
 //        protected native int prevTrainCount();
     }
@@ -2305,7 +2294,7 @@ public class opencv_legacy {
 //        public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
 //        public native boolean empty();
-//        public native GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
+//        public native @Ptr GenericDescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
 //                @ByRef DMatchVectorVector matches, int k, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
@@ -2315,7 +2304,7 @@ public class opencv_legacy {
 //        protected native void trainFernClassifier();
 //        protected native void calcBestProbAndMatchIdx(@InputMat CvArr image, @ByRef CvPoint2D32f pt,
 //                @ByRef float[] bestProb, @ByRef int[] bestMatchIdx, @StdVector float[] signature);
-//        protected native FernClassifierPtr classifier();
+//        protected native @Const @Ptr FernClassifier classifier();
 //        protected native @ByRef Params params();
 //        protected native int prevTrainCount();
     }

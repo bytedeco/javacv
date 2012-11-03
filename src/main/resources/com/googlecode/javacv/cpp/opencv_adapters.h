@@ -32,25 +32,25 @@ static inline void SetLibraryPath(const char *path) {
 
 class MatAdapter {
 public:
-    MatAdapter(const CvArr* pointer, int size) : pointer((CvArr*)pointer), size(size),
-            mat2(cv::cvarrToMat(pointer)), mat(mat2) { }
-    MatAdapter(const cv::Mat& mat) : pointer(0), size(0), mat((cv::Mat&)mat) { }
-    static void deallocate(CvArr* pointer) { 
-        if (CV_IS_MAT(pointer)) {
-            cvReleaseMat  ((CvMat**)   &pointer);
-        } else if (CV_IS_MATND(pointer)) {
-            cvReleaseMatND((CvMatND**) &pointer);
-        } else if (CV_IS_IMAGE(pointer)) {
-            cvReleaseImage((IplImage**)&pointer);
+    MatAdapter(const CvArr* ptr, int size) : ptr((CvArr*)ptr), size(size),
+            mat2(cv::cvarrToMat(ptr)), mat(mat2) { }
+    MatAdapter(const cv::Mat& mat) : ptr(0), size(0), mat((cv::Mat&)mat) { }
+    static void deallocate(CvArr* ptr) {
+        if (CV_IS_MAT(ptr)) {
+            cvReleaseMat  ((CvMat**)   &ptr);
+        } else if (CV_IS_MATND(ptr)) {
+            cvReleaseMatND((CvMatND**) &ptr);
+        } else if (CV_IS_IMAGE(ptr)) {
+            cvReleaseImage((IplImage**)&ptr);
         }
     }
     operator CvMat*()    { const CvMat&    m = mat; return CV_IS_MAT  (&m) ? cvCloneMat  (&m) : NULL; }
     operator CvMatND*()  { const CvMatND&  m = mat; return CV_IS_MATND(&m) ? cvCloneMatND(&m) : NULL; }
     operator IplImage*() { const IplImage& m = mat; return CV_IS_IMAGE(&m) ? cvCloneImage(&m) : NULL; }
     operator cv::Mat&()  { return mat; }
-    operator cv::Mat*()  { return pointer ? &mat : 0; }
+    operator cv::Mat*()  { return ptr ? &mat : 0; }
 
-    CvArr* pointer;
+    CvArr* ptr;
     int size;
     cv::Mat mat2;
     cv::Mat& mat;
@@ -58,66 +58,63 @@ public:
 
 class ArrayAdapter {
 public:
-    template<class T> ArrayAdapter(const T* pointer, int size) : pointer((T*)pointer), size(size),
-            mat(pointer ? std::vector<T>((T*)pointer, (T*)pointer + size) : std::vector<T>(), true), arr2(mat), arr(arr2) { }
-    ArrayAdapter(const cv::_OutputArray& arr) : pointer(0), size(0), arr((cv::_OutputArray&)arr) { }
-    static void deallocate(CvArr* pointer) {
-        if (CV_IS_MAT(pointer)) {
-            cvReleaseMat  ((CvMat**)   &pointer);
-        } else if (CV_IS_MATND(pointer)) {
-            cvReleaseMatND((CvMatND**) &pointer);
-        } else if (CV_IS_IMAGE(pointer)) {
-            cvReleaseImage((IplImage**)&pointer);
+    template<class T> ArrayAdapter(const T* ptr, int size) : ptr((T*)ptr), size(size),
+            mat(ptr ? std::vector<T>((T*)ptr, (T*)ptr + size) : std::vector<T>(), true), arr2(mat), arr(arr2) { }
+    ArrayAdapter(const cv::_OutputArray& arr) : ptr(0), size(0), arr((cv::_OutputArray&)arr) { }
+    static void deallocate(CvArr* ptr) {
+        if (CV_IS_MAT(ptr)) {
+            cvReleaseMat  ((CvMat**)   &ptr);
+        } else if (CV_IS_MATND(ptr)) {
+            cvReleaseMatND((CvMatND**) &ptr);
+        } else if (CV_IS_IMAGE(ptr)) {
+            cvReleaseImage((IplImage**)&ptr);
         } else {
-            free(pointer);
+            free(ptr);
         }
     }
     template<class T> operator T*() {
         if (mat.total() > size) {
-            pointer = malloc(sizeof(T) * mat.total());
+            ptr = malloc(sizeof(T) * mat.total());
         }
-        if (pointer) {
-            std::copy(mat.begin<T>(), mat.end<T>(), (T*)pointer);
+        if (ptr) {
+            std::copy(mat.begin<T>(), mat.end<T>(), (T*)ptr);
         }
         size = mat.total();
-        return (T*)pointer;
+        return (T*)ptr;
     }
     operator CvMat*()    { const CvMat&    m = arr.getMatRef(); return CV_IS_MAT  (&m) ? cvCloneMat  (&m) : NULL; }
     operator CvMatND*()  { const CvMatND&  m = arr.getMatRef(); return CV_IS_MATND(&m) ? cvCloneMatND(&m) : NULL; }
     operator IplImage*() { const IplImage& m = arr.getMatRef(); return CV_IS_IMAGE(&m) ? cvCloneImage(&m) : NULL; }
     operator cv::_OutputArray&()  { return arr; }
-    operator cv::_OutputArray*()  { return pointer ? &arr : 0; }
+    operator cv::_OutputArray*()  { return ptr ? &arr : 0; }
 
-    CvArr* pointer;
+    CvArr* ptr;
     size_t size;
     cv::Mat mat;
     cv::_OutputArray arr2;
     cv::_OutputArray& arr;
 };
 
-template<> ArrayAdapter::ArrayAdapter(const CvArr* pointer, int size) : pointer((CvArr*)pointer),
-        size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
-template<> ArrayAdapter::ArrayAdapter(const CvMat* pointer, int size) : pointer((CvMat*)pointer),
-        size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
-template<> ArrayAdapter::ArrayAdapter(const CvMatND* pointer, int size) : pointer((CvMatND*)pointer),
-        size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
-template<> ArrayAdapter::ArrayAdapter(const IplImage* pointer, int size) : pointer((IplImage*)pointer),
-        size(size), mat(cv::cvarrToMat(pointer)), arr2(mat), arr(arr2) { }
+template<> ArrayAdapter::ArrayAdapter(const CvArr* ptr, int size)    : ptr((CvArr*)ptr),
+        size(size), mat(cv::cvarrToMat(ptr)), arr2(mat), arr(arr2) { }
+template<> ArrayAdapter::ArrayAdapter(const CvMat* ptr, int size)    : ptr((CvMat*)ptr),
+        size(size), mat(cv::cvarrToMat(ptr)), arr2(mat), arr(arr2) { }
+template<> ArrayAdapter::ArrayAdapter(const CvMatND* ptr, int size)  : ptr((CvMatND*)ptr),
+        size(size), mat(cv::cvarrToMat(ptr)), arr2(mat), arr(arr2) { }
+template<> ArrayAdapter::ArrayAdapter(const IplImage* ptr, int size) : ptr((IplImage*)ptr),
+        size(size), mat(cv::cvarrToMat(ptr)), arr2(mat), arr(arr2) { }
 
 class RNGAdapter {
 public:
-    RNGAdapter(const CvRNG* pointer, int size) :
-        pointer((CvRNG*)pointer), size(size), rng2(*pointer), rng(rng2) { }
-    RNGAdapter(const cv::RNG &rng) :
-        pointer(new CvRNG(rng.state)), size(0), rng((cv::RNG&)rng) { }
-    RNGAdapter(const cv::RNG *rng) :
-        pointer(new CvRNG(rng->state)), size(0), rng(*(cv::RNG*)rng) { }
-    static void deallocate(CvRNG* pointer) { delete pointer; }
-    operator CvRNG*() { *pointer = rng.state; return pointer; }
+    RNGAdapter(const CvRNG* ptr, int size) : ptr((CvRNG*)ptr),   size(size), rng2(*ptr), rng(rng2) { }
+    RNGAdapter(const cv::RNG &rng) : ptr(new CvRNG(rng.state )), size(0), rng( (cv::RNG&)rng) { }
+    RNGAdapter(const cv::RNG *rng) : ptr(new CvRNG(rng->state)), size(0), rng(*(cv::RNG*)rng) { }
+    static void deallocate(CvRNG* ptr) { delete ptr; }
+    operator CvRNG*() { *ptr = rng.state; return ptr; }
     operator cv::RNG&() { return  rng; }
     operator cv::RNG*() { return &rng; }
 
-    CvRNG* pointer;
+    CvRNG* ptr;
     int size;
     cv::RNG rng2;
     cv::RNG& rng;
@@ -125,11 +122,11 @@ public:
 
 class FileStorageAdapter {
 public:
-    FileStorageAdapter(const CvFileStorage* pointer, int size) :
-        size(size), fs2((CvFileStorage*)pointer), fs(fs2) { fs.fs.addref(); }
+    FileStorageAdapter(const CvFileStorage* ptr, int size) :
+            size(size), fs2((CvFileStorage*)ptr), fs(fs2) { fs.fs.addref(); }
     FileStorageAdapter(const cv::FileStorage &fs) :
-        size(0), fs((cv::FileStorage&)fs) { }
-    static void deallocate(CvFileStorage* pointer) { }
+            size(0), fs((cv::FileStorage&)fs) { }
+    static void deallocate(CvFileStorage* ptr) { }
     operator CvFileStorage*()   { return fs.fs; }
     operator cv::FileStorage&() { return fs; }
     operator cv::FileStorage*() { return &fs; }
@@ -141,11 +138,11 @@ public:
 
 class FileNodeAdapter {
 public:
-    FileNodeAdapter(const CvFileStorage* pointer, int size, CvFileNode* pointer2, int size2) :
-        size(size), size2(size2), fn2(pointer, pointer2), fn(fn2) { }
+    FileNodeAdapter(const CvFileStorage* ptr, int size, CvFileNode* ptr2, int size2) :
+            size(size), size2(size2), fn2(ptr, ptr2), fn(fn2) { }
     FileNodeAdapter(const cv::FileNode& fn) :
-        size(0), size2(0), fn((cv::FileNode&)fn) { }
-    static void deallocate(CvFileStorage* pointer, CvFileNode* pointer2) { }
+            size(0), size2(0), fn((cv::FileNode&)fn) { }
+    static void deallocate(CvFileStorage* ptr, CvFileNode* ptr2) { }
     operator CvFileStorage*() { return (CvFileStorage*)fn.fs; }
     operator CvFileNode*()    { return (CvFileNode*)   fn.node; }
     operator cv::FileNode&()  { return  fn; }
@@ -158,16 +155,16 @@ public:
 
 class RectAdapter {
 public:
-    RectAdapter(const CvRect* pointer, int size) : pointer((CvRect*)pointer), size(size),
-            rect2(pointer ? cv::Rect(*pointer) : cv::Rect()), rect(rect2) { }
+    RectAdapter(const CvRect* ptr, int size) : ptr((CvRect*)ptr), size(size),
+            rect2(ptr ? cv::Rect(*ptr) : cv::Rect()), rect(rect2) { }
     RectAdapter(const cv::Rect& rect) :
-        pointer(new CvRect), size(0), rect((cv::Rect&)rect) { }
-    static void deallocate(CvRect* pointer) { delete pointer; }
-    operator CvRect*()   { if (pointer) { *pointer = rect; } return pointer; }
+            ptr(new CvRect), size(0), rect((cv::Rect&)rect) { }
+    static void deallocate(CvRect* ptr) { delete ptr; }
+    operator CvRect*()   { if (ptr) { *ptr = rect; } return ptr; }
     operator cv::Rect&() { return rect; }
-    operator cv::Rect*() { return pointer ? &rect : 0; }
+    operator cv::Rect*() { return ptr ? &rect : 0; }
 
-    CvRect* pointer;
+    CvRect* ptr;
     int size;
     cv::Rect rect2;
     cv::Rect& rect;
@@ -175,17 +172,44 @@ public:
 
 class Point2dAdapter {
 public:
-    Point2dAdapter(const CvPoint2D64f* pointer, int size) : pointer((CvPoint2D64f*)pointer), size(size),
-            point2d2(pointer ? cv::Point2d(pointer->x, pointer->y) : cv::Point2d()), point2d(point2d2) { }
+    Point2dAdapter(const CvPoint2D64f* ptr, int size) : ptr((CvPoint2D64f*)ptr), size(size),
+            point2d2(ptr ? cv::Point2d(ptr->x, ptr->y) : cv::Point2d()), point2d(point2d2) { }
     Point2dAdapter(const cv::Point2d& point2d) :
-        pointer(new CvPoint2D64f), size(0), point2d((cv::Point2d&)point2d) { }
-    static void deallocate(CvPoint2D64f* pointer) { delete pointer; }
-    operator CvPoint2D64f*(){ if (pointer) { pointer->x = point2d.x; pointer->y = point2d.y; } return pointer; }
+            ptr(new CvPoint2D64f), size(0), point2d((cv::Point2d&)point2d) { }
+    static void deallocate(CvPoint2D64f* ptr) { delete ptr; }
+    operator CvPoint2D64f*(){ if (ptr) { ptr->x = point2d.x; ptr->y = point2d.y; } return ptr; }
     operator cv::Point2d&() { return point2d; }
-    operator cv::Point2d*() { return pointer ? &point2d : 0; }
+    operator cv::Point2d*() { return ptr ? &point2d : 0; }
 
-    CvPoint2D64f* pointer;
+    CvPoint2D64f* ptr;
     int size;
     cv::Point2d point2d2;
     cv::Point2d& point2d;
+};
+
+template<class T> class PtrAdapter {
+public:
+    PtrAdapter(const T* ptr, int size)  : ptr((T*)ptr), size(size), cvPtr(cvPtr2) {
+            cvPtr2.obj = (T*)ptr; cvPtr2.refcount = 0; }
+    PtrAdapter(const cv::Ptr<T>& cvPtr) : ptr(0), size(0), cvPtr2(cvPtr), cvPtr(cvPtr2) { }
+    PtrAdapter(      cv::Ptr<T>& cvPtr) : ptr(0), size(0), cvPtr(cvPtr) { }
+    void assign(T* ptr, int size) {
+        this->ptr = ptr;
+        this->size = size;
+        this->cvPtr = ptr;
+    }
+    static void deallocate(T* ptr) { cv::Ptr<T> deallocator(ptr); }
+    operator T*() {
+        // take ownership
+        ptr = cvPtr.obj;
+        cvPtr.obj = 0;
+        return ptr;
+    }
+    operator const T*()    { return (const T*)cvPtr; }
+    operator cv::Ptr<T>&() { return cvPtr; }
+    operator cv::Ptr<T>*() { return ptr ? &cvPtr : 0; }
+    T* ptr;
+    int size;
+    cv::Ptr<T> cvPtr2;
+    cv::Ptr<T>& cvPtr;
 };

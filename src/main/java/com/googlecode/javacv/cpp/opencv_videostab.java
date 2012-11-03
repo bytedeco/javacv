@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in videostab.hpp and all included
- * files of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * files of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -80,13 +80,13 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/videostab/videostab.hpp>", "opencv_adapters.h"},
-        link={"opencv_videostab@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_photo@.2.4",
+        link={"opencv_videostab@.2.4", "opencv_gpu@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_nonfree@.2.4", "opencv_photo@.2.4",
               "opencv_objdetect@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="android",
         link={"opencv_videostab", "opencv_legacy", "opencv_ml", "opencv_video", "opencv_nonfree", "opencv_photo",
               "opencv_objdetect", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_videostab243", "opencv_legacy243", "opencv_ml243", "opencv_video243", "opencv_nonfree243", "opencv_gpu243", "opencv_photo243",
+        link={"opencv_videostab243", "opencv_gpu243", "opencv_legacy243", "opencv_ml243", "opencv_video243", "opencv_nonfree243", "opencv_photo243",
               "opencv_objdetect243", "opencv_features2d243", "opencv_flann243", "opencv_calib3d243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
@@ -106,17 +106,6 @@ public class opencv_videostab {
                 @InputArray CvArr status,  @InputArray CvArr errors);
     }
 
-    @Name("cv::Ptr<cv::videostab::ISparseOptFlowEstimator>")
-    public static class ISparseOptFlowEstimatorPtr extends Pointer {
-        static { load(); }
-        public ISparseOptFlowEstimatorPtr()       { allocate();  }
-        public ISparseOptFlowEstimatorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native ISparseOptFlowEstimator get();
-        public native ISparseOptFlowEstimatorPtr put(ISparseOptFlowEstimator value);
-    }
-
     @Namespace("cv::videostab") public static class IDenseOptFlowEstimator extends Pointer {
         static { load(); }
         public IDenseOptFlowEstimator() { }
@@ -124,17 +113,6 @@ public class opencv_videostab {
 
         public /*abstract*/ native void run(@InputArray CvArr frame0, @InputArray CvArr frame1,
                 @InputArray CvArr flowX, @InputArray CvArr flowY, @InputArray CvArr errors);
-    }
-
-    @Name("cv::Ptr<cv::videostab::IDenseOptFlowEstimator>")
-    public static class IDenseOptFlowEstimatorPtr extends Pointer {
-        static { load(); }
-        public IDenseOptFlowEstimatorPtr()       { allocate();  }
-        public IDenseOptFlowEstimatorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native IDenseOptFlowEstimator get();
-        public native IDenseOptFlowEstimatorPtr put(IDenseOptFlowEstimator value);
     }
 
     @Namespace("cv::videostab") public static class PyrLkOptFlowEstimatorBase extends Pointer {
@@ -239,28 +217,17 @@ public class opencv_videostab {
         public /*absstract*/ native @OutputMat CvMat estimate(IplImage frame0, IplImage frame1);
     }
 
-    @Name("cv::Ptr<cv::videostab::IGlobalMotionEstimator>")
-    public static class IGlobalMotionEstimatorPtr extends Pointer {
-        static { load(); }
-        public IGlobalMotionEstimatorPtr()       { allocate();  }
-        public IGlobalMotionEstimatorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native IGlobalMotionEstimator get();
-        public native IGlobalMotionEstimatorPtr put(IGlobalMotionEstimator value);
-    }
-
     @Namespace("cv::videostab") public static class PyrLkRobustMotionEstimator extends IGlobalMotionEstimator {
         static { load(); }
         public PyrLkRobustMotionEstimator() { allocate(); }
         public PyrLkRobustMotionEstimator(Pointer p) { super(p); }
         private native void allocate();
 
-        public native void setDetector(@ByVal FeatureDetectorPtr val);
-        public native @ByVal FeatureDetectorPtr detector();
+        public native void setDetector(@Ptr FeatureDetector val);
+        public native @Const @Ptr FeatureDetector detector();
 
-        public native void setOptFlowEstimator(@ByVal ISparseOptFlowEstimatorPtr val);
-        public native @ByVal ISparseOptFlowEstimatorPtr optFlowEstimator();
+        public native void setOptFlowEstimator(@Ptr ISparseOptFlowEstimator val);
+        public native @Const @Ptr ISparseOptFlowEstimator optFlowEstimator();
 
         public native void setMotionModel(@Cast("cv::videostab::MotionModel") int val);
         public native @Cast("cv::videostab::MotionModel") int motionModel();
@@ -290,17 +257,6 @@ public class opencv_videostab {
         public /*abstract*/ native void stabilize(@InputMat CvMat motions, int size, @InputMat CvMat stabilizationMotions);
     }
 
-    @Name("cv::Ptr<cv::videostab::IMotionStabilizer>")
-    public static class IMotionStabilizerPtr extends Pointer {
-        static { load(); }
-        public IMotionStabilizerPtr()       { allocate();  }
-        public IMotionStabilizerPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native IMotionStabilizer get();
-        public native IMotionStabilizerPtr put(IMotionStabilizer value);
-    }
-
     @Namespace("cv::videostab") public static class MotionFilterBase extends IMotionStabilizer {
         static { load(); }
         public MotionFilterBase() { }
@@ -315,17 +271,6 @@ public class opencv_videostab {
 //        public native void stabilize(@InputMat CvMat motions, int size, @InputMat CvMat stabilizationMotions);
 
 //        protected native int radius_();
-    }
-
-    @Name("cv::Ptr<cv::videostab::MotionFilterBase>")
-    public static class MotionFilterBasePtr extends Pointer {
-        static { load(); }
-        public MotionFilterBasePtr()       { allocate();  }
-        public MotionFilterBasePtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native MotionFilterBase get();
-        public native MotionFilterBasePtr put(MotionFilterBase value);
     }
 
     @Namespace("cv::videostab") public static class GaussianMotionFilter extends MotionFilterBase {
@@ -354,17 +299,6 @@ public class opencv_videostab {
 
         public /*abstract*/ native void reset();
         public /*abstract*/ native @OutputMat IplImage nextFrame();
-    }
-
-    @Name("cv::Ptr<cv::videostab::IFrameSource>")
-    public static class IFrameSourcePtr extends Pointer {
-        static { load(); }
-        public IFrameSourcePtr()       { allocate();  }
-        public IFrameSourcePtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native IFrameSource get();
-        public native IFrameSourcePtr put(IFrameSource value);
     }
 
     @Namespace("cv::videostab") public static class NullFrameSource extends IFrameSource {
@@ -402,17 +336,6 @@ public class opencv_videostab {
         public ILog(Pointer p) { super(p); }
 
         public /*abstract*/ native void print(String format);
-    }
-
-    @Name("cv::Ptr<cv::videostab::ILog>")
-    public static class ILogPtr extends Pointer {
-        static { load(); }
-        public ILogPtr()       { allocate();  }
-        public ILogPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native ILog get();
-        public native ILogPtr put(ILog value);
     }
 
     @Namespace("cv::videostab") public static class NullLog extends ILog {
@@ -480,17 +403,6 @@ public class opencv_videostab {
 //        protected native MatVector stabilizationMotions_();
     }
 
-    @Name("cv::Ptr<cv::videostab::InpainterBase>")
-    public static class InpainterBasePtr extends Pointer {
-        static { load(); }
-        public InpainterBasePtr()       { allocate();  }
-        public InpainterBasePtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native InpainterBase get();
-        public native InpainterBasePtr put(InpainterBase value);
-    }
-
     @Namespace("cv::videostab") public static class NullInpainter extends InpainterBase {
         static { load(); }
         public NullInpainter() { allocate(); }
@@ -506,7 +418,7 @@ public class opencv_videostab {
         public InpaintingPipeline(Pointer p) { super(p); }
         private native void allocate();
 
-        public native void pushBack(@ByVal InpainterBasePtr inpainter);
+        public native void pushBack(@Ptr InpainterBase inpainter);
         public native @Cast("bool") boolean empty();
 
 //        public native void setRadius(int val);
@@ -538,8 +450,8 @@ public class opencv_videostab {
         public MotionInpainter(Pointer p) { super(p); }
         private native void allocate();
 
-        public native void setOptFlowEstimator(@ByVal IDenseOptFlowEstimatorPtr val);
-        public native @ByVal IDenseOptFlowEstimatorPtr optFlowEstimator();
+        public native void setOptFlowEstimator(@Ptr IDenseOptFlowEstimator val);
+        public native @Const @Ptr IDenseOptFlowEstimator optFlowEstimator();
 
         public native void setFlowErrorThreshold(float val);
         public native float flowErrorThreshold();
@@ -610,17 +522,6 @@ public class opencv_videostab {
 //        protected native FloatVector blurrinessRates_();
     }
 
-    @Name("cv::Ptr<cv::videostab::DeblurerBase>")
-    public static class DeblurerBasePtr extends Pointer {
-        static { load(); }
-        public DeblurerBasePtr()       { allocate();  }
-        public DeblurerBasePtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native DeblurerBase get();
-        public native DeblurerBasePtr put(DeblurerBase value);
-    }
-
     @Namespace("cv::videostab") public static class NullDeblurer extends DeblurerBase {
         static { load(); }
         public NullDeblurer() { allocate(); }
@@ -649,20 +550,20 @@ public class opencv_videostab {
         public StabilizerBase() { }
         public StabilizerBase(Pointer p) { super(p); }
 
-        public native void setLog(@ByVal ILogPtr log);
-        public native @ByVal ILogPtr log();
+        public native void setLog(@Ptr ILog log);
+        public native @Const @Ptr ILog log();
 
         public native void setRadius(int val);
         public native int radius();
 
-        public native void setFrameSource(@ByVal IFrameSourcePtr val);
-        public native @ByVal IFrameSourcePtr frameSource();
+        public native void setFrameSource(@Ptr IFrameSource val);
+        public native @Const @Ptr IFrameSource frameSource();
 
-        public native void setMotionEstimator(@ByVal IGlobalMotionEstimatorPtr val);
-        public native @ByVal IGlobalMotionEstimatorPtr motionEstimator();
+        public native void setMotionEstimator(@Ptr IGlobalMotionEstimator val);
+        public native @Const @Ptr IGlobalMotionEstimator motionEstimator();
 
-        public native void setDeblurer(@ByVal DeblurerBasePtr val);
-        public native @ByVal DeblurerBasePtr deblurrer();
+        public native void setDeblurer(@Ptr DeblurerBase val);
+        public native @Const @Ptr DeblurerBase deblurrer();
 
         public native void setTrimRatio(float val);
         public native float trimRatio();
@@ -673,8 +574,8 @@ public class opencv_videostab {
         public native void setBorderMode(int val);
         public native int borderMode();
 
-        public native void setInpainter(@ByVal InpainterBasePtr val);
-        public native @ByVal InpainterBasePtr inpainter();
+        public native void setInpainter(@Ptr InpainterBase val);
+        public native @Const @Ptr InpainterBase inpainter();
 
 //        protected native void setUp(int cacheSize, IplImage frame);
 //        protected native @OutputMat IplImage nextStabilizedFrame();
@@ -685,11 +586,11 @@ public class opencv_videostab {
 //        protected /*abstract*/ native void stabilizeFrame();
 //        protected /*abstract*/ native void estimateMotion();
 //
-//        protected native @ByRef ILogPtr log_();
-//        protected native @ByRef IFrameSourcePtr frameSource_();
-//        protected native @ByRef IGlobalMotionEstimatorPtr motionEstimator_();
-//        protected native @ByRef DeblurerBasePtr deblurer_();
-//        protected native @ByRef InpainterBasePtr inpainter_();
+//        protected native @Const @Ptr ILog log_();
+//        protected native @Const @Ptr IFrameSource frameSource_();
+//        protected native @Const @Ptr IGlobalMotionEstimator motionEstimator_();
+//        protected native @Const @Ptr DeblurerBase deblurer_();
+//        protected native @Const @Ptr InpainterBase inpainter_();
 //        protected native int radius_();
 //        protected native float trimRatio_();
 //        protected native @Cast("bool") boolean doCorrectionForInclusion_();
@@ -720,8 +621,8 @@ public class opencv_videostab {
         public OnePassStabilizer(Pointer p) { super(p); }
         private native void allocate();
 
-        public native void setMotionFilter(@ByVal MotionFilterBasePtr val);
-        public native @ByVal MotionFilterBasePtr motionFilter();
+        public native void setMotionFilter(@Ptr MotionFilterBase val);
+        public native @Const @Ptr MotionFilterBase motionFilter();
 
         public native void reset();
         public native @OutputMat IplImage nextFrame();
@@ -739,8 +640,8 @@ public class opencv_videostab {
         public TwoPassStabilizer(Pointer p) { super(p); }
         private native void allocate();
 
-        public native void setMotionStabilizer(@ByVal IMotionStabilizerPtr val);
-        public native @ByVal IMotionStabilizerPtr motionStabilizer();
+        public native void setMotionStabilizer(@Ptr IMotionStabilizer val);
+        public native @Const @Ptr IMotionStabilizer motionStabilizer();
 
         public native void setEstimateTrimRatio(@Cast("bool") boolean val);
         public native @Cast("bool") boolean mustEstimateTrimaRatio();

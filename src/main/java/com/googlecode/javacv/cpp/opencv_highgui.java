@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.4.3rc,
+ * This file is based on information found in highgui_c.h of OpenCV 2.4.3,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement

@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in ml.hpp of OpenCV 2.4.3rc,
+ * This file is based on information found in ml.hpp of OpenCV 2.4.3,
  * which is covered by the following copyright notice:
  *
  *                        Intel License Agreement

@@ -110,7 +110,7 @@ import static com.googlecode.javacpp.Loader.*;
  */
 @Properties({
     @Platform(value={"linux", "macosx"}, include={"<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>"}, link={"freenect@0.1", "freenect_sync@0.1"},
-        includepath  ={"/opt/local/include/libfreenect/", "/usr/local/include/libfreenect/", "/opt/local/include/", "/usr/include/libfreenect/"},
+        includepath  ={"/usr/local/include/libfreenect/", "/usr/local/include/", "/opt/local/include/libfreenect/", "/opt/local/include/", "/usr/include/libfreenect/"},
         linkpath     ={"/opt/local/lib/", "/opt/local/lib64/", "/usr/local/lib/", "/usr/local/lib64/"}) ,
     @Platform(value="windows", include={"<WinSock2.h>", "<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>", "<libfreenect_sync.c>"}, link={"freenect", "pthreadVC2"},
         includepath  ={"C:/libfreenect/include/", "C:/libfreenect/wrappers/c_sync/", "C:/pthreads-w32-2-8-0-release/",

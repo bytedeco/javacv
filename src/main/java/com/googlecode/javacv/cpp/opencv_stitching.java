@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in stitcher.hpp and all included
- * files of of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * files of of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -85,13 +85,13 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/stitching/stitcher.hpp>", "<opencv2/stitching/detail/autocalib.hpp>", "opencv_adapters.h"},
-        link={"opencv_stitching@.2.4", "opencv_video@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_photo@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4",
+        link={"opencv_stitching@.2.4", "opencv_gpu@.2.4", "opencv_video@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_photo@.2.4", "opencv_nonfree@.2.4",
               "opencv_objdetect@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="android",
         link={"opencv_stitching", "opencv_video", "opencv_legacy", "opencv_ml", "opencv_photo", "opencv_nonfree",
               "opencv_objdetect", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_stitching243", "opencv_video243", "opencv_legacy243", "opencv_ml243", "opencv_photo243", "opencv_nonfree243", "opencv_gpu243",
+        link={"opencv_stitching243", "opencv_gpu243", "opencv_video243", "opencv_legacy243", "opencv_ml243", "opencv_photo243", "opencv_nonfree243",
               "opencv_objdetect243", "opencv_features2d243", "opencv_flann243", "opencv_calib3d243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
@@ -117,17 +117,6 @@ public class opencv_stitching {
 
         public native float getScale();
         public native void setScale(float scale);
-    }
-
-    @Name("cv::Ptr<cv::detail::RotationWarper>")
-    public static class RotationWarperPtr extends Pointer {
-        static { load(); }
-        public RotationWarperPtr()       { allocate();  }
-        public RotationWarperPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native RotationWarper get();
-        public native RotationWarperPtr put(RotationWarper value);
     }
 
 //    @Namespace("cv::detail") public static class ProjectorBase extends Pointer {
@@ -461,18 +450,7 @@ public class opencv_stitching {
         public WarperCreator() { }
         public WarperCreator(Pointer p) { super(p); }
 
-        public /*abstract*/ native @ByVal RotationWarperPtr create(float scale);
-    }
-
-    @Name("cv::Ptr<cv::WarperCreator>")
-    public static class WarperCreatorPtr extends Pointer {
-        static { load(); }
-        public WarperCreatorPtr()       { allocate();  }
-        public WarperCreatorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native WarperCreator get();
-        public native WarperCreatorPtr put(WarperCreator value);
+        public /*abstract*/ native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class PlaneWarper extends WarperCreator {
@@ -481,7 +459,7 @@ public class opencv_stitching {
         public PlaneWarper(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class CylindricalWarper extends WarperCreator {
@@ -490,7 +468,7 @@ public class opencv_stitching {
         public CylindricalWarper(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class SphericalWarper extends WarperCreator {
@@ -499,7 +477,7 @@ public class opencv_stitching {
         public SphericalWarper(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class FisheyeWarper extends WarperCreator {
@@ -508,7 +486,7 @@ public class opencv_stitching {
         public FisheyeWarper(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class StereographicWarper extends WarperCreator {
@@ -517,7 +495,7 @@ public class opencv_stitching {
         public StereographicWarper(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class CompressedRectilinearWarper extends WarperCreator {
@@ -530,7 +508,7 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(float A/*=1*/, float B/*=1*/);
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class CompressedRectilinearPortraitWarper extends WarperCreator {
@@ -543,7 +521,7 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(float A/*=1*/, float B/*=1*/);
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class PaniniWarper extends WarperCreator {
@@ -556,7 +534,7 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(float A/*=1*/, float B/*=1*/);
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class PaniniPortraitWarper extends WarperCreator {
@@ -569,7 +547,7 @@ public class opencv_stitching {
         private native void allocate();
         private native void allocate(float A/*=1*/, float B/*=1*/);
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class MercatorWarper extends WarperCreator {
@@ -578,7 +556,7 @@ public class opencv_stitching {
         public MercatorWarper(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Namespace("cv") public static class TransverseMercatorWarper extends WarperCreator {
@@ -587,7 +565,7 @@ public class opencv_stitching {
         public TransverseMercatorWarper(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Platform(not="android") @Namespace("cv") public static class PlaneWarperGpu extends WarperCreator {
@@ -596,7 +574,7 @@ public class opencv_stitching {
         public PlaneWarperGpu(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Platform(not="android") @Namespace("cv") public static class CylindricalWarperGpu extends WarperCreator {
@@ -605,7 +583,7 @@ public class opencv_stitching {
         public CylindricalWarperGpu(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
     @Platform(not="android") @Namespace("cv") public static class SphericalWarperGpu extends WarperCreator {
@@ -614,7 +592,7 @@ public class opencv_stitching {
         public SphericalWarperGpu(Pointer p) { super(p); }
         private native void allocate();
 
-//        public native @ByVal RotationWarperPtr create(float scale);
+//        public native @Ptr RotationWarper create(float scale);
     }
 
 
@@ -650,17 +628,6 @@ public class opencv_stitching {
         public native void collectGarbage();
 
 //        protected /*abstract*/ void find(IplImage image, @ByRef ImageFeatures features);
-    }
-
-    @Name("cv::Ptr<cv::detail::FeaturesFinder>")
-    public static class FeaturesFinderPtr extends Pointer {
-        static { load(); }
-        public FeaturesFinderPtr()       { allocate();  }
-        public FeaturesFinderPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native FeaturesFinder get();
-        public native FeaturesFinderPtr put(FeaturesFinder value);
     }
 
     @Namespace("cv::detail") public static class SurfFeaturesFinder extends FeaturesFinder {
@@ -748,17 +715,6 @@ public class opencv_stitching {
 //        protected native @Cast("bool") boolean is_thread_safe_();
     }
 
-    @Name("cv::Ptr<cv::detail::FeaturesMatcher>")
-    public static class FeaturesMatcherPtr extends Pointer {
-        static { load(); }
-        public FeaturesMatcherPtr()       { allocate();  }
-        public FeaturesMatcherPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native FeaturesMatcher get();
-        public native FeaturesMatcherPtr put(FeaturesMatcher value);
-    }
-
     @Namespace("cv::detail") public static class BestOf2NearestMatcher extends FeaturesMatcher {
         static { load(); }
         public BestOf2NearestMatcher() { allocate(); }
@@ -778,7 +734,7 @@ public class opencv_stitching {
 //
 //        protected native int num_matches_thresh1_();
 //        protected native int num_matches_thresh2_();
-//        protected native @ByVal FeaturesMatcherPtr impl_();
+//        protected native @Const @Ptr FeaturesMatcher impl_();
     }
 
 
@@ -939,17 +895,6 @@ public class opencv_stitching {
 //        protected native std::vector<std::pair<int,int> > edges_();
     }
 
-    @Name("cv::Ptr<cv::detail::BundleAdjusterBase>")
-    public static class BundleAdjusterBasePtr extends Pointer {
-        static { load(); }
-        public BundleAdjusterBasePtr()       { allocate();  }
-        public BundleAdjusterBasePtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native BundleAdjusterBase get();
-        public native BundleAdjusterBasePtr put(BundleAdjusterBase value);
-    }
-
     @Namespace("cv::detail") public static class BundleAdjusterReproj extends BundleAdjusterBase {
         static { load(); }
         public BundleAdjusterReproj() { allocate(); }
@@ -999,7 +944,7 @@ public class opencv_stitching {
         public ExposureCompensator(Pointer p) { super(p); }
 
         public static final int NO = 0, GAIN = 1, GAIN_BLOCKS = 2;
-        public static native @ByVal ExposureCompensatorPtr createDefault(int type);
+        public static native @Ptr ExposureCompensator createDefault(int type);
 
         public native void feed(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
                 @ByRef MatVector images, @ByRef MatVector masks);
@@ -1007,17 +952,6 @@ public class opencv_stitching {
                 @ByRef MatVector images, @ByRef MatBytePairVector masks);
         public /*abstract*/ native void apply(int index, @ByVal CvPoint corner,
                 @InputMat CvArr image, @InputMat CvArr mask);
-    }
-
-    @Name("cv::Ptr<cv::detail::ExposureCompensator>")
-    public static class ExposureCompensatorPtr extends Pointer {
-        static { load(); }
-        public ExposureCompensatorPtr()       { allocate();  }
-        public ExposureCompensatorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native ExposureCompensator get();
-        public native ExposureCompensatorPtr put(ExposureCompensator value);
     }
 
     @Namespace("cv::detail") public static class NoExposureCompensator extends ExposureCompensator {
@@ -1070,17 +1004,6 @@ public class opencv_stitching {
 
         public /*abstract*/ native void find(@ByRef MatVector src,
                 @Const @StdVector("CvPoint,cv::Point") CvPoint corners, @ByRef MatVector masks);
-    }
-
-    @Name("cv::Ptr<cv::detail::SeamFinder>")
-    public static class SeamFinderPtr extends Pointer {
-        static { load(); }
-        public SeamFinderPtr()       { allocate();  }
-        public SeamFinderPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native SeamFinder get();
-        public native SeamFinderPtr put(SeamFinder value);
     }
 
     @Namespace("cv::detail") public static class NoSeamFinder extends SeamFinder {
@@ -1185,7 +1108,8 @@ public class opencv_stitching {
         private native void allocate();
 
         public static final int NO = 0, FEATHER = 1, MULTI_BAND = 2;
-        public static native @ByVal BlenderPtr createDefault(int type, @Cast("bool") boolean try_gpu/*=false*/);
+        public static native @Ptr Blender createDefault(int type);
+        public static native @Ptr Blender createDefault(int type, @Cast("bool") boolean try_gpu/*=false*/);
 
         public native void prepare(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
                 @Const @StdVector("CvSize,cv::Size") CvSize sizes);
@@ -1196,17 +1120,6 @@ public class opencv_stitching {
 //        protected native @OutputMat CvMat dst_();
 //        protected native @OutputMat CvMat dst_mask_();
 //        protected native @ByVal CvRect dst_roi_();
-    }
-
-    @Name("cv::Ptr<cv::detail::Blender>")
-    public static class BlenderPtr extends Pointer {
-        static { load(); }
-        public BlenderPtr()       { allocate();  }
-        public BlenderPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native Blender get();
-        public native BlenderPtr put(Blender value);
     }
 
     @Namespace("cv::detail") public static class FeatherBlender extends Blender {
@@ -1285,29 +1198,29 @@ public class opencv_stitching {
         public native @Cast("cv::detail::WaveCorrectKind") int waveCorrectKind();
         public native void setWaveCorrectKind(@Cast("cv::detail::WaveCorrectKind") int kind);
 
-        public native @ByVal FeaturesFinderPtr featuresFinder();
-        public native void setFeaturesFinder(@ByVal FeaturesFinderPtr features_finder);
+        public native @Const @Ptr FeaturesFinder featuresFinder();
+        public native void setFeaturesFinder(@Ptr FeaturesFinder features_finder);
 
-        public native @ByVal FeaturesMatcherPtr featuresMatcher();
-        public native void setFeaturesMatcher(@ByVal FeaturesMatcherPtr features_matcher);
+        public native @Const @Ptr FeaturesMatcher featuresMatcher();
+        public native void setFeaturesMatcher(@Ptr FeaturesMatcher features_matcher);
 
         public native @OutputMat IplImage matchingMask();
         public native void setMatchingMask(IplImage mask);
 
-        public native @ByVal BundleAdjusterBasePtr bundleAdjuster();
-        public native void setBundleAdjuster(@ByVal BundleAdjusterBasePtr bundle_adjuster);
+        public native @Const @Ptr BundleAdjusterBase bundleAdjuster();
+        public native void setBundleAdjuster(@Ptr BundleAdjusterBase bundle_adjuster);
 
-        public native @ByVal WarperCreatorPtr warper();
-        public native void setWarper(@ByVal WarperCreatorPtr warper);
+        public native @Const @Ptr WarperCreator warper();
+        public native void setWarper(@Ptr WarperCreator warper);
 
-        public native @ByVal ExposureCompensatorPtr exposureCompensator();
-        public native void setExposureCompensator(@ByVal ExposureCompensatorPtr exposure_comp);
+        public native @Const @Ptr ExposureCompensator exposureCompensator();
+        public native void setExposureCompensator(@Ptr ExposureCompensator exposure_comp);
 
-        public native @ByVal SeamFinderPtr seamFinder();
-        public native void setSeamFinder(@ByVal SeamFinderPtr seam_finder);
+        public native @Const @Ptr SeamFinder seamFinder();
+        public native void setSeamFinder(@Ptr SeamFinder seam_finder);
 
-        public native @ByVal BlenderPtr blender();
-        public native void setBlender(@ByVal BlenderPtr blender);
+        public native @Const @Ptr Blender blender();
+        public native void setBlender(@Ptr Blender blender);
 
         public native /* Status */ int estimateTransform(@ByRef MatVector images);
         public native /* Status */ int estimateTransform(@ByRef MatVector images, @ByRef RectVectorVector rois);

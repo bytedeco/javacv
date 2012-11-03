@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in calib3d.hpp
- * of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -421,11 +421,11 @@ public class opencv_calib3d {
     @Namespace("cv") public static native boolean find4QuadCornerSubpix(@InputArray CvArr img,
             @InputArray CvArr corners, @ByVal CvSize region_size);
     
-    public static final int CALIB_CB_SYMMETRIC_GRID = 1, CALIB_CB_ASYMMETRIC_GRID = 2,
-            CALIB_CB_CLUSTERING = 4;
+    public static final int
+            CALIB_CB_SYMMETRIC_GRID = 1, CALIB_CB_ASYMMETRIC_GRID = 2, CALIB_CB_CLUSTERING = 4;
     @Namespace("cv") public static native boolean findCirclesGrid(@InputArray CvArr image, @ByVal CvSize patternSize,
             @OutputArray CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/,
-            @ByRef FeatureDetectorPtr blobDetector/*=new SimpleBlobDetector()*/);
+            @Ptr FeatureDetector blobDetector/*=new SimpleBlobDetector()*/);
     @Namespace("cv") public static native boolean findCirclesGridDefault(@InputArray CvArr image, @ByVal CvSize patternSize,
             @OutputArray CvMat centers, int flags/*=CALIB_CB_SYMMETRIC_GRID*/);
 

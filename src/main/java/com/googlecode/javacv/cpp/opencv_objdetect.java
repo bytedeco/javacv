@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in objdetect.hpp of OpenCV 2.4.3rc,
+ * This file is based on information found in objdetect.hpp of OpenCV 2.4.3,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -365,7 +365,7 @@ public class opencv_objdetect {
         public static final int HAAR = 0, LBP = 1, HOG = 2;
 
         public native boolean read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
-        @Override public native @ByVal FeatureEvaluatorPtr clone();
+        @Override public native @Ptr FeatureEvaluator clone();
         public native int getFeatureType();
 
         public native boolean setImage(@InputMat CvArr img, @ByVal CvSize origWinSize);
@@ -374,29 +374,7 @@ public class opencv_objdetect {
         public native double calcOrd(int featureIdx);
         public native int calcCat(int featureIdx);
 
-        public static native @ByVal FeatureEvaluatorPtr create(int type);
-    }
-
-    @Name("cv::Ptr<cv::FeatureEvaluator>")
-    public static class FeatureEvaluatorPtr extends Pointer {
-        static { load(); }
-        public FeatureEvaluatorPtr()       { allocate();  }
-        public FeatureEvaluatorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native FeatureEvaluator get();
-        public native FeatureEvaluatorPtr put(FeatureEvaluator value);
-    }
-
-    @Name("cv::Ptr<cv::CascadeClassifier::MaskGenerator>")
-    public static class CascadeClassifierMaskGeneratorPtr extends Pointer {
-        static { Loader.load(); }
-        public CascadeClassifierMaskGeneratorPtr()       { allocate();  }
-        public CascadeClassifierMaskGeneratorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native CascadeClassifier.MaskGenerator get();
-        public native CascadeClassifierMaskGeneratorPtr put(CascadeClassifier.MaskGenerator value);
+        public static native @Ptr FeatureEvaluator create(int type);
     }
 
     @NoOffset @Namespace("cv") public static class CascadeClassifier extends Pointer {
@@ -435,13 +413,13 @@ public class opencv_objdetect {
 //                DO_CANNY_PRUNING = 1, SCALE_IMAGE = 2,
 //                FIND_BIGGEST_OBJECT = 4, DO_ROUGH_SEARCH = 8;
 //
-//        protected native int predictOrdered(@ByRef CascadeClassifier cascade, @ByRef FeatureEvaluatorPtr featureEvaluator, @ByRef double[] weight);
-//        protected native int predictCategorical(@ByRef CascadeClassifier cascade, @ByRef FeatureEvaluatorPtr featureEvaluator, @ByRef double[] weight);
-//        protected native int predictOrderedStump(@ByRef CascadeClassifier cascade, @ByRef FeatureEvaluatorPtr featureEvaluator, @ByRef double[] weight);
-//        protected native int predictCategoricalStump(@ByRef CascadeClassifier cascade, @ByRef FeatureEvaluatorPtr featureEvaluator, @ByRef double[] weight);
+//        protected native int predictOrdered(@ByRef CascadeClassifier cascade, @Ptr FeatureEvaluator featureEvaluator, @ByRef double[] weight);
+//        protected native int predictCategorical(@ByRef CascadeClassifier cascade, @Ptr FeatureEvaluator featureEvaluator, @ByRef double[] weight);
+//        protected native int predictOrderedStump(@ByRef CascadeClassifier cascade, @Ptr FeatureEvaluator featureEvaluator, @ByRef double[] weight);
+//        protected native int predictCategoricalStump(@ByRef CascadeClassifier cascade, @Ptr FeatureEvaluator featureEvaluator, @ByRef double[] weight);
 //
-//        protected native boolean setImage(@ByRef FeatureEvaluatorPtr feval, @InputMat CvArr image);
-//        protected native int runAt(@ByRef FeatureEvaluatorPtr feval, @ByVal CvPoint p, @ByRef double[] weight);
+//        protected native boolean setImage(@Ptr FeatureEvaluator feval, @InputMat CvArr image);
+//        protected native int runAt(@Ptr FeatureEvaluator feval, @ByVal CvPoint p, @ByRef double[] weight);
 //
 //        protected static class Data extends Pointer {
 //            static { Loader.load(); }
@@ -506,10 +484,10 @@ public class opencv_objdetect {
 //            public native @Const @StdVector IntPointer subsets();  public native CascadeClassifier subsets(IntPointer subsets);
 //        }
 //
-//        protected native Data data();                            protected native CascadeClassifier data(Data data);
-//        @ByRef
-//        protected native FeatureEvaluatorPtr featureEvaluator(); protected native CascadeClassifier featureEvaluator(FeatureEvaluatorPtr featureEvaluator);
-//        protected native CvHaarClassifierCascade oldCascade();   protected native CascadeClassifier oldCascade(CvHaarClassifierCascade oldCascade);
+//        protected native Data data();                          protected native CascadeClassifier data(Data data);
+//        @Const @Ptr
+//        protected native FeatureEvaluator featureEvaluator();  protected native CascadeClassifier featureEvaluator(FeatureEvaluator featureEvaluator);
+//        protected native CvHaarClassifierCascade oldCascade(); protected native CascadeClassifier oldCascade(CvHaarClassifierCascade oldCascade);
         public static class MaskGenerator extends Pointer {
             static { Loader.load(); }
             public MaskGenerator() { }
@@ -518,16 +496,16 @@ public class opencv_objdetect {
             public /*abstract*/ native @OutputMat CvMat generateMask(CvMat src);
             public /*abstract*/ native void initializeMask(CvMat src);
         };
-        public native void setMaskGenerator(@ByRef CascadeClassifierMaskGeneratorPtr maskGenerator);
-        public native @ByVal CascadeClassifierMaskGeneratorPtr getMaskGenerator();
+        public native void setMaskGenerator(@Ptr MaskGenerator maskGenerator);
+        public native @Const @Ptr MaskGenerator getMaskGenerator();
 
         public native void setFaceDetectionMaskGenerator();
 
-//        protected native MaskGeneratorPtr maskGenerator();
+//        protected native @Const @Ptr MaskGenerator maskGenerator();
     }
 
 
-    @Namespace("cv") public static class DetectionROI extends Pointer {
+    @NoOffset @Namespace("cv") public static class DetectionROI extends Pointer {
         static { load(); }
         public DetectionROI() { allocate(); }
         public DetectionROI(int size) { allocateArray(size); }
@@ -757,44 +735,22 @@ public class opencv_objdetect {
 //                @Const @StdVector Feature features, @Cast("size_t") long num_features, float distance);
     }
 
-    @Name("cv::Ptr<cv::linemod::QuantizedPyramid>")
-    public static class QuantizedPyramidPtr extends Pointer {
-        static { load(); }
-        public QuantizedPyramidPtr()       { allocate();  }
-        public QuantizedPyramidPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native QuantizedPyramid get();
-        public native QuantizedPyramidPtr put(QuantizedPyramid value);
-    }
-
-    @Name("cv::Ptr<cv::linemod::Modality>")
-    public static class ModalityPtr extends Pointer {
-        static { load(); }
-        public ModalityPtr()       { allocate();  }
-        public ModalityPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native Modality get();
-        public native ModalityPtr put(Modality value);
-    }
-
     @Namespace("cv::linemod") public static class Modality extends Pointer {
         static { load(); }
         public Modality() { }
         public Modality(Pointer p) { super(p); }
 
-        public native @ByVal QuantizedPyramidPtr process(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
+        public native @Ptr QuantizedPyramid process(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
 
         public /*abstract*/ native @ByRef String name();
 
         public /*abstract*/ native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
         public /*abstract*/ native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
 
-        public static native @ByVal ModalityPtr create(String modality_type);
-        public static native @ByVal ModalityPtr create(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
+        public static native @Ptr Modality create(String modality_type);
+        public static native @Ptr Modality create(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 
-//        protected /*abstract*/ native QuantizedPyramidPtr processImpl(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
+//        protected /*abstract*/ native @Ptr QuantizedPyramid processImpl(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
     }
 
     @NoOffset @Namespace("cv::linemod") public static class ColorGradient extends Modality {
@@ -816,7 +772,7 @@ public class opencv_objdetect {
         public native long num_features();      public native ColorGradient num_features(long num_features);
         public native float strong_threshold(); public native ColorGradient strong_threshold(float strong_threshold);
 
-//        protected native QuantizedPyramidPtr processImpl(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
+//        protected native @Ptr QuantizedPyramid processImpl(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
     }
 
     @NoOffset @Namespace("cv::linemod") public static class DepthNormal extends Modality {
@@ -840,7 +796,7 @@ public class opencv_objdetect {
         public native long num_features();        public native DepthNormal num_features(long num_features);
         public native int extract_threshold();    public native DepthNormal extract_threshold(int extract_threshold);
 
-//        protected native QuantizedPyramidPtr processImpl(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
+//        protected native @Ptr QuantizedPyramid processImpl(@InputMat CvArr src, @InputMat CvArr mask/*=null*/);
     }
 
 //    @Namespace("cv::linemod") public static native void colormap(@InputMat CvArr quantized, @InputMat CvArr dst);
@@ -872,26 +828,40 @@ public class opencv_objdetect {
         public native int template_id();  public native Match template_id(int template_id);
     }
 
-    @Name("cv::Ptr<cv::linemod::Detector>")
-    public static class DetectorPtr extends Pointer {
+    @Name("std::vector<cv::Ptr<cv::linemod::Modality> >")
+    public static class ModalityVector extends Pointer {
         static { load(); }
-        public DetectorPtr()       { allocate();  }
-        public DetectorPtr(Pointer p) { super(p); }
+        public ModalityVector(Modality ... array) { this(array.length); put(array); }
+        public ModalityVector()       { allocate();  }
+        public ModalityVector(long n) { allocate(n); }
+        public ModalityVector(Pointer p) { super(p); }
         private native void allocate();
+        private native void allocate(@Cast("size_t") long n);
 
-        public native Detector get();
-        public native DetectorPtr put(Detector value);
+        public native long size();
+        public native void resize(@Cast("size_t") long n);
+
+        @Index @Const @Ptr public native Modality get(@Cast("size_t") long i);
+        public native ModalityVector put(@Cast("size_t") long i, Modality value);
+
+        public ModalityVector put(Modality ... array) {
+            if (size() < array.length) { resize(array.length); }
+            for (int i = 0; i < array.length; i++) {
+                put(i, array[i]);
+            }
+            return this;
+        }
     }
 
     @Namespace("cv::linemod") public static class Detector extends Pointer {
         static { load(); }
         public Detector() { allocate(); }
-        public Detector(@Const @StdVector ModalityPtr modalities, @Const @StdVector int[] T_pyramid) {
+        public Detector(@ByRef ModalityVector modalities, @Const @StdVector int[] T_pyramid) {
             allocate(modalities, T_pyramid);
         }
         public Detector(Pointer p) { super(p); }
         private native void allocate();
-        private native void allocate(@Const @StdVector ModalityPtr modalities, @Const @StdVector int[] T_pyramid);
+        private native void allocate(@ByRef ModalityVector modalities, @Const @StdVector int[] T_pyramid);
 
         public native void match(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray sources, float threshold,
                 @StdVector Match matches, @ByRef StringVector class_ids/*=null*/, @InputArray IplImageArray quantized_images/*=null*/,
@@ -902,7 +872,7 @@ public class opencv_objdetect {
 
         public native int addSyntheticTemplate(@Const @StdVector Template templates, String class_id);
 
-        public native @StdVector ModalityPtr getModalities();
+        public native @Const @ByRef ModalityVector getModalities();
 
         public native int getT(int pyramid_level);
 
@@ -925,7 +895,7 @@ public class opencv_objdetect {
         public native void readClasses(@ByRef StringVector class_ids, String format/*="templates_%s.yml.gz"*/);
         public native void writeClasses(String format/*="templates_%s.yml.gz"*/);
 
-//        protected native @StdVector ModalityPtr modalities();
+//        protected native @Const @ByRef ModalityVector modalities();
 //        protected native int pyramid_levels();
 //        protected native @StdVector int[] T_at_level();
 //
@@ -938,6 +908,6 @@ public class opencv_objdetect {
 //                      const std::vector<std::vector<Template> >& template_pyramids) const;
     }
 
-    @Namespace("cv::linemod") public static native @ByVal DetectorPtr getDefaultLINE();
-    @Namespace("cv::linemod") public static native @ByVal DetectorPtr getDefaultLINEMOD();
+    @Namespace("cv::linemod") public static native @Ptr Detector getDefaultLINE();
+    @Namespace("cv::linemod") public static native @Ptr Detector getDefaultLINEMOD();
 }

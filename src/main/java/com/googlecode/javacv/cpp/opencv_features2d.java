@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.4.3rc,
+ * This file is based on information found in features2d.hpp of OpenCV 2.4.3,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -175,17 +175,6 @@ public class opencv_features2d {
         public native KeyPointVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, KeyPoint value);
     }
 
-    @Name("cv::Ptr<cv::FeatureDetector>")
-    public static class FeatureDetectorPtr extends Pointer {
-        static { load(); }
-        public FeatureDetectorPtr()       { allocate();  }
-        public FeatureDetectorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native FeatureDetector get();
-        public native FeatureDetectorPtr put(FeatureDetector value);
-    }
-
     @Namespace("cv") public static class FeatureDetector extends Algorithm {
         static { load(); }
         public FeatureDetector() { }
@@ -194,21 +183,10 @@ public class opencv_features2d {
         public native void detect(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
         public native void detect(@ByRef MatVector images, @ByRef KeyPointVectorVector keypoints, @ByRef MatVector masks/*=null*/);
         public native boolean empty();
-        public native static @ByVal FeatureDetectorPtr create(String detectorType);
+        public native static @Ptr FeatureDetector create(String detectorType);
 
 //        protected abstract void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
 //        protected static native void removeInvalidPoints(@InputMat CvArr mask, @StdVector KeyPoint keypoints);
-    }
-
-    @Name("cv::Ptr<cv::DescriptorExtractor>")
-    public static class DescriptorExtractorPtr extends Pointer {
-        static { load(); }
-        public DescriptorExtractorPtr()       { allocate();  }
-        public DescriptorExtractorPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native DescriptorExtractor get();
-        public native DescriptorExtractorPtr put(DescriptorExtractor value);
     }
 
     @Namespace("cv") public static class DescriptorExtractor extends Algorithm {
@@ -224,21 +202,10 @@ public class opencv_features2d {
 
         public native boolean empty();
 
-        public static native @ByVal DescriptorExtractorPtr create(String descriptorExtractorType);
+        public static native @Ptr DescriptorExtractor create(String descriptorExtractorType);
 
 //        protected abstract native void computeImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @OutputMat CvMat descriptors);
 //        protected static native void removeBorderKeypoints(@StdVector KeyPoint keypoints, @ByVal CvSize imageSize, int borderSize);
-    }
-
-    @Name("cv::Ptr<cv::Feature2D>")
-    public static class Feature2DPtr extends Pointer {
-        static { load(); }
-        public Feature2DPtr()       { allocate();  }
-        public Feature2DPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native Feature2D get();
-        public native Feature2DPtr put(Feature2D value);
     }
 
     public static native @Name("dynamic_cast<cv::FeatureDetector*>") FeatureDetector castFeatureDetector(Feature2D pointer);
@@ -255,7 +222,7 @@ public class opencv_features2d {
         public FeatureDetector getFeatureDetector() { return castFeatureDetector(this); }
         public DescriptorExtractor getDescriptorExtractor() { return castDescriptorExtractor(this); }
 
-        public static native @ByVal Feature2DPtr create(String name);
+        public static native @Ptr Feature2D create(String name);
     }
 
     @Namespace("cv") public static class BRISK extends Feature2D {
@@ -645,12 +612,12 @@ public class opencv_features2d {
         static { load(); }
         public GridAdaptedFeatureDetector() { allocate(); }
         public GridAdaptedFeatureDetector(Pointer p) { super(p); }
-        public GridAdaptedFeatureDetector(@ByRef FeatureDetectorPtr detector/*=null*/, int maxTotalKeypoints/*=1000*/,
+        public GridAdaptedFeatureDetector(@Ptr FeatureDetector detector/*=null*/, int maxTotalKeypoints/*=1000*/,
                 int gridRows/*=4*/, int gridCols/*=4*/) {
             allocate(detector, maxTotalKeypoints, gridRows, gridCols);
         }
         private native void allocate();
-        private native void allocate(@ByRef FeatureDetectorPtr detector/*=null*/, int maxTotalKeypoints/*=1000*/,
+        private native void allocate(@Ptr FeatureDetector detector/*=null*/, int maxTotalKeypoints/*=1000*/,
                 int gridRows/*=4*/, int gridCols/*=4*/);
 
 //        public native boolean empty();
@@ -659,7 +626,7 @@ public class opencv_features2d {
 
 //        protected native void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
 
-//        protected native @ByRef FeatureDetectorPtr detector();
+//        protected native @Const @Ptr FeatureDetector detector();
 //        protected native int maxTotalKeypoints();
 //        protected native int gridRows();
 //        protected native int gridCols();
@@ -669,30 +636,19 @@ public class opencv_features2d {
         static { load(); }
         public PyramidAdaptedFeatureDetector() { }
         public PyramidAdaptedFeatureDetector(Pointer p) { super(p); }
-        public PyramidAdaptedFeatureDetector(@ByRef FeatureDetectorPtr detector, int maxLevel/*=2*/) {
+        public PyramidAdaptedFeatureDetector(@Ptr FeatureDetector detector, int maxLevel/*=2*/) {
             allocate(detector, maxLevel);
         }
-        private native void allocate(@ByRef FeatureDetectorPtr detector, int maxLevel/*=2*/);
+        private native void allocate(@Ptr FeatureDetector detector, int maxLevel/*=2*/);
 
 //        public native boolean empty();
 
 //        protected native void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
 
-//        protected native @ByRef FeatureDetectorPtr detector();
+//        protected native @Const @Ptr FeatureDetector detector();
 //        protected native int maxLevel();
     }
 
-
-    @Name("cv::Ptr<cv::AdjusterAdapter>")
-    public static class AdjusterAdapterPtr extends Pointer {
-        static { load(); }
-        public AdjusterAdapterPtr()       { allocate();  }
-        public AdjusterAdapterPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native AdjusterAdapter get();
-        public native AdjusterAdapterPtr put(AdjusterAdapter value);
-    }
 
     @Namespace("cv") public static class AdjusterAdapter extends FeatureDetector {
         static { load(); }
@@ -703,20 +659,20 @@ public class opencv_features2d {
     	public /*abstract*/ native void tooMany(int max, int n_detected);
     	public /*abstract*/ native boolean good();
 
-//        public /*abstract*/ native AdjusterAdapterPtr clone();
+        @Override public /*abstract*/ native @Ptr AdjusterAdapter clone();
 
-        public static native @Name("create") @ByVal AdjusterAdapterPtr createAdjusterAdapter(String detectorType);
+        public static native @Ptr AdjusterAdapter create(String detectorType);
     }
 
     @Namespace("cv") public static class DynamicAdaptedFeatureDetector extends FeatureDetector {
         static { load(); }
         public DynamicAdaptedFeatureDetector() { }
         public DynamicAdaptedFeatureDetector(Pointer p) { super(p); }
-        public DynamicAdaptedFeatureDetector(@ByRef AdjusterAdapterPtr adjuster,
+        public DynamicAdaptedFeatureDetector(@Ptr AdjusterAdapter adjuster,
                 int min_features/*=400*/, int max_features/*=500*/, int max_iters/*=5*/) {
             allocate(adjuster, min_features, max_features, max_iters);
         }
-        private native void allocate(@ByRef AdjusterAdapterPtr adjuster,
+        private native void allocate(@Ptr AdjusterAdapter adjuster,
                 int min_features/*=400*/, int max_features/*=500*/, int max_iters/*=5*/);
 
 //        public native boolean empty();
@@ -738,7 +694,7 @@ public class opencv_features2d {
 //        public native void tooMany(int max, int n_detected);
 //        public native boolean good();
 //
-//        public native AdjusterAdapterPtr clone();
+//        public native @Ptr AdjusterAdapter clone();
 
 //        protected native void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
 
@@ -761,7 +717,7 @@ public class opencv_features2d {
 //        public native void tooMany(int max, int n_detected);
 //        public native boolean good();
 //
-//        public native AdjusterAdapterPtr clone();
+//        public native @Ptr AdjusterAdapter clone();
 
 //        protected native void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
 
@@ -785,7 +741,7 @@ public class opencv_features2d {
 //        public native void tooMany(int max, int n_detected);
 //        public native boolean good();
 //
-//        public native AdjusterAdapterPtr clone();
+//        public native @Ptr AdjusterAdapter clone();
 
 //        protected native void detectImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @InputMat CvArr mask/*=null*/);
 
@@ -803,10 +759,10 @@ public class opencv_features2d {
         static { load(); }
         public OpponentColorDescriptorExtractor() { }
         public OpponentColorDescriptorExtractor(Pointer p) { super(p); }
-        public OpponentColorDescriptorExtractor(@ByRef DescriptorExtractorPtr descriptorExtractor) {
+        public OpponentColorDescriptorExtractor(@Ptr DescriptorExtractor descriptorExtractor) {
             allocate(descriptorExtractor);
         }
-        private native void allocate(@ByRef DescriptorExtractorPtr descriptorExtractor);
+        private native void allocate(@Ptr DescriptorExtractor descriptorExtractor);
 
 //        public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -818,7 +774,7 @@ public class opencv_features2d {
 
 //        protected native void computeImpl(@InputMat CvArr image, @StdVector KeyPoint keypoints, @OutputMat CvMat descriptors);
 
-//        protected native @ByRef DescriptorExtractorPtr descriptorExtractor();
+//        protected native @Const @Ptr DescriptorExtractor descriptorExtractor();
     }
 
     @Namespace("cv") public static class BriefDescriptorExtractor extends DescriptorExtractor {
@@ -928,17 +884,6 @@ public class opencv_features2d {
         public native DMatchVectorVector put(@Cast("size_t") long i, @Cast("size_t") long j, DMatch value);
     }
 
-    @Name("cv::Ptr<cv::DescriptorMatcher>")
-    public static class DescriptorMatcherPtr extends Pointer {
-        static { load(); }
-        public DescriptorMatcherPtr()       { allocate();  }
-        public DescriptorMatcherPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native DescriptorMatcher get();
-        public native DescriptorMatcherPtr put(DescriptorMatcher value);
-    }
-
     @Namespace("cv") public static class DescriptorMatcher extends Algorithm {
         static { load(); }
         public DescriptorMatcher() { }
@@ -968,9 +913,11 @@ public class opencv_features2d {
 //        public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
 
-        public /*abstract*/ native @ByVal DescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
+        @Override
+        public /*abstract*/ native @Ptr DescriptorMatcher clone();
+        public /*abstract*/ native @Ptr DescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 
-        public native static @ByVal DescriptorMatcherPtr create(String descriptorMatcherType);
+        public native static @Ptr DescriptorMatcher create(String descriptorMatcherType);
 
 //        protected static class DescriptorCollection extends Pointer {
 //            static { load(); }
@@ -1018,7 +965,7 @@ public class opencv_features2d {
         private native void allocate(int normType, @Cast("bool") boolean crossCheck/*=false*/);
 
 //        public native boolean isMaskSupported();
-//        public native @ByVal DescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
+//        public native @Ptr DescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 
 //        protected native void knnMatchImpl(@InputMat CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
 //                @Const @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
@@ -1048,7 +995,7 @@ public class opencv_features2d {
 //
 //        public native void train();
 //        public native boolean isMaskSupported();
-//        public native DescriptorMatcherPtr clone(boolean emptyTrainData/*=false*/);
+//        public native @Ptr DescriptorMatcher clone(boolean emptyTrainData/*=false*/);
 
 //        protected static native void convertToDMatches(@ByRef DescriptorCollection descriptors,
 //                CvMat indices, CvMat distances, @ByRef DMatchVectorVector matches );
@@ -1058,23 +1005,12 @@ public class opencv_features2d {
 //        protected native void radiusMatchImpl(@InputMat CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
 //                @Const @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
 //
-//        protected native @ByRef Ptr<flann::IndexParams> indexParams();
-//        protected native @ByRef Ptr<flann::SearchParams> searchParams();
-//        protected native @ByRef Ptr<flann::Index> flannIndex();
+//        protected native @Const @Ptr IndexParams indexParams();
+//        protected native @Const @Ptr SearchParams searchParams();
+//        protected native @Const @Ptr Index flannIndex();
 //
 //        protected native @ByRef DescriptorCollection mergedDescriptors();
 //        protected native int addedDescCount();
-    }
-
-    @Name("cv::Ptr<cv::GenericDescriptorMatcher>")
-    public static class GenericDescriptorMatcherPtr extends Pointer {
-        static { load(); }
-        public GenericDescriptorMatcherPtr()       { allocate();  }
-        public GenericDescriptorMatcherPtr(Pointer p) { super(p); }
-        private native void allocate();
-
-        public native GenericDescriptorMatcher get();
-        public native GenericDescriptorMatcherPtr put(GenericDescriptorMatcher value);
     }
 
     @Namespace("cv") public static class GenericDescriptorMatcher extends Pointer {
@@ -1115,9 +1051,10 @@ public class opencv_features2d {
         public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
         public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
 
-        public native boolean empty();
-        public /*abstract*/ native @ByVal GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
-        public native static @ByVal GenericDescriptorMatcherPtr create(String genericDescritptorMatcherType,
+        public native boolean empty(); @Override
+        public /*abstract*/ native @Ptr GenericDescriptorMatcher clone();
+        public /*abstract*/ native @Ptr GenericDescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
+        public native static @Ptr GenericDescriptorMatcher create(String genericDescritptorMatcherType,
                 String paramsFilename/*=""*/);
 
 //        protected /*abstract*/ native void knnMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
@@ -1161,11 +1098,11 @@ public class opencv_features2d {
     @Namespace("cv") public static class VectorDescriptorMatcher extends GenericDescriptorMatcher {
         static { load(); }
         public VectorDescriptorMatcher() { }
-        public VectorDescriptorMatcher(DescriptorExtractorPtr extractor, DescriptorMatcherPtr matcher) {
+        public VectorDescriptorMatcher(@Ptr DescriptorExtractor extractor, @Ptr DescriptorMatcher matcher) {
             allocate(extractor, matcher);
         }
         public VectorDescriptorMatcher(Pointer p) { super(p); }
-        private native void allocate(@ByRef DescriptorExtractorPtr extractor, @ByRef DescriptorMatcherPtr matcher);
+        private native void allocate(@Ptr DescriptorExtractor extractor, @Ptr DescriptorMatcher matcher);
 
 //        public native void add(@Const @StdVector("IplImage*,cv::Mat") IplImageArray imgCollection,
 //                @ByRef KeyPointVectorVector pointCollection );
@@ -1177,15 +1114,15 @@ public class opencv_features2d {
 //        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
 
 //        public native boolean empty();
-//        public native GenericDescriptorMatcherPtr clone(@Cast("bool") boolean emptyTrainData/*=false*/);
+//        public native @Ptr GenericDescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 
 //        protected native void knnMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
 //                @ByRef DMatchVectorVector matches, int k, @Const @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected native void radiusMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
 //                @ByRef DMatchVectorVector matches, float maxDistance, @Const @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
-//        protected native @ByRef DescriptorExtractorPtr extractor();
-//        protected native @ByRef DescriptorMatcherPtr matcher();
+//        protected native @Const @Ptr DescriptorExtractor extractor();
+//        protected native @Const @Ptr DescriptorMatcher matcher();
     }
 
 
@@ -1213,7 +1150,7 @@ public class opencv_features2d {
 
     public static native void evaluateFeatureDetector(@InputMat CvArr img1, @InputMat CvArr img2, CvMat H1to2,
             @StdVector KeyPoint keypoints1, @StdVector KeyPoint keypoints2, @ByRef float[] repeatability,
-            @ByRef int[] correspCount, @ByRef FeatureDetectorPtr fdetector/*=FeatureDetectorPtr()*/);
+            @ByRef int[] correspCount, @Ptr FeatureDetector fdetector/*=null*/);
 
     public static native void computeRecallPrecisionCurve(@ByRef DMatchVectorVector matches1to2,
             @ByRef @Cast("std::vector<std::vector<uchar> >*") ByteVectorVector correctMatches1to2Mask,
@@ -1225,8 +1162,7 @@ public class opencv_features2d {
     public static native void evaluateGenericDescriptorMatcher(@InputMat CvArr img1, @InputMat CvArr img2, CvMat H1to2,
             @StdVector KeyPoint keypoints1, @StdVector KeyPoint keypoints2,
             DMatchVectorVector matches1to2, @Cast("std::vector<std::vector<uchar> >*") ByteVectorVector correctMatches1to2Mask,
-            @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f recallPrecisionCurve,
-            @ByRef GenericDescriptorMatcherPtr dmatch/*=GenericDescriptorMatcherPtr()*/);
+            @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f recallPrecisionCurve, @Ptr GenericDescriptorMatcher dmatch/*=null*/);
 
 
     @Namespace("cv") public static class BOWTrainer extends Pointer {
@@ -1270,11 +1206,11 @@ public class opencv_features2d {
 
     @Namespace("cv") public static class BOWImgDescriptorExtractor extends Pointer {
         static { load(); }
-        public BOWImgDescriptorExtractor(DescriptorExtractorPtr dextractor, DescriptorMatcherPtr dmatcher) {
+        public BOWImgDescriptorExtractor(@Ptr DescriptorExtractor dextractor, @Ptr DescriptorMatcher dmatcher) {
             allocate(dextractor, dmatcher);
         }
         public BOWImgDescriptorExtractor(Pointer p) { super(p); }
-        private native void allocate(@ByRef DescriptorExtractorPtr dextractor, @ByRef DescriptorMatcherPtr dmatcher);
+        private native void allocate(@Ptr DescriptorExtractor dextractor, @Ptr DescriptorMatcher dmatcher);
 
         public native void setVocabulary(CvMat vocabulary);
         public native @OutputMat CvMat getVocabulary();
@@ -1285,7 +1221,7 @@ public class opencv_features2d {
         public native int descriptorType();
 
 //        protected native @OutputMat CvMat vocabulary();
-//        protected native @ByRef DescriptorExtractorPtr dextractor();
-//        protected native @ByRef DescriptorMatcherPtr dmatcher();
+//        protected native @Const @Ptr DescriptorExtractor dextractor();
+//        protected native @Const @Ptr DescriptorMatcher dmatcher();
     }
 }

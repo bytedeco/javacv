@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in photo_c.h and photo.hpp
- * of OpenCV 2.4.3rc, which are covered by the following copyright notice:
+ * of OpenCV 2.4.3, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
