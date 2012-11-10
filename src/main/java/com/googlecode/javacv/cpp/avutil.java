@@ -69,7 +69,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
         "<libavutil/cpu.h>", "<libavutil/dict.h>", "<libavutil/opt.h>", "<libavutil/samplefmt.h>", "<libavutil/imgutils.h>"},
         includepath=genericIncludepath, linkpath=genericLinkpath, link="avutil@.51"),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload="avutil-51"),
+        preloadpath=windowsPreloadpath, preload={"avutil-51", "avutil-52"}),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class avutil {
     static { load(); }

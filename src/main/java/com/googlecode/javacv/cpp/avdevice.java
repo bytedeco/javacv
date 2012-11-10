@@ -53,7 +53,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libavdevice/avdevice.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice@.54", "avfilter@.2",
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice@.54", "avfilter@.3",
         "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.51"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avdevice-54"),
