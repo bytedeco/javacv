@@ -97,26 +97,24 @@ public class GLCanvasFrame extends CanvasFrame {
     private void init(final boolean fullScreen,
             final GLCapabilitiesImmutable caps, final GLContext shareWith) {
         Runnable r = new Runnable() { public void run() {
-            if (GLCanvasFrame.this.getClass() == GLCanvasFrame.class) {
-                String wasErase = System.setProperty("sun.awt.noerasebackground", "true");
+            String wasErase = System.setProperty("sun.awt.noerasebackground", "true");
 
-                canvas = new GLCanvas(caps, shareWith);
-                ((GLCanvas)canvas).addGLEventListener(eventListener);
-                if (fullScreen) {
-                    canvas.setSize(getSize());
-                    needInitialResize = false;
-                } else {
-                    canvas.setSize(1, 1); // or we do not get a GLContext
-                    needInitialResize = true;
-                }
-                getContentPane().add(canvas);
-                canvas.setVisible(true);
+            canvas = new GLCanvas(caps, shareWith);
+            ((GLCanvas)canvas).addGLEventListener(eventListener);
+            if (fullScreen) {
+                canvas.setSize(getSize());
+                needInitialResize = false;
+            } else {
+                canvas.setSize(1, 1); // or we do not get a GLContext
+                needInitialResize = true;
+            }
+            getContentPane().add(canvas);
+            canvas.setVisible(true);
 
-                if (wasErase != null) {
-                    System.setProperty("sun.awt.noerasebackground", wasErase);
-                } else {
-                    System.clearProperty("sun.awt.noerasebackground");
-                }
+            if (wasErase != null) {
+                System.setProperty("sun.awt.noerasebackground", wasErase);
+            } else {
+                System.clearProperty("sun.awt.noerasebackground");
             }
         }};
 
@@ -128,6 +126,8 @@ public class GLCanvasFrame extends CanvasFrame {
             } catch (java.lang.Exception ex) { }
         }
     }
+
+    @Override protected void initCanvas(boolean fullScreen, DisplayMode displayMode, double gamma) { }
 
     private int[] params = new int[2];
     private Color color = null;

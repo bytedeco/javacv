@@ -143,7 +143,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     @Override public long getTimestamp() {
-        return capture == null ? super.getFrameNumber() :
+        return capture == null ? super.getTimestamp() :
                 Math.round(cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC)*1000);
     }
     @Override public void setTimestamp(long timestamp) throws Exception {

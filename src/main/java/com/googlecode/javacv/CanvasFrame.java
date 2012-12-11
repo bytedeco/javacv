@@ -174,49 +174,7 @@ public class CanvasFrame extends JFrame {
             // getting our BufferStrategy or even creating our Canvas
             setVisible(true);
 
-            if (CanvasFrame.this.getClass() == CanvasFrame.class) {
-                canvas = new Canvas() {
-                    @Override public void update(Graphics g) { 
-                        paint(g);
-                    }
-                    @Override public void paint(Graphics g) {
-                        // Calling BufferStrategy.show() here sometimes throws
-                        // NullPointerException or IllegalStateException,
-                        // but otherwise seems to work fine.
-                        try {
-                            BufferStrategy strategy = canvas.getBufferStrategy();
-                            do {
-                                do {
-                                    g = strategy.getDrawGraphics();
-                                    if (color != null) {
-                                        g.setColor(color);
-                                        g.fillRect(0, 0, getWidth(), getHeight());
-                                    }
-                                    if (image != null) {
-                                        g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
-                                    }
-                                    if (buffer != null) {
-                                        g.drawImage(buffer, 0, 0, getWidth(), getHeight(), null);
-                                    }
-                                    g.dispose();
-                                } while (strategy.contentsRestored());
-                                strategy.show();
-                            } while (strategy.contentsLost());
-                        } catch (NullPointerException e) {
-                        } catch (IllegalStateException e) { }
-                    }
-                };
-                if (fullScreen) {
-                    canvas.setSize(getSize());
-                    needInitialResize = false;
-                } else {
-                    needInitialResize = true;
-                }
-                getContentPane().add(canvas);
-                canvas.setVisible(true);
-                canvas.createBufferStrategy(2);
-                //canvas.setIgnoreRepaint(true);
-            }
+            initCanvas(fullScreen, displayMode, gamma);
         }};
 
         if (EventQueue.isDispatchThread()) {
@@ -226,6 +184,50 @@ public class CanvasFrame extends JFrame {
                 EventQueue.invokeAndWait(r);
             } catch (java.lang.Exception ex) { }
         }
+    }
+
+    protected void initCanvas(boolean fullScreen, DisplayMode displayMode, double gamma) {
+        canvas = new Canvas() {
+            @Override public void update(Graphics g) {
+                paint(g);
+            }
+            @Override public void paint(Graphics g) {
+                // Calling BufferStrategy.show() here sometimes throws
+                // NullPointerException or IllegalStateException,
+                // but otherwise seems to work fine.
+                try {
+                    BufferStrategy strategy = canvas.getBufferStrategy();
+                    do {
+                        do {
+                            g = strategy.getDrawGraphics();
+                            if (color != null) {
+                                g.setColor(color);
+                                g.fillRect(0, 0, getWidth(), getHeight());
+                            }
+                            if (image != null) {
+                                g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
+                            }
+                            if (buffer != null) {
+                                g.drawImage(buffer, 0, 0, getWidth(), getHeight(), null);
+                            }
+                            g.dispose();
+                        } while (strategy.contentsRestored());
+                        strategy.show();
+                    } while (strategy.contentsLost());
+                } catch (NullPointerException e) {
+                } catch (IllegalStateException e) { }
+            }
+        };
+        if (fullScreen) {
+            canvas.setSize(getSize());
+            needInitialResize = false;
+        } else {
+            needInitialResize = true;
+        }
+        getContentPane().add(canvas);
+        canvas.setVisible(true);
+        canvas.createBufferStrategy(2);
+        //canvas.setIgnoreRepaint(true);
     }
 
     // used for example as debugging console...

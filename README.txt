@@ -217,6 +217,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Fixed problem when subclassing `CanvasFrame`
+
 ===November 4, 2012 version 0.3===
  * Upgraded support to OpenCV 2.4.3 (issue #233)
  * Fixed functions like `Algorithm.getMat()` and `HOGDescriptor.getDefaultPeopleDetector()` returning `null` instead of the expected data
