@@ -217,6 +217,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Fixed `cvQueryHistValue_1D()` and other functions that use a raw `CvArr` object
  * Fixed problem when subclassing `CanvasFrame`
 
 ===November 4, 2012 version 0.3===

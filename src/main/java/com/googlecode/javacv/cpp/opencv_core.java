@@ -159,7 +159,7 @@ public class opencv_core {
 
     public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
 
-    @Opaque public static abstract class CvArr extends Pointer implements Cloneable {
+    @Opaque public static class CvArr extends Pointer implements Cloneable {
         static { load(); }
         protected CvArr() { }
         protected CvArr(Pointer p) { super(p); }
