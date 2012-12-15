@@ -439,7 +439,7 @@ public abstract class FrameGrabber {
             }
             for (int i = 0; i < frameGrabbers.length; i++) {
                 if (grabbedImages[i] != null) {
-                    latencies[i] = newestTimestamp-frameGrabbers[i].getTimestamp();
+                    latencies[i] = newestTimestamp - Math.max(0, frameGrabbers[i].getTimestamp());
                 }
             }
             if (bestLatencies == null) {
@@ -469,17 +469,17 @@ public abstract class FrameGrabber {
                     if (frameGrabbers[i].isTriggerMode() || grabbedImages[i] == null) {
                         continue;
                     }
-                    int latency = (int)(newestTimestamp - frameGrabbers[i].getTimestamp());
+                    int latency = (int)(newestTimestamp - Math.max(0, frameGrabbers[i].getTimestamp()));
                     while (latency-bestLatencies[i] > 0.1*bestLatencies[i]) {
                         grabbedImages[i] = frameGrabbers[i].grab();
                         if (grabbedImages[i] == null) {
                             break;
                         }
-                        latency = (int)(newestTimestamp - frameGrabbers[i].getTimestamp());
+                        latency = (int)(newestTimestamp - Math.max(0, frameGrabbers[i].getTimestamp()));
                         if (latency < 0) {
                             // woops, a camera seems to have dropped a frame somewhere...
                             // bump up the newestTimestamp
-                            newestTimestamp = frameGrabbers[i].getTimestamp();
+                            newestTimestamp = Math.max(0, frameGrabbers[i].getTimestamp());
                             break;
                         }
                     }
@@ -487,7 +487,7 @@ public abstract class FrameGrabber {
             }
 
 //for (int i = 0; i < frameGrabbers.length; i++) {
-//    long latency = newestTimestamp - grabbedImages[i].getTimestamp();
+//    long latency = newestTimestamp - Math.max(0, grabbedImages[i].getTimestamp());
 //    System.out.print(bestLatencies[i] + " " + latency + "  ");
 //}
 //System.out.println("  " + bestInterval);
