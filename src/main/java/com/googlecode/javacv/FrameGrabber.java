@@ -431,11 +431,19 @@ public abstract class FrameGrabber {
             // synchronized case, so we know what to aim for in
             // cases of missing/dropped frames ...
             long newestTimestamp = 0;
+            boolean unsynchronized = false;
             for (int i = 0; i < frameGrabbers.length; i++) {
                 grabbedImages[i] = frameGrabbers[i].grab();
                 if (grabbedImages[i] != null) {
                     newestTimestamp = Math.max(newestTimestamp, frameGrabbers[i].getTimestamp());
                 }
+                if (frameGrabbers[i].getClass() != frameGrabbers[(i + 1) % frameGrabbers.length].getClass()) {
+                    // assume we can't synchronize different types of cameras with each other
+                    unsynchronized = true;
+                }
+            }
+            if (unsynchronized) {
+                return grabbedImages;
             }
             for (int i = 0; i < frameGrabbers.length; i++) {
                 if (grabbedImages[i] != null) {

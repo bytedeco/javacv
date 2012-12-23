@@ -217,7 +217,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
- * Fixed infinite loop in `FrameGrabber.Array.grab()` (as used by ProCamCalib in the case of stereo cameras, issue #262) when `FrameGrabber.getTimestamp()` returns an invalid negative value (as with `opencv_highgui`)
+ * Fixed infinite loop in `FrameGrabber.Array.grab()` (as used by ProCamCalib in the case of stereo cameras, issue #262) when `FrameGrabber.getTimestamp()` returns an invalid negative value (as with `opencv_highgui`) or when using different types of (unsynchronized) `FrameGrabber` together
  * Fixed `cvQueryHistValue_1D()` and other functions that use a raw `CvArr` object
  * Fixed problem when subclassing `CanvasFrame`
 
