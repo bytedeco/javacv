@@ -262,7 +262,7 @@ public class ARToolKitPlus {
         static { load(); }
         public    ArtLogFunction(Pointer p) { super(p); }
         protected ArtLogFunction() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(String nStr);
     }
     public static class FunctionLogger extends Logger {

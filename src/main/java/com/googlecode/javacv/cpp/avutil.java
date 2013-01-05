@@ -882,6 +882,9 @@ public class avutil {
          */
         public static class Item_name extends FunctionPointer {
             static { load(); }
+            public    Item_name(Pointer p) { super(p); }
+            protected Item_name() { allocate(); }
+            private native void allocate();
             public native @Cast("const char*") BytePointer call(Pointer ctx);
         }
         public native Item_name item_name();           public native AVClass item_name(Item_name item_name);
@@ -920,6 +923,9 @@ public class avutil {
          */
         public static class Child_next extends FunctionPointer {
             static { load(); }
+            public    Child_next(Pointer p) { super(p); }
+            protected Child_next() { allocate(); }
+            private native void allocate();
             public native Pointer call(Pointer obj, Pointer prev);
         }
         public native Child_next child_next();         public native AVClass child_next(Child_next child_next);
@@ -934,6 +940,9 @@ public class avutil {
          */
         public static class Child_class_next extends FunctionPointer {
             static { load(); }
+            public    Child_class_next(Pointer p) { super(p); }
+            protected Child_class_next() { allocate(); }
+            private native void allocate();
             public native @Const AVClass call(@Const AVClass prev);
         }
         public native Child_class_next child_class_next(); public native AVClass child_class_next(Child_class_next child_class_next);
@@ -952,6 +961,9 @@ public class avutil {
          */
         public static class Get_category extends FunctionPointer {
             static { load(); }
+            public    Get_category(Pointer p) { super(p); }
+            protected Get_category() { allocate(); }
+            private native void allocate();
             public native @Cast("AVClassCategory") int call(Pointer ctx);
         }
         public native Get_category get_category(); public native AVClass get_category(Get_category get_category);
@@ -1019,7 +1031,7 @@ public class avutil {
         static { load(); }
         public    LogCallback(Pointer p) { super(p); }
         protected LogCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(Pointer ptr, int i, String fmt,
                 @ByVal @Cast("va_list*") Pointer vl);
     }

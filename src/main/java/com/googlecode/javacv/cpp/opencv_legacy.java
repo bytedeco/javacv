@@ -295,7 +295,7 @@ public class opencv_legacy {
         static { load(); }
         public    CvCallback(Pointer p) { super(p); }
         protected CvCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native int call(int index, Pointer buffer, Pointer user_data);
     }
 

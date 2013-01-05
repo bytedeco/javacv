@@ -1074,6 +1074,9 @@ public class avcodec {
         public native int   duration();     public native AVPacket duration(int duration);
         public static class Destruct extends FunctionPointer {
             static { load(); }
+            public    Destruct(Pointer p) { super(p); }
+            protected Destruct() { allocate(); }
+            private native void allocate();
             public native void call(AVPacket p);
         }
         public native Destruct destruct();  public native AVPacket destruct(Destruct destruct);
@@ -1819,7 +1822,7 @@ public class avcodec {
             static { load(); }
             public    Draw_horiz_band(Pointer p) { super(p); }
             protected Draw_horiz_band() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native void call(AVCodecContext s, @Const AVFrame src,
                     IntPointer offset/*[AV_NUM_DATA_POINTERS]*/, int y, int type, int height);
         }
@@ -1838,7 +1841,7 @@ public class avcodec {
             static { load(); }
             public    Get_format(Pointer p) { super(p); }
             protected Get_format() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native @Cast("PixelFormat") int call(AVCodecContext s, @Cast("const PixelFormat*") IntPointer fmt);
         }
         public native Get_format get_format();           public native AVCodecContext get_format(Get_format get_format);
@@ -2472,7 +2475,7 @@ public class avcodec {
             static { load(); }
             public    Get_buffer(Pointer p) { super(p); }
             protected Get_buffer() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext c, AVFrame pic);
         }
         public native Get_buffer get_buffer();           public native AVCodecContext get_buffer(Get_buffer get_buffer);
@@ -2490,7 +2493,7 @@ public class avcodec {
             static { load(); }
             public    Release_buffer(Pointer p) { super(p); }
             protected Release_buffer() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native void call(AVCodecContext c, AVFrame pic);
         }
         public native Release_buffer release_buffer();   public native AVCodecContext release_buffer(Release_buffer release_buffer);
@@ -2511,7 +2514,7 @@ public class avcodec {
             static { load(); }
             public    Reget_buffer(Pointer p) { super(p); }
             protected Reget_buffer() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext c, AVFrame pic);
         }
         public native Reget_buffer reget_buffer();       public native AVCodecContext reget_buffer(Reget_buffer reget_buffer);
@@ -2719,7 +2722,7 @@ public class avcodec {
             static { load(); }
             public    Rtp_callback(Pointer p) { super(p); }
             protected Rtp_callback() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native void call(AVCodecContext avctx, Pointer data, int size, int mb_nb);
         }
         public native Rtp_callback rtp_callback();       public native AVCodecContext rtp_callback(Rtp_callback rtp_callback);
@@ -3028,12 +3031,12 @@ public class avcodec {
                 static { load(); }
                 public    Func(Pointer p) { super(p); }
                 protected Func() { allocate(); }
-                protected final native void allocate();
+                private native void allocate();
                 public native int call(AVCodecContext c2, Pointer arg);
             }
             public    Execute(Pointer p) { super(p); }
             protected Execute() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext c, Func func, Pointer arg2, IntPointer ret, int count, int size);
         }
         public native Execute execute();                 public native AVCodecContext execute(Execute execute);
@@ -3062,12 +3065,12 @@ public class avcodec {
                 static { load(); }
                 public    Func2(Pointer p) { super(p); }
                 protected Func2() { allocate(); }
-                protected final native void allocate();
+                private native void allocate();
                 public native int call(AVCodecContext c2, Pointer arg, int jobnr, int threadnr);
             }
             public    Execute2(Pointer p) { super(p); }
             protected Execute2() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext c, Func2 func2, Pointer arg2, IntPointer ret, int count);
         }
         public native Execute2 execute2();               public native AVCodecContext execute2(Execute2 execute2);
@@ -3420,7 +3423,7 @@ public class avcodec {
             static { load(); }
             public    Start_frame(Pointer p) { super(p); }
             protected Start_frame() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext avctx, @Cast("const uint8_t*") BytePointer buf, @Cast("uint32_t") int buf_size);
         }
         public native Start_frame start_frame();   public native AVHWAccel start_frame(Start_frame start_frame);
@@ -3440,7 +3443,7 @@ public class avcodec {
             static { load(); }
             public    Decode_slice(Pointer p) { super(p); }
             protected Decode_slice() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext avctx, @Cast("const uint8_t*") BytePointer buf, @Cast("uint32_t") int buf_size);
         }
         public native Decode_slice decode_slice(); public native AVHWAccel decode_slice(Decode_slice decode_slice);
@@ -3458,7 +3461,7 @@ public class avcodec {
             static { load(); }
             public    End_frame(Pointer p) { super(p); }
             protected End_frame() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext avctx);
         }
         public native End_frame end_frame();       public native AVHWAccel end_frame(End_frame end_frame);
@@ -4227,7 +4230,7 @@ public class avcodec {
             static { load(); }
             public    Parser_init(Pointer p) { super(p); }
             protected Parser_init() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecParserContext s);
         }
         public native Parser_init parser_init();   public native AVCodecParser parser_init(Parser_init parser_init);
@@ -4236,7 +4239,7 @@ public class avcodec {
             static { load(); }
             public    Parser_parse(Pointer p) { super(p); }
             protected Parser_parse() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecParserContext s, AVCodecContext avctx,
                     @Cast("const uint8_t**") PointerPointer poutbuf, IntPointer poutbuf_size,
                     @Cast("const uint8_t*") BytePointer buf, int buf_size);
@@ -4247,7 +4250,7 @@ public class avcodec {
             static { load(); }
             public    Parser_close(Pointer p) { super(p); }
             protected Parser_close() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native void call(AVCodecParserContext s);
         }
         public native Parser_close parser_close(); public native AVCodecParser parser_close(Parser_close parser_close);
@@ -4256,7 +4259,7 @@ public class avcodec {
             static { load(); }
             public    Split(Pointer p) { super(p); }
             protected Split() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVCodecContext avctx, @Cast("const uint8_t*") BytePointer buf, int buf_size);
         }
         public native Split split();               public native AVCodecParser split(Split split);
@@ -4890,7 +4893,7 @@ public class avcodec {
             static { load(); }
             public    Filter(Pointer p) { super(p); }
             protected Filter() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVBitStreamFilterContext bsfc, AVCodecContext avctx,
                     String args, @Cast("uint8_t**") PointerPointer poutbuf, IntPointer poutbuf_size,
                     @Cast("const uint8_t*") BytePointer buf, int buf_size, int keyframe);
@@ -4901,7 +4904,7 @@ public class avcodec {
             static { load(); }
             public    Close(Pointer p) { super(p); }
             protected Close() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native void call(AVBitStreamFilterContext bsfc);
         }
         public native Close close();            public native AVBitStreamFilter close(Close close);
@@ -5028,7 +5031,7 @@ public class avcodec {
         static { load(); }
         public    Cb(Pointer p) { super(p); }
         protected Cb() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native int call(PointerPointer mutex, @Cast("AVLockOp") int op);
     }
     public static native int av_lockmgr_register(Cb cb);

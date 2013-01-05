@@ -305,7 +305,7 @@ public class avformat {
             static { load(); }
             public    Callback(Pointer p) { super(p); }
             protected Callback() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(Pointer p);
         }
         public native Callback callback(); public native AVIOInterruptCB callback(Callback callback);
@@ -366,18 +366,27 @@ public class avformat {
 
         public static class Read_packet extends FunctionPointer {
             static { load(); }
+            public    Read_packet(Pointer p) { super(p); }
+            protected Read_packet() { allocate(); }
+            private native void allocate();
             public native int call(Pointer opaque, @Cast("uint8_t*") BytePointer buf, int buf_size);
         }
         public native Read_packet read_packet(); public native AVIOContext read_packet(Read_packet read_packet);
 
         public static class Write_packet extends FunctionPointer {
             static { load(); }
+            public    Write_packet(Pointer p) { super(p); }
+            protected Write_packet() { allocate(); }
+            private native void allocate();
             public native int call(Pointer opaque, @Cast("uint8_t*") BytePointer buf, int buf_size);
         }
         public native Write_packet write_packet(); public native AVIOContext write_packet(Write_packet write_packet);
 
         public static class Seek extends FunctionPointer {
             static { load(); }
+            public    Seek(Pointer p) { super(p); }
+            protected Seek() { allocate(); }
+            private native void allocate();
             public native long call(Pointer opaque, long offset, int whence);
         }
         public native Seek seek(); public native AVIOContext seek(Seek seek);
@@ -394,6 +403,9 @@ public class avformat {
 
         public static class Update_checksum extends FunctionPointer {
             static { load(); }
+            public    Update_checksum(Pointer p) { super(p); }
+            protected Update_checksum() { allocate(); }
+            private native void allocate();
             public native @Cast("unsigned long") long call(@Cast("unsigned long") long checksum,
                           @Cast("const uint8_t*") BytePointer buf, @Cast("unsigned") int size);
         }
@@ -406,6 +418,9 @@ public class avformat {
          */
         public static class Read_pause extends FunctionPointer {
             static { load(); }
+            public    Read_pause(Pointer p) { super(p); }
+            protected Read_pause() { allocate(); }
+            private native void allocate();
             public native int call(Pointer opaque, int pause);
         }
         public native Read_pause read_pause(); public native AVIOContext read_pause(Read_pause read_pause);
@@ -416,6 +431,9 @@ public class avformat {
          */
         public static class Read_seek extends FunctionPointer {
             static { load(); }
+            public    Read_seek(Pointer p) { super(p); }
+            protected Read_seek() { allocate(); }
+            private native void allocate();
             public native long call(Pointer opaque, int stream_index, long timestamp, int flags);
         }
         public native Read_seek read_seek(); public native AVIOContext read_seek(Read_seek read_seek);
@@ -486,7 +504,7 @@ public class avformat {
      */
     public static native AVIOContext avio_alloc_context(@Cast("unsigned char*") BytePointer buffer,
             int buffer_size, int write_flag, Pointer opaque, AVIOContext.Read_packet read_packet,
-            AVIOContext.Read_packet write_packet, AVIOContext.Seek seek);
+            AVIOContext.Write_packet write_packet, AVIOContext.Seek seek);
 
     public static native void avio_w8(AVIOContext s, int b);
     public static native void avio_write(AVIOContext s, @Cast("unsigned char*") BytePointer buf, int size);

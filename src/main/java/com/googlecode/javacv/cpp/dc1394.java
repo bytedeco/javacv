@@ -158,7 +158,7 @@ public class dc1394 {
         static { load(); }
         public    Log_handler(Pointer p) { super(p); }
         protected Log_handler() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(@Cast("dc1394log_t") int type, String message, Pointer user);
     }
     public static native @Cast("dc1394error_t") int dc1394_log_register_handler(

@@ -167,6 +167,9 @@ public class avfilter {
          */
         public static class Free extends FunctionPointer {
             static { load(); }
+            public    Free(Pointer p) { super(p); }
+            protected Free() { allocate(); }
+            private native void allocate();
             public native void call(AVFilterBuffer buf);
         }
         public native Free free();                    public native AVFilterBuffer free(Free free);
@@ -433,7 +436,7 @@ public class avfilter {
             static { load(); }
             public    Start_frame(Pointer p) { super(p); }
             protected Start_frame() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVFilterLink link, AVFilterBufferRef picref);
         }
         public native Start_frame start_frame();           public native AVFilterPad start_frame(Start_frame start_frame);
@@ -448,7 +451,7 @@ public class avfilter {
             static { load(); }
             public    Get_video_buffer(Pointer p) { super(p); }
             protected Get_video_buffer() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native AVFilterBufferRef callback(AVFilterLink link, int perms, int w, int h);
         }
         public native Get_video_buffer get_video_buffer(); public native AVFilterPad get_video_buffer(Get_video_buffer get_video_buffer);
@@ -463,7 +466,7 @@ public class avfilter {
             static { load(); }
             public    Get_audio_buffer(Pointer p) { super(p); }
             protected Get_audio_buffer() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native AVFilterBufferRef callback(AVFilterLink link, int perms, int nb_samples);
         }
         public native Get_audio_buffer get_audio_buffer(); public native AVFilterPad get_audio_buffer(Get_audio_buffer get_audio_buffer);
@@ -481,7 +484,7 @@ public class avfilter {
             static { load(); }
             public    End_frame(Pointer p) { super(p); }
             protected End_frame() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVFilterLink link);
         }
         public native End_frame end_frame();               public native AVFilterPad end_frame(End_frame end_frame);
@@ -498,7 +501,7 @@ public class avfilter {
             static { load(); }
             public    Draw_slice(Pointer p) { super(p); }
             protected Draw_slice() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVFilterLink link, int y, int height, int slice_dir);
         }
         public native Draw_slice draw_slice();             public native AVFilterPad draw_slice(Draw_slice draw_slice);
@@ -517,7 +520,7 @@ public class avfilter {
             static { load(); }
             public    Filter_samples(Pointer p) { super(p); }
             protected Filter_samples() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVFilterLink link, AVFilterBufferRef samplesref);
         }
         public native Filter_samples filter_samples();     public native AVFilterPad filter_samples(Filter_samples filter_samples);
@@ -535,7 +538,7 @@ public class avfilter {
             static { load(); }
             public    Poll_frame(Pointer p) { super(p); }
             protected Poll_frame() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVFilterLink link);
         }
         public native Poll_frame poll_frame();             public native AVFilterPad poll_frame(Poll_frame poll_frame);
@@ -552,7 +555,7 @@ public class avfilter {
             static { load(); }
             public    Request_frame(Pointer p) { super(p); }
             protected Request_frame() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVFilterLink link);
         }
         public native Request_frame request_frame();       public native AVFilterPad request_frame(Request_frame request_frame);
@@ -578,7 +581,7 @@ public class avfilter {
             static { load(); }
             public    Config_props(Pointer p) { super(p); }
             protected Config_props() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native int call(AVFilterLink link);
         }
         public native Config_props config_props();         public native AVFilterPad config_props(Config_props config_props);

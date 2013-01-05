@@ -254,7 +254,7 @@ public class PGRFlyCapture {
         static { load(); }
         public    FlyCaptureCallback(Pointer p) { super(p); }
         protected FlyCaptureCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(Pointer pParam, int iMessage, @Cast("unsigned long") int ulParam);
     }
 

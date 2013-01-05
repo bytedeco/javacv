@@ -477,7 +477,7 @@ public class opencv_contrib {
 //        static { load(); }
 //        public    Fjac(Pointer p) { super(p); }
 //        protected Fjac() { allocate(); }
-//        protected final native void allocate();
+//        private native void allocate();
 //        public native void call(int i, int j, @Cast("cv::Mat&") @InputMat CvMat point_params,
 //                @Cast("cv::Mat&") @InputMat CvMat cam_params,
 //                @Cast("cv::Mat&") @InputMat CvMat A,
@@ -488,7 +488,7 @@ public class opencv_contrib {
 //        static { load(); }
 //        public    Func(Pointer p) { super(p); }
 //        protected Func() { allocate(); }
-//        protected final native void allocate();
+//        private native void allocate();
 //        public native void call(int i, int j, @Cast("cv::Mat&") @InputMat CvMat point_params,
 //                @Cast("cv::Mat&") @InputMat CvMat cam_params,
 //                @Cast("cv::Mat&") @InputMat CvMat estim, Pointer data);
@@ -498,7 +498,7 @@ public class opencv_contrib {
 //        static { load(); }
 //        public    BundleAdjustCallback(Pointer p) { super(p); }
 //        protected BundleAdjustCallback() { allocate(); }
-//        protected final native void allocate();
+//        private native void allocate();
 //        public native @Cast("bool") boolean call(int iteration, double norm_error, Pointer user_data);
 //    }
 //

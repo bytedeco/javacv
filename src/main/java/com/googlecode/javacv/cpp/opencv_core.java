@@ -3452,28 +3452,28 @@ public class opencv_core {
         static { load(); }
         public    CvIsInstanceFunc(Pointer p) { super(p); }
         protected CvIsInstanceFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native int call(@Const Pointer struct_ptr);
     }
     public static class CvReleaseFunc extends FunctionPointer {
         static { load(); }
         public    CvReleaseFunc(Pointer p) { super(p); }
         protected CvReleaseFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(PointerPointer struct_dblptr);
     }
     public static class CvReadFunc extends FunctionPointer {
         static { load(); }
         public    CvReadFunc(Pointer p) { super(p); }
         protected CvReadFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native Pointer call(CvFileStorage storage, CvFileNode node);
     }
     public static class CvWriteFunc extends FunctionPointer {
         static { load(); }
         public    CvWriteFunc(Pointer p) { super(p); }
         protected CvWriteFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(CvFileStorage storage, String name,
                 @Const Pointer struct_ptr, @ByVal CvAttrList attributes);
     }
@@ -3481,7 +3481,7 @@ public class opencv_core {
         static { load(); }
         public    CvCloneFunc(Pointer p) { super(p); }
         protected CvCloneFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native Pointer call(@Const Pointer struct_ptr);
     }
     public static class CvTypeInfo extends Pointer {
@@ -4063,7 +4063,7 @@ public class opencv_core {
         static { load(); }
         public    CvCmpFunc(Pointer p) { super(p); }
         protected CvCmpFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native int call(@Const Pointer a, @Const Pointer b, Pointer userdata);
     }
     public static native void cvSeqSort(CvSeq seq, CvCmpFunc func, Pointer userdata/*=null*/);
@@ -4408,14 +4408,14 @@ public class opencv_core {
         static { load(); }
         public    CvAllocFunc(Pointer p) { super(p); }
         protected CvAllocFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native Pointer call(@Cast("size_t") long size, Pointer userdata);
     }
     public static class CvFreeFunc extends FunctionPointer {
         static { load(); }
         public    CvFreeFunc(Pointer p) { super(p); }
         protected CvFreeFunc() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native int call(Pointer pptr, Pointer userdata);
     }
     public static native void cvSetMemoryManager(CvAllocFunc alloc_func/*=null*/,
@@ -4427,7 +4427,7 @@ public class opencv_core {
         static { load(); }
         public    Cv_iplCreateImageHeader(Pointer p) { super(p); }
         protected Cv_iplCreateImageHeader() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native IplImage call(int p0, int p1, int p2, @Cast("char*") BytePointer p3,
                 @Cast("char*") BytePointer p4, int p5, int p6, int p7, int p8, int p9,
                 IplROI p10, IplImage p11, Pointer p12, IplTileInfo p13);
@@ -4437,7 +4437,7 @@ public class opencv_core {
         static { load(); }
         public    Cv_iplAllocateImageData(Pointer p) { super(p); }
         protected Cv_iplAllocateImageData() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(IplImage p0, int p1, int p2);
     }
     @Convention("CV_STDCALL")
@@ -4445,7 +4445,7 @@ public class opencv_core {
         static { load(); }
         public    Cv_iplDeallocate(Pointer p) { super(p); }
         protected Cv_iplDeallocate() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(IplImage p0, int p1);
     }
     @Convention("CV_STDCALL")
@@ -4453,7 +4453,7 @@ public class opencv_core {
         static { load(); }
         public    Cv_iplCreateROI(Pointer p) { super(p); }
         protected Cv_iplCreateROI() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native IplROI call(int p0, int p1, int p2, int p3, int p4);
     }
     @Convention("CV_STDCALL")
@@ -4461,7 +4461,7 @@ public class opencv_core {
         static { load(); }
         public    Cv_iplCloneImage(Pointer p) { super(p); }
         protected Cv_iplCloneImage() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native IplImage call(@Const IplImage p0);
     }
     public static native void cvSetIPLAllocators(
@@ -4631,7 +4631,7 @@ public class opencv_core {
         static { load(); }
         public    CvErrorCallback(Pointer p) { super(p); }
         protected CvErrorCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native int call(int status, String func_name,
                 String err_msg, String file_name, int line, Pointer userdata);
     }
@@ -4935,7 +4935,7 @@ public class opencv_core {
             static { load(); }
             public    Constructor(Pointer p) { super(p); }
             protected Constructor() { allocate(); }
-            protected final native void allocate();
+            private native void allocate();
             public native Algorithm call();
         }
         @Namespace("cv::Algorithm") @Const public static class Getter extends FunctionPointer {
@@ -5002,7 +5002,7 @@ public class opencv_core {
         static { load(); }
         public    Predicate(Pointer p) { super(p); }
         protected Predicate() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native boolean call(Pointer a, Pointer b);
     }
     public static native @Name("cv::partition<void*>") int partition(@StdVector PointerPointer _vec,

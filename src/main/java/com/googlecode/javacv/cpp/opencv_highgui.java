@@ -117,7 +117,7 @@ public class opencv_highgui {
         static { load(); }
         public    Pt2Func(Pointer p) { super(p); }
         protected Pt2Func() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native int call(int argc, @Cast("char**") PointerPointer argv);
     }
     @Platform("linux")
@@ -130,7 +130,7 @@ public class opencv_highgui {
         static { load(); }
         public    CvButtonCallback(Pointer p) { super(p); }
         protected CvButtonCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(int state, Pointer userdata);
     }
     public static int CV_PUSH_BUTTON = 0, CV_CHECKBOX = 1, CV_RADIOBOX = 2;
@@ -181,7 +181,7 @@ public class opencv_highgui {
         static { load(); }
         public    CvTrackbarCallback(Pointer p) { super(p); }
         protected CvTrackbarCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(int pos);
     }
     public static native int cvCreateTrackbar(String trackbar_name, String window_name,
@@ -191,7 +191,7 @@ public class opencv_highgui {
         static { load(); }
         public    CvTrackbarCallback2(Pointer p) { super(p); }
         protected CvTrackbarCallback2() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(int pos, Pointer userdata);
     }
     public static native int cvCreateTrackbar2(String trackbar_name, String window_name,
@@ -224,7 +224,7 @@ public class opencv_highgui {
         static { load(); }
         public    CvMouseCallback(Pointer p) { super(p); }
         protected CvMouseCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(int event, int x, int y, int flags, Pointer param);
     }
     public static native void cvSetMouseCallback(String window_name,
@@ -302,7 +302,7 @@ public class opencv_highgui {
         static { load(); }
         public    CvOpenGLCallback(Pointer p) { super(p); }
         protected CvOpenGLCallback() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(Pointer userdata);
     }
     public static native void cvSetOpenGlDrawCallback(String window_name,

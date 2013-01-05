@@ -454,7 +454,7 @@ public class opencv_imgproc {
         static { load(); }
         public    CvDistanceFunction(Pointer p) { super(p); }
         protected CvDistanceFunction() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native float call(@Const FloatPointer a, @Const FloatPointer b, Pointer user_param);
     }
 

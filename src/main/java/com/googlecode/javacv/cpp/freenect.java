@@ -270,7 +270,7 @@ public class freenect {
         static { load(); }
         public    freenect_log_cb(Pointer p) { super(p); }
         protected freenect_log_cb() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(freenect_context dev, @Cast("freenect_loglevel") int level, String msg);
     }
     public static native void freenect_set_log_level(freenect_context ctx, @Cast("freenect_loglevel") int level);
@@ -294,14 +294,14 @@ public class freenect {
         static { load(); }
         public    freenect_depth_cb(Pointer p) { super(p); }
         protected freenect_depth_cb() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(freenect_device dev, Pointer depth, @Cast("uint32_t") int timestamp);
     }
     public static class freenect_video_cb extends FunctionPointer {
         static { load(); }
         public    freenect_video_cb(Pointer p) { super(p); }
         protected freenect_video_cb() { allocate(); }
-        protected final native void allocate();
+        private native void allocate();
         public native void call(freenect_device dev, Pointer video, @Cast("uint32_t") int timestamp);
     }
     public static native void freenect_set_depth_callback(freenect_device dev, freenect_depth_cb cb);
