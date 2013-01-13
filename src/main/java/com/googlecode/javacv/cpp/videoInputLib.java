@@ -139,7 +139,7 @@ public class videoInputLib {
 
         public native void setSize(int w, int h);
         public native void NukeDownstream(IBaseFilter pBF);
-	public native void destroyGraph();
+        public native void destroyGraph();
 
         public native int videoSize(); public native videoDevice videoSize(int videoSize);
         public native int width();     public native videoDevice width(int width);

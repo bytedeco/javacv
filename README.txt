@@ -5,7 +5,7 @@ JavaCV first provides wrappers to commonly used libraries by researchers in the 
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), a blob analysis package (`Blobs`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL` or starting with `GL`, i.e.: `JavaCVCL`, `GLCanvasFrame`, etc.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the [http://code.google.com/p/javacv/source/browse/samples/ sample programs], including one for Android, also found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse?repo=procamcalib ProCamCalib] and [http://code.google.com/p/javacv/source/browse?repo=procamtracker ProCamTracker] as well as [http://code.google.com/p/javacv/source/browse?repo=examples Examples ported from OpenCV2 Cookbook] and the associated [http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples Wiki pages].
+To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the [http://code.google.com/p/javacv/source/browse/samples/ sample programs], including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse?repo=procamcalib ProCamCalib] and [http://code.google.com/p/javacv/source/browse?repo=procamtracker ProCamTracker] as well as [http://code.google.com/p/javacv/source/browse?repo=examples Examples ported from OpenCV2 Cookbook] and the associated [http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples Wiki pages].
 
 
 ==Required Software==
@@ -217,6 +217,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Added new `RecordActivity.java` Android sample from Shawn Van Every and Qianliang Zhang
  * Added missing `allocate()` methods for `FunctionPointer` in `AVIOContext` and others, which prevented these FFmpeg callbacks from functioning
  * Fixed infinite loop in `FrameGrabber.Array.grab()` (as used by ProCamCalib in the case of stereo cameras, issue #262) when `FrameGrabber.getTimestamp()` returns an invalid negative value (as with `opencv_highgui`) or when using different types of (unsynchronized) `FrameGrabber` together
  * Fixed `cvQueryHistValue_1D()` and other functions that use a raw `CvArr` object
