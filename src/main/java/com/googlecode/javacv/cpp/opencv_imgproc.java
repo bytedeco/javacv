@@ -1275,6 +1275,14 @@ public class opencv_imgproc {
             @InputArray CvMat kernel, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void sepFilter2D(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
             @InputArray CvMat kernelX, @InputArray CvMat kernelY, @ByVal CvPoint anchor/*=Point(-1,-1)*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void Sobel(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
+            int dx, int dy, int ksize/*=3*/, double scale/*=1*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void Scharr(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
+            int dx, int dy, double scale/*=1*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void Laplacian(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
+            int ksize/*=1*/, double scale/*=1*/, double delta/*=0*/, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void Canny(@InputArray CvArr image, @InputArray CvArr edges,
+            double threshold1, double threshold2, int apertureSize/*=3*/, boolean L2gradient/*=false*/);
 
     @Namespace("cv") public static native void eigen2x2(float[] a, float[] e, int n);
     @Namespace("cv") public static native void eigen2x2(FloatPointer a, FloatPointer e, int n);

@@ -1114,8 +1114,8 @@ public class opencv_stitching {
         public native void prepare(@Const @StdVector("CvPoint,cv::Point") CvPoint corners,
                 @Const @StdVector("CvSize,cv::Size") CvSize sizes);
         public native void prepare(@ByVal CvRect dst_roi);
-        public native void feed(@InputMat CvArr img, @InputMat CvArr mask, @ByVal CvPoint tl);
-        public native void blend(@InputMat CvArr dst, @InputMat CvArr dst_mask);
+        public native void feed(@InputMat IplImage img, @InputMat IplImage mask, @ByVal CvPoint tl);
+        public native void blend(@OutputMat IplImage dst, @OutputMat IplImage dst_mask);
 
 //        protected native @OutputMat CvMat dst_();
 //        protected native @OutputMat CvMat dst_mask_();

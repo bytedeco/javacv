@@ -217,6 +217,9 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Included `Sobel()`, `Scharr()`, `Laplacian()`, and `Canny()` from `opencv_imgproc` whose equivalent functions in the C API have missing parameters
+ * Extended `OpenKinectFrameGrabber` with `setDepthFormat()` and `setVideoFormat()` methods to set both formats independently (issue #273)
+ * Fixed `Blender.blend()` having its `@OutputMat` incorrectly annotated as `@InputMat` (issue #272)
  * Added new `RecordActivity.java` Android sample from Shawn Van Every and Qianliang Zhang
  * Added missing `allocate()` methods for `FunctionPointer` in `AVIOContext` and others, which prevented these FFmpeg callbacks from functioning
  * Fixed infinite loop in `FrameGrabber.Array.grab()` (as used by ProCamCalib in the case of stereo cameras, issue #262) when `FrameGrabber.getTimestamp()` returns an invalid negative value (as with `opencv_highgui`) or when using different types of (unsynchronized) `FrameGrabber` together

@@ -544,7 +544,7 @@ public class FaceRecognition {
     pAvgTrainImg = new IplImage(pointer);
 
     eigenVectArr = new IplImage[nTrainFaces];
-    for (i = 0; i < nEigens; i++) {
+    for (i = 0; i <= nEigens; i++) {
       String varname = "eigenVect_" + i;
       pointer = cvReadByName(
               fileStorage,

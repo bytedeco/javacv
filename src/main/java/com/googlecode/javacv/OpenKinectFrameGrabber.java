@@ -98,12 +98,28 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
     private IplImage rawDepthImage = null, rawVideoImage = null, returnImage = null;
     private int[] timestamp = { 0 };
     private ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+    private int depthFormat = -1;
+    private int videoFormat = -1;
 
     public ByteOrder getByteOrder() {
         return byteOrder;
     }
     public void setByteOrder(ByteOrder byteOrder) {
         this.byteOrder = byteOrder;
+    }
+
+    public int getDepthFormat() {
+        return depthFormat;
+    }
+    public void setDepthFormat(int depthFormat) {
+        this.depthFormat = depthFormat;
+    }
+
+    public int getVideoFormat() {
+        return videoFormat;
+    }
+    public void setVideoFormat(int videoFormat) {
+        this.videoFormat = videoFormat;
     }
 
     @Override public double getGamma() {
@@ -131,14 +147,15 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
     }
 
     public void trigger() throws Exception {
-        int fmt = bpp; // default bpp == 0 == FREENECT_DEPTH_11BIT == FREENECT_VIDEO_RGB
         for (int i = 0; i < numBuffers+1; i++) {
             if (depth) {
+                int fmt = depthFormat < 0 ? bpp : depthFormat; // default bpp == 0 == FREENECT_DEPTH_11BIT
                 int err = freenect_sync_get_depth(rawDepthImageData, timestamp, deviceNumber, fmt);
                 if (err != 0) {
                     throw new Exception("freenect_sync_get_depth() Error " + err + ": Failed to get depth synchronously.");
                 }
             } else {
+                int fmt = videoFormat < 0 ? bpp : videoFormat; // default bpp == 0 == FREENECT_VIDEO_RGB
                 int err = freenect_sync_get_video(rawVideoImageData, timestamp, deviceNumber, fmt);
                 if (err != 0) {
                     throw new Exception("freenect_sync_get_video() Error " + err + ": Failed to get video synchronously.");
@@ -148,10 +165,12 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
     }
 
     public IplImage grabDepth() throws Exception {
-        int fmt = bpp; // default bpp == 0 == FREENECT_DEPTH_11BIT
+        int fmt = depthFormat < 0 ? bpp : depthFormat; // default bpp == 0 == FREENECT_DEPTH_11BIT
         int iplDepth = IPL_DEPTH_16U, channels = 1;
         switch (fmt) {
             case FREENECT_DEPTH_11BIT:
+            case FREENECT_DEPTH_REGISTERED:
+            case FREENECT_DEPTH_MM:
             case FREENECT_DEPTH_10BIT: iplDepth = IPL_DEPTH_16U; channels = 1; break;
             case FREENECT_DEPTH_11BIT_PACKED:
             case FREENECT_DEPTH_10BIT_PACKED:
@@ -183,7 +202,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
     }
 
     public IplImage grabVideo() throws Exception {
-        int fmt = bpp; // default bpp == 0 == FREENECT_VIDEO_RGB
+        int fmt = videoFormat < 0 ? bpp : videoFormat; // default bpp == 0 == FREENECT_VIDEO_RGB
         int iplDepth = IPL_DEPTH_8U, channels = 3;
         switch (fmt) {
             case FREENECT_VIDEO_RGB:      iplDepth = IPL_DEPTH_8U; channels = 3; break;
