@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from postprocess.h include file from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
  * Copyright (C) 2001-2003 Michael Niedermayer (michaelni@gmx.at)
  *
@@ -64,7 +64,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libpostproc/postprocess.h>",
-        link={"postproc@.52", "avutil@.51"}, includepath=genericIncludepath, linkpath=genericLinkpath),
+        link={"postproc@.52", "avutil@.52"}, includepath=genericIncludepath, linkpath=genericLinkpath),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         define={"__STDC_CONSTANT_MACROS", "pp_help pp_help_bad[]; __declspec(dllimport) extern const char pp_help"},
         preloadpath=windowsPreloadpath, preload="postproc-52"),
@@ -72,10 +72,10 @@ import static com.googlecode.javacv.cpp.avutil.*;
 public class postproc {
     static { load(avutil.class); load(); }
 
+    //#include <version.h>
     /**
      * @file
-     * @brief
-     *     external postprocessing API
+     * Libpostproc version macros
      */
 
     public static final int LIBPOSTPROC_VERSION_MAJOR = 52;
@@ -91,6 +91,17 @@ public class postproc {
     public static final int    LIBPOSTPROC_BUILD       = LIBPOSTPROC_VERSION_INT;
 
     public static final String LIBPOSTPROC_IDENT       = "postproc" + LIBPOSTPROC_VERSION;
+
+    /**
+     * @file
+     * @ingroup lpp
+     * external API header
+     */
+
+    /**
+     * @defgroup lpp Libpostproc
+     * @{
+     */
 
     /**
      * Return the LIBPOSTPROC_VERSION_INT constant.
@@ -148,6 +159,7 @@ public class postproc {
             PP_CPU_CAPS_MMX2    = 0x20000000,
             PP_CPU_CAPS_3DNOW   = 0x40000000,
             PP_CPU_CAPS_ALTIVEC = 0x10000000,
+            PP_CPU_CAPS_AUTO    = 0x00080000,
 
             PP_FORMAT       =  0x00000008,
             PP_FORMAT_420   = (0x00000011|PP_FORMAT),
@@ -156,4 +168,7 @@ public class postproc {
             PP_FORMAT_444   = (0x00000000|PP_FORMAT),
 
             PP_PICT_TYPE_QP2 = 0x00000010; ///< MPEG2 style QScale
+    /**
+     * @}
+     */
 }

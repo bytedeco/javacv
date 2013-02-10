@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avformat.h and avio.h include files from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
  * copyright (c) 2001 Fabrice Bellard
  *
@@ -68,7 +68,7 @@ import static com.googlecode.javacv.cpp.avcodec.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libavformat/avformat.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avformat@.54", "avcodec@.54", "avutil@.51"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avformat@.54", "avcodec@.54", "avutil@.52"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avformat-54"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -89,8 +89,8 @@ public class avformat {
      */
 
     public static final int LIBAVFORMAT_VERSION_MAJOR = 54;
-    public static final int LIBAVFORMAT_VERSION_MINOR = 29;
-    public static final int LIBAVFORMAT_VERSION_MICRO = 104;
+    public static final int LIBAVFORMAT_VERSION_MINOR = 59;
+    public static final int LIBAVFORMAT_VERSION_MICRO = 106;
 
     public static final int    LIBAVFORMAT_VERSION_INT = AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR,
                                                                         LIBAVFORMAT_VERSION_MINOR,
@@ -234,9 +234,15 @@ public class avformat {
      * information will be in AVStream.time_base units, i.e. it has to be
      * multiplied by the timebase to convert them to seconds.
      *
-     * The packet data belongs to the demuxer and is invalid after the next call to
-     * av_read_frame(). The user must free the packet with av_free_packet() before
-     * calling av_read_frame() again or closing the file.
+     * If AVPacket.destruct is set on the returned packet, then the packet is
+     * allocated dynamically and the user may keep it indefinitely.
+     * Otherwise, if AVPacket.destruct is NULL, the packet data is backed by a
+     * static storage somewhere inside the demuxer and the packet is only valid
+     * until the next av_read_frame() call or closing the file. If the caller
+     * requires a longer lifetime, av_dup_packet() will make an av_malloc()ed copy
+     * of it.
+     * In both cases, the packet must be freed with av_free_packet() when it is no
+     * longer needed.
      *
      * @section lavf_decoding_seek Seeking
      * @}
@@ -714,8 +720,23 @@ public class avformat {
      * resource.
      *
      * @return 0 on success, an AVERROR < 0 on error.
+     * @see avio_closep
      */
     public static native int avio_close(AVIOContext s);
+
+    /**
+     * Close the resource accessed by the AVIOContext *s, free it
+     * and set the pointer pointing to it to NULL.
+     * This function can only be used if s was opened by avio_open().
+     *
+     * The internal buffer is automatically flushed before closing the
+     * resource.
+     *
+     * @return 0 on success, an AVERROR < 0 on error.
+     * @see avio_close
+     */
+    public static native int avio_closep(@ByPtrPtr AVIOContext s);
+
 
     /**
      * Open a write only memory stream.
@@ -935,6 +956,7 @@ public class avformat {
 
     public static final int
             AVPROBE_SCORE_MAX = 100,         ///< maximum score, half of that is used for file-extension-based detection
+            AVPROBE_SCORE_RETRY = AVPROBE_SCORE_MAX/4,
             AVPROBE_PADDING_SIZE = 32;       ///< extra allocated bytes at the end of the probe buffer
 
     /// Demuxer will use avio_open, no opened file should be provided by the caller.
@@ -1085,7 +1107,7 @@ public class avformat {
             AVSTREAM_PARSE_FULL_ONCE  = 4, /**< full parsing and repack of the first frame only, only implemented for H.264 currently */
             AVSTREAM_PARSE_FULL_RAW   = MKTAG(0,'R','A','W'); /**< full parsing and repack with timestamp and position generation by parser for raw
                                                                    this assumes that each packet in the file contains no demuxer level headers and
-                                                                   just codec level data, otherwise position generaion would fail */
+                                                                   just codec level data, otherwise position generation would fail */
 
     public static class AVIndexEntry extends Pointer {
         static { load(); }
@@ -1144,6 +1166,14 @@ public class avformat {
     public static final int AV_DISPOSITION_ATTACHED_PIC = 0x0400;
 
     /**
+     * Options for behavior on timestamp wrap detection.
+     */
+    public static final int
+            AV_PTS_WRAP_IGNORE     = 0,   ///< ignore the wrap
+            AV_PTS_WRAP_ADD_OFFSET = 1,   ///< add the format specific offset on wrap detection
+            AV_PTS_WRAP_SUB_OFFSET = -1;  ///< subtract the format specific offset on wrap detection
+
+    /**
      * Stream structure.
      * New fields can be added to the end with minor version bumps.
      * Removal, reordering and changes to existing fields require a major
@@ -1167,7 +1197,7 @@ public class avformat {
         /**
          * Format-specific stream ID.
          * decoding: set by libavformat
-         * encoding: set by the user
+         * encoding: set by the user, replaced by libavformat if left unset
          */
         public native int id();                         public native AVStream id(int id);
         /**
@@ -1205,7 +1235,7 @@ public class avformat {
          * of which frame timestamps are represented.
          *
          * decoding: set by libavformat
-         * encoding: set by libavformat in av_write_header. The muxer may use the
+         * encoding: set by libavformat in avformat_write_header. The muxer may use the
          * user-provided value of @ref AVCodecContext.time_base "codec->time_base"
          * as a hint.
          */
@@ -1625,6 +1655,21 @@ public class avformat {
          */
         @Cast("AVDurationEstimationMethod")
         public native int duration_estimation_method();     public native AVFormatContext duration_estimation_method(int duration_estimation_method);
+        /**
+         * Skip initial bytes when opening stream
+         * - encoding: unused
+         * - decoding: Set by user via AVOptions (NO direct access)
+         */
+        @Cast("unsigned")
+        public native int skip_initial_bytes();             public native AVFormatContext skip_initial_bytes(int skip_initial_bytes);
+
+        /**
+         * Correct single timestamp overflows
+         * - encoding: unused
+         * - decoding: Set by user via AVOPtions (NO direct access)
+         */
+        @Cast("unsigned")
+        public native int correct_ts_overflow();            public native AVFormatContext correct_ts_overflow(int correct_ts_overflow);
     }
 
     /**
@@ -1682,7 +1727,6 @@ public class avformat {
      *
      * @see av_register_input_format()
      * @see av_register_output_format()
-     * @see av_register_protocol()
      */
     public static native void av_register_all();
 
@@ -1932,13 +1976,13 @@ public class avformat {
      * omit invalid data between valid frames so as to give the decoder the maximum
      * information possible for decoding.
      *
-     * The returned packet is valid
-     * until the next av_read_frame() or until av_close_input_file() and
-     * must be freed with av_free_packet. For video, the packet contains
-     * exactly one frame. For audio, it contains an integer number of
-     * frames if each frame has a known fixed size (e.g. PCM or ADPCM
-     * data). If the audio frames have a variable size (e.g. MPEG audio),
-     * then it contains one frame.
+     * If pkt->destruct is NULL, then the packet is valid until the next
+     * av_read_frame() or until av_close_input_file(). Otherwise the packet is valid
+     * indefinitely. In both cases the packet must be freed with
+     * av_free_packet when it is no longer needed. For video, the packet contains
+     * exactly one frame. For audio, it contains an integer number of frames if each
+     * frame has a known fixed size (e.g. PCM or ADPCM data). If the audio frames
+     * have a variable size (e.g. MPEG audio), then it contains one frame.
      *
      * pkt->pts, pkt->dts and pkt->duration are always set to correct
      * values in AVStream.time_base units (and guessed if the format cannot
@@ -2071,10 +2115,10 @@ public class avformat {
      * @param s media file handle
      * @param pkt The packet containing the data to be written. Libavformat takes
      * ownership of the data and will free it when it sees fit using the packet's
-     * This can be NULL (at any time, not just at the end), to flush the
-     * interleaving queues.
      * @ref AVPacket.destruct "destruct" field. The caller must not access the data
      * after this function returns, as it may already be freed.
+     * This can be NULL (at any time, not just at the end), to flush the
+     * interleaving queues.
      * Packet's @ref AVPacket.stream_index "stream_index" field must be set to the
      * index of the corresponding stream in @ref AVFormatContext.streams
      * "s.streams".
@@ -2090,7 +2134,7 @@ public class avformat {
      * Write the stream trailer to an output media file and free the
      * file private data.
      *
-     * May only be called after a successful call to av_write_header.
+     * May only be called after a successful call to avformat_write_header.
      *
      * @param s media file handle
      * @return 0 if OK, AVERROR_xxx on error
@@ -2124,9 +2168,9 @@ public class avformat {
      * work in real time.
      * @param s          media file handle
      * @param stream     stream in the media file
-     * @param dts[out]   DTS of the last packet output for the stream, in stream
+     * @param[out] dts   DTS of the last packet output for the stream, in stream
      *                   time_base units
-     * @param wall[out]  absolute time when that packet whas output,
+     * @param[out] wall  absolute time when that packet whas output,
      *                   in microsecond
      * @return  0 if OK, AVERROR(ENOSYS) if the format does not support it
      * Note: some formats or devices may not allow to measure dts and wall
@@ -2286,6 +2330,9 @@ public class avformat {
 
     /**
      * Generate an SDP for an RTP session.
+     *
+     * Note, this overwrites the id values of AVStreams in the muxer contexts
+     * for getting unique dynamic payload types.
      *
      * @param ac array of AVFormatContexts describing the RTP streams. If the
      *           array is composed by only one context, such context can contain

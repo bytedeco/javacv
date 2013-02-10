@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avdevice.h include file from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
  * This file is part of FFmpeg.
  *
@@ -54,7 +54,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libavdevice/avdevice.h>",
         includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice@.54", "avfilter@.3",
-        "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.51"}),
+        "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.52"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avdevice-54"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -69,8 +69,8 @@ public class avdevice {
      */
 
     public static final int LIBAVDEVICE_VERSION_MAJOR = 54;
-    public static final int LIBAVDEVICE_VERSION_MINOR =  2;
-    public static final int LIBAVDEVICE_VERSION_MICRO = 101;
+    public static final int LIBAVDEVICE_VERSION_MINOR =  3;
+    public static final int LIBAVDEVICE_VERSION_MICRO = 102;
 
     public static final int    LIBAVDEVICE_VERSION_INT = AV_VERSION_INT(LIBAVDEVICE_VERSION_MAJOR,
                                                                         LIBAVDEVICE_VERSION_MINOR,
@@ -79,6 +79,8 @@ public class avdevice {
                                                                     LIBAVDEVICE_VERSION_MINOR,
                                                                     LIBAVDEVICE_VERSION_MICRO);
     public static final int    LIBAVDEVICE_BUILD       = LIBAVDEVICE_VERSION_INT;
+
+    public static final String LIBAVDEVICE_IDENT       = "Lavf" + LIBAVDEVICE_VERSION;
 
     /**
      * @file

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from swscale.h include file from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
  * Copyright (C) 2001-2011 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -63,7 +63,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libswscale/swscale.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swscale@.2", "avutil@.51"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swscale@.2", "avutil@.52"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="swscale-2"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -72,8 +72,13 @@ public class swscale {
 
     /**
      * @file
-     * @brief
-     *     external api for the swscale stuff
+     * @ingroup lsws
+     * external API header
+     */
+
+    /**
+     * @defgroup lsws Libswscale
+     * @{
      */
 
     // #include "version.h"
@@ -84,7 +89,7 @@ public class swscale {
 
     public static final int LIBSWSCALE_VERSION_MAJOR = 2;
     public static final int LIBSWSCALE_VERSION_MINOR = 1;
-    public static final int LIBSWSCALE_VERSION_MICRO = 101;
+    public static final int LIBSWSCALE_VERSION_MICRO = 103;
 
     public static final int    LIBSWSCALE_VERSION_INT = AV_VERSION_INT(LIBSWSCALE_VERSION_MAJOR,
                                                                        LIBSWSCALE_VERSION_MINOR,
@@ -210,13 +215,13 @@ public class swscale {
      * Return a positive value if pix_fmt is a supported input format, 0
      * otherwise.
      */
-    public static native int sws_isSupportedInput(@Cast("PixelFormat") int pix_fmt);
+    public static native int sws_isSupportedInput(@Cast("AVPixelFormat") int pix_fmt);
 
     /**
      * Return a positive value if pix_fmt is a supported output format, 0
      * otherwise.
      */
-    public static native int sws_isSupportedOutput(@Cast("PixelFormat") int pix_fmt);
+    public static native int sws_isSupportedOutput(@Cast("AVPixelFormat") int pix_fmt);
 
     /**
      * Allocate an empty SwsContext. This must be filled and passed to
@@ -361,8 +366,8 @@ public class swscale {
      * are assumed to remain the same.
      */
     public static native SwsContext sws_getCachedContext(SwsContext context,
-            int srcW, int srcH, @Cast("PixelFormat") int srcFormat,
-            int dstW, int dstH, @Cast("PixelFormat") int dstFormat,
+            int srcW, int srcH, @Cast("AVPixelFormat") int srcFormat,
+            int dstW, int dstH, @Cast("AVPixelFormat") int dstFormat,
             int flags, SwsFilter srcFilter, SwsFilter dstFilter, double[] param);
 
     /**
@@ -398,5 +403,8 @@ public class swscale {
      * @see av_opt_find().
      */
     public static native @Const AVClass sws_get_class();
-}
 
+    /**
+     * @}
+     */
+}

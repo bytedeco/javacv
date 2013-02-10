@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avfilter.h include file from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
  * filter layer
  * Copyright (c) 2007 Bobby Bingham
@@ -71,7 +71,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={"<libavfilter/avfilter.h>", "<libavfilter/buffersink.h>",
         "<libavfilter/buffersrc.h>", "<libavfilter/avcodec.h>", "<libavfilter/avfiltergraph.h>"},
         includepath=genericIncludepath, linkpath=genericLinkpath, link={"avfilter@.3",
-        "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.51"}),
+        "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.52"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="avfilter-3"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -85,7 +85,7 @@ public class avfilter {
      */
 
     public static final int LIBAVFILTER_VERSION_MAJOR =  3;
-    public static final int LIBAVFILTER_VERSION_MINOR = 17;
+    public static final int LIBAVFILTER_VERSION_MINOR = 32;
     public static final int LIBAVFILTER_VERSION_MICRO = 100;
 
     public static final int    LIBAVFILTER_VERSION_INT = AV_VERSION_INT(LIBAVFILTER_VERSION_MAJOR,
@@ -96,6 +96,18 @@ public class avfilter {
                                                                     LIBAVFILTER_VERSION_MICRO);
     public static final int    LIBAVFILTER_BUILD       = LIBAVFILTER_VERSION_INT;
 
+    public static final String LIBAVFILTER_IDENT       = "Lavu" + LIBAVFILTER_VERSION;
+
+    /**
+     * @file
+     * @ingroup lavfi
+     * external API header
+     */
+
+    /**
+     * @defgroup lavfi Libavfilter
+     * @{
+     */
 
     /**
      * Return the LIBAVFILTER_VERSION_INT constant.
@@ -214,6 +226,8 @@ public class avfilter {
         public native int nb_samples();      public native AVFilterBufferRefAudioProps nb_samples(int nb_samples);
                                              ///< audio buffer sample rate
         public native int sample_rate();     public native AVFilterBufferRefAudioProps sample_rate(int sample_rate);
+                                             ///< number of channels (do not access directly)
+        public native int channels();        public native AVFilterBufferRefAudioProps channels(int channels);
     }
 
     /**
@@ -316,6 +330,8 @@ public class avfilter {
 
         @Cast("AVMediaType")                               ///< media type of buffer data
         public native int type();                          public native AVFilterBufferRef type(int type);
+                                                           ///< dictionary containing metadata key=value tags
+        public native AVDictionary metadata();             public native AVFilterBufferRef metadata(AVDictionary metadata);
     }
 
     /**
@@ -352,6 +368,11 @@ public class avfilter {
      * @param ref pointer to the buffer reference
      */
     public static native void avfilter_unref_bufferp(@ByPtrPtr AVFilterBufferRef ref);
+
+    /**
+     * Get the number of channels of a buffer reference.
+     */
+    public static native int avfilter_ref_get_channels(AVFilterBufferRef ref);
 
     /**
      * A filter pad used for either input or output.
@@ -417,20 +438,7 @@ public class avfilter {
         public native int rej_perms();                     public native AVFilterPad rej_perms(int rej_perms);
 
         /**
-         * Callback called before passing the first slice of a new frame. If
-         * NULL, the filter layer will default to storing a reference to the
-         * picture inside the link structure.
-         *
-         * The reference given as argument is also available in link->cur_buf.
-         * It can be stored elsewhere or given away, but then clearing
-         * link->cur_buf is advised, as it is automatically unreferenced.
-         * The reference must not be unreferenced before end_frame(), as it may
-         * still be in use by the automatic copy mechanism.
-         *
-         * Input video pads only.
-         * 
-         * @return >= 0 on success, a negative AVERROR on error. picref will be
-         * unreferenced by the caller in case of error.
+         * @deprecated unused
          */
         public static class Start_frame extends FunctionPointer {
             static { load(); }
@@ -443,7 +451,7 @@ public class avfilter {
 
         /**
          * Callback function to get a video buffer. If NULL, the filter system will
-         * use avfilter_default_get_video_buffer().
+         * use ff_default_get_video_buffer().
          *
          * Input video pads only.
          */
@@ -458,7 +466,7 @@ public class avfilter {
 
         /**
          * Callback function to get an audio buffer. If NULL, the filter system will
-         * use avfilter_default_get_audio_buffer().
+         * use ff_default_get_audio_buffer().
          *
          * Input audio pads only.
          */
@@ -472,13 +480,7 @@ public class avfilter {
         public native Get_audio_buffer get_audio_buffer(); public native AVFilterPad get_audio_buffer(Get_audio_buffer get_audio_buffer);
 
         /**
-         * Callback called after the slices of a frame are completely sent. If
-         * NULL, the filter layer will default to releasing the reference stored
-         * in the link structure during start_frame().
-         *
-         * Input video pads only.
-         *
-         * @return >= 0 on success, a negative AVERROR on error.
+         *  @deprecated unused
          */
         public static class End_frame extends FunctionPointer {
             static { load(); }
@@ -490,12 +492,7 @@ public class avfilter {
         public native End_frame end_frame();               public native AVFilterPad end_frame(End_frame end_frame);
 
         /**
-         * Slice drawing callback. This is where a filter receives video data
-         * and should do its processing.
-         *
-         * Input video pads only.
-         *
-         * @return >= 0 on success, a negative AVERROR on error.
+         *  @deprecated unused
          */
         public static class Draw_slice extends FunctionPointer {
             static { load(); }
@@ -507,23 +504,23 @@ public class avfilter {
         public native Draw_slice draw_slice();             public native AVFilterPad draw_slice(Draw_slice draw_slice);
 
         /**
-         * Samples filtering callback. This is where a filter receives audio data
-         * and should do its processing.
+         * Filtering callback. This is where a filter receives a frame with
+         * audio/video data and should do its processing.
          *
-         * Input audio pads only.
+         * Input pads only.
          *
          * @return >= 0 on success, a negative AVERROR on error. This function
-         * must ensure that samplesref is properly unreferenced on error if it
+         * must ensure that frame is properly unreferenced on error if it
          * hasn't been passed on to another filter.
          */
-        public static class Filter_samples extends FunctionPointer {
+        public static class Filter_frame extends FunctionPointer {
             static { load(); }
-            public    Filter_samples(Pointer p) { super(p); }
-            protected Filter_samples() { allocate(); }
+            public    Filter_frame(Pointer p) { super(p); }
+            protected Filter_frame() { allocate(); }
             private native void allocate();
-            public native int call(AVFilterLink link, AVFilterBufferRef samplesref);
+            public native int call(AVFilterLink link, AVFilterBufferRef frame);
         }
-        public native Filter_samples filter_samples();     public native AVFilterPad filter_samples(Filter_samples filter_samples);
+        public native Filter_frame filter_frame();         public native AVFilterPad filter_frame(Filter_frame filter_frame);
 
         /**
          * Frame poll callback. This returns the number of immediately available
@@ -744,7 +741,7 @@ public class avfilter {
         @ByRef                                           ///< agreed upon sample aspect ratio
         public native AVRational sample_aspect_ratio();  public native AVFilterLink sample_aspect_ratio(AVRational sample_aspect_ratio);
         /* These parameters apply only to audio */
-        @Cast("uint64_t")                                ///< channel layout of current buffer (see libavutil/audioconvert.h)
+        @Cast("uint64_t")                                ///< channel layout of current buffer (see libavutil/channel_layout.h)
         public native long channel_layout();             public native AVFilterLink channel_layout(long channel_layout);
                                                          ///< samples per second
         public native int sample_rate();                 public native AVFilterLink sample_rate(int sample_rate);
@@ -779,6 +776,11 @@ public class avfilter {
     public static native void avfilter_link_free(@ByPtrPtr AVFilterLink link);
 
     /**
+     * Get the number of channels of a link.
+     */
+    public static native int avfilter_link_get_channels(AVFilterLink link);
+
+    /**
      * Set the closed field of a link.
      */
     public static native void avfilter_link_set_closed(AVFilterLink link, int closed);
@@ -803,7 +805,24 @@ public class avfilter {
      * @param format the pixel format of the image specified by the data and linesize arrays
      */
     public static native AVFilterBufferRef avfilter_get_video_buffer_ref_from_arrays(@Cast("uint8_t**") PointerPointer data,
-            int[/*4*/] linesize, int perms, int w, int h, @Cast("PixelFormat") int format);
+            int[/*4*/] linesize, int perms, int w, int h, @Cast("AVPixelFormat") int format);
+
+    /**
+     * Create an audio buffer reference wrapped around an already
+     * allocated samples buffer.
+     *
+     * See avfilter_get_audio_buffer_ref_from_arrays_channels() for a version
+     * that can handle unknown channel layouts.
+     * 
+     * @param data           pointers to the samples plane buffers
+     * @param linesize       linesize for the samples plane buffers
+     * @param perms          the required access permissions
+     * @param nb_samples     number of samples per channel
+     * @param sample_fmt     the format of each sample in the buffer to allocate
+     * @param channel_layout the channel layout of the buffer
+     */
+    public static native AVFilterBufferRef avfilter_get_audio_buffer_ref_from_arrays(@Cast("uint8_t**") PointerPointer data,
+            int linesize, int perms, int nb_samples, @Cast("AVSampleFormat") int sample_fmt, @Cast("uint64_t") long channel_layout);
 
     /**
      * Create an audio buffer reference wrapped around an already
@@ -814,10 +833,13 @@ public class avfilter {
      * @param perms          the required access permissions
      * @param nb_samples     number of samples per channel
      * @param sample_fmt     the format of each sample in the buffer to allocate
-     * @param channel_layout the channel layout of the buffer
+     * @param channels       the number of channels of the buffer
+     * @param channel_layout the channel layout of the buffer,
+     *                       must be either 0 or consistent with channels
      */
-    public static native AVFilterBufferRef avfilter_get_audio_buffer_ref_from_arrays(@Cast("uint8_t**") PointerPointer data,
-            int linesize, int perms, int nb_samples, @Cast("AVSampleFormat") int sample_fmt, @Cast("uint64_t") long channel_layout);
+    public static native AVFilterBufferRef avfilter_get_audio_buffer_ref_from_arrays_channels(@Cast("uint8_t**") PointerPointer data,
+            int linesize, int perms, int nb_samples, @Cast("enum AVSampleFormat") int sample_fmt, int channels, @Cast("uint64_t") long channel_layout);
+
 
     public static final int
             AVFILTER_CMD_FLAG_ONE  = 1, ///< Stop once a filter understood the command (for target=all for example), fast filters are favored automatically
@@ -907,6 +929,9 @@ public class avfilter {
     public static native int avfilter_insert_filter(AVFilterLink link, AVFilterContext filt,
             @Cast("unsigned") int filt_srcpad_idx, @Cast("unsigned") int filt_dstpad_idx);
 
+    /**
+     * @}
+     */
 
     // #include "buffersink.h"
     /**
@@ -929,7 +954,7 @@ public class avfilter {
             return (AVBufferSinkParams)super.position(position);
         }
 
-        @Cast("const PixelFormat*")            ///< list of allowed pixel formats, terminated by PIX_FMT_NONE
+        @Cast("const AVPixelFormat*")            ///< list of allowed pixel formats, terminated by AV_PIX_FMT_NONE
         public native IntPointer pixel_fmts(); public native AVBufferSinkParams pixel_fmts(IntPointer pixel_fmts);
     }
 
@@ -1241,8 +1266,10 @@ public class avfilter {
         @Cast("AVFilterContext**")
         public native PointerPointer filters();     public native AVFilterGraph filters(PointerPointer filters);
         @MemberGetter public native AVFilterContext filters(int i);
-        @Cast("char*")                              ///< sws options to use for the auto-inserted scale filters
+        @Cast("char*") ///< sws options to use for the auto-inserted scale filters
         public native BytePointer scale_sws_opts(); public native AVFilterGraph scale_sws_opts(BytePointer scale_sws_opts);
+        @Cast("char*") ///< swr options to use for the auto-inserted aresample filters, Access ONLY through AVOptions
+        public native BytePointer aresample_swr_opts();  public native AVFilterGraph aresample_swr_opts(BytePointer aresample_swr_opts);
     }
 
     /**

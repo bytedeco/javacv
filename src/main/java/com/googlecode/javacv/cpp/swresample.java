@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Samuel Audet
+ * Copyright (C) 2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from swresample.h include file from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
  * Copyright (C) 2011-2012 Michael Niedermayer (michaelni@gmx.at)
  *
@@ -61,29 +61,109 @@ import static com.googlecode.javacv.cpp.avutil.*;
  */
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libswresample/swresample.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swresample@.0", "avutil@.51"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swresample@.0", "avutil@.52"}),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
         preloadpath=windowsPreloadpath, preload="swresample-0"),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class swresample {
     static { load(avutil.class); load(); }
 
+    //#include <version.h>
     /**
      * @file
-     * libswresample public header
+     * Libswresample version macros
      */
 
     public static final int LIBSWRESAMPLE_VERSION_MAJOR = 0;
-    public static final int LIBSWRESAMPLE_VERSION_MINOR = 15;
-    public static final int LIBSWRESAMPLE_VERSION_MICRO = 100;
+    public static final int LIBSWRESAMPLE_VERSION_MINOR = 17;
+    public static final int LIBSWRESAMPLE_VERSION_MICRO = 102;
 
     public static final int    LIBSWRESAMPLE_VERSION_INT = AV_VERSION_INT(LIBSWRESAMPLE_VERSION_MAJOR,
                                                                           LIBSWRESAMPLE_VERSION_MINOR,
                                                                           LIBSWRESAMPLE_VERSION_MICRO);
+    public static final String LIBSWRESAMPLE_VERSION     = AV_VERSION(LIBSWRESAMPLE_VERSION_MAJOR,
+                                                                      LIBSWRESAMPLE_VERSION_MINOR,
+                                                                      LIBSWRESAMPLE_VERSION_MICRO);
+    public static final int    LIBSWRESAMPLE_BUILD       = LIBSWRESAMPLE_VERSION_INT;
 
-    public static final int 
+    public static final String LIBSWRESAMPLE_IDENT       = "SwR" + LIBSWRESAMPLE_VERSION;
+
+
+    /**
+     * @file
+     * @ingroup lswr
+     * libswresample public header
+     */
+
+    /**
+     * @defgroup lswr Libswresample
+     * @{
+     *
+     * Libswresample (lswr) is a library that handles audio resampling, sample
+     * format conversion and mixing.
+     *
+     * Interaction with lswr is done through SwrContext, which is
+     * allocated with swr_alloc() or swr_alloc_set_opts(). It is opaque, so all parameters
+     * must be set with the @ref avoptions API.
+     *
+     * For example the following code will setup conversion from planar float sample
+     * format to interleaved signed 16-bit integer, downsampling from 48kHz to
+     * 44.1kHz and downmixing from 5.1 channels to stereo (using the default mixing
+     * matrix):
+     * @code
+     * SwrContext *swr = swr_alloc();
+     * av_opt_set_int(swr, "in_channel_layout",  AV_CH_LAYOUT_5POINT1, 0);
+     * av_opt_set_int(swr, "out_channel_layout", AV_CH_LAYOUT_STEREO,  0);
+     * av_opt_set_int(swr, "in_sample_rate",     48000,                0);
+     * av_opt_set_int(swr, "out_sample_rate",    44100,                0);
+     * av_opt_set_sample_fmt(swr, "in_sample_fmt",  AV_SAMPLE_FMT_FLTP, 0);
+     * av_opt_set_sample_fmt(swr, "out_sample_fmt", AV_SAMPLE_FMT_S16,  0);
+     * @endcode
+     *
+     * Once all values have been set, it must be initialized with swr_init(). If
+     * you need to change the conversion parameters, you can change the parameters
+     * as described above, or by using swr_alloc_set_opts(), then call swr_init()
+     * again.
+     *
+     * The conversion itself is done by repeatedly calling swr_convert().
+     * Note that the samples may get buffered in swr if you provide insufficient
+     * output space or if sample rate conversion is done, which requires "future"
+     * samples. Samples that do not require future input can be retrieved at any
+     * time by using swr_convert() (in_count can be set to 0).
+     * At the end of conversion the resampling buffer can be flushed by calling
+     * swr_convert() with NULL in and 0 in_count.
+     *
+     * The delay between input and output, can at any time be found by using
+     * swr_get_delay().
+     *
+     * The following code demonstrates the conversion loop assuming the parameters
+     * from above and caller-defined functions get_input() and handle_output():
+     * @code
+     * uint8_t **input;
+     * int in_samples;
+     *
+     * while (get_input(&input, &in_samples)) {
+     *     uint8_t *output;
+     *     int out_samples = av_rescale_rnd(swr_get_delay(swr, 48000) +
+     *                                      in_samples, 44100, 48000, AV_ROUND_UP);
+     *     av_samples_alloc(&output, NULL, 2, out_samples,
+     *                      AV_SAMPLE_FMT_S16, 0);
+     *     out_samples = swr_convert(swr, &output, out_samples,
+     *                                      input, in_samples);
+     *     handle_output(output, out_samples);
+     *     av_freep(&output);
+     *  }
+     *  @endcode
+     *
+     * When the conversion is finished, the conversion
+     * context and everything associated with it must be freed with swr_free().
+     * There will be no memory leak if the data is not completely flushed before
+     * swr_free().
+     */
+    public static final int
+//#if LIBSWRESAMPLE_VERSION_MAJOR < 1
             SWR_CH_MAX = 32,   ///< Maximum number of channels
-
+//#endif
             SWR_FLAG_RESAMPLE = 1; ///< Force resampling even if equal sample rate
     //TODO use int resample ?
     //long term TODO can we enable this dynamically?
@@ -93,6 +173,11 @@ public class swresample {
         SWR_DITHER_RECTANGULAR         = 1,
         SWR_DITHER_TRIANGULAR          = 2,
         SWR_DITHER_TRIANGULAR_HIGHPASS = 3;
+
+    /** Resampling Engines */
+    public static final int // enum SwrEngine {
+        SWR_ENGINE_SWR  = 0,            /**< SW Resampler */
+        SWR_ENGINE_SOXR = 1;            /**< SoX Resampler */
 
     /** Resampling Filter Types */
     public static final int // enum SwrFilterType {
@@ -189,7 +274,7 @@ public class swresample {
 
     /**
      * Convert the next timestamp from input to output
-     * timestampe are in 1/(in_sample_rate * out_sample_rate) units.
+     * timestamps are in 1/(in_sample_rate * out_sample_rate) units.
      *
      * @note There are 2 slightly differently behaving modes.
      *       First is when automatic timestamp compensation is not used, (min_compensation >= FLT_MAX)
@@ -197,8 +282,8 @@ public class swresample {
      *       Second is when automatic timestamp compensation is used, (min_compensation < FLT_MAX)
      *              in this case the output timestamps will match output sample numbers
      *
-     * @param pts   timstamp for the next input sample, INT64_MIN if unknown
-     * @returns the output timestamp for the next output sample
+     * @param pts timestamp for the next input sample, INT64_MIN if unknown
+     * @return the output timestamp for the next output sample
      */
     public static native long swr_next_pts(SwrContext s, long pts);
 
@@ -244,6 +329,10 @@ public class swresample {
      * Swresample can buffer data if more input has been provided than available
      * output space, also converting between sample rates needs a delay.
      * This function returns the sum of all such delays.
+     * The exact delay is not necessarily an integer value in either input or
+     * output sample rate. Especially when downsampling by a large value, the
+     * output sample rate may be a poor choice to represent the delay, similarly
+     * for upsampling and the input sample rate.
      *
      * @param s     swr context
      * @param base  timebase in which the returned delay will be
@@ -270,4 +359,8 @@ public class swresample {
      * Return the swr license.
      */
     public static native String swresample_license();
+
+    /**
+     * @}
+     */
 }

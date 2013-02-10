@@ -124,7 +124,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.imageHeight   = imageHeight;
         this.audioChannels = audioChannels;
 
-        this.pixelFormat   = PIX_FMT_NONE;
+        this.pixelFormat   = AV_PIX_FMT_NONE;
         this.videoCodec    = AV_CODEC_ID_NONE;
         this.videoBitrate  = 400000;
         this.frameRate     = 30;
@@ -318,13 +318,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_c.time_base(av_d2q(1 / frameRate, 1001000));
             video_c.gop_size(12); /* emit one intra frame every twelve frames at most */
 
-            if (pixelFormat != PIX_FMT_NONE) {
+            if (pixelFormat != AV_PIX_FMT_NONE) {
                 video_c.pix_fmt(pixelFormat);
             } else if (video_c.codec_id() == AV_CODEC_ID_RAWVIDEO || video_c.codec_id() == AV_CODEC_ID_PNG ||
                        video_c.codec_id() == AV_CODEC_ID_HUFFYUV  || video_c.codec_id() == AV_CODEC_ID_FFV1) {
-                video_c.pix_fmt(PIX_FMT_RGB32);   // appropriate for common lossless formats
+                video_c.pix_fmt(AV_PIX_FMT_RGB32);   // appropriate for common lossless formats
             } else {
-                video_c.pix_fmt(PIX_FMT_YUV420P); // lossy, but works with about everything
+                video_c.pix_fmt(AV_PIX_FMT_YUV420P); // lossy, but works with about everything
             }
 
             if (video_c.codec_id() == AV_CODEC_ID_MPEG2VIDEO) {
@@ -536,7 +536,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public void record(IplImage image) throws Exception {
-        record(image, PIX_FMT_NONE);
+        record(image, AV_PIX_FMT_NONE);
     }
     public void record(IplImage image, int pixelFormat) throws Exception {
         if (video_st == null) {
@@ -554,19 +554,19 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             int step = image.widthStep();
             BytePointer data = image.imageData();
 
-            if (pixelFormat == PIX_FMT_NONE) {
+            if (pixelFormat == AV_PIX_FMT_NONE) {
                 int depth = image.depth();
                 int channels = image.nChannels();
                 if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 3) {
-                    pixelFormat = PIX_FMT_BGR24;
+                    pixelFormat = AV_PIX_FMT_BGR24;
                 } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 1) {
-                    pixelFormat = PIX_FMT_GRAY8;
+                    pixelFormat = AV_PIX_FMT_GRAY8;
                 } else if ((depth == IPL_DEPTH_16U || depth == IPL_DEPTH_16S) && channels == 1) {
-                    pixelFormat = AV_HAVE_BIGENDIAN() ? PIX_FMT_GRAY16BE : PIX_FMT_GRAY16LE;
+                    pixelFormat = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GRAY16BE : AV_PIX_FMT_GRAY16LE;
                 } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 4) {
-                    pixelFormat = PIX_FMT_RGBA;
+                    pixelFormat = AV_PIX_FMT_RGBA;
                 } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 2) {
-                    pixelFormat = PIX_FMT_NV21; // Android's camera capture format
+                    pixelFormat = AV_PIX_FMT_NV21; // Android's camera capture format
                     step = width;
                 } else {
                     throw new Exception("Could not guess pixel format of image: depth=" + depth + ", channels=" + channels);

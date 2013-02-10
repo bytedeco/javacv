@@ -19,10 +19,10 @@ To use JavaCV, you will need to download and install the following software:
   * For Android 2.2  http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
- * FFmpeg 1.0.x  http://ffmpeg.org/download.html
+ * FFmpeg 1.1.x  http://ffmpeg.org/download.html
   * For Windows  http://ffmpeg.zeranoe.com/builds/  Known compatible builds:
-   * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-20121029-git-11d695d-win32-shared.7z
-   * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-20121029-git-11d695d-win64-shared.7z
+   * http://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-1.1.1-win32-shared.7z
+   * http://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-1.1.1-win64-shared.7z
   * For Android 2.2  http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x or 2.2.x  http://sourceforge.net/projects/libdc1394/files/
  * PGR FlyCapture 1.7~2.3 (Windows only)  http://www.ptgrey.com/products/pgrflycapture/
@@ -217,6 +217,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Upgraded supported FFmpeg API to the 1.1 release branch
+ * Fixed bug in `FaceRecognition.java` sample (issue #276)
  * Included `Sobel()`, `Scharr()`, `Laplacian()`, and `Canny()` from `opencv_imgproc` whose equivalent functions in the C API have missing parameters
  * Extended `OpenKinectFrameGrabber` with `setDepthFormat()` and `setVideoFormat()` methods to set both formats independently (issue #273)
  * Fixed `Blender.blend()` having its `@OutputMat` incorrectly annotated as `@InputMat` (issue #272)

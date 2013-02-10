@@ -221,8 +221,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     @Override public int getPixelFormat() {
         if (imageMode == ImageMode.COLOR || imageMode == ImageMode.GRAY) {
-            if (pixelFormat == PIX_FMT_NONE) {
-                return imageMode == ImageMode.COLOR ? PIX_FMT_BGR24 : PIX_FMT_GRAY8;
+            if (pixelFormat == AV_PIX_FMT_NONE) {
+                return imageMode == ImageMode.COLOR ? AV_PIX_FMT_BGR24 : AV_PIX_FMT_GRAY8;
             } else {
                 return pixelFormat;
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avcodec.h and other libavcodec include files from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
  * copyright (c) 2001 Fabrice Bellard
  *
@@ -73,7 +73,7 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={
         "<libavcodec/avcodec.h>", "<libavcodec/avfft.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avcodec@.54", "avutil@.51"}),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avcodec@.54", "avutil@.52"}),
     @Platform(value={"linux", "freebsd", "solaris", "sunos"}, cinclude={
         "<libavcodec/vaapi.h>", "<libavcodec/vdpau.h>", "<libavcodec/xvmc.h>",
         "<libavcodec/avcodec.h>", "<libavcodec/avfft.h>"}),
@@ -98,7 +98,7 @@ public class avcodec {
      */
 
     public static final int LIBAVCODEC_VERSION_MAJOR = 54;
-    public static final int LIBAVCODEC_VERSION_MINOR = 59;
+    public static final int LIBAVCODEC_VERSION_MINOR = 86;
     public static final int LIBAVCODEC_VERSION_MICRO = 100;
 
     public static final int    LIBAVCODEC_VERSION_INT = AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR,
@@ -340,14 +340,17 @@ public class avcodec {
             AV_CODEC_ID_MTS2               = 167,
             AV_CODEC_ID_CLLC               = 168,
             AV_CODEC_ID_MSS2               = 169,
+            AV_CODEC_ID_BRENDER_PIX        = MKBETAG('B','P','I','X'),
             AV_CODEC_ID_Y41P               = MKBETAG('Y','4','1','P'),
             AV_CODEC_ID_ESCAPE130          = MKBETAG('E','1','3','0'),
             AV_CODEC_ID_EXR                = MKBETAG('0','E','X','R'),
             AV_CODEC_ID_AVRP               = MKBETAG('A','V','R','P'),
 
+            AV_CODEC_ID_012V               = MKBETAG('0','1','2','V'),
             AV_CODEC_ID_G2M                = MKBETAG( 0 ,'G','2','M'),
             AV_CODEC_ID_AVUI               = MKBETAG('A','V','U','I'),
             AV_CODEC_ID_AYUV               = MKBETAG('A','Y','U','V'),
+            AV_CODEC_ID_TARGA_Y216         = MKBETAG('T','2','1','6'),
             AV_CODEC_ID_V308               = MKBETAG('V','3','0','8'),
             AV_CODEC_ID_V408               = MKBETAG('V','4','0','8'),
             AV_CODEC_ID_YUV4               = MKBETAG('Y','U','V','4'),
@@ -355,6 +358,10 @@ public class avcodec {
             AV_CODEC_ID_PAF_VIDEO          = MKBETAG('P','A','F','V'),
             AV_CODEC_ID_AVRN               = MKBETAG('A','V','R','n'),
             AV_CODEC_ID_CPIA               = MKBETAG('C','P','I','A'),
+            AV_CODEC_ID_XFACE              = MKBETAG('X','F','A','C'),
+            AV_CODEC_ID_SGIRLE             = MKBETAG('S','G','I','R'),
+            AV_CODEC_ID_MVC1               = MKBETAG('M','V','C','1'),
+            AV_CODEC_ID_MVC2               = MKBETAG('M','V','C','2'),
 
             /* various PCM "codecs" */
             AV_CODEC_ID_FIRST_AUDIO        = 0x10000, ///< A dummy id pointing at the start of audio codecs
@@ -386,6 +393,9 @@ public class avcodec {
             AV_CODEC_ID_PCM_LXF            = 0x10000 + 25,
             AV_CODEC_ID_S302M              = 0x10000 + 26,
             AV_CODEC_ID_PCM_S8_PLANAR      = 0x10000 + 26,
+            AV_CODEC_ID_PCM_S24LE_PLANAR   = MKBETAG(24,'P','S','P'),
+            AV_CODEC_ID_PCM_S32LE_PLANAR   = MKBETAG(32,'P','S','P'),
+            AV_CODEC_ID_PCM_S16BE_PLANAR   = MKBETAG('P','S','P',16),
 
             /* various ADPCM codecs */
             AV_CODEC_ID_ADPCM_IMA_QT       = 0x11000,
@@ -419,6 +429,8 @@ public class avcodec {
             AV_CODEC_ID_ADPCM_G722         = 0x11000 + 28,
             AV_CODEC_ID_ADPCM_IMA_APC      = 0x11000 + 29,
             AV_CODEC_ID_VIMA               = MKBETAG('V','I','M','A'),
+            AV_CODEC_ID_ADPCM_AFC          = MKBETAG('A','F','C',' '),
+            AV_CODEC_ID_ADPCM_IMA_OKI      = MKBETAG('O','K','I',' '),
 
             /* AMR */
             AV_CODEC_ID_AMR_NB             = 0x12000,
@@ -496,12 +508,18 @@ public class avcodec {
             AV_CODEC_ID_RALF               = 0x15000 + 58,
             AV_CODEC_ID_IAC                = 0x15000 + 59,
             AV_CODEC_ID_ILBC               = 0x15000 + 60,
+            AV_CODEC_ID_OPUS_DEPRECATED    = 0x15000 + 61,
+            AV_CODEC_ID_COMFORT_NOISE      = 0x15000 + 62,
+            AV_CODEC_ID_TAK_DEPRECATED     = 0x15000 + 63,
             AV_CODEC_ID_FFWAVESYNTH        = MKBETAG('F','F','W','S'),
+//#if LIBAVCODEC_VERSION_MAJOR <= 54
             AV_CODEC_ID_8SVX_RAW           = MKBETAG('8','S','V','X'),
+//#endif
             AV_CODEC_ID_SONIC              = MKBETAG('S','O','N','C'),
             AV_CODEC_ID_SONIC_LS           = MKBETAG('S','O','N','L'),
             AV_CODEC_ID_PAF_AUDIO          = MKBETAG('P','A','F','A'),
             AV_CODEC_ID_OPUS               = MKBETAG('O','P','U','S'),
+            AV_CODEC_ID_TAK                = MKBETAG('t','B','a','K'),
 
             /* subtitle codecs */
             AV_CODEC_ID_FIRST_SUBTITLE     = 0x17000, ///< A dummy ID pointing at the start of subtitle codecs.
@@ -519,9 +537,13 @@ public class avcodec {
             AV_CODEC_ID_JACOSUB            = MKBETAG('J','S','U','B'),
             AV_CODEC_ID_SAMI               = MKBETAG('S','A','M','I'),
             AV_CODEC_ID_REALTEXT           = MKBETAG('R','T','X','T'),
+            AV_CODEC_ID_SUBVIEWER1         = MKBETAG('S','b','V','1'),
             AV_CODEC_ID_SUBVIEWER          = MKBETAG('S','u','b','V'),
             AV_CODEC_ID_SUBRIP             = MKBETAG('S','R','i','p'),
             AV_CODEC_ID_WEBVTT             = MKBETAG('W','V','T','T'),
+            AV_CODEC_ID_MPL2               = MKBETAG('M','P','L','2'),
+            AV_CODEC_ID_VPLAYER            = MKBETAG('V','P','l','r'),
+            AV_CODEC_ID_PJS                = MKBETAG('P','h','J','S'),
 
             /* other specific kind of codecs (generally used for attachments) */
             AV_CODEC_ID_FIRST_UNKNOWN      = 0x18000, ///< A dummy ID pointing at the start of various fake codecs.
@@ -530,6 +552,7 @@ public class avcodec {
             AV_CODEC_ID_XBIN               = MKBETAG('X','B','I','N'),
             AV_CODEC_ID_IDF                = MKBETAG( 0 ,'I','D','F'),
             AV_CODEC_ID_OTF                = MKBETAG( 0 ,'O','T','F'),
+            AV_CODEC_ID_SMPTE_KLV          = MKBETAG('K','L','V','A'),
 
             AV_CODEC_ID_PROBE              = 0x19000, ///< codec_id is not known (like AV_CODEC_ID_NONE) but lavf should attempt to identify it
 
@@ -1017,8 +1040,47 @@ public class avcodec {
              * u8    selected channels (0=mail/left, 1=sub/right, 2=both)
              * @endcode
              */
-            AV_PKT_DATA_JP_DUALMONO   = 71;
+            AV_PKT_DATA_JP_DUALMONO   = 71,
 
+            /**
+             * A list of zero terminated key/value strings. There is no end marker for
+             * the list, so it is required to rely on the side data size to stop.
+             */
+            AV_PKT_DATA_STRINGS_METADATA  = 72,
+
+            /**
+             * Subtitle event position
+             * @code
+             * u32le x1
+             * u32le y1
+             * u32le x2
+             * u32le y2
+             * @endcode
+             */
+            AV_PKT_DATA_SUBTITLE_POSITION = 73;
+
+    /**
+     * This structure stores compressed data. It is typically exported by demuxers
+     * and then passed as input to decoders, or received as output from encoders and
+     * then passed to muxers.
+     *
+     * For video, it should typically contain one compressed frame. For audio it may
+     * contain several compressed frames.
+     *
+     * AVPacket is one of the few structs in FFmpeg, whose size is a part of public
+     * ABI. Thus it may be allocated on stack and no new fields can be added to it
+     * without libavcodec and libavformat major bump.
+     *
+     * The semantics of data ownership depends on the destruct field.
+     * If it is set, the packet data is dynamically allocated and is valid
+     * indefinitely until av_free_packet() is called (which in turn calls the
+     * destruct callback to free the data). If destruct is not set, the packet data
+     * is typically backed by some static buffer somewhere and is only valid for a
+     * limited time (e.g. until the next read call when demuxing).
+     *
+     * The side data is always allocated with av_malloc() and is freed in
+     * av_free_packet().
+     */
     public static class AVPacket extends Pointer {
         static { load(); }
         public AVPacket() { allocate(); }
@@ -1117,14 +1179,22 @@ public class avcodec {
      */
 
     /**
-     * Audio Video Frame.
-     * New fields can be added to the end of AVFRAME with minor version
-     * bumps. Similarly fields that are marked as to be only accessed by
+     * This structure describes decoded (raw) audio or video data.
+     *
+     * AVFrame must be allocated using avcodec_alloc_frame() and freed with
+     * avcodec_free_frame(). Note that this allocates only the AVFrame itself. The
+     * buffers for the data must be managed through other means.
+     *
+     * AVFrame is typically allocated once and then reused multiple times to hold
+     * different data (e.g. a single AVFrame to hold frames received from a
+     * decoder). In such a case, avcodec_get_frame_defaults() should be used to
+     * reset the frame to its original clean state before it is reused again.
+     *
+     * sizeof(AVFrame) is not a part of the public ABI, so new fields may be added
+     * to the end with a minor bump.
+     * Similarly fields that are marked as to be only accessed by
      * av_opt_ptr() can be reordered. This allows 2 forks to add fields
      * without breaking compatibility with each other.
-     * Removal, reordering and changes in the remaining cases require
-     * a major version bump.
-     * sizeof(AVFrame) must not be used outside libavcodec.
      */
     public static class AVFrame extends AVPicture {
         static { load(); }
@@ -1176,7 +1246,7 @@ public class avcodec {
          * extended_data must be used by the decoder in order to access all
          * channels.
          *
-         * encoding: unused
+         * encoding: set by user
          * decoding: set by AVCodecContext.get_buffer()
          */
         @Cast("uint8_t**")
@@ -1199,7 +1269,7 @@ public class avcodec {
 
         /**
          * format of the frame, -1 if unknown or unset
-         * Values correspond to enum PixelFormat for video frames,
+         * Values correspond to enum AVPixelFormat for video frames,
          * enum AVSampleFormat for audio)
          * - encoding: unused
          * - decoding: Read by user.
@@ -1247,14 +1317,14 @@ public class avcodec {
         public native long pts();                            public native AVFrame pts(long pts);
 
         /**
-         * reordered pts from the last AVPacket that has been input into the decoder
+         * pts copied from the AVPacket that was decoded to produce this frame
          * - encoding: unused
          * - decoding: Read by user.
          */
         public native long pkt_pts();                        public native AVFrame pkt_pts(long pkt_pts);
 
         /**
-         * dts from the last AVPacket that has been input into the decoder
+         * dts copied from the AVPacket that triggered returning this frame
          * - encoding: unused
          * - decoding: Read by user.
          */
@@ -1531,6 +1601,16 @@ public class avcodec {
          * - decoding: Read by user.
          */
         public native long channels();                       public native AVFrame channels(long channels);
+
+        /**
+         * size of the corresponding packet containing the compressed
+         * frame. It must be accessed using av_frame_get_pkt_size() and
+         * av_frame_set_pkt_size().
+         * It is set to a negative value if unknown.
+         * - encoding: unused
+         * - decoding: set by libavcodec, read by user.
+         */
+        public native int pkt_size();                        public native AVFrame pkt_size(int pkt_size);
     }
 
     /**
@@ -1554,6 +1634,8 @@ public class avcodec {
     public static native void          av_frame_set_metadata    (AVFrame frame, AVDictionary val);
     public static native int  av_frame_get_decode_error_flags   (AVFrame frame);
     public static native void av_frame_set_decode_error_flags   (AVFrame frame, int  val);
+    public static native int  av_frame_get_pkt_size(AVFrame frame);
+    public static native void av_frame_set_pkt_size(AVFrame frame, int val);
 
     @Opaque public static class AVCodecInternal extends Pointer {
         public AVCodecInternal() { }
@@ -1725,6 +1807,8 @@ public class avcodec {
         public native int ticks_per_frame();             public native AVCodecContext ticks_per_frame(int ticks_per_frame);
 
         /**
+         * Codec delay.
+         *
          * Encoding: Number of frames delay there will be from the encoder input to
          *           the decoder output. (we assume the decoder matches the spec)
          * Decoding: Number of frames delay in addition to what a standard decoder
@@ -1735,12 +1819,15 @@ public class avcodec {
          *   encoded input.
          *
          * Audio:
-         *   Number of "priming" samples added to the beginning of the stream
-         *   during encoding. The decoded output will be delayed by this many
-         *   samples relative to the input to the encoder. Note that this field is
-         *   purely informational and does not directly affect the pts output by
-         *   the encoder, which should always be based on the actual presentation
-         *   time, including any delay.
+         *   For encoding, this is the number of "priming" samples added to the
+         *   beginning of the stream. The decoded output will be delayed by this
+         *   many samples relative to the input to the encoder. Note that this
+         *   field is purely informational and does not directly affect the pts
+         *   output by the encoder, which should always be based on the actual
+         *   presentation time, including any delay.
+         *   For decoding, this is the number of samples the decoder needs to
+         *   output before the decoder's output is valid. When seeking, you should
+         *   start decoding this many samples prior to your desired seek point.
          *
          * - encoding: Set by libavcodec.
          * - decoding: Set by libavcodec.
@@ -1777,13 +1864,13 @@ public class avcodec {
         public native int gop_size();                    public native AVCodecContext gop_size(int gop_size);
 
         /**
-         * Pixel format, see PIX_FMT_xxx.
+         * Pixel format, see AV_PIX_FMT_xxx.
          * May be set by the demuxer if known from headers.
          * May be overridden by the decoder if it knows better.
          * - encoding: Set by user.
          * - decoding: Set by user if known, overridden by libavcodec if known
          */
-        @Cast("PixelFormat")
+        @Cast("AVPixelFormat")
         public native int pix_fmt();                     public native AVCodecContext pix_fmt(int pix_fmt);
 
         /**
@@ -1842,7 +1929,7 @@ public class avcodec {
             public    Get_format(Pointer p) { super(p); }
             protected Get_format() { allocate(); }
             private native void allocate();
-            public native @Cast("PixelFormat") int call(AVCodecContext s, @Cast("const PixelFormat*") IntPointer fmt);
+            public native @Cast("AVPixelFormat") int call(AVCodecContext s, @Cast("const AVPixelFormat*") IntPointer fmt);
         }
         public native Get_format get_format();           public native AVCodecContext get_format(Get_format get_format);
 
@@ -2336,7 +2423,7 @@ public class avcodec {
 
         /** Field order
          * - encoding: set by libavcodec
-         * - decoding: Set by libavcodec
+         * - decoding: Set by user.
          */
         @Cast("AVFieldOrder")
         public native int field_order();                 public native AVCodecContext field_order(int field_order);
@@ -2355,7 +2442,13 @@ public class avcodec {
 
         /* The following data should not be initialized. */
         /**
-         * Samples per packet, initialized when calling 'init'.
+         * Number of samples per channel in an audio frame.
+         *
+         * - encoding: set by libavcodec in avcodec_open2(). Each submitted frame
+         *   except the last must contain exactly frame_size samples per channel.
+         *   May be 0 when the codec has CODEC_CAP_VARIABLE_FRAME_SIZE set, then the
+         *   frame size is not restricted.
+         * - decoding: may be set by some decoders to indicate constant frame size
          */
         public native int frame_size();                  public native AVCodecContext frame_size(int frame_size);
 
@@ -2458,7 +2551,12 @@ public class avcodec {
          *
          * Decoders cannot use the buffer after returning from
          * avcodec_decode_audio4(), so they will not call release_buffer(), as it
-         * is assumed to be released immediately upon return.
+         * is assumed to be released immediately upon return. In some rare cases,
+         * a decoder may need to call get_buffer() more than once in a single
+         * call to avcodec_decode_audio4(). In that case, when get_buffer() is
+         * called again after it has already been called once, the previously
+         * acquired buffer is assumed to be released at that time and may not be
+         * reused by the decoder.
          *
          * As a convenience, av_samples_get_buffer_size() and
          * av_samples_fill_arrays() in libavutil may be used by custom get_buffer()
@@ -2930,7 +3028,9 @@ public class avcodec {
                 FF_IDCT_SIMPLE        = 2,
                 FF_IDCT_SIMPLEMMX     = 3,
                 FF_IDCT_LIBMPEG2MMX   = 4,
+//#if FF_API_MMI
                 FF_IDCT_MMI           = 5,
+//#endif
                 FF_IDCT_ARM           = 7,
                 FF_IDCT_ALTIVEC       = 8,
                 FF_IDCT_SH4           = 9,
@@ -3261,6 +3361,13 @@ public class avcodec {
         public native AVCodecContext pts_correction_last_pts(long pts_correction_last_pts); 
         public native long pts_correction_last_dts();       /// DTS of the last frame
         public native AVCodecContext pts_correction_last_dts(long pts_correction_last_dts); 
+
+        /**
+         * Current frame metadata.
+         * - decoding: maintained and used by libavcodec, not intended to be used by user apps
+         * - encoding: unused
+         */
+        public native AVDictionary metadata(); public native AVCodecContext metadata(AVDictionary metadata);
     }
     @ByVal
     public static native AVRational av_codec_get_pkt_timebase           (AVCodecContext avctx);
@@ -3334,7 +3441,7 @@ public class avcodec {
         public native int capabilities();                 public native AVCodec capabilities(int capabilities);
         @Const                         ///< array of supported framerates, or NULL if any, array is terminated by {0,0}
         public native AVRational supported_framerates();  public native AVCodec supported_framerates(AVRational supported_framerates);
-        @Cast("const PixelFormat*")    ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
+        @Cast("const AVPixelFormat*")    ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
         public native IntPointer pix_fmts();              public native AVCodec pix_fmts(IntPointer pix_fmts);
         @Const                         ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
         public native IntPointer supported_samplerates(); public native AVCodec supported_samplerates(IntPointer supported_samplerates);
@@ -3394,7 +3501,7 @@ public class avcodec {
          *
          * Only hardware accelerated formats are supported here.
          */
-        @Cast("PixelFormat")
+        @Cast("AVPixelFormat")
         public native int pix_fmt();               public native AVHWAccel pix_fmt(int pix_fmt);
 
         /**
@@ -3525,7 +3632,9 @@ public class avcodec {
          * Formatted text, the ass field must be set by the decoder and is
          * authoritative. pict and text fields may contain approximations.
          */
-        SUBTITLE_ASS = 3;
+        SUBTITLE_ASS = 3,
+
+        AV_SUBTITLE_FLAG_FORCED = 0x00000001;
 
     public static class AVSubtitleRect extends Pointer {
         static { load(); }
@@ -3565,11 +3674,7 @@ public class avcodec {
         @Cast("char *")
         public native BytePointer ass();  public native AVSubtitleRect ass(BytePointer ass);
 
-        /**
-         * 1 indicates this subtitle is a forced subtitle.
-         * A forced subtitle should be displayed even when subtitles are hidden.
-         */
-        public native int forced();       public native AVSubtitleRect forced(int forced);
+        public native int flags();        public native AVSubtitleRect flags(int flags);
     }
 
     public static class AVSubtitle extends Pointer {
@@ -4304,6 +4409,10 @@ public class avcodec {
             AVCodecContext avctx, @Cast("uint8_t**") PointerPointer poutbuf, int[] poutbuf_size,
             @Cast("uint8_t*") BytePointer buf, int buf_size, long pts, long dts, long pos);
 
+    /**
+     * @return 0 if the output buffer is a subset of the input, 1 if it is allocated and must be freed
+     * @deprecated use AVBitstreamFilter
+     */
     public static native int av_parser_change(AVCodecParserContext s,
             AVCodecContext avctx, @Cast("uint8_t**") PointerPointer poutbuf, int[] poutbuf_size,
             @Cast("uint8_t*") BytePointer buf, int buf_size, int keyframe);
@@ -4422,9 +4531,11 @@ public class avcodec {
      * @}
      */
 
+//#if FF_API_AVCODEC_RESAMPLE
     /**
      * @defgroup lavc_resample Audio resampling
      * @ingroup libavc
+     * @deprecated use libswresample instead
      *
      * @{
      */
@@ -4454,16 +4565,16 @@ public class avcodec {
      * @param cutoff           cutoff frequency, 1.0 corresponds to half the output sampling rate
      * @return allocated ReSampleContext, NULL if error occurred
      */
-    public static native ReSampleContext av_audio_resample_init(int output_channels, int input_channels,
+    @Deprecated public static native ReSampleContext av_audio_resample_init(int output_channels, int input_channels,
             int output_rate, int input_rate, @Cast("AVSampleFormat") int sample_fmt_out, @Cast("AVSampleFormat") int sample_fmt_in,
             int filter_length, int log2_phase_count, int linear, double cutoff);
 
-    public static native int audio_resample(ReSampleContext s, short[] output, short[] input, int nb_samples);
-    public static native int audio_resample(ReSampleContext s, ShortBuffer output, ShortBuffer input, int nb_samples);
-    public static native int audio_resample(ReSampleContext s, ShortPointer output, ShortPointer input, int nb_samples);
-    public static native int audio_resample(ReSampleContext s, @Cast("short*") byte[] output, @Cast("short*") byte[] input, int nb_samples);
-    public static native int audio_resample(ReSampleContext s, @Cast("short*") Buffer output, @Cast("short*") Buffer input, int nb_samples);
-    public static native int audio_resample(ReSampleContext s, @Cast("short*") Pointer output, @Cast("short*") Pointer input, int nb_samples);
+    @Deprecated public static native int audio_resample(ReSampleContext s, short[] output, short[] input, int nb_samples);
+    @Deprecated public static native int audio_resample(ReSampleContext s, ShortBuffer output, ShortBuffer input, int nb_samples);
+    @Deprecated public static native int audio_resample(ReSampleContext s, ShortPointer output, ShortPointer input, int nb_samples);
+    @Deprecated public static native int audio_resample(ReSampleContext s, @Cast("short*") byte[] output, @Cast("short*") byte[] input, int nb_samples);
+    @Deprecated public static native int audio_resample(ReSampleContext s, @Cast("short*") Buffer output, @Cast("short*") Buffer input, int nb_samples);
+    @Deprecated public static native int audio_resample(ReSampleContext s, @Cast("short*") Pointer output, @Cast("short*") Pointer input, int nb_samples);
 
     /**
      * Free resample context.
@@ -4471,7 +4582,7 @@ public class avcodec {
      * @param s a non-NULL pointer to a resample context previously
      *          created with av_audio_resample_init()
      */
-    public static native void audio_resample_close(ReSampleContext s);
+    @Deprecated public static native void audio_resample_close(ReSampleContext s);
 
 
     /**
@@ -4483,7 +4594,7 @@ public class avcodec {
                      between the 2 closest, if 0 the closest will be used
      * @param cutoff cutoff frequency, 1.0 corresponds to half the output sampling rate
      */
-    public static native AVResampleContext av_resample_init(int out_rate, int in_rate,
+    @Deprecated public static native AVResampleContext av_resample_init(int out_rate, int in_rate,
             int filter_length, int log2_phase_count, int linear, double cutoff);
 
     /**
@@ -4495,17 +4606,17 @@ public class avcodec {
      * @param update_ctx If this is 0 then the context will not be modified, that way several channels can be resampled with the same context.
      * @return the number of samples written in dst or -1 if an error occurred
      */
-    public static native int av_resample(AVResampleContext c, short[] dst, short[] src,
+    @Deprecated public static native int av_resample(AVResampleContext c, short[] dst, short[] src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
-    public static native int av_resample(AVResampleContext c, ShortBuffer dst, ShortBuffer src,
+    @Deprecated public static native int av_resample(AVResampleContext c, ShortBuffer dst, ShortBuffer src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
-    public static native int av_resample(AVResampleContext c, ShortPointer dst, ShortPointer src,
+    @Deprecated public static native int av_resample(AVResampleContext c, ShortPointer dst, ShortPointer src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
-    public static native int av_resample(AVResampleContext c, @Cast("short*") byte[] dst, @Cast("short*") byte[] src,
+    @Deprecated public static native int av_resample(AVResampleContext c, @Cast("short*") byte[] dst, @Cast("short*") byte[] src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
-    public static native int av_resample(AVResampleContext c, @Cast("short*") Buffer dst, @Cast("short*") Buffer src,
+    @Deprecated public static native int av_resample(AVResampleContext c, @Cast("short*") Buffer dst, @Cast("short*") Buffer src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
-    public static native int av_resample(AVResampleContext c, @Cast("short*") Pointer dst, @Cast("short*") Pointer src,
+    @Deprecated public static native int av_resample(AVResampleContext c, @Cast("short*") Pointer dst, @Cast("short*") Pointer src,
             int[] consumed, int src_size, int dst_size, int update_ctx);
 
 
@@ -4521,12 +4632,13 @@ public class avcodec {
      * note, due to rounding the actual compensation might be slightly different,
      * especially if the compensation_distance is large and the in_rate used during init is small
      */
-    public static native void av_resample_compensate(AVResampleContext c, int sample_delta, int compensation_distance);
-    public static native void av_resample_close(AVResampleContext c);
+    @Deprecated public static native void av_resample_compensate(AVResampleContext c, int sample_delta, int compensation_distance);
+    @Deprecated public static native void av_resample_close(AVResampleContext c);
 
     /**
      * @}
      */
+//#endif
 
     /**
      * @addtogroup lavc_picture
@@ -4538,7 +4650,7 @@ public class avcodec {
      *
      * @see av_image_fill_arrays()
      */
-    public static native int avpicture_alloc(AVPicture picture, @Cast("PixelFormat") int pix_fmt, int width, int height);
+    public static native int avpicture_alloc(AVPicture picture, @Cast("AVPixelFormat") int pix_fmt, int width, int height);
 
     /**
      * Free a picture previously allocated by avpicture_alloc().
@@ -4570,7 +4682,7 @@ public class avcodec {
      * @return size of the image data in bytes
      */
     public static native int avpicture_fill(AVPicture picture, @Cast("uint8_t*") BytePointer ptr,
-            @Cast("PixelFormat") int pix_fmt, int width, int height);
+            @Cast("AVPixelFormat") int pix_fmt, int width, int height);
 
     /**
      * Copy pixel data from an AVPicture into a buffer, always assume a
@@ -4578,7 +4690,7 @@ public class avcodec {
      *
      * @see av_image_copy_to_buffer()
      */
-    public static native int avpicture_layout(AVPicture src, @Cast("PixelFormat") int pix_fmt,
+    public static native int avpicture_layout(AVPicture src, @Cast("AVPixelFormat") int pix_fmt,
             int width, int height, @Cast("unsigned char*") BytePointer dest, int dest_size);
 
     /**
@@ -4588,30 +4700,30 @@ public class avcodec {
      *
      * @see av_image_get_buffer_size().
      */
-    public static native int avpicture_get_size(@Cast("PixelFormat") int pix_fmt, int width, int height);
+    public static native int avpicture_get_size(@Cast("AVPixelFormat") int pix_fmt, int width, int height);
 
     /**
      *  deinterlace - if not supported return -1
      */
     public static native int avpicture_deinterlace(AVPicture dst, AVPicture src,
-            @Cast("PixelFormat") int pix_fmt, int width, int height);
+            @Cast("AVPixelFormat") int pix_fmt, int width, int height);
     /**
      * Copy image src to dst. Wraps av_image_copy().
      */
     public static native void av_picture_copy(AVPicture dst, AVPicture src,
-            @Cast("PixelFormat") int pix_fmt, int width, int height);
+            @Cast("AVPixelFormat") int pix_fmt, int width, int height);
 
     /**
      * Crop image top and left side.
      */
     public static native int av_picture_crop(AVPicture dst, AVPicture src,
-            @Cast("PixelFormat") int pix_fmt, int top_band, int left_band);
+            @Cast("AVPixelFormat") int pix_fmt, int top_band, int left_band);
 
     /**
      * Pad image.
      */
     public static native int av_picture_pad(AVPicture dst, AVPicture src,
-            int height, int width, @Cast("PixelFormat") int pix_fmt,
+            int height, int width, @Cast("AVPixelFormat") int pix_fmt,
             int padtop, int padbottom, int padleft, int padright, int[] color);
 
     /**
@@ -4634,14 +4746,28 @@ public class avcodec {
      * @{
      */
 
-    public static native void avcodec_get_chroma_sub_sample(@Cast("PixelFormat") int pix_fmt, int[] h_shift, int[] v_shift);
+    /**
+     * Utility function to access log2_chroma_w log2_chroma_h from
+     * the pixel format AVPixFmtDescriptor.
+     *
+     * This function asserts that pix_fmt is valid. See av_pix_fmt_get_chroma_sub_sample
+     * for one that returns a failure code and continues in case of invalid
+     * pix_fmts.
+     *
+     * @param[in]  pix_fmt the pixel format
+     * @param[out] h_shift store log2_chroma_h
+     * @param[out] v_shift store log2_chroma_w
+     *
+     * @see av_pix_fmt_get_chroma_sub_sample
+     */
+    public static native void avcodec_get_chroma_sub_sample(@Cast("AVPixelFormat") int pix_fmt, int[] h_shift, int[] v_shift);
 
     /**
      * Return a value representing the fourCC code associated to the
      * pixel format pix_fmt, or 0 if no associated fourCC code can be
      * found.
      */
-    public static native @Cast("unsigned") int avcodec_pix_fmt_to_codec_tag(@Cast("PixelFormat") int pix_fmt);
+    public static native @Cast("unsigned") int avcodec_pix_fmt_to_codec_tag(@Cast("AVPixelFormat") int pix_fmt);
 
     public static final int
             FF_LOSS_RESOLUTION = 0x0001, /**< loss due to resolution change */
@@ -4669,9 +4795,10 @@ public class avcodec {
      * @return Combination of flags informing you what kind of losses will occur
      * (maximum loss for an invalid dst_pix_fmt).
      */
-    public static native int avcodec_get_pix_fmt_loss(@Cast("PixelFormat") int dst_pix_fmt,
-            @Cast("PixelFormat") int src_pix_fmt, int has_alpha);
+    public static native int avcodec_get_pix_fmt_loss(@Cast("AVPixelFormat") int dst_pix_fmt,
+            @Cast("AVPixelFormat") int src_pix_fmt, int has_alpha);
 
+//#if FF_API_FIND_BEST_PIX_FMT
     /**
      * @deprecated use avcodec_find_best_pix_fmt_of_2() instead.
      * 
@@ -4687,8 +4814,8 @@ public class avcodec {
      * Note, only the first 64 pixel formats will fit in pix_fmt_mask.
      *
      * @code
-     * src_pix_fmt = PIX_FMT_YUV420P;
-     * pix_fmt_mask = (1 << PIX_FMT_YUV422P) | (1 << PIX_FMT_RGB24);
+     * src_pix_fmt = AV_PIX_FMT_YUV420P;
+     * pix_fmt_mask = (1 << AV_PIX_FMT_YUV422P) | (1 << AV_PIX_FMT_RGB24);
      * dst_pix_fmt = avcodec_find_best_pix_fmt(pix_fmt_mask, src_pix_fmt, alpha, &loss);
      * @endcode
      *
@@ -4699,8 +4826,9 @@ public class avcodec {
      * @return The best pixel format to convert to or -1 if none was found.
      */
     @Deprecated
-    public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt(long pix_fmt_mask,
-            @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
+    public static native @Cast("AVPixelFormat") int avcodec_find_best_pix_fmt(long pix_fmt_mask,
+            @Cast("AVPixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
+//#endif /* FF_API_FIND_BEST_PIX_FMT */
 
     /**
      * Find the best pixel format to convert to given a certain source pixel
@@ -4713,14 +4841,14 @@ public class avcodec {
      * pix_fmt_list parameter.
      *
      *
-     * @param[in] pix_fmt_list PIX_FMT_NONE terminated array of pixel formats to choose from
+     * @param[in] pix_fmt_list AV_PIX_FMT_NONE terminated array of pixel formats to choose from
      * @param[in] src_pix_fmt source pixel format
      * @param[in] has_alpha Whether the source pixel format alpha channel is used.
      * @param[out] loss_ptr Combination of flags informing you what kind of losses will occur.
      * @return The best pixel format to convert to or -1 if none was found.
      */
-    public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt_of_list(@Cast("PixelFormat*") int[] pix_fmt_list,
-            @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
+    public static native @Cast("AVPixelFormat") int avcodec_find_best_pix_fmt_of_list(@Cast("AVPixelFormat*") int[] pix_fmt_list,
+            @Cast("AVPixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
 
     /**
      * Find the best pixel format to convert to given a certain source pixel
@@ -4730,14 +4858,14 @@ public class avcodec {
      * converting from some formats to other formats. avcodec_find_best_pix_fmt_of_2() selects which of
      * the given pixel formats should be used to suffer the least amount of loss.
      *
-     * If one of the destination formats is PIX_FMT_NONE the other pixel format (if valid) will be
+     * If one of the destination formats is AV_PIX_FMT_NONE the other pixel format (if valid) will be
      * returned.
      *
      * @code
-     * src_pix_fmt = PIX_FMT_YUV420P;
-     * dst_pix_fmt1= PIX_FMT_RGB24;
-     * dst_pix_fmt2= PIX_FMT_GRAY8;
-     * dst_pix_fmt3= PIX_FMT_RGB8;
+     * src_pix_fmt = AV_PIX_FMT_YUV420P;
+     * dst_pix_fmt1= AV_PIX_FMT_RGB24;
+     * dst_pix_fmt2= AV_PIX_FMT_GRAY8;
+     * dst_pix_fmt3= AV_PIX_FMT_RGB8;
      * loss= FF_LOSS_CHROMA; // don't care about chroma loss, so chroma loss will be ignored.
      * dst_pix_fmt = avcodec_find_best_pix_fmt_of_2(dst_pix_fmt1, dst_pix_fmt2, src_pix_fmt, alpha, &loss);
      * dst_pix_fmt = avcodec_find_best_pix_fmt_of_2(dst_pix_fmt, dst_pix_fmt3, src_pix_fmt, alpha, &loss);
@@ -4752,13 +4880,14 @@ public class avcodec {
      *                               that occurs when converting from src to selected dst pixel format.
      * @return The best pixel format to convert to or -1 if none was found.
      */
-    public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt_of_2(@Cast("PixelFormat") int dst_pix_fmt1,
-            @Cast("PixelFormat") int dst_pix_fmt2, @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
+    public static native @Cast("AVPixelFormat") int avcodec_find_best_pix_fmt_of_2(@Cast("AVPixelFormat") int dst_pix_fmt1,
+            @Cast("AVPixelFormat") int dst_pix_fmt2, @Cast("AVPixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
     @Deprecated
-    public static native @Cast("PixelFormat") int avcodec_find_best_pix_fmt2(@Cast("PixelFormat") int dst_pix_fmt1,
-            @Cast("PixelFormat") int dst_pix_fmt2, @Cast("PixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
-
-    public static native @Cast("PixelFormat") int avcodec_default_get_format(AVCodecContext s, @Cast("PixelFormat*") int[] fmt);
+//#if AV_HAVE_INCOMPATIBLE_FORK_ABI
+    public static native @Cast("AVPixelFormat") int avcodec_find_best_pix_fmt2(@Cast("AVPixelFormat") int dst_pix_fmt1,
+            @Cast("AVPixelFormat") int dst_pix_fmt2, @Cast("AVPixelFormat") int src_pix_fmt, int has_alpha, int[] loss_ptr);
+//#endif
+    public static native @Cast("AVPixelFormat") int avcodec_default_get_format(AVCodecContext s, @Cast("AVPixelFormat*") int[] fmt);
 
     /**
      * @}
@@ -4792,7 +4921,12 @@ public class avcodec {
     //FIXME func typedef
 
     /**
-     * Fill audio frame data and linesize.
+     * Fill AVFrame audio data and linesize pointers.
+     *
+     * The buffer buf must be a preallocated buffer with a size big enough
+     * to contain the specified samples amount. The filled AVFrame data
+     * pointers will point to this buffer.
+     *
      * AVFrame extended_data channel pointers are allocated if necessary for
      * planar audio.
      *
@@ -4805,7 +4939,9 @@ public class avcodec {
      * @param buf         buffer to use for frame data
      * @param buf_size    size of buffer
      * @param align       plane size sample alignment (0 = default)
-     * @return            0 on success, negative error code on failure
+     * @return            >=0 on success, negative error code on failure
+     * @todo return the size in bytes required to store the samples in
+     * case of success, at the next libavutil bump
      */
     public static native int avcodec_fill_audio_frame(AVFrame frame, int nb_channels,
             @Cast("AVSampleFormat") int sample_fmt, @Cast("uint8_t*") BytePointer buf, int buf_size, int align);
@@ -4946,7 +5082,7 @@ public class avcodec {
 
     /**
      * Same behaviour av_fast_malloc but the buffer has additional
-     * FF_INPUT_PADDING_SIZE at the end which will will always be 0.
+     * FF_INPUT_BUFFER_PADDING_SIZE at the end which will will always be 0.
      *
      * In addition the whole buffer will initially and after resizes
      * be 0-initialized so that no uninitialized data will ever appear.

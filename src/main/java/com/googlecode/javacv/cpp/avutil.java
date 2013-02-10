@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,9 +19,9 @@
  *
  *
  * This file was derived from avutil.h and other libavutil include files from
- * FFmpeg 1.0, which are covered by the following copyright notice:
+ * FFmpeg 1.1, which are covered by the following copyright notice:
  *
- * copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
+ * copyright (c) 2005-2012 Michael Niedermayer <michaelni@gmx.at>
  *
  * This file is part of FFmpeg.
  *
@@ -67,9 +67,9 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={"<libavutil/avutil.h>", "<libavutil/audioconvert.h>",
         "<libavutil/cpu.h>", "<libavutil/dict.h>", "<libavutil/opt.h>", "<libavutil/samplefmt.h>", "<libavutil/imgutils.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link="avutil@.51"),
+        includepath=genericIncludepath, linkpath=genericLinkpath, link="avutil@.52"),
     @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload={"avutil-51", "avutil-52"}),
+        preloadpath=windowsPreloadpath, preload={"avutil-52"}),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class avutil {
     static { load(); }
@@ -86,7 +86,7 @@ public class avutil {
      * external API header
      */
 
-    /*
+    /**
      * @mainpage
      *
      * @section ffmpeg_intro Introduction
@@ -95,12 +95,13 @@ public class avutil {
      * provided by FFmpeg.
      *
      * @li @ref libavc "libavcodec" encoding/decoding library
-     * @li @subpage libavfilter graph based frame editing library
+     * @li @ref libavfilter graph based frame editing library
      * @li @ref libavf "libavformat" I/O and muxing/demuxing library
      * @li @ref lavd "libavdevice" special devices muxing/demuxing library
      * @li @ref lavu "libavutil" common utility library
-     * @li @subpage libpostproc post processing library
-     * @li @subpage libswscale  color conversion and scaling library
+     * @li @ref lswr "libswresample" audio resampling, format conversion and mixing
+     * @li @ref lpp  "libpostproc" post processing library
+     * @li @ref lsws "libswscale" color conversion and scaling library
      */
 
     /**
@@ -168,6 +169,7 @@ public class avutil {
      */
 
 
+    // #include "version.h"
     /**
      * @defgroup preproc_misc Preprocessor String Macros
      *
@@ -206,7 +208,6 @@ public class avutil {
      */
 
 
-    // #include "version.h"
     /**
      * @file
      * @ingroup lavu
@@ -222,9 +223,9 @@ public class avutil {
      * @{
      */
 
-    public static final int LIBAVUTIL_VERSION_MAJOR = 51;
-    public static final int LIBAVUTIL_VERSION_MINOR = 73;
-    public static final int LIBAVUTIL_VERSION_MICRO = 101;
+    public static final int LIBAVUTIL_VERSION_MAJOR = 52;
+    public static final int LIBAVUTIL_VERSION_MINOR = 13;
+    public static final int LIBAVUTIL_VERSION_MICRO = 100;
 
     public static final int    LIBAVUTIL_VERSION_INT = AV_VERSION_INT(LIBAVUTIL_VERSION_MAJOR,
                                                                       LIBAVUTIL_VERSION_MINOR,
@@ -438,6 +439,7 @@ public class avutil {
      */
             AVERROR_BUG2               = FFERRTAG( 'B','U','G',' '),
             AVERROR_UNKNOWN            = FFERRTAG( 'U','N','K','N'), ///< Unknown error, typically from an external library
+            AVERROR_EXPERIMENTAL       = -0x2bb2afa8, ///< Requested feature is flagged experimental. Set strict_std_compliance if you really want to use it.
 
             AV_ERROR_MAX_STRING_SIZE   = 64;
 
@@ -618,6 +620,17 @@ public class avutil {
     public static native void av_max_alloc(@Cast("size_t") long max);
 
     /**
+     * @brief deliberately overlapping memcpy implementation
+     * @param dst destination buffer
+     * @param back how many bytes back we start (the initial size of the overlapping window), must be > 0
+     * @param cnt number of bytes to copy, must be >= 0
+     *
+     * cnt > back is valid, this will copy the bytes we just copied,
+     * thus creating a repeating pattern with a period length of back.
+     */
+    public static native void av_memcpy_backptr(@Cast("uint8_t*") BytePointer dst, int back, int cnt);
+
+    /**
      * @}
      */
 
@@ -775,7 +788,8 @@ public class avutil {
         AV_ROUND_INF      = 1, ///< Round away from zero.
         AV_ROUND_DOWN     = 2, ///< Round toward -infinity.
         AV_ROUND_UP       = 3, ///< Round toward +infinity.
-        AV_ROUND_NEAR_INF = 5; ///< Round to nearest and halfway cases away from zero.
+        AV_ROUND_NEAR_INF = 5, ///< Round to nearest and halfway cases away from zero.
+        AV_ROUND_PASS_MINMAX = 8192; ///< Flag to pass INT64_MIN/MAX through instead of rescaling, this avoids special cases for AV_NOPTS_VALUE
 
     /**
      * Return the greatest common divisor of a and b.
@@ -793,6 +807,9 @@ public class avutil {
     /**
      * Rescale a 64-bit integer with specified rounding.
      * A simple a*b/c isn't possible as it can overflow.
+     *
+     * @return rescaled value a, or if AV_ROUND_PASS_MINMAX is set and a is
+     *         INT64_MIN or INT64_MAX then a is passed through unchanged.
      */
     public static native long av_rescale_rnd(long a, long b, long c, @Cast("AVRounding") int r);
 
@@ -803,6 +820,9 @@ public class avutil {
 
     /**
      * Rescale a 64-bit integer by 2 rational numbers with specified rounding.
+     *
+     * @return rescaled value a, or if AV_ROUND_PASS_MINMAX is set and a is
+     *         INT64_MIN or INT64_MAX then a is passed through unchanged.
      */
     public static native long av_rescale_q_rnd(long a, @ByVal AVRational bq, @ByVal AVRational cq,
             @Cast("AVRounding") int r);
@@ -828,6 +848,18 @@ public class avutil {
      */
     public static native long av_compare_mod(@Cast("uint64_t") long a, @Cast("uint64_t") long b,
             @Cast("uint64_t") long mod);
+
+    /**
+     * Rescale a timestamp while preserving known durations.
+     *
+     * @param in_ts Input timestamp
+     * @param in_tb Input timesbase
+     * @param fs_tb Duration and *last timebase
+     * @param duration duration till the next call
+     * @param out_tb Output timesbase
+     */
+    public static native long av_rescale_delta(@ByVal AVRational in_tb, long in_ts,
+            @ByVal AVRational fs_tb, int duration, long[] last, @ByVal AVRational out_tb);
 
     /**
      * @}
@@ -911,10 +943,11 @@ public class avutil {
         public native int log_level_offset_offset();   public native AVClass log_level_offset_offset(int log_level_offset_offset);
 
         /**
-         * Offset in the structure where a pointer to the parent context for loging is stored.
-         * for example a decoder that uses eval.c could pass its AVCodecContext to eval as such
-         * parent context. And a av_log() implementation could then display the parent context
-         * can be NULL of course
+         * Offset in the structure where a pointer to the parent context for
+         * logging is stored. For example a decoder could pass its AVCodecContext
+         * to eval as such a parent context, which an av_log() implementation
+         * could then leverage to display the parent context.
+         * The offset can be NULL.
          */
         public native int parent_log_context_offset(); public native AVClass parent_log_context_offset(int parent_log_context_offset);
 
@@ -931,7 +964,7 @@ public class avutil {
         public native Child_next child_next();         public native AVClass child_next(Child_next child_next);
 
         /**
-         * Return an AVClass corresponding to next potential
+         * Return an AVClass corresponding to the next potential
          * AVOptions-enabled child.
          *
          * The difference between child_next and this is that
@@ -967,6 +1000,19 @@ public class avutil {
             public native @Cast("AVClassCategory") int call(Pointer ctx);
         }
         public native Get_category get_category(); public native AVClass get_category(Get_category get_category);
+
+        /**
+         * Callback to return the supported/allowed ranges.
+         * available since version (52.12)
+         */
+        public static class Query_ranges extends FunctionPointer {
+            static { load(); }
+            public    Query_ranges(Pointer p) { super(p); }
+            protected Query_ranges() { allocate(); }
+            private native void allocate();
+            public native int call(@ByPtrPtr AVOptionRanges ctx, Pointer obj, @Cast("const char *") Pointer key, int flags);
+        }
+        public native Query_ranges query_ranges(); public native AVClass query_ranges(Query_ranges query_ranges);
     }
 
     /* av_log API */
@@ -1084,17 +1130,17 @@ public class avutil {
      * Pixel format.
      *
      * @note
-     * PIX_FMT_RGB32 is handled in an endian-specific manner. An RGBA
+     * AV_PIX_FMT_RGB32 is handled in an endian-specific manner. An RGBA
      * color is put together as:
      *  (A << 24) | (R << 16) | (G << 8) | B
      * This is stored as BGRA on little-endian CPU architectures and ARGB on
      * big-endian CPUs.
      *
      * @par
-     * When the pixel format is palettized RGB (PIX_FMT_PAL8), the palettized
+     * When the pixel format is palettized RGB (AV_PIX_FMT_PAL8), the palettized
      * image data is stored in AVFrame.data[0]. The palette is transported in
      * AVFrame.data[1], is 1024 bytes long (256 4-byte entries) and is
-     * formatted the same as in PIX_FMT_RGB32 described above (i.e., it is
+     * formatted the same as in AV_PIX_FMT_RGB32 described above (i.e., it is
      * also endian-specific). Note also that the individual RGB palette
      * components stored in AVFrame.data[1] should be in the range 0..255.
      * This is important as many custom PAL8 video codecs that were designed
@@ -1106,186 +1152,234 @@ public class avutil {
      * allocating the picture.
      *
      * @note
-     * make sure that all newly added big endian formats have pix_fmt&1==1
-     * and that all newly added little endian formats have pix_fmt&1==0
-     * this allows simpler detection of big vs little endian.
+     * Make sure that all newly added big-endian formats have pix_fmt & 1 == 1
+     * and that all newly added little-endian formats have pix_fmt & 1 == 0.
+     * This allows simpler detection of big vs little-endian.
      */
     public static final int // enum PixelFormat {
-            PIX_FMT_NONE      = -1,
-            PIX_FMT_YUV420P   =  0, ///< planar YUV 4:2:0, 12bpp, (1 Cr & Cb sample per 2x2 Y samples)
-            PIX_FMT_YUYV422   =  1, ///< packed YUV 4:2:2, 16bpp, Y0 Cb Y1 Cr
-            PIX_FMT_RGB24     =  2, ///< packed RGB 8:8:8, 24bpp, RGBRGB...
-            PIX_FMT_BGR24     =  3, ///< packed RGB 8:8:8, 24bpp, BGRBGR...
-            PIX_FMT_YUV422P   =  4, ///< planar YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
-            PIX_FMT_YUV444P   =  5, ///< planar YUV 4:4:4, 24bpp, (1 Cr & Cb sample per 1x1 Y samples)
-            PIX_FMT_YUV410P   =  6, ///< planar YUV 4:1:0,  9bpp, (1 Cr & Cb sample per 4x4 Y samples)
-            PIX_FMT_YUV411P   =  7, ///< planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples)
-            PIX_FMT_GRAY8     =  8, ///<        Y        ,  8bpp
-            PIX_FMT_MONOWHITE =  9, ///<        Y        ,  1bpp, 0 is white, 1 is black, in each byte pixels are ordered from the msb to the lsb
-            PIX_FMT_MONOBLACK = 10, ///<        Y        ,  1bpp, 0 is black, 1 is white, in each byte pixels are ordered from the msb to the lsb
-            PIX_FMT_PAL8      = 11, ///< 8 bit with PIX_FMT_RGB32 palette
-            PIX_FMT_YUVJ420P  = 12, ///< planar YUV 4:2:0, 12bpp, full scale (JPEG), deprecated in favor of PIX_FMT_YUV420P and setting color_range
-            PIX_FMT_YUVJ422P  = 13, ///< planar YUV 4:2:2, 16bpp, full scale (JPEG), deprecated in favor of PIX_FMT_YUV422P and setting color_range
-            PIX_FMT_YUVJ444P  = 14, ///< planar YUV 4:4:4, 24bpp, full scale (JPEG), deprecated in favor of PIX_FMT_YUV444P and setting color_range
-            PIX_FMT_XVMC_MPEG2_MC = 15,///< XVideo Motion Acceleration via common packet passing
-            PIX_FMT_XVMC_MPEG2_IDCT = 16,
-            PIX_FMT_UYVY422   = 17, ///< packed YUV 4:2:2, 16bpp, Cb Y0 Cr Y1
-            PIX_FMT_UYYVYY411 = 18, ///< packed YUV 4:1:1, 12bpp, Cb Y0 Y1 Cr Y2 Y3
-            PIX_FMT_BGR8      = 19, ///< packed RGB 3:3:2,  8bpp, (msb)2B 3G 3R(lsb)
-            PIX_FMT_BGR4      = 20, ///< packed RGB 1:2:1 bitstream,  4bpp, (msb)1B 2G 1R(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
-            PIX_FMT_BGR4_BYTE = 21, ///< packed RGB 1:2:1,  8bpp, (msb)1B 2G 1R(lsb)
-            PIX_FMT_RGB8      = 22, ///< packed RGB 3:3:2,  8bpp, (msb)2R 3G 3B(lsb)
-            PIX_FMT_RGB4      = 23, ///< packed RGB 1:2:1 bitstream,  4bpp, (msb)1R 2G 1B(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
-            PIX_FMT_RGB4_BYTE = 24, ///< packed RGB 1:2:1,  8bpp, (msb)1R 2G 1B(lsb)
-            PIX_FMT_NV12      = 25, ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
-            PIX_FMT_NV21      = 26, ///< as above, but U and V bytes are swapped
+            AV_PIX_FMT_NONE      = -1,
+            AV_PIX_FMT_YUV420P   =  0, ///< planar YUV 4:2:0, 12bpp, (1 Cr & Cb sample per 2x2 Y samples)
+            AV_PIX_FMT_YUYV422   =  1, ///< packed YUV 4:2:2, 16bpp, Y0 Cb Y1 Cr
+            AV_PIX_FMT_RGB24     =  2, ///< packed RGB 8:8:8, 24bpp, RGBRGB...
+            AV_PIX_FMT_BGR24     =  3, ///< packed RGB 8:8:8, 24bpp, BGRBGR...
+            AV_PIX_FMT_YUV422P   =  4, ///< planar YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
+            AV_PIX_FMT_YUV444P   =  5, ///< planar YUV 4:4:4, 24bpp, (1 Cr & Cb sample per 1x1 Y samples)
+            AV_PIX_FMT_YUV410P   =  6, ///< planar YUV 4:1:0,  9bpp, (1 Cr & Cb sample per 4x4 Y samples)
+            AV_PIX_FMT_YUV411P   =  7, ///< planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples)
+            AV_PIX_FMT_GRAY8     =  8, ///<        Y        ,  8bpp
+            AV_PIX_FMT_MONOWHITE =  9, ///<        Y        ,  1bpp, 0 is white, 1 is black, in each byte pixels are ordered from the msb to the lsb
+            AV_PIX_FMT_MONOBLACK = 10, ///<        Y        ,  1bpp, 0 is black, 1 is white, in each byte pixels are ordered from the msb to the lsb
+            AV_PIX_FMT_PAL8      = 11, ///< 8 bit with AV_PIX_FMT_RGB32 palette
+            AV_PIX_FMT_YUVJ420P  = 12, ///< planar YUV 4:2:0, 12bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV420P and setting color_range
+            AV_PIX_FMT_YUVJ422P  = 13, ///< planar YUV 4:2:2, 16bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV422P and setting color_range
+            AV_PIX_FMT_YUVJ444P  = 14, ///< planar YUV 4:4:4, 24bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV444P and setting color_range
+            AV_PIX_FMT_XVMC_MPEG2_MC = 15,///< XVideo Motion Acceleration via common packet passing
+            AV_PIX_FMT_XVMC_MPEG2_IDCT = 16,
+            AV_PIX_FMT_UYVY422   = 17, ///< packed YUV 4:2:2, 16bpp, Cb Y0 Cr Y1
+            AV_PIX_FMT_UYYVYY411 = 18, ///< packed YUV 4:1:1, 12bpp, Cb Y0 Y1 Cr Y2 Y3
+            AV_PIX_FMT_BGR8      = 19, ///< packed RGB 3:3:2,  8bpp, (msb)2B 3G 3R(lsb)
+            AV_PIX_FMT_BGR4      = 20, ///< packed RGB 1:2:1 bitstream,  4bpp, (msb)1B 2G 1R(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
+            AV_PIX_FMT_BGR4_BYTE = 21, ///< packed RGB 1:2:1,  8bpp, (msb)1B 2G 1R(lsb)
+            AV_PIX_FMT_RGB8      = 22, ///< packed RGB 3:3:2,  8bpp, (msb)2R 3G 3B(lsb)
+            AV_PIX_FMT_RGB4      = 23, ///< packed RGB 1:2:1 bitstream,  4bpp, (msb)1R 2G 1B(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
+            AV_PIX_FMT_RGB4_BYTE = 24, ///< packed RGB 1:2:1,  8bpp, (msb)1R 2G 1B(lsb)
+            AV_PIX_FMT_NV12      = 25, ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
+            AV_PIX_FMT_NV21      = 26, ///< as above, but U and V bytes are swapped
 
-            PIX_FMT_ARGB      = 27, ///< packed ARGB 8:8:8:8, 32bpp, ARGBARGB...
-            PIX_FMT_RGBA      = 28, ///< packed RGBA 8:8:8:8, 32bpp, RGBARGBA...
-            PIX_FMT_ABGR      = 29, ///< packed ABGR 8:8:8:8, 32bpp, ABGRABGR...
-            PIX_FMT_BGRA      = 30, ///< packed BGRA 8:8:8:8, 32bpp, BGRABGRA...
+            AV_PIX_FMT_ARGB      = 27, ///< packed ARGB 8:8:8:8, 32bpp, ARGBARGB...
+            AV_PIX_FMT_RGBA      = 28, ///< packed RGBA 8:8:8:8, 32bpp, RGBARGBA...
+            AV_PIX_FMT_ABGR      = 29, ///< packed ABGR 8:8:8:8, 32bpp, ABGRABGR...
+            AV_PIX_FMT_BGRA      = 30, ///< packed BGRA 8:8:8:8, 32bpp, BGRABGRA...
 
-            PIX_FMT_GRAY16BE  = 31, ///<        Y        , 16bpp, big-endian
-            PIX_FMT_GRAY16LE  = 32, ///<        Y        , 16bpp, little-endian
-            PIX_FMT_YUV440P   = 33, ///< planar YUV 4:4:0 (1 Cr & Cb sample per 1x2 Y samples)
-            PIX_FMT_YUVJ440P  = 34, ///< planar YUV 4:4:0 full scale (JPEG), deprecated in favor of PIX_FMT_YUV440P and setting color_range
-            PIX_FMT_YUVA420P  = 35, ///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y & A samples)
-            PIX_FMT_VDPAU_H264 = 36,///< H.264 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
-            PIX_FMT_VDPAU_MPEG1 = 37,///< MPEG-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
-            PIX_FMT_VDPAU_MPEG2 = 38,///< MPEG-2 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
-            PIX_FMT_VDPAU_WMV3 = 39,///< WMV3 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
-            PIX_FMT_VDPAU_VC1 = 40, ///< VC-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
-            PIX_FMT_RGB48BE   = 41, ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as big-endian
-            PIX_FMT_RGB48LE   = 42, ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as little-endian
+            AV_PIX_FMT_GRAY16BE  = 31, ///<        Y        , 16bpp, big-endian
+            AV_PIX_FMT_GRAY16LE  = 32, ///<        Y        , 16bpp, little-endian
+            AV_PIX_FMT_YUV440P   = 33, ///< planar YUV 4:4:0 (1 Cr & Cb sample per 1x2 Y samples)
+            AV_PIX_FMT_YUVJ440P  = 34, ///< planar YUV 4:4:0 full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV440P and setting color_range
+            AV_PIX_FMT_YUVA420P  = 35, ///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y & A samples)
+            AV_PIX_FMT_VDPAU_H264 = 36,///< H.264 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
+            AV_PIX_FMT_VDPAU_MPEG1 = 37,///< MPEG-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
+            AV_PIX_FMT_VDPAU_MPEG2 = 38,///< MPEG-2 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
+            AV_PIX_FMT_VDPAU_WMV3 = 39,///< WMV3 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
+            AV_PIX_FMT_VDPAU_VC1 = 40, ///< VC-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
+            AV_PIX_FMT_RGB48BE   = 41, ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as big-endian
+            AV_PIX_FMT_RGB48LE   = 42, ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as little-endian
 
-            PIX_FMT_RGB565BE  = 43, ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), big-endian
-            PIX_FMT_RGB565LE  = 44, ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), little-endian
-            PIX_FMT_RGB555BE  = 45, ///< packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), big-endian, most significant bit to 0
-            PIX_FMT_RGB555LE  = 46, ///< packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), little-endian, most significant bit to 0
+            AV_PIX_FMT_RGB565BE  = 43, ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), big-endian
+            AV_PIX_FMT_RGB565LE  = 44, ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), little-endian
+            AV_PIX_FMT_RGB555BE  = 45, ///< packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), big-endian, most significant bit to 0
+            AV_PIX_FMT_RGB555LE  = 46, ///< packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), little-endian, most significant bit to 0
 
-            PIX_FMT_BGR565BE  = 47, ///< packed BGR 5:6:5, 16bpp, (msb)   5B 6G 5R(lsb), big-endian
-            PIX_FMT_BGR565LE  = 48, ///< packed BGR 5:6:5, 16bpp, (msb)   5B 6G 5R(lsb), little-endian
-            PIX_FMT_BGR555BE  = 49, ///< packed BGR 5:5:5, 16bpp, (msb)1A 5B 5G 5R(lsb), big-endian, most significant bit to 1
-            PIX_FMT_BGR555LE  = 50, ///< packed BGR 5:5:5, 16bpp, (msb)1A 5B 5G 5R(lsb), little-endian, most significant bit to 1
+            AV_PIX_FMT_BGR565BE  = 47, ///< packed BGR 5:6:5, 16bpp, (msb)   5B 6G 5R(lsb), big-endian
+            AV_PIX_FMT_BGR565LE  = 48, ///< packed BGR 5:6:5, 16bpp, (msb)   5B 6G 5R(lsb), little-endian
+            AV_PIX_FMT_BGR555BE  = 49, ///< packed BGR 5:5:5, 16bpp, (msb)1A 5B 5G 5R(lsb), big-endian, most significant bit to 1
+            AV_PIX_FMT_BGR555LE  = 50, ///< packed BGR 5:5:5, 16bpp, (msb)1A 5B 5G 5R(lsb), little-endian, most significant bit to 1
 
-            PIX_FMT_VAAPI_MOCO = 51, ///< HW acceleration through VA API at motion compensation entry-point, Picture.data[3] contains a vaapi_render_state struct which contains macroblocks as well as various fields extracted from headers
-            PIX_FMT_VAAPI_IDCT = 52, ///< HW acceleration through VA API at IDCT entry-point, Picture.data[3] contains a vaapi_render_state struct which contains fields extracted from headers
-            PIX_FMT_VAAPI_VLD  = 53, ///< HW decoding through VA API, Picture.data[3] contains a vaapi_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
+            AV_PIX_FMT_VAAPI_MOCO = 51, ///< HW acceleration through VA API at motion compensation entry-point, Picture.data[3] contains a vaapi_render_state struct which contains macroblocks as well as various fields extracted from headers
+            AV_PIX_FMT_VAAPI_IDCT = 52, ///< HW acceleration through VA API at IDCT entry-point, Picture.data[3] contains a vaapi_render_state struct which contains fields extracted from headers
+            AV_PIX_FMT_VAAPI_VLD  = 53, ///< HW decoding through VA API, Picture.data[3] contains a vaapi_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
 
-            PIX_FMT_YUV420P16LE = 54, ///< planar YUV 4:2:0, 24bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-            PIX_FMT_YUV420P16BE = 55, ///< planar YUV 4:2:0, 24bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-            PIX_FMT_YUV422P16LE = 56, ///< planar YUV 4:2:2, 32bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-            PIX_FMT_YUV422P16BE = 57, ///< planar YUV 4:2:2, 32bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-            PIX_FMT_YUV444P16LE = 58, ///< planar YUV 4:4:4, 48bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-            PIX_FMT_YUV444P16BE = 59, ///< planar YUV 4:4:4, 48bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-            PIX_FMT_VDPAU_MPEG4 = 60, ///< MPEG4 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
-            PIX_FMT_DXVA2_VLD   = 61, ///< HW decoding through DXVA2, Picture.data[3] contains a LPDIRECT3DSURFACE9 pointer
+            AV_PIX_FMT_YUV420P16LE = 54, ///< planar YUV 4:2:0, 24bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+            AV_PIX_FMT_YUV420P16BE = 55, ///< planar YUV 4:2:0, 24bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+            AV_PIX_FMT_YUV422P16LE = 56, ///< planar YUV 4:2:2, 32bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+            AV_PIX_FMT_YUV422P16BE = 57, ///< planar YUV 4:2:2, 32bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+            AV_PIX_FMT_YUV444P16LE = 58, ///< planar YUV 4:4:4, 48bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+            AV_PIX_FMT_YUV444P16BE = 59, ///< planar YUV 4:4:4, 48bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+            AV_PIX_FMT_VDPAU_MPEG4 = 60, ///< MPEG4 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
+            AV_PIX_FMT_DXVA2_VLD   = 61, ///< HW decoding through DXVA2, Picture.data[3] contains a LPDIRECT3DSURFACE9 pointer
 
-            PIX_FMT_RGB444LE  = 62, ///< packed RGB 4:4:4, 16bpp, (msb)4A 4R 4G 4B(lsb), little-endian, most significant bits to 0
-            PIX_FMT_RGB444BE  = 63, ///< packed RGB 4:4:4, 16bpp, (msb)4A 4R 4G 4B(lsb), big-endian, most significant bits to 0
-            PIX_FMT_BGR444LE  = 64, ///< packed BGR 4:4:4, 16bpp, (msb)4A 4B 4G 4R(lsb), little-endian, most significant bits to 1
-            PIX_FMT_BGR444BE  = 65, ///< packed BGR 4:4:4, 16bpp, (msb)4A 4B 4G 4R(lsb), big-endian, most significant bits to 1
-            PIX_FMT_GRAY8A    = 66, ///< 8bit gray, 8bit alpha
-            PIX_FMT_BGR48BE   = 67, ///< packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as big-endian
-            PIX_FMT_BGR48LE   = 68, ///< packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as little-endian
+            AV_PIX_FMT_RGB444LE  = 62, ///< packed RGB 4:4:4, 16bpp, (msb)4A 4R 4G 4B(lsb), little-endian, most significant bits to 0
+            AV_PIX_FMT_RGB444BE  = 63, ///< packed RGB 4:4:4, 16bpp, (msb)4A 4R 4G 4B(lsb), big-endian, most significant bits to 0
+            AV_PIX_FMT_BGR444LE  = 64, ///< packed BGR 4:4:4, 16bpp, (msb)4A 4B 4G 4R(lsb), little-endian, most significant bits to 1
+            AV_PIX_FMT_BGR444BE  = 65, ///< packed BGR 4:4:4, 16bpp, (msb)4A 4B 4G 4R(lsb), big-endian, most significant bits to 1
+            AV_PIX_FMT_GRAY8A    = 66, ///< 8bit gray, 8bit alpha
+            AV_PIX_FMT_BGR48BE   = 67, ///< packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as big-endian
+            AV_PIX_FMT_BGR48LE   = 68, ///< packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as little-endian
 
             //the following 10 formats have the disadvantage of needing 1 format for each bit depth, thus
-            //If you want to support multiple bit depths, then using PIX_FMT_YUV420P16* with the bpp stored separately
+            //If you want to support multiple bit depths, then using AV_PIX_FMT_YUV420P16* with the bpp stored separately
             //is better
-            PIX_FMT_YUV420P9BE  = 69, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-            PIX_FMT_YUV420P9LE  = 70, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-            PIX_FMT_YUV420P10BE = 71, ///< planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-            PIX_FMT_YUV420P10LE = 72, ///< planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-            PIX_FMT_YUV422P10BE = 73, ///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-            PIX_FMT_YUV422P10LE = 74, ///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-            PIX_FMT_YUV444P9BE  = 75, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-            PIX_FMT_YUV444P9LE  = 76, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-            PIX_FMT_YUV444P10BE = 77, ///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-            PIX_FMT_YUV444P10LE = 78, ///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-            PIX_FMT_YUV422P9BE  = 79, ///< planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-            PIX_FMT_YUV422P9LE  = 80, ///< planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-            PIX_FMT_VDA_VLD     = 81, ///< hardware decoding through VDA
+            AV_PIX_FMT_YUV420P9BE  = 69, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+            AV_PIX_FMT_YUV420P9LE  = 70, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+            AV_PIX_FMT_YUV420P10BE = 71, ///< planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+            AV_PIX_FMT_YUV420P10LE = 72, ///< planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+            AV_PIX_FMT_YUV422P10BE = 73, ///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+            AV_PIX_FMT_YUV422P10LE = 74, ///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+            AV_PIX_FMT_YUV444P9BE  = 75, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+            AV_PIX_FMT_YUV444P9LE  = 76, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+            AV_PIX_FMT_YUV444P10BE = 77, ///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+            AV_PIX_FMT_YUV444P10LE = 78, ///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+            AV_PIX_FMT_YUV422P9BE  = 79, ///< planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+            AV_PIX_FMT_YUV422P9LE  = 80, ///< planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+            AV_PIX_FMT_VDA_VLD     = 81, ///< hardware decoding through VDA
 
-            PIX_FMT_GBRP     = 86, ///< planar GBR 4:4:4 24bpp
-            PIX_FMT_GBRP9BE  = 87, ///< planar GBR 4:4:4 27bpp, big endian
-            PIX_FMT_GBRP9LE  = 88, ///< planar GBR 4:4:4 27bpp, little endian
-            PIX_FMT_GBRP10BE = 89, ///< planar GBR 4:4:4 30bpp, big endian
-            PIX_FMT_GBRP10LE = 90, ///< planar GBR 4:4:4 30bpp, little endian
-            PIX_FMT_GBRP16BE = 91, ///< planar GBR 4:4:4 48bpp, big endian
-            PIX_FMT_GBRP16LE = 92, ///< planar GBR 4:4:4 48bpp, little endian
+//#ifdef AV_PIX_FMT_ABI_GIT_MASTER
+//            AV_PIX_FMT_RGBA64BE,  ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+//            AV_PIX_FMT_RGBA64LE,  ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+//            AV_PIX_FMT_BGRA64BE,  ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+//            AV_PIX_FMT_BGRA64LE,  ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+//#endif
+            AV_PIX_FMT_GBRP        = 82, ///< planar GBR 4:4:4 24bpp
+            AV_PIX_FMT_GBRP9BE     = 83, ///< planar GBR 4:4:4 27bpp, big-endian
+            AV_PIX_FMT_GBRP9LE     = 84, ///< planar GBR 4:4:4 27bpp, little-endian
+            AV_PIX_FMT_GBRP10BE    = 85, ///< planar GBR 4:4:4 30bpp, big-endian
+            AV_PIX_FMT_GBRP10LE    = 86, ///< planar GBR 4:4:4 30bpp, little-endian
+            AV_PIX_FMT_GBRP16BE    = 87, ///< planar GBR 4:4:4 48bpp, big-endian
+            AV_PIX_FMT_GBRP16LE    = 88, ///< planar GBR 4:4:4 48bpp, little-endian
 
-            PIX_FMT_RGBA64BE=0x123,   ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
-            PIX_FMT_RGBA64LE=0x123+1, ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
-            PIX_FMT_BGRA64BE=0x123+2, ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
-            PIX_FMT_BGRA64LE=0x123+3, ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
-            PIX_FMT_0RGB=0x123+4,     ///< packed RGB 8:8:8, 32bpp, 0RGB0RGB...
-            PIX_FMT_RGB0=0x123+5,     ///< packed RGB 8:8:8, 32bpp, RGB0RGB0...
-            PIX_FMT_0BGR=0x123+6,     ///< packed BGR 8:8:8, 32bpp, 0BGR0BGR...
-            PIX_FMT_BGR0=0x123+7,     ///< packed BGR 8:8:8, 32bpp, BGR0BGR0...
-            PIX_FMT_YUVA444P=0x123+8, ///< planar YUV 4:4:4 32bpp, (1 Cr & Cb sample per 1x1 Y & A samples)
-            PIX_FMT_YUVA422P=0x123+9, ///< planar YUV 4:2:2 24bpp, (1 Cr & Cb sample per 2x1 Y & A samples)
+            /**
+             * duplicated pixel formats for compatibility with libav.
+             * FFmpeg supports these formats since May 8 2012 and Jan 28 2012 (commits f9ca1ac7 and 143a5c55)
+             * Libav added them Oct 12 2012 with incompatible values (commit 6d5600e85)
+             */
+            AV_PIX_FMT_YUVA422P_LIBAV = 89, ///< planar YUV 4:2:2 24bpp, (1 Cr & Cb sample per 2x1 Y & A samples)
+            AV_PIX_FMT_YUVA444P_LIBAV = 90, ///< planar YUV 4:4:4 32bpp, (1 Cr & Cb sample per 1x1 Y & A samples)
 
-            PIX_FMT_YUV420P12BE=0x123+9,  ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-            PIX_FMT_YUV420P12LE=0x123+10, ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-            PIX_FMT_YUV420P14BE=0x123+11, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-            PIX_FMT_YUV420P14LE=0x123+12, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-            PIX_FMT_YUV422P12BE=0x123+13, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-            PIX_FMT_YUV422P12LE=0x123+14, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-            PIX_FMT_YUV422P14BE=0x123+15, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-            PIX_FMT_YUV422P14LE=0x123+16, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-            PIX_FMT_YUV444P12BE=0x123+17, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-            PIX_FMT_YUV444P12LE=0x123+18, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-            PIX_FMT_YUV444P14BE=0x123+19, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-            PIX_FMT_YUV444P14LE=0x123+20, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-            PIX_FMT_GBRP12BE=0x123+21,    ///< planar GBR 4:4:4 36bpp, big endian
-            PIX_FMT_GBRP12LE=0x123+22,    ///< planar GBR 4:4:4 36bpp, little endian
-            PIX_FMT_GBRP14BE=0x123+23,    ///< planar GBR 4:4:4 42bpp, big endian
-            PIX_FMT_GBRP14LE=0x123+24,    ///< planar GBR 4:4:4 42bpp, little endian
+            AV_PIX_FMT_YUVA420P9BE  = 91,  ///< planar YUV 4:2:0 22.5bpp, (1 Cr & Cb sample per 2x2 Y & A samples), big-endian
+            AV_PIX_FMT_YUVA420P9LE  = 92,  ///< planar YUV 4:2:0 22.5bpp, (1 Cr & Cb sample per 2x2 Y & A samples), little-endian
+            AV_PIX_FMT_YUVA422P9BE  = 93,  ///< planar YUV 4:2:2 27bpp, (1 Cr & Cb sample per 2x1 Y & A samples), big-endian
+            AV_PIX_FMT_YUVA422P9LE  = 94,  ///< planar YUV 4:2:2 27bpp, (1 Cr & Cb sample per 2x1 Y & A samples), little-endian
+            AV_PIX_FMT_YUVA444P9BE  = 95,  ///< planar YUV 4:4:4 36bpp, (1 Cr & Cb sample per 1x1 Y & A samples), big-endian
+            AV_PIX_FMT_YUVA444P9LE  = 96,  ///< planar YUV 4:4:4 36bpp, (1 Cr & Cb sample per 1x1 Y & A samples), little-endian
+            AV_PIX_FMT_YUVA420P10BE = 97,  ///< planar YUV 4:2:0 25bpp, (1 Cr & Cb sample per 2x2 Y & A samples, big-endian)
+            AV_PIX_FMT_YUVA420P10LE = 98,  ///< planar YUV 4:2:0 25bpp, (1 Cr & Cb sample per 2x2 Y & A samples, little-endian)
+            AV_PIX_FMT_YUVA422P10BE = 99,  ///< planar YUV 4:2:2 30bpp, (1 Cr & Cb sample per 2x1 Y & A samples, big-endian)
+            AV_PIX_FMT_YUVA422P10LE = 100, ///< planar YUV 4:2:2 30bpp, (1 Cr & Cb sample per 2x1 Y & A samples, little-endian)
+            AV_PIX_FMT_YUVA444P10BE = 101, ///< planar YUV 4:4:4 40bpp, (1 Cr & Cb sample per 1x1 Y & A samples, big-endian)
+            AV_PIX_FMT_YUVA444P10LE = 102, ///< planar YUV 4:4:4 40bpp, (1 Cr & Cb sample per 1x1 Y & A samples, little-endian)
+            AV_PIX_FMT_YUVA420P16BE = 103, ///< planar YUV 4:2:0 40bpp, (1 Cr & Cb sample per 2x2 Y & A samples, big-endian)
+            AV_PIX_FMT_YUVA420P16LE = 104, ///< planar YUV 4:2:0 40bpp, (1 Cr & Cb sample per 2x2 Y & A samples, little-endian)
+            AV_PIX_FMT_YUVA422P16BE = 105, ///< planar YUV 4:2:2 48bpp, (1 Cr & Cb sample per 2x1 Y & A samples, big-endian)
+            AV_PIX_FMT_YUVA422P16LE = 106, ///< planar YUV 4:2:2 48bpp, (1 Cr & Cb sample per 2x1 Y & A samples, little-endian)
+            AV_PIX_FMT_YUVA444P16BE = 107, ///< planar YUV 4:4:4 64bpp, (1 Cr & Cb sample per 1x1 Y & A samples, big-endian)
+            AV_PIX_FMT_YUVA444P16LE = 108, ///< planar YUV 4:4:4 64bpp, (1 Cr & Cb sample per 1x1 Y & A samples, little-endian)
 
-            PIX_FMT_Y400A  = PIX_FMT_GRAY8A,
-            PIX_FMT_GBR24P = PIX_FMT_GBRP,
+//#ifndef AV_PIX_FMT_ABI_GIT_MASTER
+            AV_PIX_FMT_RGBA64BE=0x123,   ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+            AV_PIX_FMT_RGBA64LE=0x123+1, ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+            AV_PIX_FMT_BGRA64BE=0x123+2, ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+            AV_PIX_FMT_BGRA64LE=0x123+3, ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+//#endif
+            AV_PIX_FMT_0RGB=0x123+4,     ///< packed RGB 8:8:8, 32bpp, 0RGB0RGB...
+            AV_PIX_FMT_RGB0=0x123+5,     ///< packed RGB 8:8:8, 32bpp, RGB0RGB0...
+            AV_PIX_FMT_0BGR=0x123+6,     ///< packed BGR 8:8:8, 32bpp, 0BGR0BGR...
+            AV_PIX_FMT_BGR0=0x123+7,     ///< packed BGR 8:8:8, 32bpp, BGR0BGR0...
+            AV_PIX_FMT_YUVA444P=0x123+8, ///< planar YUV 4:4:4 32bpp, (1 Cr & Cb sample per 1x1 Y & A samples)
+            AV_PIX_FMT_YUVA422P=0x123+9, ///< planar YUV 4:2:2 24bpp, (1 Cr & Cb sample per 2x1 Y & A samples)
 
-            PIX_FMT_RGB32   = AV_HAVE_BIGENDIAN() ? PIX_FMT_ARGB : PIX_FMT_BGRA,
-            PIX_FMT_RGB32_1 = AV_HAVE_BIGENDIAN() ? PIX_FMT_RGBA : PIX_FMT_ABGR,
-            PIX_FMT_BGR32   = AV_HAVE_BIGENDIAN() ? PIX_FMT_ABGR : PIX_FMT_RGBA,
-            PIX_FMT_BGR32_1 = AV_HAVE_BIGENDIAN() ? PIX_FMT_BGRA : PIX_FMT_ARGB,
-            PIX_FMT_0RGB32  = AV_HAVE_BIGENDIAN() ? PIX_FMT_0RGB : PIX_FMT_0BGR,
-            PIX_FMT_0BGR32  = AV_HAVE_BIGENDIAN() ? PIX_FMT_0BGR : PIX_FMT_0RGB,
+            AV_PIX_FMT_YUV420P12BE=0x123+9,  ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+            AV_PIX_FMT_YUV420P12LE=0x123+10, ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+            AV_PIX_FMT_YUV420P14BE=0x123+11, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+            AV_PIX_FMT_YUV420P14LE=0x123+12, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+            AV_PIX_FMT_YUV422P12BE=0x123+13, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+            AV_PIX_FMT_YUV422P12LE=0x123+14, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+            AV_PIX_FMT_YUV422P14BE=0x123+15, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+            AV_PIX_FMT_YUV422P14LE=0x123+16, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+            AV_PIX_FMT_YUV444P12BE=0x123+17, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+            AV_PIX_FMT_YUV444P12LE=0x123+18, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+            AV_PIX_FMT_YUV444P14BE=0x123+19, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+            AV_PIX_FMT_YUV444P14LE=0x123+20, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+            AV_PIX_FMT_GBRP12BE=0x123+21,    ///< planar GBR 4:4:4 36bpp, big-endian
+            AV_PIX_FMT_GBRP12LE=0x123+22,    ///< planar GBR 4:4:4 36bpp, little-endian
+            AV_PIX_FMT_GBRP14BE=0x123+23,    ///< planar GBR 4:4:4 42bpp, big-endian
+            AV_PIX_FMT_GBRP14LE=0x123+24,    ///< planar GBR 4:4:4 42bpp, little-endian
 
-            PIX_FMT_GRAY16 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GRAY16BE : PIX_FMT_GRAY16LE,
-            PIX_FMT_RGB48  = AV_HAVE_BIGENDIAN() ? PIX_FMT_RGB48BE  : PIX_FMT_RGB48LE,
-            PIX_FMT_RGB565 = AV_HAVE_BIGENDIAN() ? PIX_FMT_RGB565BE : PIX_FMT_RGB565LE,
-            PIX_FMT_RGB555 = AV_HAVE_BIGENDIAN() ? PIX_FMT_RGB555BE : PIX_FMT_RGB555LE,
-            PIX_FMT_RGB444 = AV_HAVE_BIGENDIAN() ? PIX_FMT_RGB444BE : PIX_FMT_RGB444LE,
-            PIX_FMT_BGR48  = AV_HAVE_BIGENDIAN() ? PIX_FMT_BGR48BE  : PIX_FMT_BGR48LE,
-            PIX_FMT_BGR565 = AV_HAVE_BIGENDIAN() ? PIX_FMT_BGR565BE : PIX_FMT_BGR565LE,
-            PIX_FMT_BGR555 = AV_HAVE_BIGENDIAN() ? PIX_FMT_BGR555BE : PIX_FMT_BGR555LE,
-            PIX_FMT_BGR444 = AV_HAVE_BIGENDIAN() ? PIX_FMT_BGR444BE : PIX_FMT_BGR444LE,
+//#if AV_HAVE_INCOMPATIBLE_FORK_ABI
+//            AV_PIX_FMT_YUVA422P = AV_PIX_FMT_YUVA422P_LIBAV,
+//            AV_PIX_FMT_YUVA444P = AV_PIX_FMT_YUVA444P_LIBAV,
+//#endif
+            AV_PIX_FMT_Y400A  = AV_PIX_FMT_GRAY8A,
+            AV_PIX_FMT_GBR24P = AV_PIX_FMT_GBRP,
 
-            PIX_FMT_YUV420P9  = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P9BE  : PIX_FMT_YUV420P9LE,
-            PIX_FMT_YUV422P9  = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P9BE  : PIX_FMT_YUV422P9LE,
-            PIX_FMT_YUV444P9  = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P9BE  : PIX_FMT_YUV444P9LE,
-            PIX_FMT_YUV420P10 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P10BE : PIX_FMT_YUV420P10LE,
-            PIX_FMT_YUV422P10 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P10BE : PIX_FMT_YUV422P10LE,
-            PIX_FMT_YUV444P10 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P10BE : PIX_FMT_YUV444P10LE,
-            PIX_FMT_YUV420P12 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P12BE : PIX_FMT_YUV420P12LE,
-            PIX_FMT_YUV422P12 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P12BE : PIX_FMT_YUV422P12LE,
-            PIX_FMT_YUV444P12 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P12BE : PIX_FMT_YUV444P12LE,
-            PIX_FMT_YUV420P14 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P14BE : PIX_FMT_YUV420P14LE,
-            PIX_FMT_YUV422P14 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P14BE : PIX_FMT_YUV422P14LE,
-            PIX_FMT_YUV444P14 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P14BE : PIX_FMT_YUV444P14LE,
-            PIX_FMT_YUV420P16 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV420P16BE : PIX_FMT_YUV420P16LE,
-            PIX_FMT_YUV422P16 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV422P16BE : PIX_FMT_YUV422P16LE,
-            PIX_FMT_YUV444P16 = AV_HAVE_BIGENDIAN() ?  PIX_FMT_YUV444P16BE : PIX_FMT_YUV444P16LE,
+            AV_PIX_FMT_RGB32   = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_ARGB : AV_PIX_FMT_BGRA,
+            AV_PIX_FMT_RGB32_1 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_RGBA : AV_PIX_FMT_ABGR,
+            AV_PIX_FMT_BGR32   = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_ABGR : AV_PIX_FMT_RGBA,
+            AV_PIX_FMT_BGR32_1 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_BGRA : AV_PIX_FMT_ARGB,
+            AV_PIX_FMT_0RGB32  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_0RGB : AV_PIX_FMT_0BGR,
+            AV_PIX_FMT_0BGR32  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_0BGR : AV_PIX_FMT_0RGB,
 
-            PIX_FMT_RGBA64 = AV_HAVE_BIGENDIAN() ? PIX_FMT_RGBA64BE : PIX_FMT_RGBA64LE,
-            PIX_FMT_BGRA64 = AV_HAVE_BIGENDIAN() ? PIX_FMT_BGRA64BE : PIX_FMT_BGRA64LE,
-            PIX_FMT_GBRP9  = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP9BE  : PIX_FMT_GBRP9LE,
-            PIX_FMT_GBRP10 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP10BE : PIX_FMT_GBRP10LE,
-            PIX_FMT_GBRP12 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP12BE : PIX_FMT_GBRP12LE,
-            PIX_FMT_GBRP14 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP14BE : PIX_FMT_GBRP14LE,
-            PIX_FMT_GBRP16 = AV_HAVE_BIGENDIAN() ? PIX_FMT_GBRP16BE : PIX_FMT_GBRP16LE;
+            AV_PIX_FMT_GRAY16 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GRAY16BE : AV_PIX_FMT_GRAY16LE,
+            AV_PIX_FMT_RGB48  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_RGB48BE  : AV_PIX_FMT_RGB48LE,
+            AV_PIX_FMT_RGB565 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_RGB565BE : AV_PIX_FMT_RGB565LE,
+            AV_PIX_FMT_RGB555 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_RGB555BE : AV_PIX_FMT_RGB555LE,
+            AV_PIX_FMT_RGB444 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_RGB444BE : AV_PIX_FMT_RGB444LE,
+            AV_PIX_FMT_BGR48  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_BGR48BE  : AV_PIX_FMT_BGR48LE,
+            AV_PIX_FMT_BGR565 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_BGR565BE : AV_PIX_FMT_BGR565LE,
+            AV_PIX_FMT_BGR555 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_BGR555BE : AV_PIX_FMT_BGR555LE,
+            AV_PIX_FMT_BGR444 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_BGR444BE : AV_PIX_FMT_BGR444LE,
 
+            AV_PIX_FMT_YUV420P9  = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV420P9BE  : AV_PIX_FMT_YUV420P9LE,
+            AV_PIX_FMT_YUV422P9  = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV422P9BE  : AV_PIX_FMT_YUV422P9LE,
+            AV_PIX_FMT_YUV444P9  = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV444P9BE  : AV_PIX_FMT_YUV444P9LE,
+            AV_PIX_FMT_YUV420P10 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV420P10BE : AV_PIX_FMT_YUV420P10LE,
+            AV_PIX_FMT_YUV422P10 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV422P10BE : AV_PIX_FMT_YUV422P10LE,
+            AV_PIX_FMT_YUV444P10 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV444P10BE : AV_PIX_FMT_YUV444P10LE,
+            AV_PIX_FMT_YUV420P12 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV420P12BE : AV_PIX_FMT_YUV420P12LE,
+            AV_PIX_FMT_YUV422P12 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV422P12BE : AV_PIX_FMT_YUV422P12LE,
+            AV_PIX_FMT_YUV444P12 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV444P12BE : AV_PIX_FMT_YUV444P12LE,
+            AV_PIX_FMT_YUV420P14 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV420P14BE : AV_PIX_FMT_YUV420P14LE,
+            AV_PIX_FMT_YUV422P14 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV422P14BE : AV_PIX_FMT_YUV422P14LE,
+            AV_PIX_FMT_YUV444P14 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV444P14BE : AV_PIX_FMT_YUV444P14LE,
+            AV_PIX_FMT_YUV420P16 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV420P16BE : AV_PIX_FMT_YUV420P16LE,
+            AV_PIX_FMT_YUV422P16 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV422P16BE : AV_PIX_FMT_YUV422P16LE,
+            AV_PIX_FMT_YUV444P16 = AV_HAVE_BIGENDIAN() ?  AV_PIX_FMT_YUV444P16BE : AV_PIX_FMT_YUV444P16LE,
+
+            AV_PIX_FMT_RGBA64 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_RGBA64BE : AV_PIX_FMT_RGBA64LE,
+            AV_PIX_FMT_BGRA64 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_BGRA64BE : AV_PIX_FMT_BGRA64LE,
+            AV_PIX_FMT_GBRP9  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GBRP9BE  : AV_PIX_FMT_GBRP9LE,
+            AV_PIX_FMT_GBRP10 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GBRP10BE : AV_PIX_FMT_GBRP10LE,
+            AV_PIX_FMT_GBRP12 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GBRP12BE : AV_PIX_FMT_GBRP12LE,
+            AV_PIX_FMT_GBRP14 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GBRP14BE : AV_PIX_FMT_GBRP14LE,
+            AV_PIX_FMT_GBRP16 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GBRP16BE : AV_PIX_FMT_GBRP16LE,
+
+            AV_PIX_FMT_YUVA420P9  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA420P9BE  : AV_PIX_FMT_YUVA420P9LE,
+            AV_PIX_FMT_YUVA422P9  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA422P9BE  : AV_PIX_FMT_YUVA422P9LE,
+            AV_PIX_FMT_YUVA444P9  = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA444P9BE  : AV_PIX_FMT_YUVA444P9LE,
+            AV_PIX_FMT_YUVA420P10 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA420P10BE : AV_PIX_FMT_YUVA420P10LE,
+            AV_PIX_FMT_YUVA422P10 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA422P10BE : AV_PIX_FMT_YUVA422P10LE,
+            AV_PIX_FMT_YUVA444P10 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA444P10BE : AV_PIX_FMT_YUVA444P10LE,
+            AV_PIX_FMT_YUVA420P16 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA420P16BE : AV_PIX_FMT_YUVA420P16LE,
+            AV_PIX_FMT_YUVA422P16 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA422P16BE : AV_PIX_FMT_YUVA422P16LE,
+            AV_PIX_FMT_YUVA444P16 = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_YUVA444P16BE : AV_PIX_FMT_YUVA444P16LE;
 
     /**
      * Return x default pointer in case p is NULL.
@@ -1298,10 +1392,10 @@ public class avutil {
      */
 
 
-    // #include "audioconvert.h"
+    // #include "channel_layout.h"
     /**
      * @file
-     * audio conversion routines
+     * qaudio channel layout utility functions
      */
 
     /**
@@ -1311,6 +1405,14 @@ public class avutil {
 
     /**
      * @defgroup channel_masks Audio channel masks
+     *
+     * A channel layout is a 64-bits integer with a bit set for every channel.
+     * The number of bits set must be equal to the number of channels.
+     * The value 0 means that the channel layout is not known.
+     * @note this data structure is not powerful enough to handle channels
+     * combinations that have the same channel multiple times, such as
+     * dual-mono.
+     *
      * @{
      */
     public static final int
@@ -1520,6 +1622,9 @@ public class avutil {
 
     /**
      * Return the flags which specify extensions supported by the CPU.
+     * The returned value is affected by av_force_cpu_flags() if that was used
+     * before. So av_get_cpu_flags() can easily be used in a application to
+     * detect the enabled cpu flags.
      */
     public static native int av_get_cpu_flags();
 
@@ -1877,7 +1982,8 @@ public class avutil {
         AV_OPT_TYPE_BINARY   = 7,  ///< offset must point to a pointer immediately followed by an int for the length
         AV_OPT_TYPE_CONST    = 128,
         AV_OPT_TYPE_IMAGE_SIZE = MKBETAG('S','I','Z','E'), ///< offset must point to two consecutive integers
-        AV_OPT_TYPE_PIXEL_FMT  = MKBETAG('P','F','M','T');
+        AV_OPT_TYPE_PIXEL_FMT  = MKBETAG('P','F','M','T'),
+        AV_OPT_TYPE_SAMPLE_FMT = MKBETAG('S','F','M','T');
 
 
     /**
@@ -1950,6 +2056,44 @@ public class avutil {
     }
 
     /**
+     * A single allowed range of values, or a single allowed value.
+     */
+    public static class AVOptionRange extends Pointer {
+        static { load(); }
+        public AVOptionRange() { allocate(); }
+        public AVOptionRange(int size) { allocateArray(size); }
+        public AVOptionRange(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        @Cast("const char*")
+        public native BytePointer str();       public native AVOptionRange str(BytePointer str);
+        /** For string ranges this represents the min/max length, for dimensions this represents the min/max pixel count */
+        public native double value_min();      public native AVOptionRange value_min(double value_min);
+        public native double value_max();      public native AVOptionRange value_max(double value_max);
+        /** For string this represents the unicode range for chars, 0-127 limits to ASCII */
+        public native double component_min();  public native AVOptionRange component_min(double component_min);
+        public native double component_max();  public native AVOptionRange component_max(double component_max);
+        /** if set to 1 the struct encodes a range, if set to 0 a single value */
+        public native int is_range();          public native AVOptionRange is_range(int is_range);
+    }
+
+    /**
+     * List of AVOptionRange structs
+     */
+    public static class AVOptionRanges extends Pointer {
+        static { load(); }
+        public AVOptionRanges() { allocate(); }
+        public AVOptionRanges(int size) { allocateArray(size); }
+        public AVOptionRanges(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        public native AVOptionRange range(int i); public native AVOptionRanges range(int i, AVOptionRange range);
+        public native int nb_ranges();            public native AVOptionRanges nb_ranges(int nb_ranges);
+    }
+
+    /**
      * Show the obj options.
      *
      * @param req_flags requested flags for the options to show. Show only the
@@ -1987,6 +2131,36 @@ public class avutil {
     public static native int av_set_options_string(Pointer ctx, String opts, String key_val_sep, String pairs_sep);
 
     /**
+     * Parse the key-value pairs list in opts. For each key=value pair found,
+     * set the value of the corresponding option in ctx.
+     *
+     * @param ctx          the AVClass object to set options on
+     * @param opts         the options string, key-value pairs separated by a
+     *                     delimiter
+     * @param shorthand    a NULL-terminated array of options names for shorthand
+     *                     notation: if the first field in opts has no key part,
+     *                     the key is taken from the first element of shorthand;
+     *                     then again for the second, etc., until either opts is
+     *                     finished, shorthand is finished or a named option is
+     *                     found; after that, all options must be named
+     * @param key_val_sep  a 0-terminated list of characters used to separate
+     *                     key from value, for example '='
+     * @param pairs_sep    a 0-terminated list of characters used to separate
+     *                     two pairs from each other, for example ':' or ','
+     * @return  the number of successfully set key=value pairs, or a negative
+     *          value corresponding to an AVERROR code in case of error:
+     *          AVERROR(EINVAL) if opts cannot be parsed,
+     *          the error code issued by av_set_string3() if a key/value pair
+     *          cannot be set
+     *
+     * Options names must use only the following characters: a-z A-Z 0-9 - . / _
+     * Separators must use characters distinct from option names and from each
+     * other.
+     */
+    public static native int av_opt_set_from_string(Pointer ctx, String opts,
+            @Cast("const char *const *") PointerPointer shorthand, String key_val_sep, String pairs_sep);
+
+    /**
      * Free all string and binary options in obj.
      */
     public static native void av_opt_free(Pointer obj);
@@ -2001,7 +2175,7 @@ public class avutil {
      */
     public static native int av_opt_flag_is_set(Pointer obj, String field_name, String flag_name);
 
-    /*
+    /**
      * Set all the options from a given dictionary on an object.
      *
      * @param obj a struct whose first element is a pointer to AVClass
@@ -2016,6 +2190,35 @@ public class avutil {
      * @see av_dict_copy()
      */
     public static native int av_opt_set_dict(Pointer obj, @ByPtrPtr AVDictionary options);
+
+    /**
+     * Extract a key-value pair from the beginning of a string.
+     *
+     * @param ropts        pointer to the options string, will be updated to
+     *                     point to the rest of the string (one of the pairs_sep
+     *                     or the final NUL)
+     * @param key_val_sep  a 0-terminated list of characters used to separate
+     *                     key from value, for example '='
+     * @param pairs_sep    a 0-terminated list of characters used to separate
+     *                     two pairs from each other, for example ':' or ','
+     * @param flags        flags; see the AV_OPT_FLAG_* values below
+     * @param rkey         parsed key; must be freed using av_free()
+     * @param rval         parsed value; must be freed using av_free()
+     *
+     * @return  >=0 for success, or a negative value corresponding to an
+     *          AVERROR code in case of error; in particular:
+     *          AVERROR(EINVAL) if no key is present
+     *
+     */
+    public static native int av_opt_get_key_value(@Cast("const char**") PointerPointer ropts,
+            String key_val_sep, String pairs_sep, @Cast("unsigned") int flags,
+            @Cast("char**") PointerPointer rkey, @Cast("char**") PointerPointer rval);
+
+    /**
+     * Accept to parse a value without a key; the key will then be returned
+     * as NULL.
+     */
+    public static final int AV_OPT_FLAG_IMPLICIT_KEY = 1;
 
     /**
      * @defgroup opt_eval_funcs Evaluating option strings
@@ -2158,6 +2361,9 @@ public class avutil {
     public static native int av_opt_set_double(Pointer obj, String name, double             val, int search_flags);
     public static native int av_opt_set_q     (Pointer obj, String name, @ByVal AVRational  val, int search_flags);
     public static native int av_opt_set_bin   (Pointer obj, String name, @Cast("uint8_t*") BytePointer val, int size, int search_flags);
+    public static native int av_opt_set_image_size(Pointer obj, String name, int w, int h, int search_flags);
+    public static native int av_opt_set_pixel_fmt (Pointer obj, String name, @Cast("AVPixelFormat")  int fmt, int search_flags);
+    public static native int av_opt_set_sample_fmt(Pointer obj, String name, @Cast("AVSampleFormat") int fmt, int search_flags);
     /**
      * @}
      */
@@ -2181,6 +2387,9 @@ public class avutil {
     public static native int av_opt_get_int   (Pointer obj, String name, int search_flags, long[]     out_val);
     public static native int av_opt_get_double(Pointer obj, String name, int search_flags, double[]   out_val);
     public static native int av_opt_get_q     (Pointer obj, String name, int search_flags, AVRational out_val);
+    public static native int av_opt_get_image_size(Pointer obj, String name, int search_flags, int[] w_out, int[] h_out);
+    public static native int av_opt_get_pixel_fmt (Pointer obj, String name, int search_flags, @Cast("AVPixelFormat*")  int[] out_fmt);
+    public static native int av_opt_get_sample_fmt(Pointer obj, String name, int search_flags, @Cast("AVSampleFormat*") int[] out_fmt);
     /**
      * @}
      */
@@ -2193,6 +2402,41 @@ public class avutil {
      *          or written to.
      */
     public static native Pointer av_opt_ptr(AVClass avclass, Pointer obj, String name);
+
+    /**
+     * Free an AVOptionRanges struct and set it to NULL.
+     */
+    public static native void av_opt_freep_ranges(@ByPtrPtr AVOptionRanges ranges);
+
+    /**
+     * Get a list of allowed ranges for the given option.
+     *
+     * The returned list may depend on other fields in obj like for example profile.
+     *
+     * @param flags is a bitmask of flags, undefined flags should not be set and should be ignored
+     *              AV_OPT_SEARCH_FAKE_OBJ indicates that the obj is a double pointer to a AVClass instead of a full instance
+     *
+     * The result must be freed with av_opt_freep_ranges.
+     *
+     * @return >= 0 on success, a negative errro code otherwise
+     */
+    public static native int av_opt_query_ranges(@ByPtrPtr AVOptionRanges ranges, Pointer obj, String key, int flags);
+
+    /**
+     * Get a default list of allowed ranges for the given option.
+     *
+     * This list is constructed without using the AVClass.query_ranges() callback
+     * and can be used as fallback from within the callback.
+     *
+     * @param flags is a bitmask of flags, undefined flags should not be set and should be ignored
+     *              AV_OPT_SEARCH_FAKE_OBJ indicates that the obj is a double pointer to a AVClass instead of a full instance
+     *
+     * The result must be freed with av_opt_free_ranges.
+     *
+     * @return >= 0 on success, a negative errro code otherwise
+     */
+    public static native int av_opt_query_ranges_default(@ByPtrPtr AVOptionRanges ranges, Pointer obj, String key, int flags);
+
     /**
      * @}
      */
@@ -2212,7 +2456,7 @@ public class avutil {
      * [-1.0, 1.0]. Any values outside this range are beyond full volume level.
      *
      * @par
-     * The data layout as used in av_samples_fill_arrays() and elsewhere in Libav
+     * The data layout as used in av_samples_fill_arrays() and elsewhere in FFmpeg
      * (such as AVFrame in libavcodec) is as follows:
      *
      * For planar sample formats, each audio channel is in a separate data plane,
@@ -2349,7 +2593,9 @@ public class avutil {
      * @param nb_samples       the number of samples in a single channel
      * @param sample_fmt       the sample format
      * @param align            buffer size alignment (0 = default, 1 = no alignment)
-     * @return                 0 on success or a negative error code on failure
+     * @return                 >=0 on success or a negative error code on failure
+     * @todo return minimum size in bytes required for the buffer in case
+     * of success at the next bump
      */
     public static native int av_samples_fill_arrays(@Cast("uint8_t**") PointerPointer audio_data, int[] linesize,
             @Cast("uint8_t*") BytePointer buf, int nb_channels, int nb_samples,
@@ -2359,6 +2605,7 @@ public class avutil {
      * Allocate a samples buffer for nb_samples samples, and fill data pointers and
      * linesize accordingly.
      * The allocated samples buffer can be freed by using av_freep(&audio_data[0])
+     * Allocated data will be initialized to silence.
      *
      * @see enum AVSampleFormat
      * The documentation for AVSampleFormat describes the data layout.
@@ -2368,7 +2615,8 @@ public class avutil {
      * @param nb_channels      number of audio channels
      * @param nb_samples       number of samples per channel
      * @param align            buffer size alignment (0 = default, 1 = no alignment)
-     * @return                 0 on success or a negative error code on failure
+     * @return                 >=0 on success or a negative error code on failure
+     * @todo return the size of the allocated buffer in case of success at the next bump
      * @see av_samples_fill_arrays()
      */
     public static native int av_samples_alloc(@Cast("uint8_t**") PointerPointer audio_data, int[] linesize,
@@ -2436,7 +2684,7 @@ public class avutil {
      *
      * @return the computed size in bytes
      */
-    public static native int av_image_get_linesize(@Cast("PixelFormat") int pix_fmt, int width, int plane);
+    public static native int av_image_get_linesize(@Cast("AVPixelFormat") int pix_fmt, int width, int plane);
 
     /**
      * Fill plane linesizes for an image with pixel format pix_fmt and
@@ -2445,7 +2693,7 @@ public class avutil {
      * @param linesizes array to be filled with the linesize for each plane
      * @return >= 0 in case of success, a negative error code otherwise
      */
-    public static native int av_image_fill_linesizes(int linesizes[/*4*/], @Cast("PixelFormat") int pix_fmt, int width);
+    public static native int av_image_fill_linesizes(int linesizes[/*4*/], @Cast("AVPixelFormat") int pix_fmt, int width);
 
     /**
      * Fill plane data pointers for an image with pixel format pix_fmt and
@@ -2459,7 +2707,7 @@ public class avutil {
      * error code in case of failure
      */
     public static native int av_image_fill_pointers(@Cast("uint8_t**") PointerPointer data/*[4]*/,
-            @Cast("PixelFormat") int pix_fmt, int height, @Cast("uint8_t*") BytePointer ptr, int linesizes[/*4*/]);
+            @Cast("AVPixelFormat") int pix_fmt, int height, @Cast("uint8_t*") BytePointer ptr, int linesizes[/*4*/]);
 
     /**
      * Allocate an image with size w and h and pixel format pix_fmt, and
@@ -2472,13 +2720,16 @@ public class avutil {
      * error code in case of failure
      */
     public static native int av_image_alloc(@Cast("uint8_t**") PointerPointer pointers/*[4]*/, int linesizes[/*4*/],
-            int w, int h, @Cast("PixelFormat") int pix_fmt, int align);
+            int w, int h, @Cast("AVPixelFormat") int pix_fmt, int align);
 
     /**
      * Copy image plane from src to dst.
      * That is, copy "height" number of lines of "bytewidth" bytes each.
      * The first byte of each successive line is separated by *_linesize
      * bytes.
+     *
+     * bytewidth must be contained by both absolute values of dst_linesize
+     * and src_linesize, otherwise the function behavior is undefined.
      *
      * @param dst_linesize linesize for the image plane in dst
      * @param src_linesize linesize for the image plane in src
@@ -2494,7 +2745,7 @@ public class avutil {
      */
     public static native void av_image_copy(@Cast("uint8_t**") PointerPointer dst_data/*[4]*/, int dst_linesizes[/*4*/],
             @Cast("const uint8_t **") PointerPointer src_data/*[4]*/, int src_linesizes[/*4*/],
-            @Cast("PixelFormat") int pix_fmt, int width, int height);
+            @Cast("AVPixelFormat") int pix_fmt, int width, int height);
 
     /**
      * Setup the data pointers and linesizes based on the specified image
@@ -2523,7 +2774,7 @@ public class avutil {
      * in case of failure
      */
     public static native int av_image_fill_arrays(@Cast("uint8_t**") PointerPointer dst_data/*[4]*/, int dst_linesize[/*4*/],
-            @Cast("uint8_t*") BytePointer src, @Cast("PixelFormat") int pix_fmt, int width, int height, int align);
+            @Cast("uint8_t*") BytePointer src, @Cast("AVPixelFormat") int pix_fmt, int width, int height, int align);
 
     /**
      * Return the size in bytes of the amount of data required to store an
@@ -2531,7 +2782,7 @@ public class avutil {
      *
      * @param[in] align the assumed linesize alignment
      */
-    public static native int av_image_get_buffer_size(@Cast("PixelFormat") int pix_fmt, int width, int height, int align);
+    public static native int av_image_get_buffer_size(@Cast("AVPixelFormat") int pix_fmt, int width, int height, int align);
 
     /**
      * Copy image data from an image into a buffer.
@@ -2552,7 +2803,7 @@ public class avutil {
      */
     public static native int av_image_copy_to_buffer(@Cast("uint8_t*") BytePointer dst, int dst_size,
             @Cast("const uint8_t * const*") PointerPointer src_data/*[4]*/, int src_linesize[/*4*/],
-            @Cast("PixelFormat") int pix_fmt, int width, int height, int align);
+            @Cast("AVPixelFormat") int pix_fmt, int width, int height, int align);
 
     /**
      * Check if the given dimension of an image is valid, meaning that all
@@ -2566,7 +2817,7 @@ public class avutil {
      */
     public static native int av_image_check_size(@Cast("unsigned") int w, @Cast("unsigned") int h, int log_offset, Pointer log_ctx);
 
-//    public static native int ff_set_systematic_pal2(@Cast("uint32_t*") int[/*256*/] pal, @Cast("PixelFormat") int pix_fmt);
+    public static native int avpriv_set_systematic_pal2(@Cast("uint32_t*") int[/*256*/] pal, @Cast("AVPixelFormat") int pix_fmt);
 
     /**
      * @}
