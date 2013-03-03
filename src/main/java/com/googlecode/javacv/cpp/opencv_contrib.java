@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -20,7 +20,7 @@
  *
  * This file is based on information found in contrib.hpp, retina.hpp,
  * detection_based_tracker.hpp, hybrid_tracker.hpp, and openfabmap.hpp
- * of OpenCV 2.4.3, which are covered by the following copyright notice:
+ * of OpenCV 2.4.4, which are covered by the following copyright notice:
  *
  *                           License Agreement
  *                For Open Source Computer Vision Library
@@ -95,8 +95,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         link={"opencv_contrib@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_objdetect@.2.4", "opencv_calib3d@.2.4",
               "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_contrib243", "opencv_ml243", "opencv_video243", "opencv_objdetect243", "opencv_calib3d243",
-              "opencv_features2d243", "opencv_flann243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
+        link={"opencv_contrib244", "opencv_ml244", "opencv_video244", "opencv_objdetect244", "opencv_calib3d244",
+              "opencv_features2d244", "opencv_flann244", "opencv_highgui244", "opencv_imgproc244", "opencv_core244"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

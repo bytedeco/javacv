@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -973,7 +973,7 @@ public class JavaCV {
         }
         System.out.println(
             "JavaCV version " + version + "\n" +
-            "Copyright (C) 2009-2012 Samuel Audet <samuel.audet@gmail.com>\n" +
+            "Copyright (C) 2009-2013 Samuel Audet <samuel.audet@gmail.com>\n" +
             "Project site: http://code.google.com/p/javacv/\n\n" +
 
             "Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.\n" +

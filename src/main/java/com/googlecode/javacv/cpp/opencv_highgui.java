@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.4.3,
+ * This file is based on information found in highgui_c.h of OpenCV 2.4.4,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement
@@ -76,8 +76,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include="<opencv2/highgui/highgui_c.h>",
         link={"opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg243", "opencv_ffmpeg243_64"},
-        link={"opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
+    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg244", "opencv_ffmpeg244_64"},
+        link={"opencv_highgui244", "opencv_imgproc244", "opencv_core244"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

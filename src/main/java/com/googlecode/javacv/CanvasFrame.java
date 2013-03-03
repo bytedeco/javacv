@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -276,8 +276,10 @@ public class CanvasFrame extends JFrame {
         return waitKey(0);
     }
     public synchronized KeyEvent waitKey(int delay) throws InterruptedException {
-        keyEvent = null;
-        wait(delay);
+        if (delay >= 0) {
+            keyEvent = null;
+            wait(delay);
+        }
         KeyEvent e = keyEvent;
         keyEvent = null;
         return e;

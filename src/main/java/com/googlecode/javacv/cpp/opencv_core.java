@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.4.3, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.4.4, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -124,9 +124,9 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4"),
+        include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4", preload="tbb"),
     @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath=windowsIncludepath,
-        link="opencv_core243", preload={"msvcr100", "msvcp100"}),
+        link="opencv_core244", preload={"msvcr100", "msvcp100"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -153,11 +153,15 @@ public class opencv_core {
     public static final String androidLinkpath       = "../lib/";
 
     public static final int
-            CV_MAJOR_VERSION    = 2,
-            CV_MINOR_VERSION    = 4,
-            CV_SUBMINOR_VERSION = 3;
+            CV_VERSION_EPOCH    = 2,
+            CV_VERSION_MAJOR    = 4,
+            CV_VERSION_MINOR    = 4,
+            CV_VERSION_REVISION = 0,
+            CV_MAJOR_VERSION    = CV_VERSION_EPOCH,
+            CV_MINOR_VERSION    = CV_VERSION_MAJOR,
+            CV_SUBMINOR_VERSION = CV_VERSION_MINOR;
 
-    public static final String CV_VERSION = CV_MAJOR_VERSION + "." + CV_MINOR_VERSION + "." + CV_SUBMINOR_VERSION;
+    public static final String CV_VERSION = CV_VERSION_EPOCH + "." + CV_VERSION_MAJOR + "." + CV_VERSION_MINOR + "." + CV_VERSION_REVISION;
 
     @Opaque public static class CvArr extends Pointer implements Cloneable {
         static { load(); }
@@ -4987,7 +4991,7 @@ public class opencv_core {
         private native void allocate(int _type, @Cast("bool") boolean _readonly, int _offset,
                 Algorithm.Getter _getter/*=null*/, Algorithm.Setter _setter/*=null*/, String _help/*=""*/);
 
-        public static final int INT=0, BOOLEAN=1, REAL=2, STRING=3, MAT=4, MAT_VECTOR=5, ALGORITHM=6, FLOAT=7, UNSIGNED_INT=8, UINT64=9, SHORT=10;
+        public static final int INT=0, BOOLEAN=1, REAL=2, STRING=3, MAT=4, MAT_VECTOR=5, ALGORITHM=6, FLOAT=7, UNSIGNED_INT=8, UINT64=9, SHORT=10, UCHAR=11;
 
         public native int type();                       public native Param type(int type);
         public native int offset();                     public native Param offset(int offset);

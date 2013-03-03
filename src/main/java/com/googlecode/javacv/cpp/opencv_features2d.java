@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.4.3,
+ * This file is based on information found in features2d.hpp of OpenCV 2.4.4,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -84,7 +84,7 @@ import static com.googlecode.javacv.cpp.opencv_flann.*;
         include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d243", "opencv_flann243", "opencv_highgui243", "opencv_imgproc243", "opencv_core243"}),
+        link={"opencv_features2d244", "opencv_flann244", "opencv_highgui244", "opencv_imgproc244", "opencv_core244"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -958,14 +958,15 @@ public class opencv_features2d {
 
     @Namespace("cv") public static class BFMatcher extends DescriptorMatcher {
         static { load(); }
-        public BFMatcher(int normType) { allocate(normType); }
-        public BFMatcher(int normType, @Cast("bool") boolean crossCheck/*=false*/) { allocate(normType, crossCheck); }
+        public BFMatcher() { allocate(); }
+        public BFMatcher(int normType/*=NORM_L2*/, @Cast("bool") boolean crossCheck/*=false*/) { allocate(normType, crossCheck); }
         public BFMatcher(Pointer p) { super(p); }
-        private native void allocate(int normType);
+        private native void allocate();
         private native void allocate(int normType, @Cast("bool") boolean crossCheck/*=false*/);
 
 //        public native boolean isMaskSupported();
 //        public native @Ptr DescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
+//        public native AlgorithmInfo info();
 
 //        protected native void knnMatchImpl(@InputMat CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
 //                @Const @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=vector<Mat>()*/, @Cast("bool") boolean compactResult/*=false*/);
@@ -996,6 +997,7 @@ public class opencv_features2d {
 //        public native void train();
 //        public native boolean isMaskSupported();
 //        public native @Ptr DescriptorMatcher clone(boolean emptyTrainData/*=false*/);
+//        public native AlgorithmInfo info();
 
 //        protected static native void convertToDMatches(@ByRef DescriptorCollection descriptors,
 //                CvMat indices, CvMat distances, @ByRef DMatchVectorVector matches );

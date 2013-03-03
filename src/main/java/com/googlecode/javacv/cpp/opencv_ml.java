@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in ml.hpp of OpenCV 2.4.3,
+ * This file is based on information found in ml.hpp of OpenCV 2.4.4,
  * which is covered by the following copyright notice:
  *
  *                        Intel License Agreement
@@ -88,7 +88,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml243", "opencv_core243"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml244", "opencv_core244"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -864,6 +864,7 @@ public class opencv_ml {
 
         public native CvMat counts();          public native CvDTreeTrainData counts(CvMat counts);
         public native CvMat buf();             public native CvDTreeTrainData buf(CvMat buf);
+        public native long get_length_subbuf();
         public native CvMat direction();       public native CvDTreeTrainData direction(CvMat direction);
         public native CvMat split_buf();       public native CvDTreeTrainData split_buf(CvMat split_buf);
 

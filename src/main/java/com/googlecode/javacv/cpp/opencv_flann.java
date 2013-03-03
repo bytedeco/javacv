@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -18,8 +18,8 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in defines.h and miniflann.hpp
- * of OpenCV 2.4.3, which ares covered by the following copyright notice:
+ * This file is based on information found in config.h, defines.h, and miniflann.hpp
+ * of OpenCV 2.4.4, which ares covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -79,12 +79,14 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann243", "opencv_core243"}),
+    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann244", "opencv_core244"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_flann {
     static { load(opencv_core.class); load(); }
+
+    public static final String FLANN_VERSION_ = "1.6.10";
 
     public static final int
     // enum flann_algorithm_t

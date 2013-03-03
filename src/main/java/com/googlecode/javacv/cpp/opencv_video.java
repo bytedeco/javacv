@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in tracking.hpp and background_segm.hpp
- * of OpenCV 2.4.3, which are covered by the following copyright notice:
+ * of OpenCV 2.4.4, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -81,7 +81,7 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
         include={"<opencv2/video/video.hpp>", "opencv_adapters.h"},
         link={"opencv_video@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_video243", "opencv_imgproc243", "opencv_core243"}),
+        link={"opencv_video244", "opencv_imgproc244", "opencv_core244"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -237,6 +237,16 @@ public class opencv_video {
             @InputMat CvArr flow, int layers, int averaging_block_size, int max_flow, double sigma_dist, double sigma_color,
             int postprocess_window, double sigma_dist_fix, double sigma_color_fix, double occ_thr, int upscale_averaging_radius,
             double upscale_sigma_dist, double upscale_sigma_color, double speed_up_thr);
+
+    @Namespace("cv") public static class DenseOpticalFlow extends Algorithm {
+        static { load(); }
+        public DenseOpticalFlow() { }
+        public DenseOpticalFlow(Pointer p) { super(p); }
+
+        public native void calc(@InputArray CvArr I0, @InputArray CvArr I1, @InputArray CvArr flow);
+        public native void collectGarbage();
+    }
+    @Namespace("cv") public static native @Ptr DenseOpticalFlow createOptFlow_DualTVL1();
 
 
     @Namespace("cv") public static class BackgroundSubtractor extends Algorithm {
