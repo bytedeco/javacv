@@ -101,11 +101,12 @@ public abstract class FrameRecorder {
         return create(get(className), String.class, filename, width, height);
     }
 
-    protected String format, profile, preset;
+    protected String format, profile, preset, tune;
     protected int imageWidth, imageHeight, audioChannels;
     protected int pixelFormat, videoCodec, videoBitrate;
-    protected double frameRate;
+    protected double frameRate, videoQuality = -1;
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
+    protected double audioQuality = -1;
     protected boolean interleaved;
     protected int frameNumber = 0;
     protected long timestamp = 0;
@@ -129,6 +130,13 @@ public abstract class FrameRecorder {
     }
     public void setPreset(String preset) {
         this.preset = preset;
+    }
+
+    public String getTune() {
+        return tune;
+    }
+    public void setTune(String tune) {
+        this.tune = tune;
     }
 
     public int getImageWidth() {
@@ -180,6 +188,13 @@ public abstract class FrameRecorder {
         this.frameRate = frameRate;
     }
 
+    public double getVideoQuality() {
+        return videoQuality;
+    }
+    public void setVideoQuality(double videoQuality) {
+        this.videoQuality = videoQuality;
+    }
+
     public int getSampleFormat() {
         return sampleFormat;
     }
@@ -206,6 +221,13 @@ public abstract class FrameRecorder {
     }
     public void setSampleRate(int sampleRate) {
         this.sampleRate = sampleRate;
+    }
+
+    public double getAudioQuality() {
+        return audioQuality;
+    }
+    public void setAudioQuality(double audioQuality) {
+        this.audioQuality = audioQuality;
     }
 
     public boolean isInterleaved() {
@@ -237,7 +259,7 @@ public abstract class FrameRecorder {
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void record(IplImage image) throws Exception;
-    public void record(Buffer samples) throws Exception {
+    public void record(Buffer[] samples) throws Exception {
         throw new UnsupportedOperationException("This FrameRecorder does not support audio.");
     }
     public void record(Frame frame) throws Exception {

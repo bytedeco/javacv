@@ -86,6 +86,8 @@ public class Smoother {
 JavaCV also comes with helper classes and methods on top of OpenCV and FFmpeg to facilitate their integration to the Java platform. Here is a small demo program demonstrating the most frequently useful parts:
 
 {{{
+import java.io.File;
+import java.net.URL;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.*;
 import com.googlecode.javacv.cpp.*;
@@ -100,8 +102,10 @@ public class Demo {
         if (args.length > 0) {
             classifierName = args[0];
         } else {
-            System.err.println("Please provide the path to \"haarcascade_frontalface_alt.xml\".");
-            System.exit(1);
+            URL url = new URL("https://raw.github.com/Itseez/opencv/master/data/haarcascades/haarcascade_frontalface_alt.xml");
+            File file = Loader.extractResource(url, null, "classifier", ".xml");
+            file.deleteOnExit();
+            classifierName = file.getAbsolutePath();
         }
 
         // Preload the opencv_objdetect module to work around a known bug.
@@ -216,6 +220,10 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Added support for planar audio formats to `FFmpegFrameGrabber` and `FFmpegFrameRecorder`, as required by newer versions of FFmpeg for at least MP3 and AAC
+ * Enhanced `FFmpegFrameRecorder` by making it use the closest supported frame rate for the given codec instead of failing, and by adding a `tune` property used by the x264 codec
+ * Also, to support variable bitrate (VBR) encoding, appended new `videoQuality` and `audioQuality` properties to `FFmpegFrameRecorder`, which usually have an effective range of [0, 51] and overrides the `videoBitrate` and `audioBitrate` properties
+
 ===March 3, 2013 version 0.4===
  * Upgraded support to OpenCV 2.4.4
  * `CanvasFrame.waitKey(-1)` does not wait anymore and returns the last `KeyEvent` dispatched since the last call to it

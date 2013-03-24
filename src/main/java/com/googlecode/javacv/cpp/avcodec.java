@@ -3610,6 +3610,9 @@ public class avcodec {
         public native BytePointer data(int i); public native AVPicture data(int i, BytePointer data);
         // int linesize[AV_NUM_DATA_POINTERS]; ///< number of bytes per line
         public native int linesize(int i);     public native AVPicture linesize(int i, int linesize);
+
+        @Cast("uint8_t**")
+        @MemberGetter public native PointerPointer data();
         @MemberGetter public native IntPointer linesize();
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -180,8 +180,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVFrame         picture, picture_rgb;
     private BytePointer     buffer_rgb;
     private AVFrame         samples_frame;
-    private BytePointer     samples_ptr;
-    private Buffer          samples_buf;
+    private BytePointer[]   samples_ptr;
+    private Buffer[]        samples_buf;
     private AVPacket        pkt, pkt2;
     private int             sizeof_pkt;
     private int[]           got_frame;
@@ -564,25 +564,39 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     pkt2.size(pkt2.size() - len);
                     if (got_frame[0] != 0) {
                         /* if a frame has been decoded, output it */
-                        int data_size = av_samples_get_buffer_size(null, audio_c.channels(),
-                                samples_frame.nb_samples(), audio_c.sample_fmt(), 1);
                         done = true;
                         frame.image = null;
-                        BytePointer p = samples_frame.data(0);
-                        if (!p.equals(samples_ptr) || samples_ptr.capacity() < data_size) {
-                            samples_ptr  = p.capacity(data_size);
-                            ByteBuffer b = p.asBuffer();
-                            switch (samples_frame.format()) {
-                                case AV_SAMPLE_FMT_U8:  samples_buf = b; break;
-                                case AV_SAMPLE_FMT_S16: samples_buf = b.asShortBuffer(); break;
-                                case AV_SAMPLE_FMT_S32: samples_buf = b.asIntBuffer(); break;
-                                case AV_SAMPLE_FMT_FLT: samples_buf = b.asFloatBuffer(); break;
-                                case AV_SAMPLE_FMT_DBL: samples_buf = b.asDoubleBuffer(); break;
-                                default: assert false;
-                            }
+                        int sample_format = samples_frame.format();
+                        int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)samples_frame.channels() : 1;
+                        int data_size = av_samples_get_buffer_size(null, audio_c.channels(),
+                                samples_frame.nb_samples(), audio_c.sample_fmt(), 1) / planes;
+                        if (samples_buf == null || samples_buf.length != planes) {
+                            samples_ptr = new BytePointer[planes];
+                            samples_buf = new Buffer[planes];
                         }
-                        frame.samples = samples_buf.position(0).
-                                limit(data_size / av_get_bytes_per_sample(samples_frame.format()));
+                        frame.samples = samples_buf;
+                        int sample_size = data_size / av_get_bytes_per_sample(sample_format);
+                        for (int i = 0; i < planes; i++) {
+                            BytePointer p = samples_frame.data(i);
+                            if (!p.equals(samples_ptr[i]) || samples_ptr[i].capacity() < data_size) {
+                                samples_ptr[i] = p.capacity(data_size);
+                                ByteBuffer b   = p.asBuffer();
+                                switch (sample_format) {
+                                    case AV_SAMPLE_FMT_U8:
+                                    case AV_SAMPLE_FMT_U8P:  samples_buf[i] = b; break;
+                                    case AV_SAMPLE_FMT_S16:
+                                    case AV_SAMPLE_FMT_S16P: samples_buf[i] = b.asShortBuffer();  break;
+                                    case AV_SAMPLE_FMT_S32:
+                                    case AV_SAMPLE_FMT_S32P: samples_buf[i] = b.asIntBuffer();    break;
+                                    case AV_SAMPLE_FMT_FLT:
+                                    case AV_SAMPLE_FMT_FLTP: samples_buf[i] = b.asFloatBuffer();  break;
+                                    case AV_SAMPLE_FMT_DBL:
+                                    case AV_SAMPLE_FMT_DBLP: samples_buf[i] = b.asDoubleBuffer(); break;
+                                    default: assert false;
+                                }
+                            }
+                            samples_buf[i].position(0).limit(sample_size);
+                        }
                     }
                 }
             }
