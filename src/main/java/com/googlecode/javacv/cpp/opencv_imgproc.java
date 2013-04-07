@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.4.4, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.5, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -89,7 +89,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>", "opencv_adapters.h"},
         link={"opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_imgproc244", "opencv_core244"}),
+        link={"opencv_imgproc245", "opencv_core245"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -350,7 +350,21 @@ public class opencv_imgproc {
             CV_RGBA2mRGBA = 125,
             CV_mRGBA2RGBA = 126,
 
-            CV_COLORCVT_MAX  = 127;
+            CV_RGB2YUV_I420 = 127,
+            CV_BGR2YUV_I420 = 128,
+            CV_RGB2YUV_IYUV = CV_RGB2YUV_I420,
+            CV_BGR2YUV_IYUV = CV_BGR2YUV_I420,
+
+            CV_RGBA2YUV_I420 = 129,
+            CV_BGRA2YUV_I420 = 130,
+            CV_RGBA2YUV_IYUV = CV_RGBA2YUV_I420,
+            CV_BGRA2YUV_IYUV = CV_BGRA2YUV_I420,
+            CV_RGB2YUV_YV12  = 131,
+            CV_BGR2YUV_YV12  = 132,
+            CV_RGBA2YUV_YV12 = 133,
+            CV_BGRA2YUV_YV12 = 134,
+
+            CV_COLORCVT_MAX  = 135;
 
     public static final int
             CV_INTER_NN        = 0,
@@ -1331,6 +1345,24 @@ public class opencv_imgproc {
             @ByVal CvSize imageSize, int destImageWidth, int m1type,
             @InputArray CvArr map1, @InputArray CvArr map2,
             int projType/*=PROJ_SPHERICAL_EQRECT*/, double alpha/*=0*/);
+
+    @Namespace("cv") public static class CLAHE extends Algorithm {
+        static { load(); }
+        public CLAHE() { }
+        public CLAHE(Pointer p) { super(p); }
+
+        public native void apply(@InputArray CvArr src, @InputArray CvArr dst);
+
+        public native void setClipLimit(double clipLimit);
+        public native double getClipLimit();
+
+        public native void setTilesGridSize(@ByVal CvSize tileGridSize);
+        public native @ByVal CvSize getTilesGridSize();
+
+        public native void collectGarbage();
+    }
+    @Namespace("cv") public static native @Ptr CLAHE createCLAHE(
+            double clipLimit/*=40.0*/, @ByVal CvSize tileGridSize/*=cvSize(8, 8)*/);
 
     @Namespace("cv") public static native float EMD(@InputArray CvArr signature1,
             @InputArray CvArr signature2, int distType, @InputArray CvArr cost/*=null*/,

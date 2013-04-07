@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.4.4,
+ * This file is based on information found in features2d.hpp of OpenCV 2.4.5,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -84,7 +84,7 @@ import static com.googlecode.javacv.cpp.opencv_flann.*;
         include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
         link={"opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d244", "opencv_flann244", "opencv_highgui244", "opencv_imgproc244", "opencv_core244"}),
+        link={"opencv_features2d245", "opencv_flann245", "opencv_highgui245", "opencv_imgproc245", "opencv_core245"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

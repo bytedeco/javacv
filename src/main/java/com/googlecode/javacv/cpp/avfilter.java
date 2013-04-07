@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avfilter.h include file from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
  * filter layer
  * Copyright (c) 2007 Bobby Bingham
@@ -85,8 +85,8 @@ public class avfilter {
      */
 
     public static final int LIBAVFILTER_VERSION_MAJOR =  3;
-    public static final int LIBAVFILTER_VERSION_MINOR = 32;
-    public static final int LIBAVFILTER_VERSION_MICRO = 100;
+    public static final int LIBAVFILTER_VERSION_MINOR =  42;
+    public static final int LIBAVFILTER_VERSION_MICRO = 103;
 
     public static final int    LIBAVFILTER_VERSION_INT = AV_VERSION_INT(LIBAVFILTER_VERSION_MAJOR,
                                                                         LIBAVFILTER_VERSION_MINOR,
@@ -984,6 +984,12 @@ public class avfilter {
         public native IntPointer sample_fmts();      public native AVABufferSinkParams sample_fmts(IntPointer sample_fmts);
         @Const                                       ///< list of allowed channel layouts, terminated by -1
         public native LongPointer channel_layouts(); public native AVABufferSinkParams channel_layouts(LongPointer channel_layouts);
+        @Const                                       ///< list of allowed channel counts, terminated by -1
+        public native IntPointer channel_counts();   public native AVABufferSinkParams channel_counts(IntPointer channel_counts);
+                                                     ///< if not 0, accept any channel count or layout
+        public native int all_channel_counts();      public native AVABufferSinkParams all_channel_counts(int all_channel_counts);
+                                                     ///< list of allowed sample rates, terminated by -1
+        public native IntPointer sample_rates();     public native AVABufferSinkParams sample_rates(IntPointer sample_rates);
     }
 
     /**
@@ -1268,6 +1274,8 @@ public class avfilter {
         @MemberGetter public native AVFilterContext filters(int i);
         @Cast("char*") ///< sws options to use for the auto-inserted scale filters
         public native BytePointer scale_sws_opts(); public native AVFilterGraph scale_sws_opts(BytePointer scale_sws_opts);
+        @Cast("char*") ///< libavresample options to use for the auto-inserted resample filters
+        public native BytePointer resample_lavr_opts();  public native AVFilterGraph resample_lavr_opts(BytePointer resample_lavr_opts);
         @Cast("char*") ///< swr options to use for the auto-inserted aresample filters, Access ONLY through AVOptions
         public native BytePointer aresample_swr_opts();  public native AVFilterGraph aresample_swr_opts(BytePointer aresample_swr_opts);
     }

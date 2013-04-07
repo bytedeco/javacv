@@ -63,6 +63,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Map.Entry;
 
 import static com.googlecode.javacv.cpp.avcodec.*;
 import static com.googlecode.javacv.cpp.avformat.*;
@@ -267,7 +268,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         /* auto detect the output format from the name. */
         String format_name = format == null || format.length() == 0 ? null : format;
         if ((oformat = av_guess_format(format_name, filename, null)) == null) {
-            throw new Exception("av_guess_format() error: Could not guess output format for \"" + filename + "\" and " + format + " format.");
+            int proto = filename.indexOf("://");
+            if (proto > 0) {
+                format_name = filename.substring(0, proto);
+            }
+            if ((oformat = av_guess_format(format_name, filename, null)) == null) {
+                throw new Exception("av_guess_format() error: Could not guess output format for \"" + filename + "\" and " + format + " format.");
+            }
         }
         format_name = oformat.name().getString();
 
@@ -367,9 +374,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 // default to constrained baseline to produce content that plays back on anything,
                 // without any significant tradeoffs for most use cases
                 video_c.profile(AVCodecContext.FF_PROFILE_H264_CONSTRAINED_BASELINE);
-                av_opt_set(video_c.priv_data(), "profile", profile != null && profile.length() > 0 ? profile : "baseline", 0);
-                av_opt_set(video_c.priv_data(), "preset",  preset  != null && preset .length() > 0 ? preset  : "medium",   0);
-                av_opt_set(video_c.priv_data(), "tune",    tune    != null && tune   .length() > 0 ? tune    : "",         0);
             }
 
             // some formats want stream headers to be separate
@@ -459,6 +463,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if (videoQuality >= 0) {
                 av_dict_set(options, "crf", "" + videoQuality, 0);
             }
+            for (Entry<String, String> e : videoOptions.entrySet()) {
+                av_dict_set(options, e.getKey(), e.getValue(), 0);
+            }
             /* open the codec */
             if ((ret = avcodec_open2(video_c, video_codec, options)) < 0) {
                 release();
@@ -503,6 +510,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             AVDictionary options = new AVDictionary(null);
             if (audioQuality >= 0) {
                 av_dict_set(options, "crf", "" + audioQuality, 0);
+            }
+            for (Entry<String, String> e : audioOptions.entrySet()) {
+                av_dict_set(options, e.getKey(), e.getValue(), 0);
             }
             /* open the codec */
             if ((ret = avcodec_open2(audio_c, audio_codec, options)) < 0) {

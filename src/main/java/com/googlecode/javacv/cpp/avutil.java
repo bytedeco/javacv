@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avutil.h and other libavutil include files from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
  * copyright (c) 2005-2012 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -224,7 +224,7 @@ public class avutil {
      */
 
     public static final int LIBAVUTIL_VERSION_MAJOR = 52;
-    public static final int LIBAVUTIL_VERSION_MINOR = 13;
+    public static final int LIBAVUTIL_VERSION_MINOR = 18;
     public static final int LIBAVUTIL_VERSION_MICRO = 100;
 
     public static final int    LIBAVUTIL_VERSION_INT = AV_VERSION_INT(LIBAVUTIL_VERSION_MAJOR,
@@ -1293,6 +1293,8 @@ public class avutil {
             AV_PIX_FMT_YUVA444P16BE = 107, ///< planar YUV 4:4:4 64bpp, (1 Cr & Cb sample per 1x1 Y & A samples, big-endian)
             AV_PIX_FMT_YUVA444P16LE = 108, ///< planar YUV 4:4:4 64bpp, (1 Cr & Cb sample per 1x1 Y & A samples, little-endian)
 
+            AV_PIX_FMT_VDPAU        = 109, ///< HW acceleration through VDPAU, Picture.data[3] contains a VdpVideoSurface
+
 //#ifndef AV_PIX_FMT_ABI_GIT_MASTER
             AV_PIX_FMT_RGBA64BE=0x123,   ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
             AV_PIX_FMT_RGBA64LE=0x123+1, ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
@@ -1760,6 +1762,22 @@ public class avutil {
      * @return >= 0 on success otherwise an error code <0
      */
     public static native int av_dict_set(@ByPtrPtr AVDictionary pm, String key, String value, int flags);
+
+    /**
+    * Parse the key/value pairs list and add to a dictionary.
+    *
+    * @param key_val_sep  a 0-terminated list of characters used to separate
+    *                     key from value
+    * @param pairs_sep    a 0-terminated list of characters used to separate
+    *                     two pairs from each other
+    * @param flags        flags to use when adding to dictionary.
+    *                     AV_DICT_DONT_STRDUP_KEY and AV_DICT_DONT_STRDUP_VAL
+    *                     are ignored since the key/value tokens will always
+    *                     be duplicated.
+    * @return             0 on success, negative AVERROR code on failure
+    */
+   public static native int av_dict_parse_string(@ByPtrPtr AVDictionary pm, String str,
+           String key_val_sep, String pairs_sep, int flags);
 
     /**
      * Copy entries from one AVDictionary struct into another.

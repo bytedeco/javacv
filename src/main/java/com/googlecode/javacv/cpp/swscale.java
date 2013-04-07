@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from swscale.h include file from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
  * Copyright (C) 2001-2011 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -88,8 +88,8 @@ public class swscale {
      */
 
     public static final int LIBSWSCALE_VERSION_MAJOR = 2;
-    public static final int LIBSWSCALE_VERSION_MINOR = 1;
-    public static final int LIBSWSCALE_VERSION_MICRO = 103;
+    public static final int LIBSWSCALE_VERSION_MINOR = 2;
+    public static final int LIBSWSCALE_VERSION_MICRO = 100;
 
     public static final int    LIBSWSCALE_VERSION_INT = AV_VERSION_INT(LIBSWSCALE_VERSION_MAJOR,
                                                                        LIBSWSCALE_VERSION_MINOR,
@@ -144,7 +144,8 @@ public class swscale {
             SWS_FULL_CHR_H_INP   = 0x4000,
             SWS_DIRECT_BGR       = 0x8000,
             SWS_ACCURATE_RND     = 0x40000,
-            SWS_BITEXACT         = 0x80000;
+            SWS_BITEXACT         = 0x80000,
+            SWS_ERROR_DIFFUSION  = 0x800000;
 
     public static final double
             SWS_MAX_REDUCE_CUTOFF = 0.002;

@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avformat.h and avio.h include files from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
  * copyright (c) 2001 Fabrice Bellard
  *
@@ -89,8 +89,8 @@ public class avformat {
      */
 
     public static final int LIBAVFORMAT_VERSION_MAJOR = 54;
-    public static final int LIBAVFORMAT_VERSION_MINOR = 59;
-    public static final int LIBAVFORMAT_VERSION_MICRO = 106;
+    public static final int LIBAVFORMAT_VERSION_MINOR = 63;
+    public static final int LIBAVFORMAT_VERSION_MICRO = 104;
 
     public static final int    LIBAVFORMAT_VERSION_INT = AV_VERSION_INT(LIBAVFORMAT_VERSION_MAJOR,
                                                                         LIBAVFORMAT_VERSION_MINOR,
@@ -1670,6 +1670,13 @@ public class avformat {
          */
         @Cast("unsigned")
         public native int correct_ts_overflow();            public native AVFormatContext correct_ts_overflow(int correct_ts_overflow);
+
+        /**
+         * Force seeking to any (also non key) frames.
+         * - encoding: unused
+         * - decoding: Set by user via AVOPtions (NO direct access)
+         */
+        public native int seek2any();                       public native AVFormatContext seek2any(int seek2any);
     }
 
     /**
@@ -2258,6 +2265,17 @@ public class avformat {
      * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
      */
     public static native @Cast("unsigned") int av_codec_get_tag(@ByPtrPtr AVCodecTag tags, @Cast("AVCodecID") int id);
+
+    /**
+     * Get the codec tag for the given codec id.
+     *
+     * @param tags list of supported codec_id - codec_tag pairs, as stored
+     * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
+     * @param id codec id that should be searched for in the list
+     * @param tag A pointer to the found tag
+     * @return 0 if id was not found in tags, > 0 if it was found
+     */
+    public static native int av_codec_get_tag2(@ByPtrPtr AVCodecTag tags, @Cast("AVCodecID") int id, @Cast("unsigned*") int[] tag);
 
     public static native int av_find_default_stream_index(AVFormatContext s);
 

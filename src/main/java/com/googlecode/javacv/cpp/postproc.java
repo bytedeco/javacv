@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from postprocess.h include file from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
  * Copyright (C) 2001-2003 Michael Niedermayer (michaelni@gmx.at)
  *

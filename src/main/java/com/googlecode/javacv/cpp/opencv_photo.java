@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in photo_c.h and photo.hpp
- * of OpenCV 2.4.4, which are covered by the following copyright notice:
+ * of OpenCV 2.4.5, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -73,7 +73,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         include={"<opencv2/photo/photo_c.h>", "<opencv2/photo/photo.hpp>", "opencv_adapters.h"},
         link={"opencv_photo@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_photo244", "opencv_imgproc244", "opencv_core244"}),
+        link={"opencv_photo245", "opencv_imgproc245", "opencv_core245"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

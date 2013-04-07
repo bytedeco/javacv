@@ -15,12 +15,12 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.4  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.5  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled and prepackaged CPPJARs for Linux, Mac OS X, Windows, and Android:
     * http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
- * FFmpeg 1.1.x  http://ffmpeg.org/download.html
+ * FFmpeg 1.2.x  http://ffmpeg.org/download.html
   * Precompiled and prepackaged CPPJARs for Linux, Mac OS X, Windows, and Android:
     * http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x or 2.2.x  http://sourceforge.net/projects/libdc1394/files/
@@ -33,7 +33,7 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
 
 To modify the source code, please note that the project files were created for:
  * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP 0.4  http://code.google.com/p/javacpp/
+ * JavaCPP 0.5  http://code.google.com/p/javacpp/
 
 To rebuild, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
 
@@ -43,7 +43,7 @@ And feel free to ask questions on [http://groups.google.com/group/javacv the mai
 
 
 ==Quick Start for OpenCV and FFmpeg==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`), of OpenCV (`opencv-2.4.4-*.jar`), and of FFmpeg (`ffmpeg-1.1.*.jar`) somewhere in your CLASSPATH. Or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system library PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`), of OpenCV (`opencv-2.4.5*.jar`), and of FFmpeg (`ffmpeg-1.2*.jar`) somewhere in your CLASSPATH. Or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system library PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  # In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -57,7 +57,7 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.4-android-arm.jar`, and `ffmpeg-1.1.3-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.5-android-arm.jar`, and `ffmpeg-1.2-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -220,9 +220,14 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+===April 7, 2013 version 0.5===
+ * Upgraded support to OpenCV 2.4.5
+ * Upgraded supported FFmpeg API to the 1.2 release branch
+ * New methods `FFmpegFrameRecorder.setVideoOption()` and `setAudioOption()` generalize the way to set arbitrary codec options, such as "profile", "preset", "tune", etc. used by the x264 codec
+ * Included better format guessing inside `FFmpegFrameRecorder` for protocols like RTP
  * Added support for planar audio formats to `FFmpegFrameGrabber` and `FFmpegFrameRecorder`, as required by newer versions of FFmpeg for at least MP3 and AAC
- * Enhanced `FFmpegFrameRecorder` by making it use the closest supported frame rate for the given codec instead of failing, and by adding a `tune` property used by the x264 codec
- * Also, to support variable bitrate (VBR) encoding, appended new `videoQuality` and `audioQuality` properties to `FFmpegFrameRecorder`, which usually have an effective range of [0, 51] and overrides the `videoBitrate` and `audioBitrate` properties
+ * Enhanced `FFmpegFrameRecorder` by making it use the closest supported frame rate for the given codec instead of failing
+ * To support variable bitrate (VBR) encoding, appended new `videoQuality` and `audioQuality` properties to `FFmpegFrameRecorder`, which usually have an effective range of [0, 51] and overrides the `videoBitrate` and `audioBitrate` properties
 
 ===March 3, 2013 version 0.4===
  * Upgraded support to OpenCV 2.4.4

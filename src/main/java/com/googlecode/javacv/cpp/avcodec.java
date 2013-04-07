@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avcodec.h and other libavcodec include files from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
  * copyright (c) 2001 Fabrice Bellard
  *
@@ -98,7 +98,7 @@ public class avcodec {
      */
 
     public static final int LIBAVCODEC_VERSION_MAJOR = 54;
-    public static final int LIBAVCODEC_VERSION_MINOR = 86;
+    public static final int LIBAVCODEC_VERSION_MINOR = 92;
     public static final int LIBAVCODEC_VERSION_MICRO = 100;
 
     public static final int    LIBAVCODEC_VERSION_INT = AV_VERSION_INT(LIBAVCODEC_VERSION_MAJOR,
@@ -339,7 +339,8 @@ public class avcodec {
             AV_CODEC_ID_TSCC2              = 166,
             AV_CODEC_ID_MTS2               = 167,
             AV_CODEC_ID_CLLC               = 168,
-            AV_CODEC_ID_MSS2               = 169,
+            AV_CODEC_ID_VP9                = 169,
+            AV_CODEC_ID_MSS2               = 170,
             AV_CODEC_ID_BRENDER_PIX        = MKBETAG('B','P','I','X'),
             AV_CODEC_ID_Y41P               = MKBETAG('Y','4','1','P'),
             AV_CODEC_ID_ESCAPE130          = MKBETAG('E','1','3','0'),
@@ -520,6 +521,8 @@ public class avcodec {
             AV_CODEC_ID_PAF_AUDIO          = MKBETAG('P','A','F','A'),
             AV_CODEC_ID_OPUS               = MKBETAG('O','P','U','S'),
             AV_CODEC_ID_TAK                = MKBETAG('t','B','a','K'),
+            AV_CODEC_ID_EVRC               = MKBETAG('s','e','v','c'),
+            AV_CODEC_ID_SMV                = MKBETAG('s','s','m','v'),
 
             /* subtitle codecs */
             AV_CODEC_ID_FIRST_SUBTITLE     = 0x17000, ///< A dummy ID pointing at the start of subtitle codecs.
@@ -616,6 +619,10 @@ public class avcodec {
      * Codec supports lossless compression. Audio and video codecs only.
      */
     public static final int AV_CODEC_PROP_LOSSLESS     = (1 << 2);
+    /**
+     * Subtitle codec is bitmap based
+     */
+    public static final int AV_CODEC_PROP_BITMAP_SUB   = (1 << 16);
 
     /**
      * @ingroup lavc_decoding
@@ -781,6 +788,14 @@ public class avcodec {
             CODEC_FLAG2_FAST          = 0x00000001, ///< Allow non spec compliant speedup tricks.
             CODEC_FLAG2_NO_OUTPUT     = 0x00000004, ///< Skip bitstream encoding.
             CODEC_FLAG2_LOCAL_HEADER  = 0x00000008, ///< Place global headers at every keyframe instead of in extradata.
+            CODEC_FLAG2_DROP_FRAME_TIMECODE = 0x00002000, ///< timecode is in drop frame format. DEPRECATED!!!!
+            CODEC_FLAG2_IGNORE_CROP   = 0x00010000, ///< Discard cropping information from SPS.
+//#if FF_API_MPV_GLOBAL_OPTS
+            CODEC_FLAG_CBP_RD         = 0x04000000, ///< Use rate distortion optimization for cbp.
+            CODEC_FLAG_QP_RD          = 0x08000000, ///< Use rate distortion optimization for qp selectioon.
+            CODEC_FLAG2_STRICT_GOP    = 0x00000002, ///< Strictly enforce GOP size.
+            CODEC_FLAG2_SKIP_RD       = 0x00004000, ///< RD optimal MB level residual skipping
+//#endif
             CODEC_FLAG2_CHUNKS        = 0x00008000, ///< Input bitstream might be truncated at a packet boundaries instead of only at frame boundaries.
             CODEC_FLAG2_SHOW_ALL      = 0x00400000; ///< Show all frames before the first keyframe
 
@@ -1057,7 +1072,15 @@ public class avcodec {
              * u32le y2
              * @endcode
              */
-            AV_PKT_DATA_SUBTITLE_POSITION = 73;
+            AV_PKT_DATA_SUBTITLE_POSITION = 73,
+
+            /**
+             * Data found in BlockAdditional element of matroska container. There is
+             * no end marker for the data, so it is required to rely on the side data
+             * size to recognize the end. 8 byte id (as found in BlockAddId) followed
+             * by data.
+             */
+            AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL = 74;
 
     /**
      * This structure stores compressed data. It is typically exported by demuxers
@@ -1600,7 +1623,7 @@ public class avcodec {
          * - encoding: unused
          * - decoding: Read by user.
          */
-        public native long channels();                       public native AVFrame channels(long channels);
+        public native int channels();                        public native AVFrame channels(int channels);
 
         /**
          * size of the corresponding packet containing the compressed
@@ -3332,7 +3355,7 @@ public class avcodec {
         /**
          * Timebase in which pkt_dts/pts and AVPacket.dts/pts are.
          * Code outside libavcodec should access this field using:
-         * avcodec_set_pkt_timebase(avctx)
+         * avcodec_{get,set}_pkt_timebase(avctx)
          * - encoding unused.
          * - decodimg set by user
          */
@@ -3341,7 +3364,7 @@ public class avcodec {
         /**
          * AVCodecDescriptor
          * Code outside libavcodec should access this field using:
-         * avcodec_get_codec_descriptior(avctx)
+         * avcodec_{get,set}_codec_descriptior(avctx)
          * - encoding: unused.
          * - decoding: set by libavcodec.
          */
@@ -3368,6 +3391,27 @@ public class avcodec {
          * - encoding: unused
          */
         public native AVDictionary metadata(); public native AVCodecContext metadata(AVDictionary metadata);
+
+        /**
+         * Character encoding of the input subtitles file.
+         * - decoding: set by user
+         * - encoding: unused
+         */
+        @Cast("char*")
+        public native BytePointer sub_charenc(); public native AVCodecContext sub_charenc(BytePointer sub_charenc);
+
+        /**
+         * Subtitles character encoding mode. Formats or codecs might be adjusting
+         * this setting (if they are doing the conversion themselves for instance).
+         * - decoding: set by libavcodec
+         * - encoding: unused
+         */
+        int sub_charenc_mode;
+        public native int sub_charenc_mode(); public native AVCodecContext sub_charenc_mode(int sub_charenc_mode);
+        public static final int
+                FF_SUB_CHARENC_MODE_DO_NOTHING  = -1,  ///< do nothing (demuxer outputs a stream supposed to be already in UTF-8, or the codec is bitmap for instance)
+                FF_SUB_CHARENC_MODE_AUTOMATIC   =  0,  ///< libavcodec will select the mode itself
+                FF_SUB_CHARENC_MODE_PRE_DECODER =  1;  ///< the AVPacket data needs to be recoded to UTF-8 before being fed to the decoder, requires iconv
     }
     @ByVal
     public static native AVRational av_codec_get_pkt_timebase           (AVCodecContext avctx);
@@ -4705,11 +4749,16 @@ public class avcodec {
      */
     public static native int avpicture_get_size(@Cast("AVPixelFormat") int pix_fmt, int width, int height);
 
+//#if FF_API_DEINTERLACE
     /**
      *  deinterlace - if not supported return -1
+     *
+     * @deprecated - use yadif (in libavfilter) instead
      */
+    @Deprecated
     public static native int avpicture_deinterlace(AVPicture dst, AVPicture src,
             @Cast("AVPixelFormat") int pix_fmt, int width, int height);
+//#endif
     /**
      * Copy image src to dst. Wraps av_image_copy().
      */

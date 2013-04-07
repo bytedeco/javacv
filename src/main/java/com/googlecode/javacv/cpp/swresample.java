@@ -19,9 +19,9 @@
  *
  *
  * This file was derived from swresample.h include file from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
- * Copyright (C) 2011-2012 Michael Niedermayer (michaelni@gmx.at)
+ * Copyright (C) 2011-2013 Michael Niedermayer (michaelni@gmx.at)
  *
  * This file is part of libswresample
  *
@@ -172,7 +172,15 @@ public class swresample {
         SWR_DITHER_NONE                = 0,
         SWR_DITHER_RECTANGULAR         = 1,
         SWR_DITHER_TRIANGULAR          = 2,
-        SWR_DITHER_TRIANGULAR_HIGHPASS = 3;
+        SWR_DITHER_TRIANGULAR_HIGHPASS = 3,
+
+        SWR_DITHER_NS_LIPSHITZ            = 65,
+        SWR_DITHER_NS_F_WEIGHTED          = 66,
+        SWR_DITHER_NS_MODIFIED_E_WEIGHTED = 67,
+        SWR_DITHER_NS_IMPROVED_E_WEIGHTED = 68,
+        SWR_DITHER_NS_SHIBATA             = 69,
+        SWR_DITHER_NS_LOW_SHIBATA         = 70,
+        SWR_DITHER_NS_HIGH_SHIBATA        = 71;
 
     /** Resampling Engines */
     public static final int // enum SwrEngine {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -443,9 +443,9 @@ public class freenect {
             int cx, int cy, int wz, double[] wx, double[] wy);
 
     // #include "libfreenect_sync.h"
-    public static native int freenect_sync_get_video(@ByPtrPtr Pointer video,
+    public static native int freenect_sync_get_video(@Cast("void**") @ByPtrPtr Pointer video,
             @Cast("uint32_t*") int[] timestamp, int index, @Cast("freenect_video_format") int fmt);
-    public static native int freenect_sync_get_depth(@ByPtrPtr Pointer depth,
+    public static native int freenect_sync_get_depth(@Cast("void**") @ByPtrPtr Pointer depth,
             @Cast("uint32_t*") int[] timestamp, int index, @Cast("freenect_depth_format") int fmt);
     public static native int freenect_sync_set_tilt_degs(int angle, int index);
     public static native int freenect_sync_get_tilt_state(@ByPtrPtr freenect_raw_tilt_state state, int index);

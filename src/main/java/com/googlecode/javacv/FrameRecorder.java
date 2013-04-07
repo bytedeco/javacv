@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -24,6 +24,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.Buffer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -101,13 +102,15 @@ public abstract class FrameRecorder {
         return create(get(className), String.class, filename, width, height);
     }
 
-    protected String format, profile, preset, tune;
+    protected String format;
     protected int imageWidth, imageHeight, audioChannels;
     protected int pixelFormat, videoCodec, videoBitrate;
     protected double frameRate, videoQuality = -1;
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
     protected double audioQuality = -1;
     protected boolean interleaved;
+    protected HashMap<String, String> videoOptions = new HashMap<String, String>();
+    protected HashMap<String, String> audioOptions = new HashMap<String, String>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
 
@@ -116,27 +119,6 @@ public abstract class FrameRecorder {
     }
     public void setFormat(String format) {
         this.format = format;
-    }
-
-    public String getProfile() {
-        return profile;
-    }
-    public void setProfile(String profile) {
-        this.profile = profile;
-    }
-
-    public String getPreset() {
-        return preset;
-    }
-    public void setPreset(String preset) {
-        this.preset = preset;
-    }
-
-    public String getTune() {
-        return tune;
-    }
-    public void setTune(String tune) {
-        this.tune = tune;
     }
 
     public int getImageWidth() {
@@ -235,6 +217,20 @@ public abstract class FrameRecorder {
     }
     public void setInterleaved(boolean interleaved) {
         this.interleaved = interleaved;
+    }
+
+    public String getVideoOption(String key) {
+        return videoOptions.get(key);
+    }
+    public void setVideoOption(String key, String value) {
+        videoOptions.put(key, value);
+    }
+
+    public String getAudioOption(String key) {
+        return audioOptions.get(key);
+    }
+    public void setAudioOption(String key, String value) {
+        audioOptions.put(key, value);
     }
 
     public int getFrameNumber() {

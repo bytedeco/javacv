@@ -19,7 +19,7 @@
  *
  *
  * This file was derived from avdevice.h include file from
- * FFmpeg 1.1, which are covered by the following copyright notice:
+ * FFmpeg 1.2, which are covered by the following copyright notice:
  *
  * This file is part of FFmpeg.
  *
@@ -70,7 +70,7 @@ public class avdevice {
 
     public static final int LIBAVDEVICE_VERSION_MAJOR = 54;
     public static final int LIBAVDEVICE_VERSION_MINOR =  3;
-    public static final int LIBAVDEVICE_VERSION_MICRO = 102;
+    public static final int LIBAVDEVICE_VERSION_MICRO = 103;
 
     public static final int    LIBAVDEVICE_VERSION_INT = AV_VERSION_INT(LIBAVDEVICE_VERSION_MAJOR,
                                                                         LIBAVDEVICE_VERSION_MINOR,

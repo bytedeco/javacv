@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.4.4, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.4.5, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -126,7 +126,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4", preload="tbb"),
     @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath=windowsIncludepath,
-        link="opencv_core244", preload={"msvcr100", "msvcp100"}),
+        link="opencv_core245", preload={"msvcr100", "msvcp100"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
@@ -155,7 +155,7 @@ public class opencv_core {
     public static final int
             CV_VERSION_EPOCH    = 2,
             CV_VERSION_MAJOR    = 4,
-            CV_VERSION_MINOR    = 4,
+            CV_VERSION_MINOR    = 5,
             CV_VERSION_REVISION = 0,
             CV_MAJOR_VERSION    = CV_VERSION_EPOCH,
             CV_MINOR_VERSION    = CV_VERSION_MAJOR,
@@ -4640,7 +4640,7 @@ public class opencv_core {
                 String err_msg, String file_name, int line, Pointer userdata);
     }
     public static native CvErrorCallback cvRedirectError(CvErrorCallback error_handler,
-            Pointer userdata, @ByPtrPtr Pointer prev_userdata);
+            Pointer userdata, @Cast("void**") @ByPtrPtr Pointer prev_userdata);
 
     public static native int cvNulDevReport(int status, String func_name, String err_msg,
             String file_name, int line, Pointer userdata);
