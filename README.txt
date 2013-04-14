@@ -64,6 +64,7 @@ Eclipse (Android 2.2 or newer):
 After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
  * [http://docs.opencv.org/ OpenCV documentation]
  * [http://ffmpeg.org/doxygen/ FFmpeg documentation]
+
 The class definitions are basically ports to Java of the original header files in C, plus the missing functionality exposed only by the C++ API of OpenCV, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 {{{
@@ -220,6 +221,9 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Renamed `FrameRecorder.record(Buffer[] samples)` to a cleaner `record(Buffer ... samples)` (issue #303)
+ * Fixed `FFmpegFrameRecorder` not flushing buffers on `stop()` (issue #302)
+
 ===April 7, 2013 version 0.5===
  * Upgraded support to OpenCV 2.4.5
  * Upgraded supported FFmpeg API to the 1.2 release branch

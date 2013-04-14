@@ -255,7 +255,7 @@ public abstract class FrameRecorder {
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void record(IplImage image) throws Exception;
-    public void record(Buffer[] samples) throws Exception {
+    public void record(Buffer ... samples) throws Exception {
         throw new UnsupportedOperationException("This FrameRecorder does not support audio.");
     }
     public void record(Frame frame) throws Exception {

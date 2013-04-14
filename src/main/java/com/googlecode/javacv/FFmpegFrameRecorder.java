@@ -577,6 +577,17 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     public void stop() throws Exception {
         if (oc != null) {
+
+            /* flush all the buffers */
+            while (video_st != null && record((IplImage)null, AV_PIX_FMT_NONE));
+            while (audio_st != null && record((AVFrame)null));
+
+            if (interleaved && video_st != null && audio_st != null) {
+                av_interleaved_write_frame(oc, null);
+            } else {
+                av_write_frame(oc, null);
+            }
+
             /* write the trailer, if any */
             av_write_trailer(oc);
 
@@ -591,7 +602,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public void record(IplImage image) throws Exception {
         record(image, AV_PIX_FMT_NONE);
     }
-    public void record(IplImage image, int pixelFormat) throws Exception {
+    public boolean record(IplImage image, int pixelFormat) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
         }
@@ -645,6 +656,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if ((oformat.flags() & AVFMT_RAWPICTURE) != 0) {
+            if (image == null) {
+                return false;
+            }
             /* raw video case. The API may change slightly in the future for that? */
             av_init_packet(video_pkt);
             video_pkt.flags(video_pkt.flags() | AV_PKT_FLAG_KEY);
@@ -657,7 +671,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_pkt.data(video_outbuf);
             video_pkt.size(video_outbuf_size);
             picture.quality(video_c.global_quality());
-            if ((ret = avcodec_encode_video2(video_c, video_pkt, picture, got_video_packet)) < 0) {
+            if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null ? null : picture, got_video_packet)) < 0) {
                 throw new Exception("avcodec_encode_video2() error " + ret + ": Could not encode video packet.");
             }
             picture.pts(picture.pts() + 1); // magic required by libx264
@@ -672,7 +686,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 }
                 video_pkt.stream_index(video_st.index());
             } else {
-                return;
+                return false;
             }
         }
 
@@ -688,9 +702,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 }
             }
         }
+        return true;
     }
 
-    @Override public void record(Buffer[] samples) throws Exception {
+    @Override public void record(Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
@@ -804,38 +819,46 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     frame.data(i, samples_out[i].position(0));
                     frame.linesize(i, samples_out[i].limit());
                 }
-
-                av_init_packet(audio_pkt);
-                audio_pkt.data(audio_outbuf);
-                audio_pkt.size(audio_outbuf_size);
                 frame.quality(audio_c.global_quality());
-                if ((ret = avcodec_encode_audio2(audio_c, audio_pkt, frame, got_audio_packet)) < 0) {
-                    throw new Exception("avcodec_encode_audio2() error " + ret + ": Could not encode audio packet.");
-                }
-                if (got_audio_packet[0] != 0) {
-                    if (audio_pkt.pts() != AV_NOPTS_VALUE) {
-                        audio_pkt.pts(av_rescale_q(audio_pkt.pts(), audio_c.time_base(), audio_c.time_base()));
-                    }
-                    if (audio_pkt.dts() != AV_NOPTS_VALUE) {
-                        audio_pkt.dts(av_rescale_q(audio_pkt.dts(), audio_c.time_base(), audio_c.time_base()));
-                    }
-                    audio_pkt.flags(audio_pkt.flags() | AV_PKT_FLAG_KEY);
-                    audio_pkt.stream_index(audio_st.index());
+                record(frame);
+            }
+        }
+    }
 
-                    /* write the compressed frame in the media file */
-                    synchronized (oc) {
-                        if (interleaved && video_st != null) {
-                            if ((ret = av_interleaved_write_frame(oc, audio_pkt)) < 0) {
-                                throw new Exception("av_interleaved_write_frame() error " + ret + " while writing interleaved audio frame.");
-                            }
-                        } else {
-                            if ((ret = av_write_frame(oc, audio_pkt)) < 0) {
-                                throw new Exception("av_write_frame() error " + ret + " while writing audio frame.");
-                            }
-                        }
-                    }
+    boolean record(AVFrame frame) throws Exception {
+        int ret;
+
+        av_init_packet(audio_pkt);
+        audio_pkt.data(audio_outbuf);
+        audio_pkt.size(audio_outbuf_size);
+        if ((ret = avcodec_encode_audio2(audio_c, audio_pkt, frame, got_audio_packet)) < 0) {
+            throw new Exception("avcodec_encode_audio2() error " + ret + ": Could not encode audio packet.");
+        }
+        if (got_audio_packet[0] != 0) {
+            if (audio_pkt.pts() != AV_NOPTS_VALUE) {
+                audio_pkt.pts(av_rescale_q(audio_pkt.pts(), audio_c.time_base(), audio_c.time_base()));
+            }
+            if (audio_pkt.dts() != AV_NOPTS_VALUE) {
+                audio_pkt.dts(av_rescale_q(audio_pkt.dts(), audio_c.time_base(), audio_c.time_base()));
+            }
+            audio_pkt.flags(audio_pkt.flags() | AV_PKT_FLAG_KEY);
+            audio_pkt.stream_index(audio_st.index());
+        } else {
+            return false;
+        }
+
+        /* write the compressed frame in the media file */
+        synchronized (oc) {
+            if (interleaved && video_st != null) {
+                if ((ret = av_interleaved_write_frame(oc, audio_pkt)) < 0) {
+                    throw new Exception("av_interleaved_write_frame() error " + ret + " while writing interleaved audio frame.");
+                }
+            } else {
+                if ((ret = av_write_frame(oc, audio_pkt)) < 0) {
+                    throw new Exception("av_write_frame() error " + ret + " while writing audio frame.");
                 }
             }
         }
+        return true;
     }
 }
