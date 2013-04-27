@@ -77,14 +77,20 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
-        link={"opencv_nonfree@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@2.4", "opencv_core@.2.4"}),
+        link={"opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_video@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_photo@.2.4",
+              "opencv_objdetect@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_nonfree245", "opencv_features2d245", "opencv_flann245", "opencv_highgui245", "opencv_imgproc245", "opencv_core245"}),
+        link={"opencv_nonfree245", "opencv_gpu245", "opencv_video245", "opencv_legacy245", "opencv_ml245", "opencv_photo245",
+              "opencv_objdetect245", "opencv_features2d245", "opencv_flann245", "opencv_calib3d245", "opencv_highgui245", "opencv_imgproc245", "opencv_core245"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath,
+        link={"opencv_nonfree", "opencv_video", "opencv_legacy", "opencv_ml", "opencv_photo",
+              "opencv_objdetect", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}) })
 public class opencv_nonfree {
-    static { load(opencv_highgui.class); load(opencv_flann.class); load(opencv_features2d.class);
+    static {
+        load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_objdetect.class);
+        load(opencv_photo.class); load(opencv_ml.class); load(opencv_legacy.class); load(opencv_video.class);
         if (load() != null) {
             initModule_nonfree();
         }

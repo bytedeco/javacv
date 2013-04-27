@@ -7,6 +7,10 @@ JavaCV also comes with hardware accelerated full-screen image display (`CanvasFr
 
 To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the [http://code.google.com/p/javacv/source/browse/samples/ sample programs], including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse?repo=procamcalib ProCamCalib] and [http://code.google.com/p/javacv/source/browse?repo=procamtracker ProCamTracker] as well as [http://code.google.com/p/javacv/source/browse?repo=examples Examples ported from OpenCV2 Cookbook] and the associated [http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples Wiki pages].
 
+Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
+
+And feel free to ask questions on [http://groups.google.com/group/javacv the mailing list] if you encounter any problems with the software! I am sure it is far from perfect...
+
 
 ==Required Software==
 To use JavaCV, you will need to download and install the following software:
@@ -35,11 +39,9 @@ To modify the source code, please note that the project files were created for:
  * Maven 2 or 3  http://maven.apache.org/download.html
  * JavaCPP 0.5  http://code.google.com/p/javacpp/
 
-To rebuild, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
 
-Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
-
-And feel free to ask questions on [http://groups.google.com/group/javacv the mailing list] if you encounter any problems with the software! I am sure it is far from perfect...
+==Build Instructions==
+To rebuild from source, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
 
 
 ==Quick Start for OpenCV and FFmpeg==
@@ -221,6 +223,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Fixed wrong dependencies of OpenCV preventing correct loading (issue #304)
  * Renamed `FrameRecorder.record(Buffer[] samples)` to a cleaner `record(Buffer ... samples)` (issue #303)
  * Fixed `FFmpegFrameRecorder` not flushing buffers on `stop()` (issue #302)
 
