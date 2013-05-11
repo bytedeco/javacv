@@ -35,13 +35,13 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
  * JOCL and JOGL from JogAmp  http://jogamp.org/
  * ARToolKitPlus 2.1.1t  http://code.google.com/p/javacv/downloads/list
 
-To modify the source code, please note that the project files were created for:
+
+==Build Instructions==
+To rebuild the source code, please note that the project files were created for:
  * Maven 2 or 3  http://maven.apache.org/download.html
  * JavaCPP 0.5  http://code.google.com/p/javacpp/
 
-
-==Build Instructions==
-To rebuild from source, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
+Once installed, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
 
 
 ==Quick Start for OpenCV and FFmpeg==
@@ -223,6 +223,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Fixed potential resource leak that could occur after `FFmpegFrameRecorder` throwing an `Exception`
+ * Fixed `FFmpegFrameGrabber` not returning the last few frames of video streams (issue #315)
  * Fixed wrong dependencies of OpenCV preventing correct loading (issue #304)
  * Renamed `FrameRecorder.record(Buffer[] samples)` to a cleaner `record(Buffer ... samples)` (issue #303)
  * Fixed `FFmpegFrameRecorder` not flushing buffers on `stop()` (issue #302)

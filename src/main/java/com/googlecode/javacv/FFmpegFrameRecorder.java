@@ -183,7 +183,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         video_st = null;
         audio_st = null;
 
-        if (oc != null) {
+        if (oc != null && !oc.isNull()) {
+            if ((oformat.flags() & AVFMT_NOFILE) == 0) {
+                /* close the output file */
+                avio_close(oc.pb());
+            }
+
             /* free the streams */
             int nb_streams = oc.nb_streams();
             for(int i = 0; i < nb_streams; i++) {
@@ -577,26 +582,23 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     public void stop() throws Exception {
         if (oc != null) {
+            try {
+                /* flush all the buffers */
+                while (video_st != null && record((IplImage)null, AV_PIX_FMT_NONE));
+                while (audio_st != null && record((AVFrame)null));
 
-            /* flush all the buffers */
-            while (video_st != null && record((IplImage)null, AV_PIX_FMT_NONE));
-            while (audio_st != null && record((AVFrame)null));
+                if (interleaved && video_st != null && audio_st != null) {
+                    av_interleaved_write_frame(oc, null);
+                } else {
+                    av_write_frame(oc, null);
+                }
 
-            if (interleaved && video_st != null && audio_st != null) {
-                av_interleaved_write_frame(oc, null);
-            } else {
-                av_write_frame(oc, null);
-            }
-
-            /* write the trailer, if any */
-            av_write_trailer(oc);
-
-            if ((oformat.flags() & AVFMT_NOFILE) == 0) {
-                /* close the output file */
-                avio_close(oc.pb());
+                /* write the trailer, if any */
+                av_write_trailer(oc);
+            } finally {
+                release();
             }
         }
-        release();
     }
 
     public void record(IplImage image) throws Exception {

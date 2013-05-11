@@ -507,13 +507,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return grabFrame(true, true);
     }
     private Frame grabFrame(boolean processImage, boolean doAudio) throws Exception {
+        frame.image = null;
+        frame.samples = null;
         if (frameGrabbed) {
             frameGrabbed = false;
             if (processImage) {
                 processImage();
             }
             frame.image = return_image;
-            frame.samples = null;
             return frame;
         }
         if (oc == null || oc.isNull()) {
@@ -523,13 +524,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         while (!done) {
             if (pkt2.size() <= 0) {
                 if (av_read_frame(oc, pkt) < 0) {
-                    //throw new Exception("Could not read frame");
-                    return null; // end of file?
+                    // The video codec may have buffered some frames
+                    pkt.data(null);
+                    pkt.size(0);
                 }
             }
 
             // Is this a packet from the video stream?
-            if (video_st != null && pkt.stream_index() == video_st.index()) {
+            if (video_st != null && (pkt.stream_index() == video_st.index() ||
+                    pkt.data().isNull() || pkt.size() == 0)) {
                 // Decode video frame
                 int len = avcodec_decode_video2(video_c, picture, got_frame, pkt);
 
@@ -545,7 +548,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     }
                     done = true;
                     frame.image = return_image;
-                    frame.samples = null;
                 }
             } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
                 if (pkt2.size() <= 0) {
@@ -565,7 +567,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     if (got_frame[0] != 0) {
                         /* if a frame has been decoded, output it */
                         done = true;
-                        frame.image = null;
                         int sample_format = samples_frame.format();
                         int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)samples_frame.channels() : 1;
                         int data_size = av_samples_get_buffer_size(null, audio_c.channels(),
