@@ -434,7 +434,10 @@ public class RecordActivity extends Activity implements OnClickListener {
 
                 Log.v(LOG_TAG,"Writing Frame");
                 try {
-                    recorder.setTimestamp(1000 * (System.currentTimeMillis() - startTime));
+                    long t = 1000 * (System.currentTimeMillis() - startTime);
+                    if (t > recorder.getTimestamp()) {
+                        recorder.setTimestamp(t);
+                    }
                     recorder.record(yuvIplimage);
                 } catch (FFmpegFrameRecorder.Exception e) {
                     Log.v(LOG_TAG,e.getMessage());

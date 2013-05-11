@@ -223,6 +223,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Worked around problem in `samples/RecordActivity.java` that would happen when trying to record a frame with an invalid timestamp (issue #313)
  * Fixed potential resource leak that could occur after `FFmpegFrameRecorder` throwing an `Exception`
  * Fixed `FFmpegFrameGrabber` not returning the last few frames of video streams (issue #315)
  * Fixed wrong dependencies of OpenCV preventing correct loading (issue #304)
