@@ -85,7 +85,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         release();
     }
 
-    public void record(IplImage frame) throws Exception {
+    public boolean record(IplImage frame) throws Exception {
         if (writer != null) {
             if (cvWriteFrame(writer, frame) == 0) {
                 throw new Exception("cvWriteFrame(): Could not record frame");
@@ -93,5 +93,6 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         } else {
             throw new Exception("Cannot record: There is no writer (Has start() been called?)");
         }
+        return true;
     }
 }

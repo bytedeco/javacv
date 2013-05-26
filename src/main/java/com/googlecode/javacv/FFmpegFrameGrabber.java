@@ -507,6 +507,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return grabFrame(true, true);
     }
     private Frame grabFrame(boolean processImage, boolean doAudio) throws Exception {
+        frame.keyFrame = false;
         frame.image = null;
         frame.samples = null;
         if (frameGrabbed) {
@@ -547,6 +548,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         processImage();
                     }
                     done = true;
+                    frame.keyFrame = picture.key_frame() != 0;
                     frame.image = return_image;
                 }
             } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
@@ -575,6 +577,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             samples_ptr = new BytePointer[planes];
                             samples_buf = new Buffer[planes];
                         }
+                        frame.keyFrame = samples_frame.key_frame() != 0;
                         frame.samples = samples_buf;
                         int sample_size = data_size / av_get_bytes_per_sample(sample_format);
                         for (int i = 0; i < planes; i++) {

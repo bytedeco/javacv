@@ -601,8 +601,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
-    public void record(IplImage image) throws Exception {
-        record(image, AV_PIX_FMT_NONE);
+    public boolean record(IplImage image) throws Exception {
+        return record(image, AV_PIX_FMT_NONE);
     }
     public boolean record(IplImage image, int pixelFormat) throws Exception {
         if (video_st == null) {
@@ -704,10 +704,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 }
             }
         }
-        return true;
+        return picture.key_frame() != 0;
     }
 
-    @Override public void record(Buffer ... samples) throws Exception {
+    @Override public boolean record(Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
@@ -825,6 +825,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 record(frame);
             }
         }
+        return frame.key_frame() != 0;
     }
 
     boolean record(AVFrame frame) throws Exception {
