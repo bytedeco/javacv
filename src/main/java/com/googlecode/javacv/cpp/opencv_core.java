@@ -1501,11 +1501,9 @@ public class opencv_core {
             return length() == 0;
         }
         public int size() {
-            if (rows() > 1) {
-                return step()*rows();
-            }
             // step == 0 when height == 1...
-            return cols()*elemSize()*channels();
+            int rows = rows();
+            return cols()*elemSize()*channels() + (rows > 1 ? step()*(rows-1) : 0);
         }
 
         public CvSize cvSize() { return opencv_core.cvSize(cols(), rows()); }

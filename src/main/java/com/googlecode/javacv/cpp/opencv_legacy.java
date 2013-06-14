@@ -92,16 +92,19 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
 @Properties({
     @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
         include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>", "<opencv2/legacy/blobtrack.hpp>", "opencv_adapters.h"},
-        link={"opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_features2d@.2.4",
+        link={"opencv_legacy@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_features2d@.2.4",
               "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_legacy245", "opencv_ml245", "opencv_video245", "opencv_features2d245",
+        link={"opencv_legacy245", "opencv_nonfree245", "opencv_gpu245", "opencv_ml245", "opencv_video245", "opencv_features2d245",
               "opencv_flann245", "opencv_calib3d245", "opencv_highgui245", "opencv_imgproc245", "opencv_core245"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 public class opencv_legacy {
-    static { load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_video.class); load(opencv_ml.class); load(); }
+    static {
+        load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_video.class);
+        load(opencv_ml.class); load(opencv_nonfree.class); load();
+    }
 
     public static float cvQueryHistValue_1D(CvHistogram hist, int idx0) {
         return (float)cvGetReal1D(hist.bins(), idx0);
