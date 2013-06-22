@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -25,8 +25,7 @@
 package com.googlecode.javacv.cpp;
 
 import com.googlecode.javacpp.BytePointer;
-import com.googlecode.javacpp.DoublePointer;
-import com.googlecode.javacpp.FunctionPointer;
+import com.googlecode.javacpp.FloatPointer;
 import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.ByPtrPtr;
@@ -36,28 +35,44 @@ import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Const;
 import com.googlecode.javacpp.annotation.MemberGetter;
 import com.googlecode.javacpp.annotation.Namespace;
-import com.googlecode.javacpp.annotation.Opaque;
+import com.googlecode.javacpp.annotation.NoOffset;
 import com.googlecode.javacpp.annotation.Platform;
+import com.googlecode.javacpp.annotation.Properties;
+import com.googlecode.javacpp.annotation.StdString;
+import com.googlecode.javacpp.annotation.StdVector;
 import java.nio.ByteBuffer;
 
 import static com.googlecode.javacpp.Loader.*;
+import static com.googlecode.javacv.cpp.ARToolKitPlus.*;
 
 /**
  *
  * @author Samuel Audet
  */
-@Platform(define="LIBRPP_STATIC", include={"<ARToolKitPlus/template.h>", "<MemoryManager.cpp>",
-    "<librpp/rpp.cpp>", "<librpp/rpp_quintic.cpp>", "<librpp/rpp_vecmat.cpp>", "<librpp/rpp_svd.cpp>",
-    "<librpp/librpp.cpp>", "<extra/Profiler.cpp>"}, includepath={"/usr/include/malloc/", 
-    "../ARToolKitPlus_2.1.1t/include/", "../ARToolKitPlus_2.1.1t/src/"}, options="fastfpu")
+@Properties({
+    @Platform(include="ARToolKitPlus_plus.h",
+        includepath=genericIncludepath, linkpath=genericLinkpath, link="ARToolKitPlus"),
+    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath),
+    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
 @Namespace("ARToolKitPlus")
 public class ARToolKitPlus {
     static { load(); }
 
-    public static native void createImagePatternBCH   (int nID, @Cast("ARToolKitPlus::ARUint8*") byte       dataPtr[/*8*8*/]);
-    public static native void createImagePatternBCH   (int nID, @Cast("ARToolKitPlus::ARUint8*") ByteBuffer dataPtr/*[8*8]*/);
-    public static native void createImagePatternSimple(int nID, @Cast("ARToolKitPlus::ARUint8*") byte       dataPtr[/*8*8*/]);
-    public static native void createImagePatternSimple(int nID, @Cast("ARToolKitPlus::ARUint8*") ByteBuffer dataPtr/*[8*8]*/);
+    public static final String genericIncludepath = "/usr/local/include/:/opt/local/include/";
+    public static final String genericLinkpath    = "/usr/local/lib/:/usr/local/lib64/:/opt/local/lib/:/opt/local/lib64/";
+    public static final String windowsIncludepath = "C:/MinGW/local/include/";
+    public static final String windowsLinkpath    = "C:/MinGW/local/lib/";
+    public static final String androidIncludepath = "../include/";
+    public static final String androidLinkpath    = "../lib/";
+
+    public static native void createImagePatternBCH   (int nID, @Cast("uint8_t*") byte       dataPtr[/*8*8*/]);
+    public static native void createImagePatternBCH   (int nID, @Cast("uint8_t*") ByteBuffer dataPtr/*[8*8]*/);
+    public static native void createImagePatternSimple(int nID, @Cast("uint8_t*") byte       dataPtr[/*8*8*/]);
+    public static native void createImagePatternSimple(int nID, @Cast("uint8_t*") ByteBuffer dataPtr/*[8*8]*/);
+
+    public static final int
+            ARTOOLKITPLUS_VERSION_MAJOR = 2,
+            ARTOOLKITPLUS_VERSION_MINOR = 2;
 
     // enum PIXEL_FORMAT
     public static final int
@@ -80,6 +95,17 @@ public class ARToolKitPlus {
             IMAGE_HALF_RES = 0,
             IMAGE_FULL_RES = 1;
 
+    // enum HULL_TRACKING_MODE
+    public static final int
+            HULL_OFF = 0,
+            HULL_FOUR = 1,
+            HULL_FULL = 2;
+
+    // enum ARTKP_VERSION
+    public static final int
+            VERSION_MAJOR = ARTOOLKITPLUS_VERSION_MAJOR,
+            VERSION_MINOR = ARTOOLKITPLUS_VERSION_MINOR;
+
     // enum MARKER_MODE
     public static final int
             MARKER_TEMPLATE = 0,
@@ -91,6 +117,20 @@ public class ARToolKitPlus {
             POSE_ESTIMATOR_ORIGINAL = 0,
             POSE_ESTIMATOR_ORIGINAL_CONT = 1,
             POSE_ESTIMATOR_RPP = 2;
+
+    public static class CornerPoint extends Pointer {
+        static { load(); }
+        public CornerPoint() { allocate(); }
+        public CornerPoint(int nX, int nY) { allocate(nX, nY); }
+        public CornerPoint(int size) { allocateArray(size); }
+        public CornerPoint(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocate(int nX, int nY);
+        private native void allocateArray(int size);
+
+        public native short x(); public native CornerPoint x(short x);
+        public native short y(); public native CornerPoint y(short y);
+    }
 
     public static class ARMarkerInfo extends Pointer {
         static { load(); }
@@ -104,16 +144,53 @@ public class ARToolKitPlus {
             return (ARMarkerInfo)super.position(position);
         }
 
-        public native int    area(); public native ARMarkerInfo area(int area);
-        public native int    id();   public native ARMarkerInfo id(int id);
-        public native int    dir();  public native ARMarkerInfo dir(int dir);
-        public native double cf();   public native ARMarkerInfo cf(double cf);
+        public native int   area(); public native ARMarkerInfo area(int area);
+        public native int   id();   public native ARMarkerInfo id(int id);
+        public native int   dir();  public native ARMarkerInfo dir(int dir);
+        public native float cf();   public native ARMarkerInfo cf(float cf);
         // ARFloat           pos[2];
-        @MemberGetter public native DoublePointer pos();
+        @MemberGetter public native FloatPointer pos();
         // ARFloat           line[4][3];
-        @MemberGetter public native @Cast("ARFloat(*)[3]") DoublePointer line();
+        @MemberGetter public native @Cast("ARFloat(*)[3]") FloatPointer line();
         // ARFloat           vertex[4][2];
-        @MemberGetter public native @Cast("ARFloat(*)[2]") DoublePointer vertex();
+        @MemberGetter public native @Cast("ARFloat(*)[2]") FloatPointer vertex();
+    }
+
+    public static class ARMarkerInfo2 extends Pointer {
+        static { load(); }
+        public ARMarkerInfo2() { allocate(); }
+        public ARMarkerInfo2(int size) { allocateArray(size); }
+        public ARMarkerInfo2(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        @Override public ARMarkerInfo position(int position) {
+            return (ARMarkerInfo)super.position(position);
+        }
+
+        public native int area(); public native ARMarkerInfo2 area(int area);
+        @MemberGetter public native FloatPointer pos();
+        public native int coord_num(); public native ARMarkerInfo2 coord_num(int id);
+        @MemberGetter public native IntPointer x_coord();
+        @MemberGetter public native IntPointer y_coord();
+        @MemberGetter public native IntPointer vertex();
+    }
+
+    public static class arPrevInfo extends Pointer {
+        static { load(); }
+        public arPrevInfo() { allocate(); }
+        public arPrevInfo(int size) { allocateArray(size); }
+        public arPrevInfo(Pointer p) { super(p); }
+        private native void allocate();
+        private native void allocateArray(int size);
+
+        @Override public ARMarkerInfo position(int position) {
+            return (ARMarkerInfo)super.position(position);
+        }
+
+        @ByRef
+        public native ARMarkerInfo marker(); public native arPrevInfo marker(ARMarkerInfo marker);
+        public native int count(); public native arPrevInfo count(int count);
     }
 
     public static class ARMultiEachMarkerInfoT extends Pointer {
@@ -128,17 +205,17 @@ public class ARToolKitPlus {
             return (ARMultiEachMarkerInfoT)super.position(position);
         }
 
-        public native int    patt_id(); public native ARMultiEachMarkerInfoT patt_id(int patt_id);
-        public native double width();   public native ARMultiEachMarkerInfoT width(double width);
+        public native int   patt_id(); public native ARMultiEachMarkerInfoT patt_id(int patt_id);
+        public native float width();   public native ARMultiEachMarkerInfoT width(float width);
 
         // ARFloat           center[2];
-        @MemberGetter public native DoublePointer center();
+        @MemberGetter public native FloatPointer center();
         // ARFloat           trans[3][4];
-        @MemberGetter public native @Cast("ARFloat(*)[4]") DoublePointer trans();
+        @MemberGetter public native @Cast("ARFloat(*)[4]") FloatPointer trans();
         // ARFloat           itrans[3][4];
-        @MemberGetter public native @Cast("ARFloat(*)[4]") DoublePointer itrans();
+        @MemberGetter public native @Cast("ARFloat(*)[4]") FloatPointer itrans();
         // ARFloat           pos3d[4][3];
-        @MemberGetter public native @Cast("ARFloat(*)[3]") DoublePointer pos3d();
+        @MemberGetter public native @Cast("ARFloat(*)[3]") FloatPointer pos3d();
         public native int    visible();  public native ARMultiEachMarkerInfoT visible(int visible);
         public native int    visibleR(); public native ARMultiEachMarkerInfoT visibleR(int visibleR);
     }
@@ -158,28 +235,31 @@ public class ARToolKitPlus {
         public native ARMultiEachMarkerInfoT  marker();     public native ARMultiMarkerInfoT marker(ARMultiEachMarkerInfoT marker);
         public native int                     marker_num(); public native ARMultiMarkerInfoT marker_num(int marker_num);
         // ARFloat                            trans[3][4];
-        @MemberGetter public native @Cast("ARFloat(*)[4]") DoublePointer trans();
+        @MemberGetter public native @Cast("ARFloat(*)[4]") FloatPointer trans();
         public native int                     prevF();      public native ARMultiMarkerInfoT prevF(int prevF);
         // ARFloat                            transR[3][4];
-        @MemberGetter public native @Cast("ARFloat(*)[4]") DoublePointer transR();
+        @MemberGetter public native @Cast("ARFloat(*)[4]") FloatPointer transR();
     }
 
-    public static class Logger extends Pointer {
+    @NoOffset public static class Camera extends Pointer {
         static { load(); }
-        public Logger() { }
-        public Logger(Pointer p) { super(p); }
-
-        public native void artLog(String nStr);
-    }
-
-    @Opaque public static class Camera extends Pointer {
         public Camera() { }
         public Camera(Pointer p) { super(p); }
-    }
 
-    @Opaque public static class Profiler extends Pointer {
-        public Profiler() { }
-        public Profiler(Pointer p) { super(p); }
+        public native int xsize(); public native Camera xsize(int xsize);
+        public native int ysize(); public native Camera ysize(int ysize);
+        // ARFloat mat[3][4];
+        @MemberGetter public native @Cast("ARFloat(*)[4]") FloatPointer mat();
+        // ARFloat kc[6];
+        @MemberGetter public native FloatPointer kc();
+
+        public native void observ2Ideal(float ox, float oy, float[] ix, float[] iy);
+        public native void ideal2Observ(float ix, float iy, float[] ox, float[] oy);
+        public native boolean loadFromFile(@StdString String filename);
+        public native Camera clone();
+        public native boolean changeFrameSize(int frameWidth, int frameHeight);
+        public native void printSettings();
+        public native @StdString String getFileName();
     }
 
     public static class Tracker extends Pointer {
@@ -188,34 +268,34 @@ public class ARToolKitPlus {
         public Tracker(Pointer p) { super(p); }
 
         public native boolean setPixelFormat(@Cast("ARToolKitPlus::PIXEL_FORMAT") int nFormat);
-        public native boolean loadCameraFile(String nCamParamFile,
-                double nNearClip, double nFarClip);
+        public native boolean loadCameraFile(String nCamParamFile, float nNearClip, float nFarClip);
         public native void setLoadUndistLUT(boolean nSet);
-        public native void setLogger(Logger nLogger);
 
-        public native int arDetectMarker(@Cast("ARToolKitPlus::ARUint8*") byte[]      dataPtr, int thresh,
+        public native int arDetectMarker(@Cast("uint8_t*") byte[]      dataPtr, int thresh,
                 @ByPtrPtr ARMarkerInfo marker_info, int[] marker_num);
-        public native int arDetectMarker(@Cast("ARToolKitPlus::ARUint8*") ByteBuffer  dataPtr, int thresh,
+        public native int arDetectMarker(@Cast("uint8_t*") ByteBuffer  dataPtr, int thresh,
                 @ByPtrPtr ARMarkerInfo marker_info, int[] marker_num);
-        public native int arDetectMarker(@Cast("ARToolKitPlus::ARUint8*") BytePointer dataPtr, int thresh,
+        public native int arDetectMarker(@Cast("uint8_t*") BytePointer dataPtr, int thresh,
                 @ByPtrPtr ARMarkerInfo marker_info, int[] marker_num);
-        public native int arDetectMarkerLite(@Cast("ARToolKitPlus::ARUint8*") byte[]      dataPtr, int thresh,
+        public native int arDetectMarkerLite(@Cast("uint8_t*") byte[]      dataPtr, int thresh,
                 @ByPtrPtr ARMarkerInfo marker_info, int[] marker_num);
-        public native int arDetectMarkerLite(@Cast("ARToolKitPlus::ARUint8*") ByteBuffer  dataPtr, int thresh,
+        public native int arDetectMarkerLite(@Cast("uint8_t*") ByteBuffer  dataPtr, int thresh,
                 @ByPtrPtr ARMarkerInfo marker_info, int[] marker_num);
-        public native int arDetectMarkerLite(@Cast("ARToolKitPlus::ARUint8*") BytePointer dataPtr, int thresh,
+        public native int arDetectMarkerLite(@Cast("uint8_t*") BytePointer dataPtr, int thresh,
                 @ByPtrPtr ARMarkerInfo marker_info, int[] marker_num);
-        public native double arMultiGetTransMat(ARMarkerInfo marker_info,
+        public native float arMultiGetTransMat(ARMarkerInfo marker_info,
                 int marker_num, ARMultiMarkerInfoT config);
-        public native double arGetTransMat(ARMarkerInfo marker_info, double center[/*2*/],
-                double width, @Cast("ARFloat(*)[4]") double conv[/*3][4*/]);
-        public native double arGetTransMatCont(ARMarkerInfo marker_info,
-                @Cast("ARFloat(*)[4]") double prev_conv[/*3][4*/],   double center[/*2*/],
-                double width, @Cast("ARFloat(*)[4]") double conv[/*3][4*/]);
-        public native double rppMultiGetTransMat(ARMarkerInfo marker_info,
+        public native float arMultiGetTransMatHull(ARMarkerInfo marker_info,
                 int marker_num, ARMultiMarkerInfoT config);
-        public native double rppGetTransMat(ARMarkerInfo marker_info,
-                double center[/*2*/], double width, @Cast("ARFloat(*)[4]") double conv[/*3][4*/]);
+        public native float arGetTransMat(ARMarkerInfo marker_info, float center[/*2*/],
+                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
+        public native float arGetTransMatCont(ARMarkerInfo marker_info,
+                @Cast("ARFloat(*)[4]") float prev_conv[/*3][4*/],   float center[/*2*/],
+                float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
+        public native float rppMultiGetTransMat(ARMarkerInfo marker_info,
+                int marker_num, ARMultiMarkerInfoT config);
+        public native float rppGetTransMat(ARMarkerInfo marker_info,
+                float center[/*2*/], float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
         public native int arLoadPatt(@Cast("char*") String filename);
         public native int arFreePatt(int patno);
         public native int arMultiFreeConfig(ARMultiMarkerInfoT config);
@@ -225,12 +305,15 @@ public class ARToolKitPlus {
         public native void setMarkerMode(@Cast("ARToolKitPlus::MARKER_MODE") int nMarkerMode);
         public native void activateVignettingCompensation(boolean nEnable,
                 int nCorners/*=0*/, int nLeftRight/*=0*/, int nTopBottom/*=0*/);
+        public static native boolean calcCameraMatrix(String nCamParamFile,
+                float nNear, float nFar, float[] nMatrix);
         public native void changeCameraSize(int nWidth, int nHeight);
 
         public native void setUndistortionMode(@Cast("ARToolKitPlus::UNDIST_MODE") int nMode);
 
         public native boolean setPoseEstimator(@Cast("ARToolKitPlus::POSE_ESTIMATOR") int nMethod);
-        public native void setBorderWidth(double nFraction);
+        public native void setHullMode(@Cast("ARToolKitPlus::HULL_TRACKING_MODE") int nMode);
+        public native void setBorderWidth(float nFraction);
         public native void setThreshold(int nValue);
         public native int getThreshold();
         public native void activateAutoThreshold(boolean nEnable);
@@ -238,67 +321,81 @@ public class ARToolKitPlus {
         public native void setNumAutoThresholdRetries(int nNumRetries);
 
         public native void setImageProcessingMode(@Cast("ARToolKitPlus::IMAGE_PROC_MODE") int nMode);
-        public native @Const DoublePointer getModelViewMatrix();
-        public native @Const DoublePointer getProjectionMatrix();
-        public native String getDescription();
+        public native @Const FloatPointer getModelViewMatrix();
+        public native @Const FloatPointer getProjectionMatrix();
         public native @Cast("ARToolKitPlus::PIXEL_FORMAT") int getPixelFormat();
         public native int getBitsPerPixel();
         public native int getNumLoadablePatterns();
 
         public native Camera getCamera();
         public native void setCamera(Camera nCamera);
-        public native void setCamera(Camera nCamera, double nNearClip, double nFarClip);
-        public native double calcOpenGLMatrixFromMarker(ARMarkerInfo nMarkerInfo,
-                double nPatternCenter[/*2*/], double nPatternSize, double[] nOpenGLMatrix);
+        public native void setCamera(Camera nCamera, float nNearClip, float nFarClip);
+        public native float calcOpenGLMatrixFromMarker(ARMarkerInfo nMarkerInfo,
+                float nPatternCenter[/*2*/], float nPatternSize, float[] nOpenGLMatrix);
 
-        public native @ByRef Profiler getProfiler();
-        public native double executeSingleMarkerPoseEstimator(ARMarkerInfo marker_info, 
-                double center[/*2*/], double width, @Cast("ARFloat(*)[4]") double conv[/*3][4*/]);
-        public native double executeMultiMarkerPoseEstimator(ARMarkerInfo marker_info,
+        public native float executeSingleMarkerPoseEstimator(ARMarkerInfo marker_info,
+                float center[/*2*/], float width, @Cast("ARFloat(*)[4]") float conv[/*3][4*/]);
+        public native float executeMultiMarkerPoseEstimator(ARMarkerInfo marker_info,
                 int marker_num, ARMultiMarkerInfoT config);
+
+        public native @Const @StdVector CornerPoint getTrackedCorners();
     }
 
-    public static class ArtLogFunction extends FunctionPointer {
+    public static class SingleTracker extends TrackerSingleMarker {
         static { load(); }
-        public    ArtLogFunction(Pointer p) { super(p); }
-        protected ArtLogFunction() { allocate(); }
-        private native void allocate();
-        public native void call(String nStr);
-    }
-    public static class FunctionLogger extends Logger {
-        static { load(); }
-        public FunctionLogger(ArtLogFunction f) {  allocate(f); }
-        public FunctionLogger(Pointer p) { super(p); }
-        private native void allocate(ArtLogFunction f);
-    }
-
-    public static class SingleTracker extends Tracker {
-        static { load(); }
-        public SingleTracker(int width, int height) { allocate(width, height); }
+        public SingleTracker(int width, int height) { super(null); allocate(width, height); }
         public SingleTracker(Pointer p) { super(p); }
         private native void allocate(int width, int height);
-
-        public native void setLoggerFunction(ArtLogFunction f);
     }
 
-    public static class MultiTracker extends Tracker {
+    public static class MultiTracker extends TrackerMultiMarker {
         static { load(); }
-        public MultiTracker(int width, int height) { allocate(width, height); }
+        public MultiTracker(int width, int height) { super(null); allocate(width, height); }
         public MultiTracker(Pointer p) { super(p); }
         private native void allocate(int width, int height);
+    }
 
-        public native void setLoggerFunction(ArtLogFunction f);
+    public static class TrackerSingleMarker extends Tracker {
+        static { load(); }
+        public TrackerSingleMarker(int width, int height, int maxImagePatterns/*=8*/, int pattWidth/*=6*/,
+                int pattHeight/*=6*/, int pattSamples/*=6*/, int maxLoadPatterns/*=0*/) {
+            allocate(width, height, maxImagePatterns, pattWidth, pattHeight, pattSamples, maxLoadPatterns);
+        }
+        public TrackerSingleMarker(Pointer p) { super(p); }
+        private native void allocate(int width, int height, int maxImagePatterns/*=8*/, int pattWidth/*=6*/,
+                int pattHeight/*=6*/, int pattSamples/*=6*/, int maxLoadPatterns/*=0*/);
+
+        public native boolean init(String nCamParamFile, float nNearClip, float nFarClip);
+        public native int addPattern(String nFileName);
+        public native @StdVector int[] calc(@Cast("uint8_t*") int[] nImage,
+                @ByPtrPtr ARMarkerInfo nMarker_info/*=null*/, int[] nNumMarkers/*=null*/);
+        public native void selectDetectedMarker(int id);
+        public native int selectBestMarkerByCf();
+        public native void setPatternWidth(float nWidth);
+        public native void getARMatrix(@Cast("ARFloat(*)[4]") float nMatrix[/*3][4*/]);
+        public native float getConfidence();
+    }
+
+    public static class TrackerMultiMarker extends Tracker {
+        static { load(); }
+        public TrackerMultiMarker(int width, int height, int maxImagePatterns/*=8*/, int pattWidth/*=6*/,
+                int pattHeight/*=6*/, int pattSamples/*=6*/, int maxLoadPatterns/*=0*/) {
+            allocate(width, height, maxImagePatterns, pattWidth, pattHeight, pattSamples, maxLoadPatterns);
+        }
+        public TrackerMultiMarker(Pointer p) { super(p); }
+        private native void allocate(int width, int height, int maxImagePatterns/*=8*/, int pattWidth/*=6*/,
+                int pattHeight/*=6*/, int pattSamples/*=6*/, int maxLoadPatterns/*=0*/);
 
         public native boolean init(String nCamParamFile, String nMultiFile,
-                double nNearClip, double nFarClip, Logger nLogger);
-        public native int calc(@Cast("unsigned char*") byte[]      nImage);
-        public native int calc(@Cast("unsigned char*") ByteBuffer  nImage);
-        public native int calc(@Cast("unsigned char*") BytePointer nImage);
+                float nNearClip, float nFarClip);
+        public native int calc(@Cast("uint8_t*") byte[]      nImage);
+        public native int calc(@Cast("uint8_t*") ByteBuffer  nImage);
+        public native int calc(@Cast("uint8_t*") BytePointer nImage);
         public native int getNumDetectedMarkers();
         public native void setUseDetectLite(boolean nEnable);
         public native void getDetectedMarkers(@ByPtrRef IntPointer nMarkerIDs);
         public native @Const @ByRef ARMarkerInfo getDetectedMarker(int nWhich);
         public native @Const ARMultiMarkerInfoT getMultiMarkerConfig();
-        public native void getARMatrix(@Cast("ARFloat(*)[4]") double nMatrix[/*3][4*/]);
+        public native void getARMatrix(@Cast("ARFloat(*)[4]") float nMatrix[/*3][4*/]);
     }
 }

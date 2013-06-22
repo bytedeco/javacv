@@ -33,7 +33,7 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
  * CL Eye Platform SDK (Windows only)  http://codelaboratories.com/downloads/
  * Android SDK API 8 or newer  http://developer.android.com/sdk/
  * JOCL and JOGL from JogAmp  http://jogamp.org/
- * ARToolKitPlus 2.1.1t  http://code.google.com/p/javacv/downloads/list
+ * ARToolKitPlus 2.3.0  https://launchpad.net/artoolkitplus
 
 
 ==Build Instructions==
@@ -223,6 +223,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Upgraded to ARToolKitPlus 2.3.0 (issue #234)
+ * Fixed drawing issues with `MarkerDetector.draw()`
  * Fixed `FFmpegFrameGrabber.getTimestamp()` not returning values for audio frames (issue #328)
  * Added new `Frame.keyFrame` field returned by `FFmpegFrameGrabber.grabFrame()` to know when a grabbed frame is a key frame or not (issue #312)
  * Worked around problem in `samples/RecordActivity.java` that would happen when trying to record a frame with an invalid timestamp (issue #313)

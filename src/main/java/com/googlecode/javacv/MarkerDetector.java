@@ -21,7 +21,6 @@
 package com.googlecode.javacv;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
 
 import static com.googlecode.javacv.cpp.ARToolKitPlus.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -144,13 +143,6 @@ public class MarkerDetector {
         thresholdedImage = IplImage.create(width,   height,   IPL_DEPTH_8U,  1);
 
         tracker = new MultiTracker(thresholdedImage.widthStep(), thresholdedImage.height());
-//        String description = tracker.getDescription();
-//        System.out.println("ARToolKitPlus compile-time information: " + description);
-        tracker.setLoggerFunction(new ArtLogFunction() {
-            @Override public void call(String nStr) {
-                Logger.getLogger(MarkerDetector.class.getName()).warning(nStr);
-            }
-        });
 
 //        if (depth != IPL_DEPTH_8U) {
 //            throw new Exception("Unsupported format: IplImage must have depth == IPL_DEPTH_8U.");
@@ -168,7 +160,7 @@ public class MarkerDetector {
 //                   "data/markerboard_480-499.cfg", 1.0f, 1000.0f, null)) {
 //            throw new Exception("ERROR: init() failed.");
 //        }
-        tracker.setBorderWidth(0.125);
+        tracker.setBorderWidth(0.125f);
 //        tracker.setThreshold(128);
 //        tracker.activateAutoThreshold(true);
 //        tracker.setNumAutoThresholdRetries(10);
@@ -214,8 +206,8 @@ public class MarkerDetector {
                 continue;
             }
             int dir = markers.dir();
-            double confidence = markers.cf();
-            double[] vertex = new double[8];
+            float confidence = markers.cf();
+            float[] vertex = new float[8];
             markers.vertex().get(vertex);
 
             int w = settings.subPixelWindow/2+1;
@@ -227,7 +219,8 @@ public class MarkerDetector {
                     continue;
             }
 
-            CvBox2D box = cvMinAreaRect2(points.put(vertex), memory);
+            points.getFloatBuffer().put(vertex);
+            CvBox2D box = cvMinAreaRect2(points, memory);
             float bw = box.size().width();
             float bh = box.size().height();
             cvClearMemStorage(memory);
@@ -262,12 +255,12 @@ if (false) {
             }
 }
             cvFindCornerSubPix(image, corners.position(0), 4, subPixelSize, subPixelZeroZone, subPixelTermCriteria);
-            vertex[0] = corners.position((4-dir)%4).x(); vertex[1] = corners.position((4-dir)%4).y();
-            vertex[2] = corners.position((5-dir)%4).x(); vertex[3] = corners.position((5-dir)%4).y();
-            vertex[4] = corners.position((6-dir)%4).x(); vertex[5] = corners.position((6-dir)%4).y();
-            vertex[6] = corners.position((7-dir)%4).x(); vertex[7] = corners.position((7-dir)%4).y();
+            double[] d = { corners.position((4-dir)%4).x(), corners.position((4-dir)%4).y(),
+                           corners.position((5-dir)%4).x(), corners.position((5-dir)%4).y(),
+                           corners.position((6-dir)%4).x(), corners.position((6-dir)%4).y(),
+                           corners.position((7-dir)%4).x(), corners.position((7-dir)%4).y() };
 
-            markers2[n2++] = new Marker(id, vertex, confidence);
+            markers2[n2++] = new Marker(id, d, confidence);
         }
 //long time4 = System.currentTimeMillis();
 //System.out.println("thresholdTime = " + (time2-time1) + "  detectTime = " + (time3-time2) + "  subPixTime = " + (time4-time3));
@@ -302,7 +295,7 @@ if (false) {
             cx /= 4;
             cy /= 4;
 
-            cvPolyLine(image, pts, new int[] { 4 }, 1, 1, CV_RGB(0, 0, image.highValue()), 1, CV_AA, 16);
+            cvPolyLine(image, pts.position(0), new int[] { 4 }, 1, 1, CV_RGB(0, 0, image.highValue()), 1, CV_AA, 16);
 
             String text = Integer.toString(m.id);
             int[] baseline = new int[1];
