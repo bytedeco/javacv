@@ -525,15 +525,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         while (!done) {
             if (pkt2.size() <= 0) {
                 if (av_read_frame(oc, pkt) < 0) {
-                    // The video codec may have buffered some frames
-                    pkt.data(null);
-                    pkt.size(0);
+                    if (video_st != null) {
+                        // The video codec may have buffered some frames
+                        pkt.stream_index(video_st.index());
+                        pkt.data(null);
+                        pkt.size(0);
+                    } else {
+                        return null;
+                    }
                 }
             }
 
             // Is this a packet from the video stream?
-            if (video_st != null && (pkt.stream_index() == video_st.index() ||
-                    pkt.data().isNull() || pkt.size() == 0)) {
+            if (video_st != null && pkt.stream_index() == video_st.index()) {
                 // Decode video frame
                 int len = avcodec_decode_video2(video_c, picture, got_frame, pkt);
 
@@ -550,6 +554,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     done = true;
                     frame.keyFrame = picture.key_frame() != 0;
                     frame.image = return_image;
+                } else if (pkt.data() == null && pkt.size() == 0) {
+                    return null;
                 }
             } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
                 if (pkt2.size() <= 0) {
@@ -567,6 +573,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     pkt2.data(pkt2.data().position(len));
                     pkt2.size(pkt2.size() - len);
                     if (got_frame[0] != 0) {
+                        long pts = av_frame_get_best_effort_timestamp(samples_frame);
+                        AVRational time_base = audio_st.time_base();
+                        timestamp = 1000000L * pts * time_base.num() / time_base.den();
                         /* if a frame has been decoded, output it */
                         done = true;
                         int sample_format = samples_frame.format();

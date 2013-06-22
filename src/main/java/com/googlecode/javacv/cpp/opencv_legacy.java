@@ -99,7 +99,9 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
               "opencv_flann245", "opencv_calib3d245", "opencv_highgui245", "opencv_imgproc245", "opencv_core245"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath,
+        link={"opencv_legacy", "opencv_nonfree", "opencv_ml", "opencv_video", "opencv_features2d",
+              "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}) })
 public class opencv_legacy {
     static {
         load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_video.class);
