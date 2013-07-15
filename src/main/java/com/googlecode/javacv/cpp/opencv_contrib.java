@@ -20,7 +20,7 @@
  *
  * This file is based on information found in contrib.hpp, retina.hpp,
  * detection_based_tracker.hpp, hybrid_tracker.hpp, and openfabmap.hpp
- * of OpenCV 2.4.5, which are covered by the following copyright notice:
+ * of OpenCV 2.4.6.1, which are covered by the following copyright notice:
  *
  *                           License Agreement
  *                For Open Source Computer Vision Library
@@ -95,8 +95,8 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
         link={"opencv_contrib@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_objdetect@.2.4", "opencv_calib3d@.2.4",
               "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
     @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_contrib245", "opencv_ml245", "opencv_video245", "opencv_objdetect245", "opencv_calib3d245",
-              "opencv_features2d245", "opencv_flann245", "opencv_highgui245", "opencv_imgproc245", "opencv_core245"}),
+        link={"opencv_contrib246", "opencv_ml246", "opencv_video246", "opencv_objdetect246", "opencv_calib3d246",
+              "opencv_features2d246", "opencv_flann246", "opencv_highgui246", "opencv_imgproc246", "opencv_core246"}),
     @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
     @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
     @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })

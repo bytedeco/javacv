@@ -19,7 +19,7 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.5  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.6.x  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled and prepackaged CPPJARs for Linux, Mac OS X, Windows, and Android:
     * http://code.google.com/p/javacv/downloads/list
 
@@ -45,7 +45,7 @@ Once installed, simply call the usual `mvn install` command for both JavaCPP and
 
 
 ==Quick Start for OpenCV and FFmpeg==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`), of OpenCV (`opencv-2.4.5*.jar`), and of FFmpeg (`ffmpeg-1.2*.jar`) somewhere in your CLASSPATH. Or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system library PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`), of OpenCV (`opencv-2.4.6*.jar`), and of FFmpeg (`ffmpeg-1.2*.jar`) somewhere in your CLASSPATH. Or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system library PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  # In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -59,7 +59,7 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.5-android-arm.jar`, and `ffmpeg-1.2-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.6-android-arm.jar`, and `ffmpeg-1.2-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -223,6 +223,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Upgraded support to OpenCV 2.4.6
+ * Fixed callbacks when used with custom class loaders such as with Web containers
  * Upgraded to ARToolKitPlus 2.3.0 (issue #234)
  * Fixed drawing issues with `MarkerDetector.draw()`
  * Fixed `FFmpegFrameGrabber.getTimestamp()` not returning values for audio frames (issue #328)
