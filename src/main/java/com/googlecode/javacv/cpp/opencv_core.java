@@ -123,13 +123,11 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4", preload="tbb"),
-    @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath=windowsIncludepath,
+    @Platform(include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4", preload="tbb"),
+    @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath="C:/opencv/build/include/",
         link="opencv_core246", preload={"msvcr100", "msvcp100"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+    @Platform(value="windows-x86",    linkpath="C:/opencv/build/x86/vc10/lib/", preloadpath="C:/opencv/build/x86/vc10/bin/"),
+    @Platform(value="windows-x86_64", linkpath="C:/opencv/build/x64/vc10/lib/", preloadpath="C:/opencv/build/x64/vc10/bin/") })
 public class opencv_core {
     public static native void SetLibraryPath(String path);
     static {
@@ -142,15 +140,6 @@ public class opencv_core {
             }
         }
     }
-    public static final String genericIncludepath    = "/usr/local/include:/opt/local/include/";
-    public static final String genericLinkpath       = "/usr/local/lib/:/usr/local/lib64/:/opt/local/lib/:/opt/local/lib64/";
-    public static final String windowsIncludepath    = "C:/opencv/build/include/";
-    public static final String windowsx86Linkpath    = "C:/opencv/build/x86/vc10/lib/";
-    public static final String windowsx86Preloadpath = "C:/opencv/build/x86/vc10/bin/";
-    public static final String windowsx64Linkpath    = "C:/opencv/build/x64/vc10/lib/";
-    public static final String windowsx64Preloadpath = "C:/opencv/build/x64/vc10/bin/";
-    public static final String androidIncludepath    = "../include/";
-    public static final String androidLinkpath       = "../lib/";
 
     public static final int
             CV_VERSION_EPOCH    = 2,
@@ -3345,8 +3334,8 @@ public class opencv_core {
         public native PointerPointer attr(); public native CvAttrList attr(PointerPointer attr);
         public native CvAttrList next();     public native CvAttrList next(CvAttrList next);
 
-        public static final CvAttrList EMPTY = new CvAttrList();
     }
+    public static final CvAttrList CV_ATTR_LIST_EMPTY = new CvAttrList();
     public static CvAttrList cvAttrList(PointerPointer attr, CvAttrList next) {
         return new CvAttrList().attr(attr).next(next);
     }
@@ -4479,7 +4468,7 @@ public class opencv_core {
     public static native String cvAttrValue(CvAttrList attr, String attr_name);
 
     public static void cvStartWriteStruct(CvFileStorage fs, String name, int struct_flags, String type_name/*=null*/) {
-        cvStartWriteStruct(fs, name, struct_flags, type_name, CvAttrList.EMPTY);
+        cvStartWriteStruct(fs, name, struct_flags, type_name, CV_ATTR_LIST_EMPTY);
     }
     public static native void cvStartWriteStruct(CvFileStorage fs, String name, int struct_flags,
             String type_name/*=null*/, @ByVal CvAttrList attributes/*=cvArrtList()*/);
@@ -4489,7 +4478,7 @@ public class opencv_core {
     public static native void cvWriteString(CvFileStorage fs, String name, String str, int quote/*=0*/);
     public static native void cvWriteComment(CvFileStorage fs, String comment, int eol_comment);
     public static void cvWrite(CvFileStorage fs, String name, Pointer ptr) {
-        cvWrite(fs, name, ptr, CvAttrList.EMPTY);
+        cvWrite(fs, name, ptr, CV_ATTR_LIST_EMPTY);
     }
     public static native void cvWrite(CvFileStorage fs, String name, Pointer ptr, @ByVal CvAttrList attributes/*=cvArrtList()*/);
     public static native void cvStartNextStream(CvFileStorage fs);
@@ -4551,11 +4540,11 @@ public class opencv_core {
         return cvReadString(cvGetFileNodeByName(fs, map, name), default_value);
     }
     public static Pointer cvRead(CvFileStorage fs, CvFileNode node) {
-        return cvRead(fs, node, CvAttrList.EMPTY);
+        return cvRead(fs, node, CV_ATTR_LIST_EMPTY);
     }
     public static native Pointer cvRead(CvFileStorage fs, CvFileNode node, CvAttrList attributes/*=null*/);
     public static Pointer cvReadByName(CvFileStorage fs, CvFileNode map, String name) {
-        return cvReadByName(fs, map, name, CvAttrList.EMPTY);
+        return cvReadByName(fs, map, name, CV_ATTR_LIST_EMPTY);
     }
     public static Pointer cvReadByName(CvFileStorage fs, CvFileNode map, String name, CvAttrList attributes) {
         CvFileNode n = cvGetFileNodeByName(fs, map, name);
@@ -4579,7 +4568,7 @@ public class opencv_core {
     public static native Pointer cvClone(Pointer struct_ptr);
 
     public static void cvSave(String filename, Pointer struct_ptr) {
-        cvSave(filename, struct_ptr, null, null, CvAttrList.EMPTY);
+        cvSave(filename, struct_ptr, null, null, CV_ATTR_LIST_EMPTY);
     }
     public static native void cvSave(String filename, Pointer struct_ptr, String name/*=null*/,
             String comment/*=null*/, @ByVal CvAttrList attributes/*=cvAttrList()*/);

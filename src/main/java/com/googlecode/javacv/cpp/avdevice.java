@@ -51,15 +51,11 @@ import static com.googlecode.javacv.cpp.avutil.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libavdevice/avdevice.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avdevice@.54", "avfilter@.3",
-        "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.52"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload="avdevice-54"),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=avfilter.class, value={
+    @Platform(cinclude="<libavdevice/avdevice.h>", link="avdevice@.54"),
+    @Platform(value="windows", preload="avdevice-54") })
 public class avdevice {
-    static { load(avfilter.class); load(); }
+    static { load(); }
 
     // #include <version.h>
     /**

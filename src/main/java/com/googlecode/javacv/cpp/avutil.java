@@ -67,19 +67,11 @@ import static com.googlecode.javacv.cpp.avutil.*;
 @Properties({
     @Platform(define="__STDC_CONSTANT_MACROS", cinclude={"<libavutil/avutil.h>", "<libavutil/audioconvert.h>",
         "<libavutil/cpu.h>", "<libavutil/dict.h>", "<libavutil/opt.h>", "<libavutil/samplefmt.h>", "<libavutil/imgutils.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link="avutil@.52"),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload={"avutil-52"}),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+        includepath={"/usr/local/include/ffmpeg/", "/opt/local/include/ffmpeg/", "/usr/include/ffmpeg/"}, link="avutil@.52"),
+    @Platform(value="windows", includepath={"C:/MinGW/local/include/ffmpeg/", "C:/MinGW/include/ffmpeg/",
+        "src/main/resources/com/googlecode/javacv/cpp/"}, preload={"avutil-52"}) })
 public class avutil {
     static { load(); }
-    public static final String genericIncludepath = "/usr/local/include/ffmpeg/:/usr/local/include/:/opt/local/include/ffmpeg/:/opt/local/include/:/usr/include/ffmpeg/";
-    public static final String genericLinkpath    = "/usr/local/lib/:/usr/local/lib64/:/opt/local/lib/:/opt/local/lib64/";
-    public static final String windowsIncludepath = "C:/MinGW/local/include/ffmpeg/;C:/MinGW/include/ffmpeg/;C:/MinGW/local/include/;src/main/resources/com/googlecode/javacv/cpp/";
-    public static final String windowsLinkpath    = "C:/MinGW/local/lib/;C:/MinGW/lib/";
-    public static final String windowsPreloadpath = "C:/MinGW/local/bin/;C:/MinGW/bin/";
-    public static final String androidIncludepath = "../include/";
-    public static final String androidLinkpath    = "../lib/";
 
     /**
      * @file

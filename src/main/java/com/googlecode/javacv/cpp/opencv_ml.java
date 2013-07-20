@@ -85,13 +85,9 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/ml/ml.hpp>", "opencv_adapters.h"}, link={"opencv_ml@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_ml246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=opencv_core.class, value={
+    @Platform(include="<opencv2/ml/ml.hpp>", link="opencv_ml@.2.4"),
+    @Platform(value="windows", link="opencv_ml246") })
 public class opencv_ml {
     static { load(opencv_core.class);
         if (load() != null) {

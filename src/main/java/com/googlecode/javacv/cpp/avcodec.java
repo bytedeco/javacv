@@ -70,20 +70,16 @@ import static com.googlecode.javacv.cpp.avutil.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(define="__STDC_CONSTANT_MACROS", cinclude={
-        "<libavcodec/avcodec.h>", "<libavcodec/avfft.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avcodec@.54", "avutil@.52"}),
+@Properties(inherit=avutil.class, value={
+    @Platform(cinclude={"<libavcodec/avcodec.h>", "<libavcodec/avfft.h>"}, link="avcodec@.54"),
     @Platform(value={"linux", "freebsd", "solaris", "sunos"}, cinclude={
         "<libavcodec/vaapi.h>", "<libavcodec/vdpau.h>", "<libavcodec/xvmc.h>",
         "<libavcodec/avcodec.h>", "<libavcodec/avfft.h>"}),
-    @Platform(value="windows", includepath=windowsIncludepath, cinclude={
+    @Platform(value="windows", preload="avcodec-54", cinclude={
         "<DShow.h>", "<d3d9.h>", "<vmr9.h>", "<evr9.h>", "<libavcodec/dxva2.h>",
-        "<libavcodec/avcodec.h>", "<libavcodec/avfft.h>"},
-        linkpath=windowsLinkpath, preloadpath=windowsPreloadpath, preload="avcodec-54"),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+        "<libavcodec/avcodec.h>", "<libavcodec/avfft.h>"}) })
 public class avcodec {
-    static { load(avutil.class); load(); }
+    static { load(); }
 
     /**
      * @file

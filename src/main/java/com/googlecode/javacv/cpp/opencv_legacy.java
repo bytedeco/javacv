@@ -89,24 +89,13 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>", "<opencv2/legacy/blobtrack.hpp>", "opencv_adapters.h"},
-        link={"opencv_legacy@.2.4", "opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_ml@.2.4", "opencv_video@.2.4", "opencv_features2d@.2.4",
-              "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_legacy246", "opencv_nonfree246", "opencv_gpu246", "opencv_ml246", "opencv_video246", "opencv_features2d246",
-              "opencv_flann246", "opencv_calib3d246", "opencv_highgui246", "opencv_imgproc246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath,
-        link={"opencv_legacy", "opencv_nonfree", "opencv_ml", "opencv_video", "opencv_features2d",
-              "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}) })
+@Properties(inherit={opencv_calib3d.class, opencv_features2d.class, opencv_video.class, opencv_ml.class}, value={
+    @Platform(include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>",
+        "<opencv2/legacy/blobtrack.hpp>"}, link={"opencv_legacy@.2.4", "opencv_gpu@.2.4"}),
+    @Platform(value="windows", link={"opencv_legacy246", "opencv_gpu246"}),
+    @Platform(value="android", link={"opencv_legacy"}) })
 public class opencv_legacy {
-    static {
-        load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_video.class);
-        load(opencv_ml.class); load(opencv_nonfree.class); load();
-    }
+    static { load(); }
 
     public static float cvQueryHistValue_1D(CvHistogram hist, int idx0) {
         return (float)cvGetReal1D(hist.bins(), idx0);

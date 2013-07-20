@@ -74,23 +74,14 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
-        link={"opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_video@.2.4", "opencv_legacy@.2.4", "opencv_ml@.2.4", "opencv_photo@.2.4",
-              "opencv_objdetect@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_calib3d@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_nonfree246", "opencv_gpu246", "opencv_video246", "opencv_legacy246", "opencv_ml246", "opencv_photo246",
-              "opencv_objdetect246", "opencv_features2d246", "opencv_flann246", "opencv_calib3d246", "opencv_highgui246", "opencv_imgproc246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath,
-        link={"opencv_nonfree", "opencv_video", "opencv_legacy", "opencv_ml", "opencv_photo",
-              "opencv_objdetect", "opencv_features2d", "opencv_flann", "opencv_calib3d", "opencv_highgui", "opencv_imgproc", "opencv_core"}) })
+@Properties(inherit={opencv_calib3d.class, opencv_features2d.class, opencv_objdetect.class,
+        opencv_photo.class, opencv_ml.class, opencv_legacy.class, opencv_video.class}, value={
+    @Platform(include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>"},
+        link={"opencv_nonfree@.2.4", "opencv_gpu@.2.4"}),
+    @Platform(value="windows", link={"opencv_nonfree246", "opencv_gpu246"}),
+    @Platform(value="android", link={"opencv_nonfree"}) })
 public class opencv_nonfree {
     static {
-        load(opencv_calib3d.class); load(opencv_features2d.class); load(opencv_objdetect.class);
-        load(opencv_photo.class); load(opencv_ml.class); load(opencv_legacy.class); load(opencv_video.class);
         if (load() != null) {
             initModule_nonfree();
         }

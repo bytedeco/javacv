@@ -61,14 +61,11 @@ import static com.googlecode.javacv.cpp.avutil.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libswscale/swscale.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swscale@.2", "avutil@.52"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload="swscale-2"),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=avutil.class, value={
+    @Platform(cinclude="<libswscale/swscale.h>", link="swscale@.2"),
+    @Platform(value="windows", preload="swscale-2") })
 public class swscale {
-    static { load(avutil.class); load(); }
+    static { load(); }
 
     /**
      * @file

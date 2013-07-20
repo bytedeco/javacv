@@ -68,17 +68,11 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/photo/photo_c.h>", "<opencv2/photo/photo.hpp>", "opencv_adapters.h"},
-        link={"opencv_photo@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_photo246", "opencv_imgproc246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=opencv_imgproc.class, value={
+    @Platform(include={"<opencv2/photo/photo_c.h>", "<opencv2/photo/photo.hpp>"}, link="opencv_photo@.2.4"),
+    @Platform(value="windows", link="opencv_photo246") })
 public class opencv_photo {
-    static { load(opencv_imgproc.class); load(); }
+    static { load(); }
 
     public static final int
             CV_INPAINT_NS      = 0,

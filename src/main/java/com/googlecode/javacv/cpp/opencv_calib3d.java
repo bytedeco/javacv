@@ -81,17 +81,11 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/calib3d/calib3d.hpp>", "opencv_adapters.h"},
-        link={"opencv_calib3d@.2.4", "opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_calib3d246", "opencv_features2d246", "opencv_flann246", "opencv_highgui246", "opencv_imgproc246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit={opencv_highgui.class, opencv_flann.class, opencv_features2d.class}, value={
+    @Platform(include="<opencv2/calib3d/calib3d.hpp>", link="opencv_calib3d@.2.4"),
+    @Platform(value="windows", link="opencv_calib3d246") })
 public class opencv_calib3d {
-    static { load(opencv_highgui.class); load(opencv_flann.class); load(opencv_features2d.class); load(); }
+    static { load(); }
 
     @Opaque public static class CvPOSITObject extends Pointer {
         static { load(); }

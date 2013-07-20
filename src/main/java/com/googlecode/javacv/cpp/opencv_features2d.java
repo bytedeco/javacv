@@ -79,17 +79,11 @@ import static com.googlecode.javacv.cpp.opencv_flann.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/features2d/features2d.hpp>", "opencv_adapters.h"},
-        link={"opencv_features2d@.2.4", "opencv_flann@.2.4", "opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_features2d246", "opencv_flann246", "opencv_highgui246", "opencv_imgproc246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit={opencv_highgui.class, opencv_flann.class}, value={
+    @Platform(include="<opencv2/features2d/features2d.hpp>", link="opencv_features2d@.2.4"),
+    @Platform(value="windows", link="opencv_features2d246") })
 public class opencv_features2d {
-    static { load(opencv_highgui.class); load(opencv_flann.class);
+    static {
         if (load() != null) {
             initModule_features2d();
         }

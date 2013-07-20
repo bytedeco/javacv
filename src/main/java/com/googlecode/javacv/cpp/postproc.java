@@ -62,15 +62,12 @@ import static com.googlecode.javacv.cpp.avutil.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libpostproc/postprocess.h>",
-        link={"postproc@.52", "avutil@.52"}, includepath=genericIncludepath, linkpath=genericLinkpath),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        define={"__STDC_CONSTANT_MACROS", "pp_help pp_help_bad[]; __declspec(dllimport) extern const char pp_help"},
-        preloadpath=windowsPreloadpath, preload="postproc-52"),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=avutil.class, value={
+    @Platform(cinclude="<libpostproc/postprocess.h>", link="postproc@.52"),
+    @Platform(value="windows", preload="postproc-52",
+        define={"__STDC_CONSTANT_MACROS", "pp_help pp_help_bad[]; __declspec(dllimport) extern const char pp_help"}) })
 public class postproc {
-    static { load(avutil.class); load(); }
+    static { load(); }
 
     //#include <version.h>
     /**

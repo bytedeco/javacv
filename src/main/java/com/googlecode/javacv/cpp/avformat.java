@@ -66,14 +66,11 @@ import static com.googlecode.javacv.cpp.avcodec.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libavformat/avformat.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avformat@.54", "avcodec@.54", "avutil@.52"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload="avformat-54"),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=avcodec.class, value={
+    @Platform(cinclude="<libavformat/avformat.h>", link="avformat@.54"),
+    @Platform(value="windows", preload="avformat-54") })
 public class avformat {
-    static { load(avcodec.class); load(); }
+    static { load(); }
 
     /**
      * @file

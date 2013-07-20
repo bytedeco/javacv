@@ -76,15 +76,11 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"opencv_adapters.h", "<opencv2/flann/miniflann.hpp>"}, link={"opencv_flann@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, link={"opencv_flann246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=opencv_core.class, value={
+    @Platform(include="<opencv2/flann/miniflann.hpp>", link="opencv_flann@.2.4"),
+    @Platform(value="windows", link="opencv_flann246") })
 public class opencv_flann {
-    static { load(opencv_core.class); load(); }
+    static { load(); }
 
     public static final String FLANN_VERSION_ = "1.6.10";
 

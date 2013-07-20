@@ -60,9 +60,7 @@ import static com.googlecode.javacpp.Loader.*;
  *
  * @author Samuel Audet
  */
-@Platform(value={"linux", "macosx"}, include={"<poll.h>", "<dc1394/dc1394.h>"}, 
-    includepath="/usr/local/include:/opt/local/include/", link="dc1394@.22",
-    linkpath="/usr/local/lib/:/usr/local/lib64/:/opt/local/lib/:/opt/local/lib64/")
+@Platform(value={"linux", "macosx"}, include={"<poll.h>", "<dc1394/dc1394.h>"}, link="dc1394@.22")
 public class dc1394 {
     static { load(); }
 

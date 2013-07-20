@@ -73,21 +73,10 @@ import static com.googlecode.javacv.cpp.ARToolKitPlus.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(include="ARToolKitPlus_plus.h",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link="ARToolKitPlus"),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Platform(include="ARToolKitPlus_plus.h", link="ARToolKitPlus")
 @Namespace("ARToolKitPlus")
 public class ARToolKitPlus {
     static { load(); }
-
-    public static final String genericIncludepath = "/usr/local/include/:/opt/local/include/";
-    public static final String genericLinkpath    = "/usr/local/lib/:/usr/local/lib64/:/opt/local/lib/:/opt/local/lib64/";
-    public static final String windowsIncludepath = "C:/MinGW/local/include/";
-    public static final String windowsLinkpath    = "C:/MinGW/local/lib/";
-    public static final String androidIncludepath = "../include/";
-    public static final String androidLinkpath    = "../lib/";
 
     public static native void createImagePatternBCH   (int nID, @Cast("uint8_t*") byte       dataPtr[/*8*8*/]);
     public static native void createImagePatternBCH   (int nID, @Cast("uint8_t*") ByteBuffer dataPtr/*[8*8]*/);

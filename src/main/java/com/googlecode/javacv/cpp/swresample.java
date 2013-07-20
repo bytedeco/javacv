@@ -59,14 +59,11 @@ import static com.googlecode.javacv.cpp.avutil.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(define="__STDC_CONSTANT_MACROS", cinclude="<libswresample/swresample.h>",
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"swresample@.0", "avutil@.52"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload="swresample-0"),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=avutil.class, value={
+    @Platform(cinclude="<libswresample/swresample.h>", link="swresample@.0"),
+    @Platform(value="windows", preload="swresample-0") })
 public class swresample {
-    static { load(avutil.class); load(); }
+    static { load(); }
 
     //#include <version.h>
     /**

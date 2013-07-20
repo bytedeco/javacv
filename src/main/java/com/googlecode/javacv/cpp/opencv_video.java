@@ -76,15 +76,9 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include={"<opencv2/video/video.hpp>", "opencv_adapters.h"},
-        link={"opencv_video@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath,
-        link={"opencv_video246", "opencv_imgproc246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=opencv_imgproc.class, value={
+    @Platform(include="<opencv2/video/video.hpp>", link="opencv_video@.2.4"),
+    @Platform(value="windows", link="opencv_video246") })
 public class opencv_video {
     static { load(opencv_imgproc.class);
         if (load() != null) {

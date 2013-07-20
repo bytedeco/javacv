@@ -72,17 +72,11 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(includepath=genericIncludepath, linkpath=genericLinkpath,
-        include="<opencv2/highgui/highgui_c.h>",
-        link={"opencv_highgui@.2.4", "opencv_imgproc@.2.4", "opencv_core@.2.4"}),
-    @Platform(value="windows", includepath=windowsIncludepath, preload={"opencv_ffmpeg246", "opencv_ffmpeg246_64"},
-        link={"opencv_highgui246", "opencv_imgproc246", "opencv_core246"}),
-    @Platform(value="windows-x86",    linkpath=windowsx86Linkpath, preloadpath=windowsx86Preloadpath),
-    @Platform(value="windows-x86_64", linkpath=windowsx64Linkpath, preloadpath=windowsx64Preloadpath),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit=opencv_imgproc.class, value={
+    @Platform(include="<opencv2/highgui/highgui_c.h>", link="opencv_highgui@.2.4"),
+    @Platform(value="windows", link="opencv_highgui246", preload={"opencv_ffmpeg246", "opencv_ffmpeg246_64"}) })
 public class opencv_highgui {
-    static { load(opencv_imgproc.class); load(); }
+    static { load(); }
 
     public static final int
             CV_FONT_LIGHT          = 25,

@@ -67,16 +67,12 @@ import static com.googlecode.javacv.cpp.avutil.*;
  *
  * @author Samuel Audet
  */
-@Properties({
-    @Platform(define="__STDC_CONSTANT_MACROS", cinclude={"<libavfilter/avfilter.h>", "<libavfilter/buffersink.h>",
-        "<libavfilter/buffersrc.h>", "<libavfilter/avcodec.h>", "<libavfilter/avfiltergraph.h>"},
-        includepath=genericIncludepath, linkpath=genericLinkpath, link={"avfilter@.3",
-        "swscale@.2", "swresample@.0", "postproc@.52", "avformat@.54", "avcodec@.54", "avutil@.52"}),
-    @Platform(value="windows", includepath=windowsIncludepath, linkpath=windowsLinkpath,
-        preloadpath=windowsPreloadpath, preload="avfilter-3"),
-    @Platform(value="android", includepath=androidIncludepath, linkpath=androidLinkpath) })
+@Properties(inherit={avformat.class, postproc.class, swresample.class, swscale.class}, value={
+    @Platform(cinclude={"<libavfilter/avfilter.h>", "<libavfilter/buffersink.h>", "<libavfilter/buffersrc.h>",
+        "<libavfilter/avcodec.h>", "<libavfilter/avfiltergraph.h>"}, link="avfilter@.3"),
+    @Platform(value="windows", preload="avfilter-3") })
 public class avfilter {
-    static { load(avformat.class); load(postproc.class); load(swresample.class); load(swscale.class); load(); }
+    static { load(); }
 
     // #include "version.h"
     /**
