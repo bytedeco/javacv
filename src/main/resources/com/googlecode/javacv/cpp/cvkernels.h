@@ -18,9 +18,6 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CV_INLINE static inline
-#include <opencv2/core/core_c.h>
-
 /**
  *
  * @author Samuel Audet
@@ -157,7 +154,7 @@ static inline void multiWarpColorTransform(KernelData data[], int size, CvRect* 
         endx   = startx + roi->width;
         endy   = starty + roi->height;
     }
-    PTYPE fill[4] = { 0.0 };
+    PTYPE fill[4] = { 0 };
     if (fillColor != NULL) {
         fill[0] = (PTYPE)fillColor->val[0];
         fill[1] = (PTYPE)fillColor->val[1];

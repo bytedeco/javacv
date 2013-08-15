@@ -547,7 +547,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     AVRational time_base = video_st.time_base();
                     timestamp = 1000000L * pts * time_base.num() / time_base.den();
                     // best guess, AVCodecContext.frame_number = number of decoded frames...
-                    frameNumber = (int)(1000000L * getFrameRate() / timestamp);
+                    frameNumber = (int)(timestamp * getFrameRate() / 1000000L);
                     if (processImage) {
                         processImage();
                     }

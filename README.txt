@@ -223,6 +223,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+ * Fixed `FFmpegFrameGrabber.getFrameNumber()`
  * Upgraded support to OpenCV 2.4.6
  * Fixed callbacks when used with custom class loaders such as with Web containers
  * Upgraded to ARToolKitPlus 2.3.0 (issue #234)
