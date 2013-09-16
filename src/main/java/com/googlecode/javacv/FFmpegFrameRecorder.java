@@ -59,6 +59,7 @@ import com.googlecode.javacpp.ShortPointer;
 import java.io.File;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -289,7 +290,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         oc.oformat(oformat);
-        oc.filename(filename);
+        oc.filename().putString(filename);
 
         /* add the audio and video streams using the format codecs
            and initialize the codecs */
@@ -549,7 +550,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             //int bufferSize = audio_input_frame_size * audio_c.bits_per_raw_sample()/8 * audio_c.channels();
             int planes = av_sample_fmt_is_planar(audio_c.sample_fmt()) != 0 ? (int)audio_c.channels() : 1;
-            int data_size = av_samples_get_buffer_size(null, audio_c.channels(),
+            int data_size = av_samples_get_buffer_size((IntPointer)null, audio_c.channels(),
                     audio_input_frame_size, audio_c.sample_fmt(), 1) / planes;
             samples_out = new BytePointer[planes];
             for (int i = 0; i < samples_out.length; i++) {
@@ -577,7 +578,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         /* write the stream header, if any */
-        avformat_write_header(oc, null);
+        avformat_write_header(oc, (PointerPointer)null);
     }
 
     public void stop() throws Exception {
@@ -628,7 +629,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 1) {
                     pixelFormat = AV_PIX_FMT_GRAY8;
                 } else if ((depth == IPL_DEPTH_16U || depth == IPL_DEPTH_16S) && channels == 1) {
-                    pixelFormat = AV_HAVE_BIGENDIAN() ? AV_PIX_FMT_GRAY16BE : AV_PIX_FMT_GRAY16LE;
+                    pixelFormat = ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
+                            AV_PIX_FMT_GRAY16BE : AV_PIX_FMT_GRAY16LE;
                 } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 4) {
                     pixelFormat = AV_PIX_FMT_RGBA;
                 } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 2) {
@@ -642,17 +644,18 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if (video_c.pix_fmt() != pixelFormat || video_c.width() != width || video_c.height() != height) {
                 /* convert to the codec pixel format if needed */
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx, width, height, pixelFormat,
-                        video_c.width(), video_c.height(), video_c.pix_fmt(), SWS_BILINEAR, null, null, null);
+                        video_c.width(), video_c.height(), video_c.pix_fmt(), SWS_BILINEAR,
+                        null, null, (DoublePointer)null);
                 if (img_convert_ctx == null) {
                     throw new Exception("sws_getCachedContext() error: Cannot initialize the conversion context.");
                 }
-                avpicture_fill(tmp_picture, data, pixelFormat, width, height);
-                avpicture_fill(picture, picture_buf, video_c.pix_fmt(), video_c.width(), video_c.height());
+                avpicture_fill(new AVPicture(tmp_picture), data, pixelFormat, width, height);
+                avpicture_fill(new AVPicture(picture), picture_buf, video_c.pix_fmt(), video_c.width(), video_c.height());
                 tmp_picture.linesize(0, step);
                 sws_scale(img_convert_ctx, new PointerPointer(tmp_picture), tmp_picture.linesize(),
                           0, height, new PointerPointer(picture), picture.linesize());
             } else {
-                avpicture_fill(picture, data, pixelFormat, width, height);
+                avpicture_fill(new AVPicture(picture), data, pixelFormat, width, height);
                 picture.linesize(0, step);
             }
         }

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
- * 
+ *
  * Based on the avcodec_sample.0.5.0.c file available at
  * http://web.me.com/dhoerl/Home/Tech_Blog/Entries/2009/1/22_Revised_avcodec_sample.c_files/avcodec_sample.0.5.0.c
  * by Martin Böhme, Stephen Dranger, and David Hoerl
@@ -48,6 +48,8 @@
 package com.googlecode.javacv;
 
 import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.DoublePointer;
+import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.PointerPointer;
 import java.io.File;
@@ -338,14 +340,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         av_dict_free(options);
 
         // Retrieve stream information
-        if ((ret = avformat_find_stream_info(oc, null)) < 0) {
+        if ((ret = avformat_find_stream_info(oc, (PointerPointer)null)) < 0) {
             throw new Exception("avformat_find_stream_info() error " + ret + ": Could not find stream information.");
         }
 
         // Dump information about file onto standard error
         av_dump_format(oc, 0, filename, 0);
 
-        // Find the first video and stream
+        // Find the first video and audio stream
         video_st = audio_st = null;
         int nb_streams = oc.nb_streams();
         for (int i = 0; i < nb_streams; i++) {
@@ -372,7 +374,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             // Open video codec
-            if ((ret = avcodec_open2(video_c, codec, null)) < 0) {
+            if ((ret = avcodec_open2(video_c, codec, (PointerPointer)null)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open video codec.");
             }
 
@@ -403,7 +405,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
                     // Assign appropriate parts of buffer to image planes in picture_rgb
                     // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
-                    avpicture_fill(picture_rgb, buffer_rgb, fmt, width, height);
+                    avpicture_fill(new AVPicture(picture_rgb), buffer_rgb, fmt, width, height);
 
                     return_image = IplImage.createHeader(width, height, IPL_DEPTH_8U, 1);
                     break;
@@ -426,7 +428,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             // Open audio codec
-            if ((ret = avcodec_open2(audio_c, codec, null)) < 0) {
+            if ((ret = avcodec_open2(audio_c, codec, (PointerPointer)null)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open audio codec.");
             }
 
@@ -463,13 +465,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             case GRAY:
                 // Deinterlace Picture
                 if (deinterlace) {
-                    avpicture_deinterlace(picture, picture, video_c.pix_fmt(), video_c.width(), video_c.height());
+                    AVPicture p = new AVPicture(picture);
+                    avpicture_deinterlace(p, p, video_c.pix_fmt(), video_c.width(), video_c.height());
                 }
 
                 // Convert the image into BGR or GRAY format that OpenCV uses
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx,
                         video_c.width(), video_c.height(), video_c.pix_fmt(),
-                        getImageWidth(), getImageHeight(), getPixelFormat(), SWS_BILINEAR, null, null, null);
+                        getImageWidth(), getImageHeight(), getPixelFormat(), SWS_BILINEAR,
+                        null, null, (DoublePointer)null);
                 if (img_convert_ctx == null) {
                     throw new Exception("sws_getCachedContext() error: Cannot initialize the conversion context.");
                 }
@@ -580,7 +584,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         int sample_format = samples_frame.format();
                         int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)samples_frame.channels() : 1;
-                        int data_size = av_samples_get_buffer_size(null, audio_c.channels(),
+                        int data_size = av_samples_get_buffer_size((IntPointer)null, audio_c.channels(),
                                 samples_frame.nb_samples(), audio_c.sample_fmt(), 1) / planes;
                         if (samples_buf == null || samples_buf.length != planes) {
                             samples_ptr = new BytePointer[planes];

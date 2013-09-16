@@ -73,7 +73,12 @@ import static com.googlecode.javacv.cpp.ARToolKitPlus.*;
  *
  * @author Samuel Audet
  */
-@Platform(include="ARToolKitPlus_plus.h", link="ARToolKitPlus")
+@Properties({
+    @Platform(include="ARToolKitPlus_plus.h", link="ARToolKitPlus"),
+    @Platform(value="windows-x86", includepath="C:/Program Files (x86)/ARToolKitPlus/include/",
+        linkpath="C:/Program Files (x86)/ARToolKitPlus/lib/"),
+    @Platform(value="windows-x86_64", includepath="C:/Program Files/ARToolKitPlus/include/",
+        linkpath="C:/Program Files/ARToolKitPlus/lib/") })
 @Namespace("ARToolKitPlus")
 public class ARToolKitPlus {
     static { load(); }
@@ -131,7 +136,7 @@ public class ARToolKitPlus {
             POSE_ESTIMATOR_ORIGINAL_CONT = 1,
             POSE_ESTIMATOR_RPP = 2;
 
-    public static class CornerPoint extends Pointer {
+    @NoOffset public static class CornerPoint extends Pointer {
         static { load(); }
         public CornerPoint() { allocate(); }
         public CornerPoint(int nX, int nY) { allocate(nX, nY); }
