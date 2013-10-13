@@ -309,7 +309,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             /* find the video encoder */
-            if ((video_codec = avcodec_find_encoder(oformat.video_codec())) == null) {
+            if ((video_codec = avcodec_find_encoder_by_name(videoCodecName)) == null &&
+                (video_codec = avcodec_find_encoder(oformat.video_codec())) == null) {
                 release();
                 throw new Exception("avcodec_find_encoder() error: Video codec not found.");
             }
@@ -405,7 +406,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             /* find the audio encoder */
-            if ((audio_codec = avcodec_find_encoder(oformat.audio_codec())) == null) {
+            if ((audio_codec = avcodec_find_encoder_by_name(audioCodecName)) == null &&
+                (audio_codec = avcodec_find_encoder(oformat.audio_codec())) == null) {
                 release();
                 throw new Exception("avcodec_find_encoder() error: Audio codec not found.");
             }

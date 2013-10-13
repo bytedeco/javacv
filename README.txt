@@ -1,7 +1,7 @@
 =JavaCV=
 
 ==Introduction==
-JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: [http://opencv.willowgarage.com/ OpenCV], [http://www.ffmpeg.org/ FFmpeg], [http://damien.douxchamps.net/ieee1394/libdc1394/ libdc1394], [http://www.ptgrey.com/products/pgrflycapture/ PGR FlyCapture], [http://openkinect.org/ OpenKinect], [http://muonics.net/school/spring05/videoInput/ videoInput], and [http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php ARToolKitPlus]. The classes found under the `com.googlecode.javacv.cpp` package namespace expose their complete APIs. Moreover, utility classes make their functionality easier to use on the Java platform, including Android.
+JavaCV first provides wrappers to commonly used libraries by researchers in the field of computer vision: [http://opencv.org/ OpenCV], [http://ffmpeg.org/ FFmpeg], [http://damien.douxchamps.net/ieee1394/libdc1394/ libdc1394], [http://www.ptgrey.com/products/pgrflycapture/ PGR FlyCapture], [http://openkinect.org/ OpenKinect], [http://muonics.net/school/spring05/videoInput/ videoInput], and [http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php ARToolKitPlus]. The classes found under the `com.googlecode.javacv.cpp` package namespace expose their complete APIs. Moreover, utility classes make their functionality easier to use on the Java platform, including Android.
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), a blob analysis package (`Blobs`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL` or starting with `GL`, i.e.: `JavaCVCL`, `GLCanvasFrame`, etc.
 
@@ -224,8 +224,10 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * New `videoCodecName` and `audioCodecName` properties to allow users of `FFmpegFrameRecorder` to use codecs such as "libx264rgb" (issue #369)
+
 ===September 15, 2013 version 0.6===
- * Upgraded supported FFmpeg API to the 2.0 release branch (with Java interface files now based on code automatically produced by JavaCPP Presets)
+ * Upgraded supported FFmpeg API to the 2.0 release branch (with Java interface files now based on code automatically produced by [https://code.google.com/p/javacpp/wiki/Presets JavaCPP Presets])
  * Fixed `FFmpegFrameGrabber.getFrameNumber()`
  * Upgraded support to OpenCV 2.4.6
  * Fixed callbacks when used with custom class loaders such as with Web containers

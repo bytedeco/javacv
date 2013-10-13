@@ -102,7 +102,7 @@ public abstract class FrameRecorder {
         return create(get(className), String.class, filename, width, height);
     }
 
-    protected String format;
+    protected String format, videoCodecName, audioCodecName;
     protected int imageWidth, imageHeight, audioChannels;
     protected int pixelFormat, videoCodec, videoBitrate;
     protected double frameRate, videoQuality = -1;
@@ -119,6 +119,20 @@ public abstract class FrameRecorder {
     }
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public String getVideoCodecName() {
+        return videoCodecName;
+    }
+    public void setVideoCodecName(String videoCodecName) {
+        this.videoCodecName = videoCodecName;
+    }
+
+    public String getAudioCodecName() {
+        return audioCodecName;
+    }
+    public void setAudioCodecName(String audioCodecName) {
+        this.audioCodecName = audioCodecName;
     }
 
     public int getImageWidth() {
