@@ -224,6 +224,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * Fixed memory leak in the `MotionDetector.java` sample file (issue #372)
  * New `videoCodecName` and `audioCodecName` properties to allow users of `FFmpegFrameRecorder` to use codecs such as "libx264rgb" (issue #369)
 
 ===September 15, 2013 version 0.6===
