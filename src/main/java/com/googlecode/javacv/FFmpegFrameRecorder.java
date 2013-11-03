@@ -101,6 +101,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
+    static {
+        /* initialize libavcodec, and register all codecs and formats */
+        av_register_all();
+        avformat_network_init();
+    }
+
     public FFmpegFrameRecorder(File file, int audioChannels) {
         this(file, 0, 0, audioChannels);
     }
@@ -117,10 +123,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this(file.getAbsolutePath(), imageWidth, imageHeight);
     }
     public FFmpegFrameRecorder(String filename, int imageWidth, int imageHeight, int audioChannels) {
-        /* initialize libavcodec, and register all codecs and formats */
-        av_register_all();
-        avformat_network_init();
-
         this.filename      = filename;
         this.imageWidth    = imageWidth;
         this.imageHeight   = imageHeight;
@@ -142,6 +144,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.audio_pkt = new AVPacket();
     }
     public void release() throws Exception {
+        synchronized (com.googlecode.javacv.cpp.avcodec.class) {
+            releaseUnsafe();
+        }
+    }
+    public void releaseUnsafe() throws Exception {
         /* close each codec */
         if (video_c != null) {
             avcodec_close(video_c);
@@ -256,6 +263,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public void start() throws Exception {
+        synchronized (com.googlecode.javacv.cpp.avcodec.class) {
+            startUnsafe();
+        }
+    }
+    public void startUnsafe() throws Exception {
         int ret;
         picture = null;
         tmp_picture = null;

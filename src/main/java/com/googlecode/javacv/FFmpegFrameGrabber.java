@@ -98,19 +98,26 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    public FFmpegFrameGrabber(File file) {
-        this(file.getAbsolutePath());
-    }
-    public FFmpegFrameGrabber(String filename) {
+    static {
         // Register all formats and codecs
         avcodec_register_all();
         avdevice_register_all();
         av_register_all();
         avformat_network_init();
+    }
 
+    public FFmpegFrameGrabber(File file) {
+        this(file.getAbsolutePath());
+    }
+    public FFmpegFrameGrabber(String filename) {
         this.filename = filename;
     }
     public void release() throws Exception {
+        synchronized (com.googlecode.javacv.cpp.avcodec.class) {
+            releaseUnsafe();
+        }
+    }
+    public void releaseUnsafe() throws Exception {
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
                 av_free_packet(pkt);
@@ -293,6 +300,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
+        synchronized (com.googlecode.javacv.cpp.avcodec.class) {
+            startUnsafe();
+        }
+    }
+    public void startUnsafe() throws Exception {
         int ret;
         img_convert_ctx = null;
         oc              = new AVFormatContext(null);
@@ -511,6 +523,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return grabFrame(true, true);
     }
     private Frame grabFrame(boolean processImage, boolean doAudio) throws Exception {
+        if (oc == null || oc.isNull()) {
+            throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
+        }
         frame.keyFrame = false;
         frame.image = null;
         frame.samples = null;
@@ -521,9 +536,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.image = return_image;
             return frame;
-        }
-        if (oc == null || oc.isNull()) {
-            throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }
         boolean done = false;
         while (!done) {
