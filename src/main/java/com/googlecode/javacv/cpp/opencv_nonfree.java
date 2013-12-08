@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in nonfree/features2d.hpp and
- * nonfree.hpp of OpenCV 2.4.6.1, which are covered by the following copyright notice:
+ * nonfree.hpp of OpenCV 2.4.7, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -78,7 +78,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         opencv_photo.class, opencv_ml.class, opencv_legacy.class, opencv_video.class}, value={
     @Platform(include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>"},
         link={"opencv_nonfree@.2.4", "opencv_gpu@.2.4"}),
-    @Platform(value="windows", link={"opencv_nonfree246", "opencv_gpu246"}),
+    @Platform(value="windows", link={"opencv_nonfree247", "opencv_gpu247"}),
     @Platform(value="android", link={"opencv_nonfree"}) })
 public class opencv_nonfree {
     static {

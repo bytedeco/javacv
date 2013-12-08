@@ -20,7 +20,7 @@
  *
  * This file is based on information found in contrib.hpp, retina.hpp,
  * detection_based_tracker.hpp, hybrid_tracker.hpp, and openfabmap.hpp
- * of OpenCV 2.4.6.1, which are covered by the following copyright notice:
+ * of OpenCV 2.4.7, which are covered by the following copyright notice:
  *
  *                           License Agreement
  *                For Open Source Computer Vision Library
@@ -91,7 +91,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties(inherit={opencv_calib3d.class, opencv_objdetect.class, opencv_video.class, opencv_ml.class}, value={
     @Platform(include={"<opencv2/contrib/contrib.hpp>", "<opencv2/contrib/detection_based_tracker.hpp>",
         "<opencv2/contrib/hybridtracker.hpp>"}, link="opencv_contrib@.2.4"),
-    @Platform(value="windows", link="opencv_contrib246") })
+    @Platform(value="windows", link="opencv_contrib247") })
 public class opencv_contrib {
     static {
         if (load() != null) {

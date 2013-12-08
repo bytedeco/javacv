@@ -19,7 +19,7 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.6.x  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.7  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled and prepackaged CPPJARs for Linux, Mac OS X, Windows, and Android:
     * http://code.google.com/p/javacv/downloads/list
 
@@ -59,7 +59,7 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.6.1-android-arm.jar`, and `ffmpeg-2.0.1-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.7-android-arm.jar`, and `ffmpeg-2.0.1-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -224,6 +224,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * Upgraded support to OpenCV 2.4.7
  * Fixed thread safety issues with FFmpeg in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` (issue #377)
  * Fixed memory leak in the `MotionDetector.java` sample file (issue #372)
  * New `videoCodecName` and `audioCodecName` properties to allow users of `FFmpegFrameRecorder` to use codecs such as "libx264rgb" (issue #369)

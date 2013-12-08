@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in ml.hpp of OpenCV 2.4.6.1,
+ * This file is based on information found in ml.hpp of OpenCV 2.4.7,
  * which is covered by the following copyright notice:
  *
  *                        Intel License Agreement
@@ -87,7 +87,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_core.class, value={
     @Platform(include="<opencv2/ml/ml.hpp>", link="opencv_ml@.2.4"),
-    @Platform(value="windows", link="opencv_ml246") })
+    @Platform(value="windows", link="opencv_ml247") })
 public class opencv_ml {
     static { load(opencv_core.class);
         if (load() != null) {

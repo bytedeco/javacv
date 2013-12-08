@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in calib3d.hpp
- * of OpenCV 2.4.6.1, which are covered by the following copyright notice:
+ * of OpenCV 2.4.7, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -83,7 +83,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
  */
 @Properties(inherit={opencv_highgui.class, opencv_flann.class, opencv_features2d.class}, value={
     @Platform(include="<opencv2/calib3d/calib3d.hpp>", link="opencv_calib3d@.2.4"),
-    @Platform(value="windows", link="opencv_calib3d246") })
+    @Platform(value="windows", link="opencv_calib3d247") })
 public class opencv_calib3d {
     static { load(); }
 

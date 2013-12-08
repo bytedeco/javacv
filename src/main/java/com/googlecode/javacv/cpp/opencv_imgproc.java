@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.4.6.1, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.7, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -86,7 +86,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_core.class, value={
     @Platform(include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>"}, link="opencv_imgproc@.2.4"),
-    @Platform(value="windows", link="opencv_imgproc246") })
+    @Platform(value="windows", link="opencv_imgproc247") })
 public class opencv_imgproc {
     static { load(); }
 
@@ -1275,6 +1275,8 @@ public class opencv_imgproc {
             @ByVal CvSize ksize, double sigmaX, double sigmaY/*=0*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void bilateralFilter(@InputArray CvArr src, @InputArray CvArr dst, int d,
             double sigmaColor, double sigmaSpace, int borderType/*=BORDER_DEFAULT*/);
+    @Namespace("cv") public static native void adaptiveBilateralFilter(@InputArray CvArr src, @InputArray CvArr dst, @ByVal CvSize ksize,
+            double sigmaSpace, double maxSigmaColor/*= 20.0*/, @ByVal CvPoint anchor/*=cvPoint(-1, -1)*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void boxFilter(@InputArray CvArr src, @InputArray CvArr dst, int ddepth,
             @ByVal CvSize ksize, @ByVal CvPoint anchor/*=Point(-1,-1)*/, @Cast("bool") boolean normalize/*=true*/, int borderType/*=BORDER_DEFAULT*/);
     @Namespace("cv") public static native void blur(@InputArray CvArr src, @InputArray CvArr dst,

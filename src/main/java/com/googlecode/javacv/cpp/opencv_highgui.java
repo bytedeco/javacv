@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.4.6.1,
+ * This file is based on information found in highgui_c.h of OpenCV 2.4.7,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement
@@ -74,7 +74,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_imgproc.class, value={
     @Platform(include="<opencv2/highgui/highgui_c.h>", link="opencv_highgui@.2.4"),
-    @Platform(value="windows", link="opencv_highgui246", preload={"opencv_ffmpeg246", "opencv_ffmpeg246_64"}) })
+    @Platform(value="windows", link="opencv_highgui247", preload={"opencv_ffmpeg247", "opencv_ffmpeg247_64"}) })
 public class opencv_highgui {
     static { load(); }
 

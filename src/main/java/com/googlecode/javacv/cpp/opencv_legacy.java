@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in compat.hpp, legacy.hpp, and
- * blobtrack.hpp of OpenCV 2.4.6.1, which are covered by the following copyright notice:
+ * blobtrack.hpp of OpenCV 2.4.7, which are covered by the following copyright notice:
  *
  *                        Intel License Agreement
  *                For Open Source Computer Vision Library
@@ -92,7 +92,7 @@ import static com.googlecode.javacv.cpp.opencv_ml.*;
 @Properties(inherit={opencv_calib3d.class, opencv_features2d.class, opencv_video.class, opencv_ml.class}, value={
     @Platform(include={"<opencv2/legacy/compat.hpp>", "<opencv2/legacy/legacy.hpp>",
         "<opencv2/legacy/blobtrack.hpp>"}, link={"opencv_legacy@.2.4", "opencv_gpu@.2.4"}),
-    @Platform(value="windows", link={"opencv_legacy246", "opencv_gpu246"}),
+    @Platform(value="windows", link={"opencv_legacy247", "opencv_gpu247"}),
     @Platform(value="android", link={"opencv_legacy"}) })
 public class opencv_legacy {
     static { load(); }

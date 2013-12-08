@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in objdetect.hpp of OpenCV 2.4.6.1,
+ * This file is based on information found in objdetect.hpp of OpenCV 2.4.7,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -86,7 +86,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_highgui.class, value={
     @Platform(include="<opencv2/objdetect/objdetect.hpp>", link="opencv_objdetect@.2.4"),
-    @Platform(value="windows", link="opencv_objdetect246") })
+    @Platform(value="windows", link="opencv_objdetect247") })
 public class opencv_objdetect {
     static { load(); }
 
@@ -330,6 +330,16 @@ public class opencv_objdetect {
             int min_neighbors/*=3*/, int flags/*=0*/, @ByVal CvSize min_size/*=cvSize(0,0)*/,
             @ByVal CvSize max_size/*=cvSize(0,0)*/, @Cast("bool") boolean outputRejectLevels/*=false*/);
 
+
+    @Namespace("cv") public static class SimilarRects extends Pointer {
+        static { load(); }
+        public SimilarRects(double _eps) { allocate(_eps); }
+        public SimilarRects(Pointer p) { super(p); }
+        private native void allocate(double _eps);
+
+        public native @Name("operator()") boolean compute(@ByVal CvRect r1, @ByVal CvRect r2);
+        public native double eps(); public native SimilarRects eps(double eps);
+    }
 
     @Namespace("cv") public static native void groupRectangles(@StdVector("CvRect,cv::Rect") CvRect rectList,
             int groupThreshold, double eps/*=0.2*/);
@@ -607,6 +617,8 @@ public class opencv_objdetect {
                 @StdVector DetectionROI locations, double hitThreshold/*=0*/, int groupThreshold/*=0*/);
 
         public native void readALTModel(String modelfile);
+        public native void groupRectangles(@StdVector("CvRect,cv::Rect") CvRect rectList, @StdVector DoublePointer weights,
+                int groupThreshold, double eps);
     }
 
 
