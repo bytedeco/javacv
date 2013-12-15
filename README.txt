@@ -225,6 +225,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 ==Changes==
 
  * Upgraded support to OpenCV 2.4.7
+ * Incorporated `IPCameraFrameGrabber` from Greg Perry (issue #384)
  * Fixed thread safety issues with FFmpeg in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` (issue #377)
  * Fixed memory leak in the `MotionDetector.java` sample file (issue #372)
  * New `videoCodecName` and `audioCodecName` properties to allow users of `FFmpegFrameRecorder` to use codecs such as "libx264rgb" (issue #369)
