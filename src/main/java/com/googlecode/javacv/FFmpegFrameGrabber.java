@@ -528,6 +528,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
         frame.keyFrame = false;
         frame.image = null;
+        frame.sampleRate = 0;
         frame.samples = null;
         if (frameGrabbed) {
             frameGrabbed = false;
@@ -603,6 +604,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             samples_buf = new Buffer[planes];
                         }
                         frame.keyFrame = samples_frame.key_frame() != 0;
+                        frame.sampleRate = audio_c.sample_rate();
                         frame.samples = samples_buf;
                         int sample_size = data_size / av_get_bytes_per_sample(sample_format);
                         for (int i = 0; i < planes; i++) {

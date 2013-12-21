@@ -724,7 +724,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         return picture.key_frame() != 0;
     }
 
-    @Override public boolean record(Buffer ... samples) throws Exception {
+    @Override public boolean record(int sampleRate, Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
@@ -737,6 +737,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         int outputFormat = audio_c.sample_fmt();
         int outputChannels = samples_out.length > 1 ? 1 : audioChannels;
         int outputDepth = av_get_bytes_per_sample(outputFormat);
+        if (sampleRate <= 0) {
+            sampleRate = audio_c.sample_rate();
+        }
         if (samples[0] instanceof ByteBuffer) {
             inputFormat = samples.length > 1 ? AV_SAMPLE_FMT_U8P : AV_SAMPLE_FMT_U8;
             inputDepth = 1;
@@ -799,7 +802,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (samples_convert_ctx == null) {
             samples_convert_ctx = swr_alloc_set_opts(null,
                     audio_c.channel_layout(), outputFormat, audio_c.sample_rate(),
-                    audio_c.channel_layout(), inputFormat,  audio_c.sample_rate(), 0, null);
+                    audio_c.channel_layout(), inputFormat, sampleRate, 0, null);
             if (samples_convert_ctx == null) {
                 throw new Exception("swr_alloc_set_opts() error: Cannot allocate the conversion context.");
             } else if ((ret = swr_init(samples_convert_ctx)) < 0) {
@@ -811,21 +814,23 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             samples_in[i].position(samples_in[i].position() * inputDepth).
                     limit((samples_in[i].position() + inputSize) * inputDepth);
         }
-        while (samples_in[0].position() < samples_in[0].limit()) {
+        while (true) {
             int inputCount = (samples_in[0].limit() - samples_in[0].position()) / (inputChannels * inputDepth);
             int outputCount = (samples_out[0].limit() - samples_out[0].position()) / (outputChannels * outputDepth);
-            int count = Math.min(inputCount, outputCount);
+            inputCount = Math.min(inputCount, 2 * (outputCount * sampleRate) / audio_c.sample_rate());
             for (int i = 0; i < samples.length; i++) {
                 samples_in_ptr.put(i, samples_in[i]);
             }
             for (int i = 0; i < samples_out.length; i++) {
                 samples_out_ptr.put(i, samples_out[i]);
             }
-            if ((ret = swr_convert(samples_convert_ctx, samples_out_ptr, count, samples_in_ptr, count)) < 0) {
+            if ((ret = swr_convert(samples_convert_ctx, samples_out_ptr, outputCount, samples_in_ptr, inputCount)) < 0) {
                 throw new Exception("swr_convert() error " + ret + ": Cannot convert audio samples.");
+            } else if (ret == 0) {
+                break;
             }
             for (int i = 0; i < samples.length; i++) {
-                samples_in[i].position(samples_in[i].position() + ret * inputChannels * inputDepth);
+                samples_in[i].position(samples_in[i].position() + inputCount * inputChannels * inputDepth);
             }
             for (int i = 0; i < samples_out.length; i++) {
                 samples_out[i].position(samples_out[i].position() + ret * outputChannels * outputDepth);

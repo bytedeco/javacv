@@ -10,5 +10,6 @@ import java.nio.Buffer;
 public class Frame {
     public boolean keyFrame;
     public IplImage image;   // for video frame
+    public int sampleRate;
     public Buffer[] samples; // for audio frame
 }

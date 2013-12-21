@@ -7,9 +7,7 @@ JavaCV also comes with hardware accelerated full-screen image display (`CanvasFr
 
 To learn how to use the API, since documentation currently lacks, please refer to the [#Quick_Start_for_OpenCV_and_FFmpeg] section below as well as the [http://code.google.com/p/javacv/source/browse/samples/ sample programs], including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [http://code.google.com/p/javacv/source/browse?repo=procamcalib ProCamCalib] and [http://code.google.com/p/javacv/source/browse?repo=procamtracker ProCamTracker] as well as [http://code.google.com/p/javacv/source/browse?repo=examples Examples ported from OpenCV2 Cookbook] and the associated [http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples Wiki pages].
 
-Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you!
-
-And feel free to ask questions on [http://groups.google.com/group/javacv the mailing list] if you encounter any problems with the software! I am sure it is far from perfect...
+Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you! And feel free to ask questions on [http://groups.google.com/group/javacv the mailing list] if you encounter any problems with the software! I am sure it is far from perfect...
 
 
 ==Required Software==
@@ -34,6 +32,9 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
  * Android SDK API 8 or newer  http://developer.android.com/sdk/
  * JOCL and JOGL from JogAmp  http://jogamp.org/
  * ARToolKitPlus 2.3.0  https://launchpad.net/artoolkitplus
+
+Finally, because we are dealing with native code, bugs can easily crash the virtual machine. Luckily, Java provides some tools to help us debug under those circumstances:
+ * Troubleshooting Guide for HotSpot VM  http://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/
 
 
 ==Build Instructions==
@@ -225,6 +226,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 ==Changes==
 
  * Upgraded support to OpenCV 2.4.7
+ * Added a `Frame.sampleRate` field to allow audio samples to be resampled by `FFmpegFrameRecorder` (issue #388)
  * Incorporated `IPCameraFrameGrabber` from Greg Perry (issue #384)
  * Fixed thread safety issues with FFmpeg in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` (issue #377)
  * Fixed memory leak in the `MotionDetector.java` sample file (issue #372)
