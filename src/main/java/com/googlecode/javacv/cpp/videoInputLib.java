@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -73,12 +73,12 @@ import static com.googlecode.javacpp.Loader.*;
  *
  * @author Samuel Audet
  */
-@Platform(value="windows", define="VI_COM_MULTI_THREADED", include="<videoInput.cpp>",
-          includepath={"../videoInput0.1995/videoInputSrcAndDemos/libs/videoInput/",
-                       "../videoInput0.1995/videoInputSrcAndDemos/libs/DShow/Include/"},
+@Platform(value="windows", include="<videoInput.cpp>",
+          includepath={"../videoInput-update2013/videoInputSrcAndDemos/libs/videoInput/",
+                       "../videoInput-update2013/videoInputSrcAndDemos/libs/DShow/Include/"},
           link={"ole32", "oleaut32", "amstrmid", "strmiids", "uuid"})
 public class videoInputLib {
-    static { load(); }
+    static { load(); videoInput.setComMultiThreaded(true); }
 
     @Cast("bool")
     public static native boolean verbose(); public static native void verbose(boolean verbose);
@@ -196,6 +196,7 @@ public class videoInputLib {
         private native void allocate();
 
         public static native void setVerbose(@Cast("bool") boolean _verbose);
+        public static native void setComMultiThreaded(@Cast("bool") boolean bMulti);
         public static int listDevices() { return listDevices(false); }
         public static native int listDevices(@Cast("bool") boolean silent);
         public static native String getDeviceName(int deviceID);

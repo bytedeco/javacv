@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in photo_c.h and photo.hpp
- * of OpenCV 2.4.7, which are covered by the following copyright notice:
+ * of OpenCV 2.4.8, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -70,7 +70,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_imgproc.class, value={
     @Platform(include={"<opencv2/photo/photo_c.h>", "<opencv2/photo/photo.hpp>"}, link="opencv_photo@.2.4"),
-    @Platform(value="windows", link="opencv_photo247") })
+    @Platform(value="windows", link="opencv_photo248") })
 public class opencv_photo {
     static { load(); }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012 Samuel Audet
+ * Copyright (C) 2011,2012,2013 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -102,8 +102,8 @@ public class VideoInputFrameGrabber extends FrameGrabber {
         if (frameRate > 0) {
             myVideoInput.setIdealFramerate(deviceNumber, (int)frameRate);
         }
-        if (imageWidth <= 0 || imageHeight <= 0 ? !myVideoInput.setupDevice(deviceNumber, connection) :
-                !myVideoInput.setupDevice(deviceNumber, imageWidth, imageHeight, connection)) {
+        if (!myVideoInput.setupDevice(deviceNumber, imageWidth  > 0 ? imageWidth  : 640,
+                                                    imageHeight > 0 ? imageHeight : 480, connection)) {
             myVideoInput = null;
             throw new Exception("videoInput.setupDevice() Error: Could not setup device.");
         }

@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in stitcher.hpp and all included
- * files of of OpenCV 2.4.7, which are covered by the following copyright notice:
+ * files of of OpenCV 2.4.8, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -86,7 +86,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
         opencv_photo.class, opencv_ml.class, opencv_legacy.class, opencv_video.class}, value={
     @Platform(include={"<opencv2/stitching/stitcher.hpp>", "<opencv2/stitching/detail/autocalib.hpp>"},
         link={"opencv_stitching@.2.4", "opencv_gpu@.2.4"}),
-    @Platform(value="windows", link={"opencv_stitching247", "opencv_gpu247"}),
+    @Platform(value="windows", link={"opencv_stitching248", "opencv_gpu248"}),
     @Platform(value="android", link={"opencv_stitching"}) })
 public class opencv_stitching {
     static { load(); }

@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in imgproc/types_c.h, imgproc_c.h, and
- * imgproc.hpp of OpenCV 2.4.7, which are covered by the following copyright notice:
+ * imgproc.hpp of OpenCV 2.4.8, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -86,7 +86,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_core.class, value={
     @Platform(include={"<opencv2/imgproc/imgproc_c.h>", "<opencv2/imgproc/imgproc.hpp>"}, link="opencv_imgproc@.2.4"),
-    @Platform(value="windows", link="opencv_imgproc247") })
+    @Platform(value="windows", link="opencv_imgproc248") })
 public class opencv_imgproc {
     static { load(); }
 

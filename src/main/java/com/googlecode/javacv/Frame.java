@@ -12,4 +12,5 @@ public class Frame {
     public IplImage image;   // for video frame
     public int sampleRate;
     public Buffer[] samples; // for audio frame
+    public Object opaque;
 }

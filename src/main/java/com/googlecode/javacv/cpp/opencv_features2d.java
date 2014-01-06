@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in features2d.hpp of OpenCV 2.4.7,
+ * This file is based on information found in features2d.hpp of OpenCV 2.4.8,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -81,7 +81,7 @@ import static com.googlecode.javacv.cpp.opencv_flann.*;
  */
 @Properties(inherit={opencv_highgui.class, opencv_flann.class}, value={
     @Platform(include="<opencv2/features2d/features2d.hpp>", link="opencv_features2d@.2.4"),
-    @Platform(value="windows", link="opencv_features2d247") })
+    @Platform(value="windows", link="opencv_features2d248") })
 public class opencv_features2d {
     static {
         if (load() != null) {

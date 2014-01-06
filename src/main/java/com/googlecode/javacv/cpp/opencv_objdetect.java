@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in objdetect.hpp of OpenCV 2.4.7,
+ * This file is based on information found in objdetect.hpp of OpenCV 2.4.8,
  * which is covered by the following copyright notice:
  *
  *                          License Agreement
@@ -86,7 +86,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_highgui.class, value={
     @Platform(include="<opencv2/objdetect/objdetect.hpp>", link="opencv_objdetect@.2.4"),
-    @Platform(value="windows", link="opencv_objdetect247") })
+    @Platform(value="windows", link="opencv_objdetect248") })
 public class opencv_objdetect {
     static { load(); }
 

@@ -20,6 +20,7 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.BytePointer;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +34,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
 
 public class IPCameraFrameGrabber extends FrameGrabber {
 
@@ -49,9 +51,10 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     private InputStream input;
     private Map<String, List<String>> headerfields;
     private String boundryKey;
+    private IplImage decoded = null;
 
     public IPCameraFrameGrabber(String urlstr) throws MalformedURLException {
-            url = new URL(urlstr);
+        url = new URL(urlstr);
     }
 
     @Override
@@ -77,14 +80,17 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public void stop() {
+    public void stop() throws Exception {
         try {
             input.close();
             input = null;
             connection = null;
             url = null;
+            if (decoded != null){
+                cvReleaseImage(decoded);
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Exception(e.getMessage(), e);
         }
     }
 
@@ -93,18 +99,25 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public IplImage grab() {
+    public IplImage grab() throws Exception {
         try {
-            return IplImage.createFrom(grabBufferedImage());
-        } catch (Exception e) {
-            e.printStackTrace();
+            byte[] b = readImage();
+            CvMat mat = cvMat(1, b.length, CV_8UC1, new BytePointer(b));
+            if (decoded != null){
+                cvReleaseImage(decoded);
+            }
+            return decoded = cvDecodeImage(mat);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Exception(e.getMessage(), e);
         }
-        return null;
     }
 
-    public BufferedImage grabBufferedImage() throws Exception, IOException {
+    public BufferedImage grabBufferedImage() throws IOException {
+        BufferedImage bi = ImageIO.read(new ByteArrayInputStream(readImage()));
+        return bi;
+    }
+
+    byte[] readImage() throws IOException {
         byte[] buffer = new byte[4096];// MTU or JPG Frame Size?
         int n = -1;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -170,9 +183,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
         input.read();// \r
         input.read();// \n
 
-        // log.info("wrote " + baos.size() + "," + total);
-        BufferedImage bi = ImageIO.read(new ByteArrayInputStream(baos.toByteArray()));
-        return bi;
+        return baos.toByteArray();
     }
 
     @Override

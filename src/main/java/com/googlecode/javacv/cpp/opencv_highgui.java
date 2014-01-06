@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * This file is based on information found in highgui_c.h of OpenCV 2.4.7,
+ * This file is based on information found in highgui_c.h of OpenCV 2.4.8,
  * which are covered by the following copyright notice:
  *
  *                          License Agreement
@@ -74,7 +74,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  */
 @Properties(inherit=opencv_imgproc.class, value={
     @Platform(include="<opencv2/highgui/highgui_c.h>", link="opencv_highgui@.2.4"),
-    @Platform(value="windows", link="opencv_highgui247", preload={"opencv_ffmpeg247", "opencv_ffmpeg247_64"}) })
+    @Platform(value="windows", link="opencv_highgui248", preload={"opencv_ffmpeg248", "opencv_ffmpeg248_64"}) })
 public class opencv_highgui {
     static { load(); }
 
@@ -354,7 +354,9 @@ public class opencv_highgui {
 
             CV_CAP_AVFOUNDATION = 1200,
 
-            CV_CAP_GIGANETIX = 1300;
+            CV_CAP_GIGANETIX = 1300,
+
+            CV_CAP_INTELPERC = 1500;
 
     public static native CvCapture cvCreateCameraCapture(int index);
     public static native int cvGrabFrame(CvCapture capture);
@@ -480,6 +482,18 @@ public class opencv_highgui {
             CV_CAP_PROP_GIGA_FRAME_SENS_WIDTH = 10005,
             CV_CAP_PROP_GIGA_FRAME_SENS_HEIGH = 10006,
 
+            CV_CAP_PROP_INTELPERC_PROFILE_COUNT               = 11001,
+            CV_CAP_PROP_INTELPERC_PROFILE_IDX                 = 11002,
+            CV_CAP_PROP_INTELPERC_DEPTH_LOW_CONFIDENCE_VALUE  = 11003,
+            CV_CAP_PROP_INTELPERC_DEPTH_SATURATION_VALUE      = 11004,
+            CV_CAP_PROP_INTELPERC_DEPTH_CONFIDENCE_THRESHOLD  = 11005,
+            CV_CAP_PROP_INTELPERC_DEPTH_FOCAL_LENGTH_HORZ     = 11006,
+            CV_CAP_PROP_INTELPERC_DEPTH_FOCAL_LENGTH_VERT     = 11007,
+
+            CV_CAP_INTELPERC_DEPTH_GENERATOR = 1 << 29,
+            CV_CAP_INTELPERC_IMAGE_GENERATOR = 1 << 28,
+            CV_CAP_INTELPERC_GENERATORS_MASK = CV_CAP_INTELPERC_DEPTH_GENERATOR + CV_CAP_INTELPERC_IMAGE_GENERATOR,
+
             CV_CAP_OPENNI_DEPTH_MAP                 = 0,
             CV_CAP_OPENNI_POINT_CLOUD_MAP           = 1,
             CV_CAP_OPENNI_DISPARITY_MAP             = 2,
@@ -527,7 +541,12 @@ public class opencv_highgui {
             CV_CAP_ANDROID_ANTIBANDING_50HZ = 0,
             CV_CAP_ANDROID_ANTIBANDING_60HZ = 1,
             CV_CAP_ANDROID_ANTIBANDING_AUTO = 2,
-            CV_CAP_ANDROID_ANTIBANDING_OFF = 3;
+            CV_CAP_ANDROID_ANTIBANDING_OFF = 3,
+
+            CV_CAP_INTELPERC_DEPTH_MAP              = 0,
+            CV_CAP_INTELPERC_UVDEPTH_MAP            = 1,
+            CV_CAP_INTELPERC_IR_MAP                 = 2,
+            CV_CAP_INTELPERC_IMAGE                  = 3;
 
     public static native double cvGetCaptureProperty(CvCapture capture, int property_id);
     public static native int    cvSetCaptureProperty(CvCapture capture, int property_id, double value);

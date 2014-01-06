@@ -109,12 +109,13 @@ import static com.googlecode.javacpp.Loader.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(value={"linux", "macosx"}, include={"<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>"}, link={"freenect@0.1", "freenect_sync@0.1"},
+    @Platform(include={"<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>"}, link={"freenect@0.1", "freenect_sync@0.1"},
         includepath  ={"/usr/local/include/libfreenect/", "/opt/local/include/libfreenect/", "/usr/include/libfreenect/"}),
-    @Platform(value="windows", include={"<WinSock2.h>", "<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>", "<libfreenect_sync.c>"}, link={"freenect", "pthreadVC2"},
-        includepath  ={"C:/libfreenect/include/", "C:/libfreenect/wrappers/c_sync/", "C:/pthreads-w32-2-8-0-release/",
-                       "C:/pthreads.2/", "C:/Pre-built.2/include/", "src/com/googlecode/javacv/cpp/"},
-        linkpath     ={"C:/libfreenect/lib/", "C:/pthreads-w32-2-8-0-release/", "C:/pthreads.2/", "C:/Pre-built.2/lib/"}) })
+    @Platform(value="windows", link={"freenect", "freenect_sync", "pthreadVC2"}),
+    @Platform(value="windows-x86", includepath="C:/Program Files (x86)/libfreenect/include/libfreenect/",
+        linkpath={"C:/pthreads-w32-2-9-1-release/Pre-built.2/lib/x86", "C:/Program Files (x86)/libfreenect/lib/"}),
+    @Platform(value="windows-x86_64", includepath="C:/Program Files/libfreenect/include/libfreenect/",
+        linkpath={"C:/pthreads-w32-2-9-1-release/Pre-built.2/lib/x64", "C:/Program Files/libfreenect/lib/"}) })
 public class freenect {
     static { load(); }
 

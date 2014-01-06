@@ -17,12 +17,12 @@ To use JavaCV, you will need to download and install the following software:
   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
- * OpenCV 2.4.7  http://sourceforge.net/projects/opencvlibrary/files/
+ * OpenCV 2.4.8  http://sourceforge.net/projects/opencvlibrary/files/
   * Precompiled and prepackaged CPPJARs for Linux, Mac OS X, Windows, and Android:
     * http://code.google.com/p/javacv/downloads/list
 
 And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-bit modules do not mix under any circumstances*. Further, although not always required, some functionality of JavaCV also relies on:
- * FFmpeg 2.0.x  http://ffmpeg.org/download.html
+ * FFmpeg 2.1.x  http://ffmpeg.org/download.html
   * Precompiled and prepackaged CPPJARs for Linux, Mac OS X, Windows, and Android:
     * http://code.google.com/p/javacv/downloads/list
  * libdc1394 2.1.x or 2.2.x  http://sourceforge.net/projects/libdc1394/files/
@@ -40,7 +40,7 @@ Finally, because we are dealing with native code, bugs can easily crash the virt
 ==Build Instructions==
 To rebuild the source code, please note that the project files were created for:
  * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP 0.6  http://code.google.com/p/javacpp/
+ * JavaCPP 0.7  http://code.google.com/p/javacpp/
 
 Once installed, simply call the usual `mvn install` command for both JavaCPP and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP, whose command line options can be passed via the `javacpp.options` Maven property, such as [http://code.google.com/p/javacpp/#Instructions_for_Android those required for Android]. Please refer to the comments inside the `pom.xml` file for further details.
 
@@ -60,7 +60,7 @@ Eclipse (Android 2.2 or newer):
  # Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  # Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
  # Copy `javacpp.jar` and `javacv.jar` into the newly created "libs" folder.
- # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.7-android-arm.jar`, and `ffmpeg-2.0.1-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
+ # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.8-android-arm.jar`, and `ffmpeg-2.1.1-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
 
@@ -106,7 +106,7 @@ public class Demo {
         if (args.length > 0) {
             classifierName = args[0];
         } else {
-            URL url = new URL("https://raw.github.com/Itseez/opencv/master/data/haarcascades/haarcascade_frontalface_alt.xml");
+            URL url = new URL("https://raw.github.com/Itseez/opencv/2.4/data/haarcascades/haarcascade_frontalface_alt.xml");
             File file = Loader.extractResource(url, null, "classifier", ".xml");
             file.deleteOnExit();
             classifierName = file.getAbsolutePath();
@@ -225,7 +225,16 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
- * Upgraded support to OpenCV 2.4.7
+===January 6, 2014 version 0.7===
+ * Upgraded support to OpenCV 2.4.8
+ * Upgraded supported FFmpeg API to the 2.1 release branch
+ * Updated `freenect` to reflect the latest changes of OpenKinect's master branch
+ * Updated `videoInput` to reflect the latest changes in the "update2013" branch
+ * Added `Frame.opaque` field to give access to the raw `AVFrame` in the case of `FFmpegFrameGrabber` (issue #399)
+ * Added new `FFmpegFrameGrabber.grabKeyFrame()` method to grab key frames (I-frames) directly (issue #312)
+ * `VideoInputFrameGrabber` now uses 640x480 as default image size to prevent "videoInput.getPixels() Error: Could not get pixels."
+ * Fixed `FFmpegFrameGrabber.setTimestamp()` not working for streams with audio (issue #398)
+ * Fixed wrong `haarcascade_frontalface_alt.xml` file getting downloaded by the `Demo` class (issue #402)
  * Added a `Frame.sampleRate` field to allow audio samples to be resampled by `FFmpegFrameRecorder` (issue #388)
  * Incorporated `IPCameraFrameGrabber` from Greg Perry (issue #384)
  * Fixed thread safety issues with FFmpeg in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` (issue #377)
@@ -594,7 +603,7 @@ Initial release
 
 
 ----
-Copyright (C) 2009-2013 Samuel Audet <samuel.audet@gmail.com>
+Copyright (C) 2009-2014 Samuel Audet <samuel.audet@gmail.com>
 Project site: http://code.google.com/p/javacv/
 
 Licensed under the GNU General Public License version 2 (GPLv2) with Classpath exception.

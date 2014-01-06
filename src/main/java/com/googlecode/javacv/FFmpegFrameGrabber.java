@@ -281,13 +281,17 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (audio_c != null) {
                 avcodec_flush_buffers(audio_c);
             }
+            if (pkt2.size() > 0) {
+                pkt2.size(0);
+                av_free_packet(pkt);
+            }
             while (this.timestamp > timestamp && grab(false) != null) {
                 // flush frames if seeking backwards
             }
             while (this.timestamp < timestamp && grab(false) != null) {
                 // decode up to the desired frame
             }
-            frameGrabbed = true;
+            frameGrabbed = this.timestamp >= timestamp;
         }
     }
 
@@ -512,17 +516,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public IplImage grab() throws Exception {
-        Frame frame = grabFrame(true, false);
-        return frame != null ? frame.image : null;
+        Frame f = grabFrame(true, false, false);
+        return f != null ? f.image : null;
     }
     private IplImage grab(boolean processImage) throws Exception {
-        Frame frame = grabFrame(processImage, false);
-        return frame != null ? frame.image : null;
+        Frame f = grabFrame(processImage, false, false);
+        return f != null ? f.image : null;
     }
     @Override public Frame grabFrame() throws Exception {
-        return grabFrame(true, true);
+        return grabFrame(true, true, false);
     }
-    private Frame grabFrame(boolean processImage, boolean doAudio) throws Exception {
+    public Frame grabKeyFrame() throws Exception {
+        return grabFrame(true, false, true);
+    }
+    private Frame grabFrame(boolean processImage, boolean doAudio, boolean keyFrames) throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }
@@ -530,12 +537,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.image = null;
         frame.sampleRate = 0;
         frame.samples = null;
+        frame.opaque = null;
         if (frameGrabbed) {
             frameGrabbed = false;
             if (processImage) {
                 processImage();
             }
+            frame.keyFrame = picture.key_frame() != 0;
             frame.image = return_image;
+            frame.opaque = picture;
             return frame;
         }
         boolean done = false;
@@ -545,6 +555,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     if (video_st != null) {
                         // The video codec may have buffered some frames
                         pkt.stream_index(video_st.index());
+                        pkt.flags(AV_PKT_FLAG_KEY);
                         pkt.data(null);
                         pkt.size(0);
                     } else {
@@ -554,12 +565,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             // Is this a packet from the video stream?
-            if (video_st != null && pkt.stream_index() == video_st.index()) {
+            if (video_st != null && pkt.stream_index() == video_st.index()
+                    && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
                 // Decode video frame
                 int len = avcodec_decode_video2(video_c, picture, got_frame, pkt);
 
                 // Did we get a video frame?
-                if (len >= 0 && got_frame[0] != 0) {
+                if (len >= 0 && got_frame[0] != 0
+                        && (!keyFrames || picture.pict_type() == AV_PICTURE_TYPE_I)) {
                     long pts = av_frame_get_best_effort_timestamp(picture);
                     AVRational time_base = video_st.time_base();
                     timestamp = 1000000L * pts * time_base.num() / time_base.den();
@@ -571,6 +584,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     done = true;
                     frame.keyFrame = picture.key_frame() != 0;
                     frame.image = return_image;
+                    frame.opaque = picture;
                 } else if (pkt.data() == null && pkt.size() == 0) {
                     return null;
                 }
@@ -606,6 +620,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         frame.keyFrame = samples_frame.key_frame() != 0;
                         frame.sampleRate = audio_c.sample_rate();
                         frame.samples = samples_buf;
+                        frame.opaque = samples_frame;
                         int sample_size = data_size / av_get_bytes_per_sample(sample_format);
                         for (int i = 0; i < planes; i++) {
                             BytePointer p = samples_frame.data(i);

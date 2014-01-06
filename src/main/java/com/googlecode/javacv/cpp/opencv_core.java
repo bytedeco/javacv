@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in core/types_c.h, core_c.h, and
- * core.hpp of OpenCV 2.4.7, which are covered by the following copyright notice:
+ * core.hpp of OpenCV 2.4.8, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -125,7 +125,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
 @Properties({
     @Platform(include={"<opencv2/core/core.hpp>", "opencv_adapters.h"}, link="opencv_core@.2.4", preload="tbb"),
     @Platform(value="windows", define="_WIN32_WINNT 0x0502", includepath="C:/opencv/build/include/",
-        link="opencv_core247", preload={"msvcr100", "msvcp100"}),
+        link="opencv_core248", preload={"msvcr100", "msvcp100"}),
     @Platform(value="windows-x86",    linkpath="C:/opencv/build/x86/vc10/lib/", preloadpath="C:/opencv/build/x86/vc10/bin/"),
     @Platform(value="windows-x86_64", linkpath="C:/opencv/build/x64/vc10/lib/", preloadpath="C:/opencv/build/x64/vc10/bin/") })
 public class opencv_core {
@@ -144,7 +144,7 @@ public class opencv_core {
     public static final int
             CV_VERSION_EPOCH    = 2,
             CV_VERSION_MAJOR    = 4,
-            CV_VERSION_MINOR    = 7,
+            CV_VERSION_MINOR    = 8,
             CV_VERSION_REVISION = 0,
             CV_MAJOR_VERSION    = CV_VERSION_EPOCH,
             CV_MINOR_VERSION    = CV_VERSION_MAJOR,

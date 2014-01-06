@@ -86,8 +86,8 @@ public class swresample {
  * matrix):
  * @code
  * SwrContext *swr = swr_alloc();
- * av_opt_set_int(swr, "in_channel_layout",  AV_CH_LAYOUT_5POINT1, 0);
- * av_opt_set_int(swr, "out_channel_layout", AV_CH_LAYOUT_STEREO,  0);
+ * av_opt_set_channel_layout(swr, "in_channel_layout",  AV_CH_LAYOUT_5POINT1, 0);
+ * av_opt_set_channel_layout(swr, "out_channel_layout", AV_CH_LAYOUT_STEREO,  0);
  * av_opt_set_int(swr, "in_sample_rate",     48000,                0);
  * av_opt_set_int(swr, "out_sample_rate",    44100,                0);
  * av_opt_set_sample_fmt(swr, "in_sample_fmt",  AV_SAMPLE_FMT_FLTP, 0);
@@ -126,8 +126,8 @@ public class swresample {
  *                                      input, in_samples);
  *     handle_output(output, out_samples);
  *     av_freep(&output);
- *  }
- *  @endcode
+ * }
+ * @endcode
  *
  * When the conversion is finished, the conversion
  * context and everything associated with it must be freed with swr_free().

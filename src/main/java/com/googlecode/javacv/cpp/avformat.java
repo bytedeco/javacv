@@ -573,7 +573,7 @@ public static final int AVIO_FLAG_DIRECT = 0x8000;
  * In case of failure the pointed to value is set to NULL.
  * @param flags flags which control how the resource indicated by url
  * is to be opened
- * @return 0 in case of success, a negative value corresponding to an
+ * @return >= 0 in case of success, a negative value corresponding to an
  * AVERROR code in case of failure
  */
 public static native int avio_open(@Cast("AVIOContext**") PointerPointer s, @Cast("const char*") BytePointer url, int flags);
@@ -594,7 +594,7 @@ public static native int avio_open(@ByPtrPtr AVIOContext s, String url, int flag
  * @param options  A dictionary filled with protocol-private options. On return
  * this parameter will be destroyed and replaced with a dict containing options
  * that were not found. May be NULL.
- * @return 0 in case of success, a negative value corresponding to an
+ * @return >= 0 in case of success, a negative value corresponding to an
  * AVERROR code in case of failure
  */
 public static native int avio_open2(@Cast("AVIOContext**") PointerPointer s, @Cast("const char*") BytePointer url, int flags,
@@ -1105,9 +1105,12 @@ public static final int AVFMT_NOGENSEARCH =   0x4000;
 public static final int AVFMT_NO_BYTE_SEEK =  0x8000;
 /** Format allows flushing. If not set, the muxer will not receive a NULL packet in the write_packet function. */
 public static final int AVFMT_ALLOW_FLUSH =  0x10000;
-// #if LIBAVFORMAT_VERSION_MAJOR <= 54 //we try to be compatible to the ABIs of ffmpeg and major forks
+// #if LIBAVFORMAT_VERSION_MAJOR <= 54
 // #else
 public static final int AVFMT_TS_NONSTRICT = 0x20000;
+/** Format does not require strictly
+                                        increasing timestamps, but they must
+                                        still be monotonic */
 // #endif
 /** Format allows muxing negative
                                         timestamps. If not set the timestamp
@@ -1667,6 +1670,23 @@ public static class AVStream extends Pointer {
      * Stream information used internally by av_find_stream_info()
      */
 public static final int MAX_STD_TIMEBASES = (60*12+6);
+        @Name({"info", ".last_dts"}) public native long info_last_dts(int i); public native AVStream info_last_dts(int i, long info_last_dts);
+        @Name({"info", ".duration_gcd"}) public native long info_duration_gcd(int i); public native AVStream info_duration_gcd(int i, long info_duration_gcd);
+        @Name({"info", ".duration_count"}) public native int info_duration_count(int i); public native AVStream info_duration_count(int i, int info_duration_count);
+        @Name({"info", ".duration_error"}) @MemberGetter public native @Cast("double*") DoublePointer info_duration_error(int i);
+        @Name({"info", ".codec_info_duration"}) public native long info_codec_info_duration(int i); public native AVStream info_codec_info_duration(int i, long info_codec_info_duration);
+        @Name({"info", ".codec_info_duration_fields"}) public native long info_codec_info_duration_fields(int i); public native AVStream info_codec_info_duration_fields(int i, long info_codec_info_duration_fields);
+        @Name({"info", ".found_decoder"}) public native int info_found_decoder(int i); public native AVStream info_found_decoder(int i, int info_found_decoder);
+
+        @Name({"info", ".last_duration"}) public native long info_last_duration(int i); public native AVStream info_last_duration(int i, long info_last_duration);
+
+        /**
+         * Those are used for average framerate estimation.
+         */
+        @Name({"info", ".fps_first_dts"}) public native long info_fps_first_dts(int i); public native AVStream info_fps_first_dts(int i, long info_fps_first_dts);
+        @Name({"info", ".fps_first_dts_idx"}) public native int info_fps_first_dts_idx(int i); public native AVStream info_fps_first_dts_idx(int i, int info_fps_first_dts_idx);
+        @Name({"info", ".fps_last_dts"}) public native long info_fps_last_dts(int i); public native AVStream info_fps_last_dts(int i, long info_fps_last_dts);
+        @Name({"info", ".fps_last_dts_idx"}) public native int info_fps_last_dts_idx(int i); public native AVStream info_fps_last_dts_idx(int i, int info_fps_last_dts_idx);
 
     /** number of bits in pts (used for wrapping control) */
     public native int pts_wrap_bits(); public native AVStream pts_wrap_bits(int pts_wrap_bits);
@@ -1995,6 +2015,8 @@ public static final int AVFMT_FLAG_NOBUFFER =     0x0040;
 public static final int AVFMT_FLAG_CUSTOM_IO =    0x0080;
 /** Discard frames marked corrupted */
 public static final int AVFMT_FLAG_DISCARD_CORRUPT =  0x0100;
+/** Flush the AVIOContext every packet. */
+public static final int AVFMT_FLAG_FLUSH_PACKETS =    0x0200;
 /** Enable RTP MP4A-LATM payload */
 public static final int AVFMT_FLAG_MP4A_LATM =    0x8000;
 /** try to interleave outputted packets by dts (using this flag can slow demuxing down) */
@@ -2058,6 +2080,17 @@ public static final int AVFMT_FLAG_KEEP_SIDE_DATA = 0x40000;
      */
     public native @Cast("unsigned int") int max_picture_buffer(); public native AVFormatContext max_picture_buffer(int max_picture_buffer);
 
+    /**
+     * Number of chapters in AVChapter array.
+     * When muxing, chapters are normally written in the file header,
+     * so nb_chapters should normally be initialized before write_header
+     * is called. Some muxers (e.g. mov and mkv) can also write chapters
+     * in the trailer.  To write chapters in the trailer, nb_chapters
+     * must be zero when write_header is called and non-zero when
+     * write_trailer is called.
+     * muxing  : set by user
+     * demuxing: set by libavformat
+     */
     public native @Cast("unsigned int") int nb_chapters(); public native AVFormatContext nb_chapters(int nb_chapters);
     public native AVChapter chapters(int i); public native AVFormatContext chapters(int i, AVChapter chapters);
     @MemberGetter public native @Cast("AVChapter**") PointerPointer chapters();
@@ -2195,6 +2228,15 @@ public static final int FF_FDEBUG_TS =        0x0001;
      */
     public native int flush_packets(); public native AVFormatContext flush_packets(int flush_packets);
 
+    /**
+     * format probing score.
+     * The maximal score is AVPROBE_SCORE_MAX, its set when the demuxer probes
+     * the format.
+     * - encoding: unused
+     * - decoding: set by avformat, read by user via av_format_get_probe_score() (NO direct access)
+     */
+    public native int probe_score(); public native AVFormatContext probe_score(int probe_score);
+
     /*****************************************************************
      * All fields below this line are not part of the public API. They
      * may not be used outside of libavformat and can be changed and
@@ -2253,7 +2295,39 @@ public static final int RAW_PACKET_BUFFER_SIZE = 2500000;
      * Demuxers can use the flag to detect such changes.
      */
     public native int io_repositioned(); public native AVFormatContext io_repositioned(int io_repositioned);
+
+    /**
+     * Forced video codec.
+     * This allows forcing a specific decoder, even when there are multiple with
+     * the same codec_id.
+     * Demuxing: Set by user via av_format_set_video_codec (NO direct access).
+     */
+    public native AVCodec video_codec(); public native AVFormatContext video_codec(AVCodec video_codec);
+
+    /**
+     * Forced audio codec.
+     * This allows forcing a specific decoder, even when there are multiple with
+     * the same codec_id.
+     * Demuxing: Set by user via av_format_set_audio_codec (NO direct access).
+     */
+    public native AVCodec audio_codec(); public native AVFormatContext audio_codec(AVCodec audio_codec);
+
+    /**
+     * Forced subtitle codec.
+     * This allows forcing a specific decoder, even when there are multiple with
+     * the same codec_id.
+     * Demuxing: Set by user via av_format_set_subtitle_codec (NO direct access).
+     */
+    public native AVCodec subtitle_codec(); public native AVFormatContext subtitle_codec(AVCodec subtitle_codec);
 }
+
+public static native int av_format_get_probe_score(@Const AVFormatContext s);
+public static native AVCodec av_format_get_video_codec(@Const AVFormatContext s);
+public static native void av_format_set_video_codec(AVFormatContext s, AVCodec c);
+public static native AVCodec av_format_get_audio_codec(@Const AVFormatContext s);
+public static native void av_format_set_audio_codec(AVFormatContext s, AVCodec c);
+public static native AVCodec av_format_get_subtitle_codec(@Const AVFormatContext s);
+public static native void av_format_set_subtitle_codec(AVFormatContext s, AVCodec c);
 
 /**
  * Returns the method used to set ctx->duration.
@@ -2374,6 +2448,9 @@ public static native @Const AVClass avformat_get_class();
  *
  * When muxing, should be called by the user before avformat_write_header().
  *
+ * User is required to call avcodec_close() and avformat_free_context() to
+ * clean up the allocation by avformat_new_stream().
+ *
  * @param c If non-NULL, the AVCodecContext corresponding to the new stream
  * will be initialized to use this codec. This is needed for e.g. codec-specific
  * defaults to be set, so codec should be provided if it is known.
@@ -2388,9 +2465,6 @@ public static native AVProgram av_new_program(AVFormatContext s, int id);
  * @}
  */
 
-
-// #if FF_API_PKT_DUMP
-// #endif
 
 // #if FF_API_ALLOC_OUTPUT_CONTEXT
 /**
@@ -2484,8 +2558,22 @@ public static native AVInputFormat av_probe_input_format3(AVProbeData pd, int is
  * @param logctx the log context
  * @param offset the offset within the bytestream to probe from
  * @param max_probe_size the maximum probe buffer size (zero for default)
- * @return 0 in case of success, a negative value corresponding to an
+ * @return the score in case of success, a negative value corresponding to an
+ *         the maximal score is AVPROBE_SCORE_MAX
  * AVERROR code otherwise
+ */
+public static native int av_probe_input_buffer2(AVIOContext pb, @Cast("AVInputFormat**") PointerPointer fmt,
+                           @Cast("const char*") BytePointer filename, Pointer logctx,
+                           @Cast("unsigned int") int offset, @Cast("unsigned int") int max_probe_size);
+public static native int av_probe_input_buffer2(AVIOContext pb, @ByPtrPtr AVInputFormat fmt,
+                           @Cast("const char*") BytePointer filename, Pointer logctx,
+                           @Cast("unsigned int") int offset, @Cast("unsigned int") int max_probe_size);
+public static native int av_probe_input_buffer2(AVIOContext pb, @ByPtrPtr AVInputFormat fmt,
+                           String filename, Pointer logctx,
+                           @Cast("unsigned int") int offset, @Cast("unsigned int") int max_probe_size);
+
+/**
+ * Like av_probe_input_buffer2() but returns 0 on success
  */
 public static native int av_probe_input_buffer(AVIOContext pb, @Cast("AVInputFormat**") PointerPointer fmt,
                           @Cast("const char*") BytePointer filename, Pointer logctx,
@@ -2499,7 +2587,7 @@ public static native int av_probe_input_buffer(AVIOContext pb, @ByPtrPtr AVInput
 
 /**
  * Open an input stream and read the header. The codecs are not opened.
- * The stream must be closed with av_close_input_file().
+ * The stream must be closed with avformat_close_input().
  *
  * @param ps Pointer to user-supplied AVFormatContext (allocated by avformat_alloc_context).
  *           May be a pointer to NULL, in which case an AVFormatContext is allocated by this
@@ -2640,8 +2728,8 @@ public static native @Deprecated int av_read_packet(AVFormatContext s, AVPacket 
  * information possible for decoding.
  *
  * If pkt->buf is NULL, then the packet is valid until the next
- * av_read_frame() or until av_close_input_file(). Otherwise the packet is valid
- * indefinitely. In both cases the packet must be freed with
+ * av_read_frame() or until avformat_close_input(). Otherwise the packet
+ * is valid indefinitely. In both cases the packet must be freed with
  * av_free_packet when it is no longer needed. For video, the packet contains
  * exactly one frame. For audio, it contains an integer number of frames if each
  * frame has a known fixed size (e.g. PCM or ADPCM data). If the audio frames

@@ -19,7 +19,7 @@
  *
  *
  * This file is based on information found in videostab.hpp and all included
- * files of OpenCV 2.4.7, which are covered by the following copyright notice:
+ * files of OpenCV 2.4.8, which are covered by the following copyright notice:
  *
  *                          License Agreement
  *                For Open Source Computer Vision Library
@@ -80,7 +80,7 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties(inherit={opencv_calib3d.class, opencv_features2d.class, opencv_objdetect.class, opencv_photo.class,
         opencv_nonfree.class, opencv_video.class, opencv_ml.class, opencv_legacy.class}, value={
     @Platform(include="<opencv2/videostab/videostab.hpp>", link={"opencv_videostab@.2.4", "opencv_gpu@.2.4"}),
-    @Platform(value="windows", link={"opencv_videostab247", "opencv_gpu247"}),
+    @Platform(value="windows", link={"opencv_videostab248", "opencv_gpu248"}),
     @Platform(value="android", link={"opencv_videostab"}) })
 public class opencv_videostab {
     static { load(); }

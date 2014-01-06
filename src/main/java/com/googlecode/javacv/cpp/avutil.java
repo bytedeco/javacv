@@ -174,6 +174,12 @@ public class avutil {
  *
  * @}
  *
+ * @defgroup lavu_log Logging Facility
+ *
+ * @{
+ *
+ * @}
+ *
  * @defgroup lavu_misc Other
  *
  * @{
@@ -283,6 +289,8 @@ public static final int AV_TIME_BASE =            1000000;
  * Internal time base represented as fractional value
  */
 
+// #define AV_TIME_BASE_Q          (AVRational){1, AV_TIME_BASE}
+
 /**
  * @}
  * @}
@@ -357,6 +365,8 @@ public static native @Cast("unsigned") int av_int_list_length_for_size(@Cast("un
  * @param list  pointer to the list
  * @return  length of the list, in elements, not counting the terminator
  */
+// #define av_int_list_length(list, term)
+//     av_int_list_length_for_size(sizeof(*(list)), list, term)
 
 /**
  * @}
@@ -407,10 +417,16 @@ public static native @Cast("unsigned") int av_int_list_length_for_size(@Cast("un
 /* error handling */
 // #if EDOM > 0
 /** Returns a negative error code from a POSIX error code, to return from library functions. */
+// #define AVERROR(e) (-(e))
 /** Returns a POSIX error code from a library function error return value. */
+// #define AVUNERROR(e) (-(e))
 // #else
 /* Some platforms have E* and errno already negated. */
+// #define AVERROR(e) (e)
+// #define AVUNERROR(e) (e)
 // #endif
+
+// #define FFERRTAG(a, b, c, d) (-(int)MKTAG(a, b, c, d))
 
 /** Bitstream filter not found */
 public static native @MemberGetter int AVERROR_BSF_NOT_FOUND();
@@ -487,9 +503,9 @@ public static final int AV_ERROR_MAX_STRING_SIZE = 64;
  * @return 0 on success, a negative value if a description for errnum
  * cannot be found
  */
-public static native int av_strerror(int errnum, @Cast("char*") BytePointer errbuf, long errbuf_size);
-public static native int av_strerror(int errnum, @Cast("char*") ByteBuffer errbuf, long errbuf_size);
-public static native int av_strerror(int errnum, @Cast("char*") byte[] errbuf, long errbuf_size);
+public static native int av_strerror(int errnum, @Cast("char*") BytePointer errbuf, @Cast("size_t") long errbuf_size);
+public static native int av_strerror(int errnum, @Cast("char*") ByteBuffer errbuf, @Cast("size_t") long errbuf_size);
+public static native int av_strerror(int errnum, @Cast("char*") byte[] errbuf, @Cast("size_t") long errbuf_size);
 
 /**
  * Fill the provided buffer with a string containing an error string
@@ -501,14 +517,16 @@ public static native int av_strerror(int errnum, @Cast("char*") byte[] errbuf, l
  * @return the buffer in input, filled with the error description
  * @see av_strerror()
  */
-public static native @Cast("char*") BytePointer av_make_error_string(@Cast("char*") BytePointer errbuf, long errbuf_size, int errnum);
-public static native @Cast("char*") ByteBuffer av_make_error_string(@Cast("char*") ByteBuffer errbuf, long errbuf_size, int errnum);
-public static native @Cast("char*") byte[] av_make_error_string(@Cast("char*") byte[] errbuf, long errbuf_size, int errnum);
+public static native @Cast("char*") BytePointer av_make_error_string(@Cast("char*") BytePointer errbuf, @Cast("size_t") long errbuf_size, int errnum);
+public static native @Cast("char*") ByteBuffer av_make_error_string(@Cast("char*") ByteBuffer errbuf, @Cast("size_t") long errbuf_size, int errnum);
+public static native @Cast("char*") byte[] av_make_error_string(@Cast("char*") byte[] errbuf, @Cast("size_t") long errbuf_size, int errnum);
 
 /**
  * Convenience macro, the return value should be used only directly in
  * function arguments but never stand-alone.
  */
+// #define av_err2str(errnum)
+//     av_make_error_string((char[AV_ERROR_MAX_STRING_SIZE]){0}, AV_ERROR_MAX_STRING_SIZE, errnum)
 
 /**
  * @}
@@ -561,19 +579,36 @@ public static native @Cast("char*") byte[] av_make_error_string(@Cast("char*") b
 
 
 // #if defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1110 || defined(__SUNPRO_C)
+//     #define DECLARE_ALIGNED(n,t,v)      t __attribute__ ((aligned (n))) v
+//     #define DECLARE_ASM_CONST(n,t,v)    const t __attribute__ ((aligned (n))) v
 // #elif defined(__TI_COMPILER_VERSION__)
+//     #define DECLARE_ALIGNED(n,t,v)
+//         AV_PRAGMA(DATA_ALIGN(v,n))
+//         t __attribute__((aligned(n))) v
+//     #define DECLARE_ASM_CONST(n,t,v)
+//         AV_PRAGMA(DATA_ALIGN(v,n))
+//         static const t __attribute__((aligned(n))) v
 // #elif defined(__GNUC__)
+//     #define DECLARE_ALIGNED(n,t,v)      t __attribute__ ((aligned (n))) v
+//     #define DECLARE_ASM_CONST(n,t,v)    static const t av_used __attribute__ ((aligned (n))) v
 // #elif defined(_MSC_VER)
+//     #define DECLARE_ALIGNED(n,t,v)      __declspec(align(n)) t v
+//     #define DECLARE_ASM_CONST(n,t,v)    __declspec(align(n)) static const t v
 // #else
+//     #define DECLARE_ALIGNED(n,t,v)      t v
+//     #define DECLARE_ASM_CONST(n,t,v)    static const t v
 // #endif
 
 // #if AV_GCC_VERSION_AT_LEAST(3,1)
+//     #define av_malloc_attrib __attribute__((__malloc__))
 // #else
-    // #define av_malloc_attrib
+//     #define av_malloc_attrib
 // #endif
 
 // #if AV_GCC_VERSION_AT_LEAST(4,3)
+//     #define av_alloc_size(...) __attribute__((alloc_size(__VA_ARGS__)))
 // #else
+//     #define av_alloc_size(...)
 // #endif
 
 /**
@@ -584,32 +619,37 @@ public static native @Cast("char*") byte[] av_make_error_string(@Cast("char*") b
  * be allocated.
  * @see av_mallocz()
  */
-public static native Pointer av_malloc(long size);
+public static native Pointer av_malloc(@Cast("size_t") long size);
 
 /**
- * Helper function to allocate a block of size * nmemb bytes with
- * using av_malloc()
+ * Allocate a block of size * nmemb bytes with av_malloc().
  * @param nmemb Number of elements
  * @param size Size of the single element
  * @return Pointer to the allocated block, NULL if the block cannot
  * be allocated.
  * @see av_malloc()
  */
- public static native Pointer av_malloc_array(long nmemb, long size);
+ public static native Pointer av_malloc_array(@Cast("size_t") long nmemb, @Cast("size_t") long size);
 
 /**
  * Allocate or reallocate a block of memory.
  * If ptr is NULL and size > 0, allocate a new block. If
  * size is zero, free the memory block pointed to by ptr.
  * @param ptr Pointer to a memory block already allocated with
- * av_malloc(z)() or av_realloc() or NULL.
- * @param size Size in bytes for the memory block to be allocated or
+ * av_realloc() or NULL.
+ * @param size Size in bytes of the memory block to be allocated or
  * reallocated.
- * @return Pointer to a newly reallocated block or NULL if the block
+ * @return Pointer to a newly-reallocated block or NULL if the block
  * cannot be reallocated or the function is used to free the memory block.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_realloc(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
  * @see av_fast_realloc()
  */
-public static native Pointer av_realloc(Pointer ptr, long size);
+public static native Pointer av_realloc(Pointer ptr, @Cast("size_t") long size);
 
 /**
  * Allocate or reallocate a block of memory.
@@ -619,33 +659,64 @@ public static native Pointer av_realloc(Pointer ptr, long size);
  * - It frees the input block in case of failure, thus avoiding the memory
  *   leak with the classic "buf = realloc(buf); if (!buf) return -1;".
  */
-public static native Pointer av_realloc_f(Pointer ptr, long nelem, long elsize);
+public static native Pointer av_realloc_f(Pointer ptr, @Cast("size_t") long nelem, @Cast("size_t") long elsize);
+
+/**
+ * Allocate or reallocate a block of memory.
+ * If *ptr is NULL and size > 0, allocate a new block. If
+ * size is zero, free the memory block pointed to by ptr.
+ * @param   ptr Pointer to a pointer to a memory block already allocated
+ *          with av_realloc(), or pointer to a pointer to NULL.
+ *          The pointer is updated on success, or freed on failure.
+ * @param   size Size in bytes for the memory block to be allocated or
+ *          reallocated
+ * @return  Zero on success, an AVERROR error code on failure.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_reallocp(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
+ */
+public static native int av_reallocp(Pointer ptr, @Cast("size_t") long size);
 
 /**
  * Allocate or reallocate an array.
  * If ptr is NULL and nmemb > 0, allocate a new block. If
  * nmemb is zero, free the memory block pointed to by ptr.
  * @param ptr Pointer to a memory block already allocated with
- * av_malloc(z)() or av_realloc() or NULL.
+ * av_realloc() or NULL.
  * @param nmemb Number of elements
  * @param size Size of the single element
- * @return Pointer to a newly reallocated block or NULL if the block
+ * @return Pointer to a newly-reallocated block or NULL if the block
  * cannot be reallocated or the function is used to free the memory block.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_realloc(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
  */
- public static native Pointer av_realloc_array(Pointer ptr, long nmemb, long size);
+ public static native Pointer av_realloc_array(Pointer ptr, @Cast("size_t") long nmemb, @Cast("size_t") long size);
 
 /**
- * Allocate or reallocate an array.
+ * Allocate or reallocate an array through a pointer to a pointer.
  * If *ptr is NULL and nmemb > 0, allocate a new block. If
  * nmemb is zero, free the memory block pointed to by ptr.
  * @param ptr Pointer to a pointer to a memory block already allocated
- * with av_malloc(z)() or av_realloc(), or pointer to a pointer to NULL.
+ * with av_realloc(), or pointer to a pointer to NULL.
  * The pointer is updated on success, or freed on failure.
  * @param nmemb Number of elements
  * @param size Size of the single element
  * @return Zero on success, an AVERROR error code on failure.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_realloc(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
  */
- public static native int av_reallocp_array(Pointer ptr, long nmemb, long size);
+ public static native int av_reallocp_array(Pointer ptr, @Cast("size_t") long nmemb, @Cast("size_t") long size);
 
 /**
  * Free a memory block which has been allocated with av_malloc(z)() or
@@ -665,7 +736,7 @@ public static native void av_free(Pointer ptr);
  * @return Pointer to the allocated block, NULL if it cannot be allocated.
  * @see av_malloc()
  */
-public static native Pointer av_mallocz(long size);
+public static native Pointer av_mallocz(@Cast("size_t") long size);
 
 /**
  * Allocate a block of nmemb * size bytes with alignment suitable for all
@@ -677,11 +748,10 @@ public static native Pointer av_mallocz(long size);
  * @param size
  * @return Pointer to the allocated block, NULL if it cannot be allocated.
  */
-public static native Pointer av_calloc(long nmemb, long size);
+public static native Pointer av_calloc(@Cast("size_t") long nmemb, @Cast("size_t") long size);
 
 /**
- * Helper function to allocate a block of size * nmemb bytes with
- * using av_mallocz()
+ * Allocate a block of size * nmemb bytes with av_mallocz().
  * @param nmemb Number of elements
  * @param size Size of the single element
  * @return Pointer to the allocated block, NULL if the block cannot
@@ -689,12 +759,12 @@ public static native Pointer av_calloc(long nmemb, long size);
  * @see av_mallocz()
  * @see av_malloc_array()
  */
- public static native Pointer av_mallocz_array(long nmemb, long size);
+ public static native Pointer av_mallocz_array(@Cast("size_t") long nmemb, @Cast("size_t") long size);
 
 /**
  * Duplicate the string s.
  * @param s string to be duplicated
- * @return Pointer to a newly allocated string containing a
+ * @return Pointer to a newly-allocated string containing a
  * copy of s or NULL if the string cannot be allocated.
  */
 public static native @Cast("char*") BytePointer av_strdup(@Cast("const char*") BytePointer s);
@@ -706,7 +776,7 @@ public static native @Cast("char*") ByteBuffer av_strdup(String s);
  * @return Pointer to a newly allocated buffer containing a
  * copy of p or NULL if the buffer cannot be allocated.
  */
-public static native Pointer av_memdup(@Const Pointer p, long size);
+public static native Pointer av_memdup(@Const Pointer p, @Cast("size_t") long size);
 
 /**
  * Free a memory block which has been allocated with av_malloc(z)() or
@@ -763,28 +833,28 @@ public static native void av_dynarray_add(Pointer tab_ptr, int[] nb_ptr, Pointer
  *                  If NULL, the new allocated space is left uninitialized."
  * @see av_dynarray_add()
  */
-public static native Pointer av_dynarray2_add(@Cast("void**") PointerPointer tab_ptr, IntPointer nb_ptr, long elem_size,
+public static native Pointer av_dynarray2_add(@Cast("void**") PointerPointer tab_ptr, IntPointer nb_ptr, @Cast("size_t") long elem_size,
                        @Cast("const uint8_t*") BytePointer elem_data);
-public static native Pointer av_dynarray2_add(@Cast("void**") @ByPtrPtr Pointer tab_ptr, IntPointer nb_ptr, long elem_size,
+public static native Pointer av_dynarray2_add(@Cast("void**") @ByPtrPtr Pointer tab_ptr, IntPointer nb_ptr, @Cast("size_t") long elem_size,
                        @Cast("const uint8_t*") BytePointer elem_data);
-public static native Pointer av_dynarray2_add(@Cast("void**") @ByPtrPtr Pointer tab_ptr, IntBuffer nb_ptr, long elem_size,
+public static native Pointer av_dynarray2_add(@Cast("void**") @ByPtrPtr Pointer tab_ptr, IntBuffer nb_ptr, @Cast("size_t") long elem_size,
                        @Cast("const uint8_t*") ByteBuffer elem_data);
-public static native Pointer av_dynarray2_add(@Cast("void**") @ByPtrPtr Pointer tab_ptr, int[] nb_ptr, long elem_size,
+public static native Pointer av_dynarray2_add(@Cast("void**") @ByPtrPtr Pointer tab_ptr, int[] nb_ptr, @Cast("size_t") long elem_size,
                        @Cast("const uint8_t*") byte[] elem_data);
 
 /**
  * Multiply two size_t values checking for overflow.
  * @return  0 if success, AVERROR(EINVAL) if overflow.
  */
-public static native int av_size_mult(long a, long b, SizeTPointer r);
+public static native int av_size_mult(@Cast("size_t") long a, @Cast("size_t") long b, @Cast("size_t*") SizeTPointer r);
 
 /**
  * Set the maximum size that may me allocated in one block.
  */
-public static native void av_max_alloc(long max);
+public static native void av_max_alloc(@Cast("size_t") long max);
 
 /**
- * @brief deliberately overlapping memcpy implementation
+ * deliberately overlapping memcpy implementation
  * @param dst destination buffer
  * @param back how many bytes back we start (the initial size of the overlapping window), must be > 0
  * @param cnt number of bytes to copy, must be >= 0
@@ -1297,8 +1367,19 @@ public static class AVClass extends Pointer {
     public native Query_ranges_PointerPointer_Pointer_BytePointer_int query_ranges(); public native AVClass query_ranges(Query_ranges_PointerPointer_Pointer_BytePointer_int query_ranges);
 }
 
-/* av_log API */
+/**
+ * @addtogroup lavu_log
+ *
+ * @{
+ *
+ * @defgroup lavu_log_constants Logging Constants
+ *
+ * @{
+ */
 
+/**
+ * Print no output.
+ */
 public static final int AV_LOG_QUIET =    -8;
 
 /**
@@ -1325,7 +1406,14 @@ public static final int AV_LOG_ERROR =    16;
  */
 public static final int AV_LOG_WARNING =  24;
 
+/**
+ * Standard information.
+ */
 public static final int AV_LOG_INFO =     32;
+
+/**
+ * Detailed information.
+ */
 public static final int AV_LOG_VERBOSE =  40;
 
 /**
@@ -1336,46 +1424,115 @@ public static final int AV_LOG_DEBUG =    48;
 public static final int AV_LOG_MAX_OFFSET = (AV_LOG_DEBUG - AV_LOG_QUIET);
 
 /**
+ * @}
+ */
+
+/**
  * Send the specified message to the log if the level is less than or equal
  * to the current av_log_level. By default, all logging messages are sent to
- * stderr. This behavior can be altered by setting a different av_vlog callback
+ * stderr. This behavior can be altered by setting a different logging callback
  * function.
+ * @see av_log_set_callback
  *
  * @param avcl A pointer to an arbitrary struct of which the first field is a
- * pointer to an AVClass struct.
- * @param level The importance level of the message, lower values signifying
- * higher importance.
+ *        pointer to an AVClass struct.
+ * @param level The importance level of the message expressed using a @ref
+ *        lavu_log_constants "Logging Constant".
  * @param fmt The format string (printf-compatible) that specifies how
- * subsequent arguments are converted to output.
- * @see av_vlog
+ *        subsequent arguments are converted to output.
  */
 public static native void av_log(Pointer avcl, int level, @Cast("const char*") BytePointer fmt);
 public static native void av_log(Pointer avcl, int level, String fmt);
 
-public static native void av_vlog(Pointer avcl, int level, @Cast("const char*") BytePointer fmt, @ByVal @Cast("va_list*") Pointer arg3);
-public static native void av_vlog(Pointer avcl, int level, String fmt, @ByVal @Cast("va_list*") Pointer arg3);
+
+/**
+ * Send the specified message to the log if the level is less than or equal
+ * to the current av_log_level. By default, all logging messages are sent to
+ * stderr. This behavior can be altered by setting a different logging callback
+ * function.
+ * @see av_log_set_callback
+ *
+ * @param avcl A pointer to an arbitrary struct of which the first field is a
+ *        pointer to an AVClass struct.
+ * @param level The importance level of the message expressed using a @ref
+ *        lavu_log_constants "Logging Constant".
+ * @param fmt The format string (printf-compatible) that specifies how
+ *        subsequent arguments are converted to output.
+ * @param vl The arguments referenced by the format string.
+ */
+public static native void av_vlog(Pointer avcl, int level, @Cast("const char*") BytePointer fmt, @ByVal @Cast("va_list*") Pointer vl);
+public static native void av_vlog(Pointer avcl, int level, String fmt, @ByVal @Cast("va_list*") Pointer vl);
+
+/**
+ * Get the current log level
+ *
+ * @see lavu_log_constants
+ *
+ * @return Current log level
+ */
 public static native int av_log_get_level();
-public static native void av_log_set_level(int arg0);
-public static class Arg0_Pointer_int_BytePointer_Pointer extends FunctionPointer {
+
+/**
+ * Set the log level
+ *
+ * @see lavu_log_constants
+ *
+ * @param level Logging level
+ */
+public static native void av_log_set_level(int level);
+
+/**
+ * Set the logging callback
+ *
+ * @note The callback must be thread safe, even if the application does not use
+ *       threads itself as some codecs are multithreaded.
+ *
+ * @see av_log_default_callback
+ *
+ * @param callback A logging function with a compatible signature.
+ */
+public static class Callback_Pointer_int_BytePointer_Pointer extends FunctionPointer {
     static { Loader.load(); }
-    public    Arg0_Pointer_int_BytePointer_Pointer(Pointer p) { super(p); }
-    protected Arg0_Pointer_int_BytePointer_Pointer() { allocate(); }
+    public    Callback_Pointer_int_BytePointer_Pointer(Pointer p) { super(p); }
+    protected Callback_Pointer_int_BytePointer_Pointer() { allocate(); }
     private native void allocate();
     public native void call(Pointer arg0, int arg1, @Cast("const char*") BytePointer arg2, @ByVal @Cast("va_list*") Pointer arg3);
 }
 
-public static class Arg0_Pointer_int_String_Pointer extends FunctionPointer {
+public static class Callback_Pointer_int_String_Pointer extends FunctionPointer {
     static { Loader.load(); }
-    public    Arg0_Pointer_int_String_Pointer(Pointer p) { super(p); }
-    protected Arg0_Pointer_int_String_Pointer() { allocate(); }
+    public    Callback_Pointer_int_String_Pointer(Pointer p) { super(p); }
+    protected Callback_Pointer_int_String_Pointer() { allocate(); }
     private native void allocate();
     public native void call(Pointer arg0, int arg1, String arg2, @ByVal @Cast("va_list*") Pointer arg3);
 }
 
-public static native void av_log_set_callback(Arg0_Pointer_int_BytePointer_Pointer arg0);
-public static native void av_log_set_callback(Arg0_Pointer_int_String_Pointer arg0);
+public static native void av_log_set_callback(Callback_Pointer_int_BytePointer_Pointer callback);
+public static native void av_log_set_callback(Callback_Pointer_int_String_Pointer callback);
+
+/**
+ * Default logging callback
+ *
+ * It prints the message to stderr, optionally colorizing it.
+ *
+ * @param avcl A pointer to an arbitrary struct of which the first field is a
+ *        pointer to an AVClass struct.
+ * @param level The importance level of the message expressed using a @ref
+ *        lavu_log_constants "Logging Constant".
+ * @param fmt The format string (printf-compatible) that specifies how
+ *        subsequent arguments are converted to output.
+ * @param ap The arguments referenced by the format string.
+ */
 public static native void av_log_default_callback(Pointer ptr, int level, @Cast("const char*") BytePointer fmt, @ByVal @Cast("va_list*") Pointer vl);
 public static native void av_log_default_callback(Pointer ptr, int level, String fmt, @ByVal @Cast("va_list*") Pointer vl);
+
+/**
+ * Return the context name
+ *
+ * @param  ctx The AVClass context
+ *
+ * @return The AVClass class_name
+ */
 public static native @Cast("const char*") BytePointer av_default_item_name(Pointer ctx);
 public static native @Cast("AVClassCategory") int av_default_get_category(Pointer ptr);
 
@@ -1405,7 +1562,9 @@ public static native void av_log_format_line(Pointer ptr, int level, String fmt,
  */
 
 // #ifdef DEBUG
+// #    define av_dlog(pctx, ...) av_log(pctx, AV_LOG_DEBUG, __VA_ARGS__)
 // #else
+// #    define av_dlog(pctx, ...) do { if (0) av_log(pctx, AV_LOG_DEBUG, __VA_ARGS__); } while (0)
 // #endif
 
 /**
@@ -1418,6 +1577,10 @@ public static native void av_log_format_line(Pointer ptr, int level, String fmt,
  */
 public static final int AV_LOG_SKIP_REPEATED = 1;
 public static native void av_log_set_flags(int arg);
+
+/**
+ * @}
+ */
 
 // #endif /* AVUTIL_LOG_H */
 
@@ -1794,6 +1957,34 @@ public static native AVBufferRef av_buffer_pool_get(AVBufferPool pool);
 // #include "rational.h"
 // #include "samplefmt.h"
 
+/** enum AVColorSpace */
+public static final int
+    AVCOL_SPC_RGB         = 0,
+    /** also ITU-R BT1361 / IEC 61966-2-4 xvYCC709 / SMPTE RP177 Annex B */
+    AVCOL_SPC_BT709       = 1,
+    AVCOL_SPC_UNSPECIFIED = 2,
+    AVCOL_SPC_FCC         = 4,
+    /** also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601 */
+    AVCOL_SPC_BT470BG     = 5,
+    /** also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC / functionally identical to above */
+    AVCOL_SPC_SMPTE170M   = 6,
+    AVCOL_SPC_SMPTE240M   = 7,
+    /** Used by Dirac / VC-2 and H.264 FRext, see ITU-T SG16 */
+    AVCOL_SPC_YCOCG       = 8,
+    /** Not part of ABI */
+    AVCOL_SPC_NB = 9;
+public static final int AVCOL_SPC_YCGCO = AVCOL_SPC_YCOCG;
+
+/** enum AVColorRange */
+public static final int
+    AVCOL_RANGE_UNSPECIFIED = 0,
+    /** the normal 219*2^(n-8) "MPEG" YUV ranges */
+    AVCOL_RANGE_MPEG        = 1,
+    /** the normal     2^n-1   "JPEG" YUV ranges */
+    AVCOL_RANGE_JPEG        = 2,
+    /** Not part of ABI */
+    AVCOL_RANGE_NB = 3;
+
 /** enum AVFrameSideDataType */
 public static final int
     /**
@@ -1882,6 +2073,9 @@ public static final int AV_NUM_DATA_POINTERS = 8;
      * preference, this is 16 or 32 for modern desktop CPUs.
      * Some code requires such alignment other code can be slower without
      * correct alignment, for yet other it makes no difference.
+     *
+     * @note The linesize may be larger than the size of usable data -- there
+     * may be extra padding present for performance reasons.
      */
     public native int linesize(int i); public native AVFrame linesize(int i, int linesize);
     @MemberGetter public native IntPointer linesize();
@@ -2003,7 +2197,7 @@ public static final int AV_NUM_DATA_POINTERS = 8;
      * @endcode
      */
     public native @Deprecated short motion_val(int i, int j, int k); public native AVFrame motion_val(int i, int j, int k, short motion_val);
-    @MemberGetter public native @Cast("int16_t*") @Deprecated ShortPointer motion_val();
+    @MemberGetter public native @Cast("int16_t(*)[2]") @Deprecated ShortPointer motion_val();
 
     /**
      * macroblock type table
@@ -2212,6 +2406,25 @@ public static final int FF_DECODE_ERROR_MISSING_REFERENCE =   2;
     public native int pkt_size(); public native AVFrame pkt_size(int pkt_size);
 
     /**
+     * YUV colorspace type.
+     * It must be accessed using av_frame_get_colorspace() and
+     * av_frame_set_colorspace().
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    public native @Cast("AVColorSpace") int colorspace(); public native AVFrame colorspace(int colorspace);
+
+    /**
+     * MPEG vs JPEG YUV range.
+     * It must be accessed using av_frame_get_color_range() and
+     * av_frame_set_color_range().
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    public native @Cast("AVColorRange") int color_range(); public native AVFrame color_range(int color_range);
+
+
+    /**
      * Not to be accessed directly from outside libavutil
      */
     public native AVBufferRef qp_table_buf(); public native AVFrame qp_table_buf(AVBufferRef qp_table_buf);
@@ -2245,6 +2458,16 @@ public static native BytePointer av_frame_get_qp_table(AVFrame f, IntPointer str
 public static native ByteBuffer av_frame_get_qp_table(AVFrame f, IntBuffer stride, IntBuffer type);
 public static native byte[] av_frame_get_qp_table(AVFrame f, int[] stride, int[] type);
 public static native int av_frame_set_qp_table(AVFrame f, AVBufferRef buf, int stride, int type);
+public static native @Cast("AVColorSpace") int av_frame_get_colorspace(@Const AVFrame frame);
+public static native void av_frame_set_colorspace(AVFrame frame, @Cast("AVColorSpace") int val);
+public static native @Cast("AVColorRange") int av_frame_get_color_range(@Const AVFrame frame);
+public static native void av_frame_set_color_range(AVFrame frame, @Cast("AVColorRange") int val);
+
+/**
+ * Get the name of a colorspace.
+ * @return a static string identifying the colorspace; can be NULL.
+ */
+public static native @Cast("const char*") BytePointer av_get_colorspace_name(@Cast("AVColorSpace") int val);
 
 /**
  * Allocate an AVFrame and set its fields to default values.  The resulting
@@ -2269,7 +2492,7 @@ public static native void av_frame_free(@Cast("AVFrame**") PointerPointer frame)
 public static native void av_frame_free(@ByPtrPtr AVFrame frame);
 
 /**
- * Setup a new reference to the data described by an given frame.
+ * Setup a new reference to the data described by a given frame.
  *
  * Copy frame properties from src to dst and create a new reference for each
  * AVBufferRef from src.
@@ -2383,7 +2606,7 @@ public static native AVFrameSideData av_frame_new_side_data(AVFrame frame,
  * @return a pointer to the side data of a given type on success, NULL if there
  * is no side data with such type in this frame.
  */
-public static native AVFrameSideData av_frame_get_side_data(AVFrame frame,
+public static native AVFrameSideData av_frame_get_side_data(@Const AVFrame frame,
                                         @Cast("AVFrameSideDataType") int type);
 
 // #endif /* AVUTIL_FRAME_H */
@@ -2421,7 +2644,7 @@ public static native AVFrameSideData av_frame_get_side_data(AVFrame frame,
  */
 
 // #include "libavutil/avconfig.h"
-// #include "libavutil/version.h"
+// #include "version.h"
 
 public static final int AVPALETTE_SIZE = 1024;
 public static final int AVPALETTE_COUNT = 256;
@@ -2430,17 +2653,17 @@ public static final int AVPALETTE_COUNT = 256;
  * Pixel format.
  *
  * @note
- * PIX_FMT_RGB32 is handled in an endian-specific manner. An RGBA
+ * AV_PIX_FMT_RGB32 is handled in an endian-specific manner. An RGBA
  * color is put together as:
  *  (A << 24) | (R << 16) | (G << 8) | B
  * This is stored as BGRA on little-endian CPU architectures and ARGB on
  * big-endian CPUs.
  *
  * @par
- * When the pixel format is palettized RGB (PIX_FMT_PAL8), the palettized
+ * When the pixel format is palettized RGB (AV_PIX_FMT_PAL8), the palettized
  * image data is stored in AVFrame.data[0]. The palette is transported in
  * AVFrame.data[1], is 1024 bytes long (256 4-byte entries) and is
- * formatted the same as in PIX_FMT_RGB32 described above (i.e., it is
+ * formatted the same as in AV_PIX_FMT_RGB32 described above (i.e., it is
  * also endian-specific). Note also that the individual RGB palette
  * components stored in AVFrame.data[1] should be in the range 0..255.
  * This is important as many custom PAL8 video codecs that were designed
@@ -2452,8 +2675,8 @@ public static final int AVPALETTE_COUNT = 256;
  * allocating the picture.
  *
  * @note
- * Make sure that all newly added big-endian formats have pix_fmt & 1 == 1
- * and that all newly added little-endian formats have pix_fmt & 1 == 0.
+ * Make sure that all newly added big-endian formats have (pix_fmt & 1) == 1
+ * and that all newly added little-endian formats have (pix_fmt & 1) == 0.
  * This allows simpler detection of big vs little-endian.
  */
 /** enum AVPixelFormat */
@@ -2532,6 +2755,7 @@ public static final int
     AV_PIX_FMT_YUVJ440P = 34,
     /** planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y & A samples) */
     AV_PIX_FMT_YUVA420P = 35,
+// #if FF_API_VDPAU
     /** H.264 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers */
     AV_PIX_FMT_VDPAU_H264 = 36,
     /** MPEG-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers */
@@ -2542,6 +2766,7 @@ public static final int
     AV_PIX_FMT_VDPAU_WMV3 = 39,
     /** VC-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers */
     AV_PIX_FMT_VDPAU_VC1 = 40,
+// #endif
     /** packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as big-endian */
     AV_PIX_FMT_RGB48BE = 41,
     /** packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as little-endian */
@@ -2584,8 +2809,10 @@ public static final int
     AV_PIX_FMT_YUV444P16LE = 58,
     /** planar YUV 4:4:4, 48bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian */
     AV_PIX_FMT_YUV444P16BE = 59,
+// #if FF_API_VDPAU
     /** MPEG4 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers */
     AV_PIX_FMT_VDPAU_MPEG4 = 60,
+// #endif
     /** HW decoding through DXVA2, Picture.data[3] contains a LPDIRECT3DSURFACE9 pointer */
     AV_PIX_FMT_DXVA2_VLD = 61,
 
@@ -2604,9 +2831,11 @@ public static final int
     /** packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as little-endian */
     AV_PIX_FMT_BGR48LE = 68,
 
-    //the following 10 formats have the disadvantage of needing 1 format for each bit depth, thus
-    //If you want to support multiple bit depths, then using AV_PIX_FMT_YUV420P16* with the bpp stored separately
-    //is better
+    /**
+     * The following 12 formats have the disadvantage of needing 1 format for each bit depth.
+     * Notice that each 9/10 bits sample is stored in 16 bits with extra padding.
+     * If you want to support multiple bit depths, then using AV_PIX_FMT_YUV420P16* with the bpp stored separately is better.
+     */
     /** planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian */
     AV_PIX_FMT_YUV420P9BE = 69,
     /** planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian */
@@ -2705,6 +2934,12 @@ public static final int
     AV_PIX_FMT_XYZ12LE = 110,
     /** packed XYZ 4:4:4, 36 bpp, (msb) 12X, 12Y, 12Z (lsb), the 2-byte value for each X/Y/Z is stored as big-endian, the 4 lower bits are set to 0 */
     AV_PIX_FMT_XYZ12BE = 111,
+    /** interleaved chroma YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples) */
+    AV_PIX_FMT_NV16 = 112,
+    /** interleaved chroma YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian */
+    AV_PIX_FMT_NV20LE = 113,
+    /** interleaved chroma YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian */
+    AV_PIX_FMT_NV20BE = 114,
 
 // #ifndef AV_PIX_FMT_ABI_GIT_MASTER
     /** packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian */
@@ -2769,8 +3004,34 @@ public static final int
     AV_PIX_FMT_GBRAP16LE = 0x123+4 + 24,
     /** planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples) full scale (JPEG), deprecated in favor of PIX_FMT_YUV411P and setting color_range */
     AV_PIX_FMT_YUVJ411P = 0x123+4 + 25,
+
+    /** bayer, BGBG..(odd line), GRGR..(even line), 8-bit samples */
+    AV_PIX_FMT_BAYER_BGGR8 = 0x123+4 + 26,
+    /** bayer, RGRG..(odd line), GBGB..(even line), 8-bit samples */
+    AV_PIX_FMT_BAYER_RGGB8 = 0x123+4 + 27,
+    /** bayer, GBGB..(odd line), RGRG..(even line), 8-bit samples */
+    AV_PIX_FMT_BAYER_GBRG8 = 0x123+4 + 28,
+    /** bayer, GRGR..(odd line), BGBG..(even line), 8-bit samples */
+    AV_PIX_FMT_BAYER_GRBG8 = 0x123+4 + 29,
+    /** bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, little-endian */
+    AV_PIX_FMT_BAYER_BGGR16LE = 0x123+4 + 30,
+    /** bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, big-endian */
+    AV_PIX_FMT_BAYER_BGGR16BE = 0x123+4 + 31,
+    /** bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, little-endian */
+    AV_PIX_FMT_BAYER_RGGB16LE = 0x123+4 + 32,
+    /** bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, big-endian */
+    AV_PIX_FMT_BAYER_RGGB16BE = 0x123+4 + 33,
+    /** bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, little-endian */
+    AV_PIX_FMT_BAYER_GBRG16LE = 0x123+4 + 34,
+    /** bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, big-endian */
+    AV_PIX_FMT_BAYER_GBRG16BE = 0x123+4 + 35,
+    /** bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, little-endian */
+    AV_PIX_FMT_BAYER_GRBG16LE = 0x123+4 + 36,
+    /** bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, big-endian */
+    AV_PIX_FMT_BAYER_GRBG16BE = 0x123+4 + 37,
+
     /** number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions */
-    AV_PIX_FMT_NB = 0x123+4 + 26;
+    AV_PIX_FMT_NB = 0x123+4 + 38;
 
 // #if FF_API_PIX_FMT
 // #include "old_pix_fmts.h"
@@ -2784,7 +3045,9 @@ public static final int AV_PIX_FMT_Y400A = AV_PIX_FMT_GRAY8A;
 public static final int AV_PIX_FMT_GBR24P = AV_PIX_FMT_GBRP;
 
 // #if AV_HAVE_BIGENDIAN
+// #   define AV_PIX_FMT_NE(be, le) AV_PIX_FMT_##be
 // #else
+// #   define AV_PIX_FMT_NE(be, le) AV_PIX_FMT_##le
 // #endif
 
 public static native @MemberGetter int AV_PIX_FMT_RGB32();
@@ -2864,6 +3127,18 @@ public static native @MemberGetter int AV_PIX_FMT_GBRP14();
 public static final int AV_PIX_FMT_GBRP14 = AV_PIX_FMT_GBRP14();
 public static native @MemberGetter int AV_PIX_FMT_GBRP16();
 public static final int AV_PIX_FMT_GBRP16 = AV_PIX_FMT_GBRP16();
+public static native @MemberGetter int AV_PIX_FMT_GBRAP16();
+public static final int AV_PIX_FMT_GBRAP16 = AV_PIX_FMT_GBRAP16();
+
+public static native @MemberGetter int AV_PIX_FMT_BAYER_BGGR16();
+public static final int AV_PIX_FMT_BAYER_BGGR16 = AV_PIX_FMT_BAYER_BGGR16();
+public static native @MemberGetter int AV_PIX_FMT_BAYER_RGGB16();
+public static final int AV_PIX_FMT_BAYER_RGGB16 = AV_PIX_FMT_BAYER_RGGB16();
+public static native @MemberGetter int AV_PIX_FMT_BAYER_GBRG16();
+public static final int AV_PIX_FMT_BAYER_GBRG16 = AV_PIX_FMT_BAYER_GBRG16();
+public static native @MemberGetter int AV_PIX_FMT_BAYER_GRBG16();
+public static final int AV_PIX_FMT_BAYER_GRBG16 = AV_PIX_FMT_BAYER_GRBG16();
+
 
 public static native @MemberGetter int AV_PIX_FMT_YUVA420P9();
 public static final int AV_PIX_FMT_YUVA420P9 = AV_PIX_FMT_YUVA420P9();
@@ -2886,11 +3161,16 @@ public static final int AV_PIX_FMT_YUVA444P16 = AV_PIX_FMT_YUVA444P16();
 
 public static native @MemberGetter int AV_PIX_FMT_XYZ12();
 public static final int AV_PIX_FMT_XYZ12 = AV_PIX_FMT_XYZ12();
+public static native @MemberGetter int AV_PIX_FMT_NV20();
+public static final int AV_PIX_FMT_NV20 = AV_PIX_FMT_NV20();
 
 // #if FF_API_PIX_FMT
+// #define PixelFormat AVPixelFormat
 
 public static final int PIX_FMT_Y400A = AV_PIX_FMT_Y400A;
 public static final int PIX_FMT_GBR24P = AV_PIX_FMT_GBR24P;
+
+// #define PIX_FMT_NE(be, le) AV_PIX_FMT_NE(be, le)
 
 public static final int PIX_FMT_RGB32 =   AV_PIX_FMT_RGB32;
 public static final int PIX_FMT_RGB32_1 = AV_PIX_FMT_RGB32_1;
@@ -3393,7 +3673,12 @@ public static final int
  * - a channel layout mask, in hexadecimal starting with "0x" (see the
  *   AV_CH_* macros).
  *
- * Example: "stereo+FC" = "2+FC" = "2c+1c" = "0x7"
+ * @warning Starting from the next major bump the trailing character
+ * 'c' to specify a number of channels will be required, while a
+ * channel layout mask could also be specified as a decimal number
+ * (if and only if not followed by "c").
+ *
+ * Example: "stereo+FC" = "2c+FC" = "2c+1c" = "0x7"
  */
 public static native @Cast("uint64_t") long av_get_channel_layout(@Cast("const char*") BytePointer name);
 public static native @Cast("uint64_t") long av_get_channel_layout(String name);
@@ -3527,13 +3812,13 @@ public static final int AV_CPU_FLAG_3DNOW =        0x0004;
 public static final int AV_CPU_FLAG_SSE =          0x0008;
 /** PIV SSE2 functions */
 public static final int AV_CPU_FLAG_SSE2 =         0x0010;
-/** SSE2 supported, but usually not faster */
+/** SSE2 supported, but usually not faster *  than regular MMX/SSE (e.g. Core1) */
 public static final int AV_CPU_FLAG_SSE2SLOW = 0x40000000;
 /** AMD 3DNowExt */
 public static final int AV_CPU_FLAG_3DNOWEXT =     0x0020;
 /** Prescott SSE3 functions */
 public static final int AV_CPU_FLAG_SSE3 =         0x0040;
-/** SSE3 supported, but usually not faster */
+/** SSE3 supported, but usually not faster *  than regular MMX/SSE (e.g. Core1) */
 public static final int AV_CPU_FLAG_SSE3SLOW = 0x20000000;
 /** Conroe SSSE3 functions */
 public static final int AV_CPU_FLAG_SSSE3 =        0x0080;
@@ -3555,6 +3840,8 @@ public static final int AV_CPU_FLAG_CMOV =      0x1001000;
 // #else
 // #define AV_CPU_FLAG_CMOV         0x1000 ///< supports cmov instruction
 // #endif
+/** AVX2 functions: requires OS support even if YMM registers aren't used */
+public static final int AV_CPU_FLAG_AVX2 =         0x8000;
 
 /** standard */
 public static final int AV_CPU_FLAG_ALTIVEC =      0x0001;
@@ -3617,8 +3904,6 @@ public static native int av_parse_cpu_caps(@Cast("unsigned*") int[] flags, Strin
  * @return the number of logical CPU cores present.
  */
 public static native int av_cpu_count();
-
-/* The following CPU-specific functions shall not be called directly. */
 
 // #endif /* AVUTIL_CPU_H */
 
@@ -3874,7 +4159,7 @@ public static native void av_dict_free(@ByPtrPtr AVDictionary m);
  *     int      bin_len;
  * } test_struct;
  *
- * static const AVOption options[] = {
+ * static const AVOption test_options[] = {
  *   { "test_int", "This is a test option of int type.", offsetof(test_struct, int_opt),
  *     AV_OPT_TYPE_INT, { .i64 = -1 }, INT_MIN, INT_MAX },
  *   { "test_str", "This is a test option of string type.", offsetof(test_struct, str_opt),
@@ -3887,7 +4172,7 @@ public static native void av_dict_free(@ByPtrPtr AVDictionary m);
  * static const AVClass test_class = {
  *     .class_name = "test class",
  *     .item_name  = av_default_item_name,
- *     .option     = options,
+ *     .option     = test_options,
  *     .version    = LIBAVUTIL_VERSION_INT,
  * };
  * @endcode
@@ -3973,7 +4258,7 @@ public static native void av_dict_free(@ByPtrPtr AVDictionary m);
  *
  * @subsection avoptions_implement_named_constants Named constants
  *      It is possible to create named constants for options. Simply set the unit
- *      field of the option the constants should apply to to a string and
+ *      field of the option the constants should apply to a string and
  *      create the constants themselves as options of type AV_OPT_TYPE_CONST
  *      with their unit field set to the same string.
  *      Their default_val field should contain the value of the named
@@ -4058,7 +4343,10 @@ public static final int
     AV_OPT_TYPE_DURATION   = AV_OPT_TYPE_DURATION();
 public static native @MemberGetter int AV_OPT_TYPE_COLOR();
 public static final int
-    AV_OPT_TYPE_COLOR      = AV_OPT_TYPE_COLOR(),
+    AV_OPT_TYPE_COLOR      = AV_OPT_TYPE_COLOR();
+public static native @MemberGetter int AV_OPT_TYPE_CHANNEL_LAYOUT();
+public static final int
+    AV_OPT_TYPE_CHANNEL_LAYOUT = AV_OPT_TYPE_CHANNEL_LAYOUT(),
 // #if FF_API_OLD_AVOPTIONS
     FF_OPT_TYPE_FLAGS = 0,
     FF_OPT_TYPE_INT = 1,
@@ -4104,6 +4392,11 @@ public static class AVOption extends Pointer {
     /**
      * the default value for scalar options
      */
+        @Name({"default_val", ".i64"}) public native long default_val_i64(); public native AVOption default_val_i64(long default_val_i64);
+        @Name({"default_val", ".dbl"}) public native double default_val_dbl(); public native AVOption default_val_dbl(double default_val_dbl);
+        @Name({"default_val", ".str"}) @MemberGetter public native @Cast("const char*") BytePointer default_val_str();
+        /* TODO those are unused now */
+        @Name({"default_val", ".q"}) public native @ByVal AVRational default_val_q(); public native AVOption default_val_q(AVRational default_val_q);
     /** minimum valid value for the option */
     public native double min(); public native AVOption min(double min);
     /** maximum valid value for the option */
@@ -4180,7 +4473,7 @@ public static class AVOptionRanges extends Pointer {
 /**
  * Look for an option in obj. Look only for the options which
  * have the flags set as specified in mask and flags (that is,
- * for which it is the case that opt->flags & mask == flags).
+ * for which it is the case that (opt->flags & mask) == flags).
  *
  * @param[in] obj a pointer to a struct whose first element is a
  * pointer to an AVClass
@@ -4625,6 +4918,8 @@ public static native int av_opt_set_sample_fmt(Pointer obj, @Cast("const char*")
 public static native int av_opt_set_sample_fmt(Pointer obj, String name, @Cast("AVSampleFormat") int fmt, int search_flags);
 public static native int av_opt_set_video_rate(Pointer obj, @Cast("const char*") BytePointer name, @ByVal AVRational val, int search_flags);
 public static native int av_opt_set_video_rate(Pointer obj, String name, @ByVal AVRational val, int search_flags);
+public static native int av_opt_set_channel_layout(Pointer obj, @Cast("const char*") BytePointer name, long ch_layout, int search_flags);
+public static native int av_opt_set_channel_layout(Pointer obj, String name, long ch_layout, int search_flags);
 
 /**
  * Set a binary option to an integer list.
@@ -4636,6 +4931,11 @@ public static native int av_opt_set_video_rate(Pointer obj, String name, @ByVal 
  * @param term   list terminator (usually 0 or -1)
  * @param flags  search flags
  */
+// #define av_opt_set_int_list(obj, name, val, term, flags)
+//     (av_int_list_length(val, term) > INT_MAX / sizeof(*(val)) ?
+//      AVERROR(EINVAL) :
+//      av_opt_set_bin(obj, name, (const uint8_t *)(val),
+//                     av_int_list_length(val, term) * sizeof(*(val)), flags))
 /**
  * @}
  */
@@ -4650,10 +4950,10 @@ public static native int av_opt_set_video_rate(Pointer obj, String name, @ByVal 
  * @param[in] search_flags flags passed to av_opt_find2. I.e. if AV_OPT_SEARCH_CHILDREN
  * is passed here, then the option may be found in a child of obj.
  * @param[out] out_val value of the option will be written here
- * @return 0 on success, a negative error code otherwise
+ * @return >=0 on success, a negative error code otherwise
  */
 /**
- * @note the returned string will av_malloc()ed and must be av_free()ed by the caller
+ * @note the returned string will be av_malloc()ed and must be av_free()ed by the caller
  */
 public static native int av_opt_get(Pointer obj, @Cast("const char*") BytePointer name, int search_flags, @Cast("uint8_t**") PointerPointer out_val);
 public static native int av_opt_get(Pointer obj, @Cast("const char*") BytePointer name, int search_flags, @Cast("uint8_t**") @ByPtrPtr BytePointer out_val);
@@ -4696,6 +4996,12 @@ public static native int av_opt_get_sample_fmt(Pointer obj, @Cast("const char*")
 public static native int av_opt_get_sample_fmt(Pointer obj, String name, int search_flags, @Cast("AVSampleFormat*") int[] out_fmt);
 public static native int av_opt_get_video_rate(Pointer obj, @Cast("const char*") BytePointer name, int search_flags, AVRational out_val);
 public static native int av_opt_get_video_rate(Pointer obj, String name, int search_flags, AVRational out_val);
+public static native int av_opt_get_channel_layout(Pointer obj, @Cast("const char*") BytePointer name, int search_flags, LongPointer ch_layout);
+public static native int av_opt_get_channel_layout(Pointer obj, String name, int search_flags, LongBuffer ch_layout);
+public static native int av_opt_get_channel_layout(Pointer obj, @Cast("const char*") BytePointer name, int search_flags, long[] ch_layout);
+public static native int av_opt_get_channel_layout(Pointer obj, String name, int search_flags, LongPointer ch_layout);
+public static native int av_opt_get_channel_layout(Pointer obj, @Cast("const char*") BytePointer name, int search_flags, LongBuffer ch_layout);
+public static native int av_opt_get_channel_layout(Pointer obj, String name, int search_flags, long[] ch_layout);
 /**
  * @}
  */
@@ -4793,6 +5099,8 @@ public static native int av_opt_query_ranges_default(@ByPtrPtr AVOptionRanges ar
 // #define AVUTIL_PIXDESC_H
 
 // #include <inttypes.h>
+
+// #include "attributes.h"
 // #include "pixfmt.h"
 
 public static class AVComponentDescriptor extends Pointer {
@@ -4919,7 +5227,7 @@ public static final int AV_PIX_FMT_FLAG_ALPHA =        (1 << 7);
 
 // #if FF_API_PIX_FMT
 /**
- * @deprecate use the AV_PIX_FMT_FLAG_* flags
+ * @deprecated use the AV_PIX_FMT_FLAG_* flags
  */
 public static final int PIX_FMT_BE =        AV_PIX_FMT_FLAG_BE;
 public static final int PIX_FMT_PAL =       AV_PIX_FMT_FLAG_PAL;
@@ -4935,8 +5243,8 @@ public static final int PIX_FMT_ALPHA =     AV_PIX_FMT_FLAG_ALPHA;
 /**
  * The array of all the pixel format descriptors.
  */
-@MemberGetter public static native @Const @ByVal AVPixFmtDescriptor av_pix_fmt_descriptors(int i);
-@MemberGetter public static native @Const AVPixFmtDescriptor av_pix_fmt_descriptors();
+@MemberGetter public static native @Const @Deprecated @ByVal AVPixFmtDescriptor av_pix_fmt_descriptors(int i);
+@MemberGetter public static native @Const @Deprecated AVPixFmtDescriptor av_pix_fmt_descriptors();
 // #endif
 
 /**
@@ -5011,7 +5319,7 @@ public static native @Cast("const char*") BytePointer av_get_pix_fmt_name(@Cast(
 
 /**
  * Print in buf the string corresponding to the pixel format with
- * number pix_fmt, or an header if pix_fmt is negative.
+ * number pix_fmt, or a header if pix_fmt is negative.
  *
  * @param buf the buffer where to write the string
  * @param buf_size the size of buf

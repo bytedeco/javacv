@@ -82,6 +82,7 @@ public class avfilter {
 
 // #include <stddef.h>
 
+// #include "libavutil/attributes.h"
 // #include "libavutil/avutil.h"
 // #include "libavutil/dict.h"
 // #include "libavutil/frame.h"
@@ -910,6 +911,8 @@ public static class AVFilterContext extends Pointer {
     public native AVFilterLink inputs(int i); public native AVFilterContext inputs(int i, AVFilterLink inputs);
     @MemberGetter public native @Cast("AVFilterLink**") PointerPointer inputs();
 // #if FF_API_FOO_COUNT
+    /** @deprecated use nb_inputs */
+    public native @Cast("unsigned") @Deprecated int input_count(); public native AVFilterContext input_count(int input_count);
 // #endif
     /** number of input pads */
     public native @Cast("unsigned") int nb_inputs(); public native AVFilterContext nb_inputs(int nb_inputs);
@@ -920,6 +923,8 @@ public static class AVFilterContext extends Pointer {
     public native AVFilterLink outputs(int i); public native AVFilterContext outputs(int i, AVFilterLink outputs);
     @MemberGetter public native @Cast("AVFilterLink**") PointerPointer outputs();
 // #if FF_API_FOO_COUNT
+    /** @deprecated use nb_outputs */
+    public native @Cast("unsigned") @Deprecated int output_count(); public native AVFilterContext output_count(int output_count);
 // #endif
     /** number of output pads */
     public native @Cast("unsigned") int nb_outputs(); public native AVFilterContext nb_outputs(int nb_outputs);
@@ -1057,7 +1062,7 @@ public static class AVFilterLink extends Pointer {
     public native int request_samples(); public native AVFilterLink request_samples(int request_samples);
 
     /** stage of the initialization of the link properties (dimensions, etc) */
-    /** enum init_state */
+    /** enum AVFilterLink::init_state */
     public static final int
         /** not started */
         AVLINK_UNINIT = 0,
@@ -1488,6 +1493,32 @@ public static native @Const AVClass avfilter_get_class();
     public AVFilterGraphInternal(Pointer p) { super(p); }
 }
 
+/**
+ * A function pointer passed to the @ref AVFilterGraph.execute callback to be
+ * executed multiple times, possibly in parallel.
+ *
+ * @param ctx the filter context the job belongs to
+ * @param arg an opaque parameter passed through from @ref
+ *            AVFilterGraph.execute
+ * @param jobnr the index of the job being executed
+ * @param nb_jobs the total number of jobs
+ *
+ * @return 0 on success, a negative AVERROR on error
+ */
+
+/**
+ * A function executing multiple jobs, possibly in parallel.
+ *
+ * @param ctx the filter context to which the jobs belong
+ * @param func the function to be called multiple times
+ * @param arg the argument to be passed to func
+ * @param ret a nb_jobs-sized array to be filled with return values from each
+ *            invocation of func
+ * @param nb_jobs the number of jobs to execute
+ *
+ * @return 0 on success, a negative AVERROR on error
+ */
+
 public static class AVFilterGraph extends Pointer {
     static { Loader.load(); }
     public AVFilterGraph() { allocate(); }
@@ -1501,6 +1532,7 @@ public static class AVFilterGraph extends Pointer {
 
     @MemberGetter public native @Const AVClass av_class();
 // #if FF_API_FOO_COUNT
+    public native @Cast("unsigned") @Deprecated int filter_count_unused(); public native AVFilterGraph filter_count_unused(int filter_count_unused);
 // #endif
     public native AVFilterContext filters(int i); public native AVFilterGraph filters(int i, AVFilterContext filters);
     @MemberGetter public native @Cast("AVFilterContext**") PointerPointer filters();
@@ -1512,6 +1544,7 @@ public static class AVFilterGraph extends Pointer {
     /** libavresample options to use for the auto-inserted resample filters */
     public native @Cast("char*") BytePointer resample_lavr_opts(); public native AVFilterGraph resample_lavr_opts(BytePointer resample_lavr_opts);
 // #if FF_API_FOO_COUNT
+    public native @Cast("unsigned") int nb_filters(); public native AVFilterGraph nb_filters(int nb_filters);
 // #endif
 
     /**
@@ -1539,6 +1572,27 @@ public static class AVFilterGraph extends Pointer {
      * Opaque object for libavfilter internal use.
      */
     public native AVFilterGraphInternal internal(); public native AVFilterGraph internal(AVFilterGraphInternal internal);
+
+    /**
+     * Opaque user data. May be set by the caller to an arbitrary value, e.g. to
+     * be used from callbacks like @ref AVFilterGraph.execute.
+     * Libavfilter will not touch this field in any way.
+     */
+    public native Pointer opaque(); public native AVFilterGraph opaque(Pointer opaque);
+
+    /**
+     * This callback may be set by the caller immediately after allocating the
+     * graph and before adding any filters to it, to provide a custom
+     * multithreading implementation.
+     *
+     * If set, filters with slice threading capability will call this callback
+     * to execute multiple jobs in parallel.
+     *
+     * If this field is left unset, libavfilter will use its internal
+     * implementation, which may or may not be multithreaded depending on the
+     * platform and build options.
+     */
+    public native @Cast("avfilter_execute_func*") IntPointer execute(); public native AVFilterGraph execute(IntPointer execute);
 
     /** swr options to use for the auto-inserted aresample filters, Access ONLY through AVOptions */
     public native @Cast("char*") BytePointer aresample_swr_opts(); public native AVFilterGraph aresample_swr_opts(BytePointer aresample_swr_opts);
@@ -1619,13 +1673,13 @@ public static native @Deprecated int avfilter_graph_add_filter(AVFilterGraph gra
  * @return a negative AVERROR error code in case of failure, a non
  * negative value otherwise
  */
-public static native int avfilter_graph_create_filter(@Cast("AVFilterContext**") PointerPointer filt_ctx, AVFilter filt,
+public static native int avfilter_graph_create_filter(@Cast("AVFilterContext**") PointerPointer filt_ctx, @Const AVFilter filt,
                                  @Cast("const char*") BytePointer name, @Cast("const char*") BytePointer args, Pointer opaque,
                                  AVFilterGraph graph_ctx);
-public static native int avfilter_graph_create_filter(@ByPtrPtr AVFilterContext filt_ctx, AVFilter filt,
+public static native int avfilter_graph_create_filter(@ByPtrPtr AVFilterContext filt_ctx, @Const AVFilter filt,
                                  @Cast("const char*") BytePointer name, @Cast("const char*") BytePointer args, Pointer opaque,
                                  AVFilterGraph graph_ctx);
-public static native int avfilter_graph_create_filter(@ByPtrPtr AVFilterContext filt_ctx, AVFilter filt,
+public static native int avfilter_graph_create_filter(@ByPtrPtr AVFilterContext filt_ctx, @Const AVFilter filt,
                                  String name, String args, Pointer opaque,
                                  AVFilterGraph graph_ctx);
 
@@ -1651,7 +1705,7 @@ public static final int
  *
  * @param graphctx the filter graph
  * @param log_ctx context used for logging
- * @return 0 in case of success, a negative AVERROR code otherwise
+ * @return >= 0 in case of success, a negative AVERROR code otherwise
  */
 public static native int avfilter_graph_config(AVFilterGraph graphctx, Pointer log_ctx);
 
@@ -1709,7 +1763,7 @@ public static native AVFilterInOut avfilter_inout_alloc();
 public static native void avfilter_inout_free(@Cast("AVFilterInOut**") PointerPointer inout);
 public static native void avfilter_inout_free(@ByPtrPtr AVFilterInOut inout);
 
-// #if HAVE_INCOMPATIBLE_LIBAV_ABI || !FF_API_OLD_GRAPH_PARSE
+// #if AV_HAVE_INCOMPATIBLE_LIBAV_ABI || !FF_API_OLD_GRAPH_PARSE
 // #else
 /**
  * Add a graph described by a string to a graph.
@@ -2091,20 +2145,20 @@ public static native int av_buffersink_get_samples(AVFilterContext ctx, AVFrame 
 
 /*
  *
- * This file is part of Libav.
+ * This file is part of FFmpeg.
  *
- * Libav is free software; you can redistribute it and/or
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * Libav is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with Libav; if not, write to the Free Software
+ * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
