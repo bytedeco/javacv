@@ -34,7 +34,10 @@ And please make sure your Java and OpenCV have the same bitness: *32-bit and 64-
  * ARToolKitPlus 2.3.0  https://launchpad.net/artoolkitplus
 
 Finally, because we are dealing with native code, bugs can easily crash the virtual machine. Luckily, Java provides some tools to help us debug under those circumstances:
- * Troubleshooting Guide for HotSpot VM  http://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/
+ * Troubleshooting Guide for Java SE with HotSpot VM
+  * http://www.oracle.com/technetwork/java/javase/index-137495.html
+  * http://www.oracle.com/technetwork/java/javase/tsg-vm-149989.pdf
+  * http://docs.oracle.com/javase/7/docs/webnotes/tsg/TSG-VM/html/
 
 
 ==Build Instructions==
@@ -46,7 +49,7 @@ Once installed, simply call the usual `mvn install` command for both JavaCPP and
 
 
 ==Quick Start for OpenCV and FFmpeg==
-First, put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`), of OpenCV (`opencv-*.jar`), and of FFmpeg (`ffmpeg-*.jar`) somewhere in your CLASSPATH. Or point your `pom.xml` file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system library PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].) Here are some more specific instructions for common cases:
+Simply put all the JAR files of JavaCV (`javacpp.jar`, `javacv.jar`, and `javacv-*.jar`), of OpenCV (`opencv-*.jar`), and of FFmpeg (`ffmpeg-*.jar`) somewhere in your CLASSPATH. Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or 7):
  # In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
@@ -63,6 +66,8 @@ Eclipse (Android 2.2 or newer):
  # Extract all the `*.so` files from `javacv-android-arm.jar`, `opencv-2.4.8-android-arm.jar`, and `ffmpeg-2.1.1-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
  # Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
  # Select both `javacpp.jar` and `javacv.jar` from the newly created "libs" folder.
+
+Or point your build file to the Maven repository http://maven2.javacv.googlecode.com/git/, and make sure that the library files of OpenCV and FFmpeg (`*.so`, `*.dylib`, or `*.dll`) can be found either in their default installation directories or in the system library PATH, which under Windows includes the current working directory. (For answers to problems frequently encountered with OpenCV on the Windows platform, please refer to [http://code.google.com/p/javacv/wiki/Windows7AndOpenCV Common issues with OpenCV under Windows 7].)
 
 After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
  * [http://docs.opencv.org/ OpenCV documentation]
@@ -224,6 +229,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 
 ==Changes==
+
+ * Updated `samples/FaceApplet.jnlp` to make it work with JDK/JRE 7u45
 
 ===January 6, 2014 version 0.7===
  * Upgraded support to OpenCV 2.4.8
