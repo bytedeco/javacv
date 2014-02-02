@@ -230,6 +230,9 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * Added support to seek in audio-only streams with `FFmpegFrameGrabber.setTimestamp()` (issue #417)
+ * Fixed potential crash in the `RecordActivity` sample due to thread concurrency issue in `stopRecording()`
+ * To capture the last frame of a video file, reverted `FFmpegFrameGrabber.setTimestamp()` to its previous behavior (issue #413)
  * Updated `samples/FaceApplet.jnlp` to make it work with JDK/JRE 7u45
 
 ===January 6, 2014 version 0.7===

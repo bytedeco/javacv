@@ -256,6 +256,7 @@ public class RecordActivity extends Activity implements OnClickListener {
 
         audioRecordRunnable = new AudioRecordRunnable();
         audioThread = new Thread(audioRecordRunnable);
+        runAudioThread = true;
     }
 
     public void startRecording() {
@@ -274,6 +275,13 @@ public class RecordActivity extends Activity implements OnClickListener {
     public void stopRecording() {
 
         runAudioThread = false;
+        try {
+            audioThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        audioRecordRunnable = null;
+        audioThread = null;
 
         if (recorder != null && recording) {
             recording = false;

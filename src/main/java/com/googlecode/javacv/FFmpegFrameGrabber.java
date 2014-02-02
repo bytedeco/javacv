@@ -266,7 +266,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     @Override public void setTimestamp(long timestamp) throws Exception {
         int ret;
-        if (oc == null || video_c == null) {
+        if (oc == null) {
             super.setTimestamp(timestamp);
         } else {
             timestamp = timestamp * AV_TIME_BASE / 1000000L;
@@ -277,7 +277,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if ((ret = avformat_seek_file(oc, -1, Long.MIN_VALUE, timestamp, Long.MAX_VALUE, AVSEEK_FLAG_BACKWARD)) < 0) {
                 throw new Exception("avformat_seek_file() error " + ret + ": Could not seek file to timestamp " + timestamp + ".");
             }
-            avcodec_flush_buffers(video_c);
+            if (video_c != null) {
+                avcodec_flush_buffers(video_c);
+            }
             if (audio_c != null) {
                 avcodec_flush_buffers(audio_c);
             }
@@ -285,13 +287,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 pkt2.size(0);
                 av_free_packet(pkt);
             }
-            while (this.timestamp > timestamp && grab(false) != null) {
+            while (this.timestamp > timestamp && grabFrame(false) != null) {
                 // flush frames if seeking backwards
             }
-            while (this.timestamp < timestamp && grab(false) != null) {
+            while (this.timestamp < timestamp && grabFrame(false) != null) {
                 // decode up to the desired frame
             }
-            frameGrabbed = this.timestamp >= timestamp;
+            if (video_c != null) {
+                frameGrabbed = true;
+            }
         }
     }
 
@@ -519,12 +523,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         Frame f = grabFrame(true, false, false);
         return f != null ? f.image : null;
     }
-    private IplImage grab(boolean processImage) throws Exception {
-        Frame f = grabFrame(processImage, false, false);
-        return f != null ? f.image : null;
-    }
     @Override public Frame grabFrame() throws Exception {
         return grabFrame(true, true, false);
+    }
+    public Frame grabFrame(boolean processImage) throws Exception {
+        return grabFrame(processImage, true, false);
     }
     public Frame grabKeyFrame() throws Exception {
         return grabFrame(true, false, true);
