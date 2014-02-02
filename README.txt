@@ -230,6 +230,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * Fixed errors such as "jniopencv_nonfree.dll: Can't find dependent libraries" by adding the `opencv_ocl` module as dependency
  * Added support to seek in audio-only streams with `FFmpegFrameGrabber.setTimestamp()` (issue #417)
  * Fixed potential crash in the `RecordActivity` sample due to thread concurrency issue in `stopRecording()`
  * To capture the last frame of a video file, reverted `FFmpegFrameGrabber.setTimestamp()` to its previous behavior (issue #413)

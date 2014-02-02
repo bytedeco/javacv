@@ -77,8 +77,8 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties(inherit={opencv_calib3d.class, opencv_features2d.class, opencv_objdetect.class,
         opencv_photo.class, opencv_ml.class, opencv_legacy.class, opencv_video.class}, value={
     @Platform(include={"<opencv2/nonfree/nonfree.hpp>", "<opencv2/features2d/features2d.hpp>"},
-        link={"opencv_nonfree@.2.4", "opencv_gpu@.2.4"}),
-    @Platform(value="windows", link={"opencv_nonfree248", "opencv_gpu248"}),
+        link={"opencv_nonfree@.2.4", "opencv_gpu@.2.4", "opencv_ocl@.2.4"}),
+    @Platform(value="windows", link={"opencv_nonfree248", "opencv_gpu248", "opencv_ocl248"}),
     @Platform(value="android", link={"opencv_nonfree"}) })
 public class opencv_nonfree {
     static {
