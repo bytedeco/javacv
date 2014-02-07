@@ -79,9 +79,8 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
  */
 @Properties(inherit={opencv_calib3d.class, opencv_features2d.class, opencv_objdetect.class, opencv_photo.class,
         opencv_nonfree.class, opencv_video.class, opencv_ml.class, opencv_legacy.class}, value={
-    @Platform(include="<opencv2/videostab/videostab.hpp>", link={"opencv_videostab@.2.4", "opencv_gpu@.2.4", "opencv_ocl@.2.4"}),
-    @Platform(value="windows", link={"opencv_videostab248", "opencv_gpu248", "opencv_ocl248"}),
-    @Platform(value="android", link={"opencv_videostab"}) })
+    @Platform(include="<opencv2/videostab/videostab.hpp>", link={"opencv_videostab@.2.4"}, preload={"opencv_gpu@.2.4", "opencv_ocl@.2.4"}),
+    @Platform(value="windows", link={"opencv_videostab248"}, preload={"opencv_gpu248", "opencv_ocl248"}) })
 public class opencv_videostab {
     static { load(); }
 

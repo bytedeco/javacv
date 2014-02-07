@@ -230,6 +230,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * Added missing `allocateArray()` constructors to `CameraParams` and `MatchesInfo` (issue #421)
  * Fixed errors such as "jniopencv_nonfree.dll: Can't find dependent libraries" by adding the `opencv_ocl` module as dependency
  * Added support to seek in audio-only streams with `FFmpegFrameGrabber.setTimestamp()` (issue #417)
  * Fixed potential crash in the `RecordActivity` sample due to thread concurrency issue in `stopRecording()`

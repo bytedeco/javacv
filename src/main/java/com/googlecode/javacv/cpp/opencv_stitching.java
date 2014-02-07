@@ -85,9 +85,8 @@ import static com.googlecode.javacv.cpp.opencv_features2d.*;
 @Properties(inherit={opencv_calib3d.class, opencv_features2d.class, opencv_objdetect.class, opencv_nonfree.class,
         opencv_photo.class, opencv_ml.class, opencv_legacy.class, opencv_video.class}, value={
     @Platform(include={"<opencv2/stitching/stitcher.hpp>", "<opencv2/stitching/detail/autocalib.hpp>"},
-        link={"opencv_stitching@.2.4", "opencv_gpu@.2.4", "opencv_ocl@.2.4"}),
-    @Platform(value="windows", link={"opencv_stitching248", "opencv_gpu248", "opencv_ocl248"}),
-    @Platform(value="android", link={"opencv_stitching"}) })
+        link={"opencv_stitching@.2.4"}, preload={"opencv_gpu@.2.4", "opencv_ocl@.2.4"}),
+    @Platform(value="windows", link={"opencv_stitching248"}, preload={"opencv_gpu248", "opencv_ocl248"}) })
 public class opencv_stitching {
     static { load(); }
 
@@ -666,9 +665,15 @@ public class opencv_stitching {
         static { load(); }
         public MatchesInfo() { allocate(); }
         public MatchesInfo(@ByRef MatchesInfo other) { allocate(other); }
+        public MatchesInfo(int size) { allocateArray(size); }
         public MatchesInfo(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(@ByRef MatchesInfo other);
+        private native void allocateArray(int size);
+
+        @Override public MatchesInfo position(int position) {
+            return (MatchesInfo)super.position(position);
+        }
 
         public native @Name("operator=") @Const @ByRef MatchesInfo put(@ByRef MatchesInfo other);
 
@@ -734,9 +739,15 @@ public class opencv_stitching {
         static { load(); }
         public CameraParams() { allocate(); }
         public CameraParams(@ByRef CameraParams other) { allocate(other); }
+        public CameraParams(int size) { allocateArray(size); }
         public CameraParams(Pointer p) { super(p); }
         private native void allocate();
         private native void allocate(@ByRef CameraParams other);
+        private native void allocateArray(int size);
+
+        @Override public CameraParams position(int position) {
+            return (CameraParams)super.position(position);
+        }
 
         public native @Name("operator=") @Const @ByRef CameraParams put(@ByRef CameraParams other);
 
