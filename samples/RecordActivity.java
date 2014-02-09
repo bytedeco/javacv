@@ -180,8 +180,12 @@ public class RecordActivity extends Activity implements OnClickListener {
 
         if (cameraView != null) {
             cameraView.stopPreview();
-            cameraDevice.release();
-            cameraDevice = null;
+        }
+
+        if(cameraDevice != null) {
+           cameraDevice.stopPreview();
+           cameraDevice.release();
+           cameraDevice = null;
         }
 
         if (mWakeLock != null) {
