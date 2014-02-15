@@ -342,7 +342,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             AVRational r = av_d2q(frameRate, 1001000);
             av_dict_set(options, "framerate", r.num() + "/" + r.den(), 0);
         }
-        if (imageMode != ImageMode.RAW) {
+        if (pixelFormat >= 0) {
+            av_dict_set(options, "pixel_format", av_get_pix_fmt_name(pixelFormat).getString(), 0);
+        } else if (imageMode != ImageMode.RAW) {
             av_dict_set(options, "pixel_format", imageMode == ImageMode.COLOR ? "bgr24" : "gray8", 0);
         }
         if (imageWidth > 0 && imageHeight > 0) {

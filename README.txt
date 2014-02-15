@@ -230,6 +230,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * `FFmpegFrameGrabber` now takes into account calls to `setPixelFormat()` (issue #429)
  * Added a `Frame.audioChannels` field for resampling purposes in `FFmpegFrameRecorder` (issue #388)
  * In `FFmpegFrameRecorder`, fixed audio encoding with the Vorbis codec (issue #428) and other audio related things
  * Added missing `allocateArray()` constructors to `CameraParams` and `MatchesInfo` (issue #421)
