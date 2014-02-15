@@ -439,8 +439,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             audio_c.channel_layout(av_get_default_channel_layout(audioChannels));
             if (sampleFormat != AV_SAMPLE_FMT_NONE) {
                 audio_c.sample_fmt(sampleFormat);
-            } else if (audio_c.codec_id() == AV_CODEC_ID_AAC &&
-                    (audio_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
+            } else if ((audio_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0
+                    && (audio_c.codec_id() == AV_CODEC_ID_VORBIS || audio_c.codec_id() == AV_CODEC_ID_AAC)) {
                 audio_c.sample_fmt(AV_SAMPLE_FMT_FLTP);
             } else {
                 audio_c.sample_fmt(AV_SAMPLE_FMT_S16);
@@ -579,6 +579,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 release();
                 throw new Exception("avcodec_alloc_frame() error: Could not allocate audio frame.");
             }
+            frame.pts(0); // magic required by libvorbis
         }
 
         /* open the output file, if needed */
@@ -600,7 +601,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             try {
                 /* flush all the buffers */
                 while (video_st != null && record((IplImage)null, AV_PIX_FMT_NONE));
-                while (audio_st != null && record((AVFrame)null));
+                while (audio_st != null && record(0, 0, (Buffer[])null));
 
                 if (interleaved && video_st != null && audio_st != null) {
                     av_interleaved_write_frame(oc, null);
@@ -724,23 +725,26 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         return picture.key_frame() != 0;
     }
 
-    @Override public boolean record(int sampleRate, Buffer ... samples) throws Exception {
+    @Override public boolean record(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
         int ret;
 
-        int inputSize = samples[0].limit() - samples[0].position();
-        int inputFormat = AV_SAMPLE_FMT_NONE;
-        int inputChannels = samples.length > 1 ? 1 : audioChannels;
-        int inputDepth = 0;
-        int outputFormat = audio_c.sample_fmt();
-        int outputChannels = samples_out.length > 1 ? 1 : audioChannels;
-        int outputDepth = av_get_bytes_per_sample(outputFormat);
         if (sampleRate <= 0) {
             sampleRate = audio_c.sample_rate();
         }
-        if (samples[0] instanceof ByteBuffer) {
+        if (audioChannels <= 0) {
+            audioChannels = audio_c.channels();
+        }
+        int inputSize = samples != null ? samples[0].limit() - samples[0].position() : 0;
+        int inputFormat = AV_SAMPLE_FMT_NONE;
+        int inputChannels = samples != null && samples.length > 1 ? 1 : audioChannels;
+        int inputDepth = 0;
+        int outputFormat = audio_c.sample_fmt();
+        int outputChannels = samples_out.length > 1 ? 1 : audio_c.channels();
+        int outputDepth = av_get_bytes_per_sample(outputFormat);
+        if (samples != null && samples[0] instanceof ByteBuffer) {
             inputFormat = samples.length > 1 ? AV_SAMPLE_FMT_U8P : AV_SAMPLE_FMT_U8;
             inputDepth = 1;
             for (int i = 0; i < samples.length; i++) {
@@ -751,7 +755,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     samples_in[i] = new BytePointer(b);
                 }
             }
-        } else if (samples[0] instanceof ShortBuffer) {
+        } else if (samples != null && samples[0] instanceof ShortBuffer) {
             inputFormat = samples.length > 1 ? AV_SAMPLE_FMT_S16P : AV_SAMPLE_FMT_S16;
             inputDepth = 2;
             for (int i = 0; i < samples.length; i++) {
@@ -762,7 +766,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     samples_in[i] = new ShortPointer(b);
                 }
             }
-        } else if (samples[0] instanceof IntBuffer) {
+        } else if (samples != null && samples[0] instanceof IntBuffer) {
             inputFormat = samples.length > 1 ? AV_SAMPLE_FMT_S32P : AV_SAMPLE_FMT_S32;
             inputDepth = 4;
             for (int i = 0; i < samples.length; i++) {
@@ -773,7 +777,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     samples_in[i] = new IntPointer(b);
                 }
             }
-        } else if (samples[0] instanceof FloatBuffer) {
+        } else if (samples != null && samples[0] instanceof FloatBuffer) {
             inputFormat = samples.length > 1 ? AV_SAMPLE_FMT_FLTP : AV_SAMPLE_FMT_FLT;
             inputDepth = 4;
             for (int i = 0; i < samples.length; i++) {
@@ -784,7 +788,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     samples_in[i] = new FloatPointer(b);
                 }
             }
-        } else if (samples[0] instanceof DoubleBuffer) {
+        } else if (samples != null && samples[0] instanceof DoubleBuffer) {
             inputFormat = samples.length > 1 ? AV_SAMPLE_FMT_DBLP : AV_SAMPLE_FMT_DBL;
             inputDepth = 8;
             for (int i = 0; i < samples.length; i++) {
@@ -795,14 +799,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     samples_in[i] = new DoublePointer(b);
                 }
             }
-        } else {
+        } else if (samples != null) {
             throw new Exception("Audio samples Buffer has unsupported type: " + samples);
         }
 
         if (samples_convert_ctx == null) {
-            samples_convert_ctx = swr_alloc_set_opts(null,
-                    audio_c.channel_layout(), outputFormat, audio_c.sample_rate(),
-                    audio_c.channel_layout(), inputFormat, sampleRate, 0, null);
+            samples_convert_ctx = swr_alloc_set_opts(null, audio_c.channel_layout(), outputFormat, audio_c.sample_rate(),
+                    av_get_default_channel_layout(audioChannels), inputFormat, sampleRate, 0, null);
             if (samples_convert_ctx == null) {
                 throw new Exception("swr_alloc_set_opts() error: Cannot allocate the conversion context.");
             } else if ((ret = swr_init(samples_convert_ctx)) < 0) {
@@ -810,15 +813,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
         }
 
-        for (int i = 0; i < samples.length; i++) {
+        for (int i = 0; samples != null && i < samples.length; i++) {
             samples_in[i].position(samples_in[i].position() * inputDepth).
                     limit((samples_in[i].position() + inputSize) * inputDepth);
         }
         while (true) {
-            int inputCount = (samples_in[0].limit() - samples_in[0].position()) / (inputChannels * inputDepth);
+            int inputCount = samples != null ? (samples_in[0].limit() - samples_in[0].position()) / (inputChannels * inputDepth) : 0;
             int outputCount = (samples_out[0].limit() - samples_out[0].position()) / (outputChannels * outputDepth);
-            inputCount = Math.min(inputCount, 2 * (outputCount * sampleRate) / audio_c.sample_rate());
-            for (int i = 0; i < samples.length; i++) {
+            inputCount = Math.min(inputCount, (outputCount * sampleRate + audio_c.sample_rate() - 1) / audio_c.sample_rate());
+            for (int i = 0; samples != null && i < samples.length; i++) {
                 samples_in_ptr.put(i, samples_in[i]);
             }
             for (int i = 0; i < samples_out.length; i++) {
@@ -829,14 +832,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else if (ret == 0) {
                 break;
             }
-            for (int i = 0; i < samples.length; i++) {
+            for (int i = 0; samples != null && i < samples.length; i++) {
                 samples_in[i].position(samples_in[i].position() + inputCount * inputChannels * inputDepth);
             }
             for (int i = 0; i < samples_out.length; i++) {
                 samples_out[i].position(samples_out[i].position() + ret * outputChannels * outputDepth);
             }
 
-            if (samples_out[0].position() >= samples_out[0].limit()) {
+            if (samples == null || samples_out[0].position() >= samples_out[0].limit()) {
                 frame.nb_samples(audio_input_frame_size);
                 avcodec_fill_audio_frame(frame, audio_c.channels(), outputFormat, samples_out[0], samples_out[0].limit(), 0);
                 for (int i = 0; i < samples_out.length; i++) {
@@ -847,7 +850,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 record(frame);
             }
         }
-        return frame.key_frame() != 0;
+        return samples != null ? frame.key_frame() != 0 : record((AVFrame)null);
     }
 
     boolean record(AVFrame frame) throws Exception {
@@ -858,6 +861,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         audio_pkt.size(audio_outbuf_size);
         if ((ret = avcodec_encode_audio2(audio_c, audio_pkt, frame, got_audio_packet)) < 0) {
             throw new Exception("avcodec_encode_audio2() error " + ret + ": Could not encode audio packet.");
+        }
+        if (frame != null) {
+            frame.pts(frame.pts() + audio_c.frame_size()); // magic required by libvorbis
         }
         if (got_audio_packet[0] != 0) {
             if (audio_pkt.pts() != AV_NOPTS_VALUE) {

@@ -270,9 +270,9 @@ public abstract class FrameRecorder {
     public abstract void stop() throws Exception;
     public abstract boolean record(IplImage image) throws Exception;
     public boolean record(Buffer ... samples) throws Exception {
-        return record(0, samples);
+        return record(0, 0, samples);
     }
-    public boolean record(int sampleRate, Buffer ... samples) throws Exception {
+    public boolean record(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
         throw new UnsupportedOperationException("This FrameRecorder does not support audio.");
     }
     public void record(Frame frame) throws Exception {
@@ -283,7 +283,7 @@ public abstract class FrameRecorder {
                 frame.keyFrame = record(frame.image);
             }
             if (frame.samples != null) {
-                frame.keyFrame = record(frame.sampleRate, frame.samples);
+                frame.keyFrame = record(frame.sampleRate, frame.audioChannels, frame.samples);
             }
         }
     }
