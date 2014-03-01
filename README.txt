@@ -232,7 +232,7 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
  * `FFmpegFrameGrabber` now takes into account calls to `setPixelFormat()` (issue #429)
  * Added a `Frame.audioChannels` field for resampling purposes in `FFmpegFrameRecorder` (issue #388)
- * In `FFmpegFrameRecorder`, fixed audio encoding with the Vorbis codec (issue #428) and other audio related things
+ * In `FFmpegFrameRecorder`, fixed audio encoding with the Vorbis codec (issue #428) and the WebM container (issue #435), and other audio related things
  * Added missing `allocateArray()` constructors to `CameraParams` and `MatchesInfo` (issue #421)
  * Fixed errors such as "jniopencv_nonfree.dll: Can't find dependent libraries" by adding the `opencv_ocl` module as dependency
  * Added support to seek in audio-only streams with `FFmpegFrameGrabber.setTimestamp()` (issue #417)

@@ -579,7 +579,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 release();
                 throw new Exception("avcodec_alloc_frame() error: Could not allocate audio frame.");
             }
-            frame.pts(0); // magic required by libvorbis
+            frame.pts(0); // magic required by libvorbis and webm
         }
 
         /* open the output file, if needed */
@@ -863,14 +863,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("avcodec_encode_audio2() error " + ret + ": Could not encode audio packet.");
         }
         if (frame != null) {
-            frame.pts(frame.pts() + audio_c.frame_size()); // magic required by libvorbis
+            frame.pts(frame.pts() + frame.nb_samples()); // magic required by libvorbis and webm
         }
         if (got_audio_packet[0] != 0) {
             if (audio_pkt.pts() != AV_NOPTS_VALUE) {
-                audio_pkt.pts(av_rescale_q(audio_pkt.pts(), audio_c.time_base(), audio_c.time_base()));
+                audio_pkt.pts(av_rescale_q(audio_pkt.pts(), audio_c.time_base(), audio_st.time_base()));
             }
             if (audio_pkt.dts() != AV_NOPTS_VALUE) {
-                audio_pkt.dts(av_rescale_q(audio_pkt.dts(), audio_c.time_base(), audio_c.time_base()));
+                audio_pkt.dts(av_rescale_q(audio_pkt.dts(), audio_c.time_base(), audio_st.time_base()));
             }
             audio_pkt.flags(audio_pkt.flags() | AV_PKT_FLAG_KEY);
             audio_pkt.stream_index(audio_st.index());

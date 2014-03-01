@@ -313,9 +313,9 @@ public class opencv_contrib {
         public native void writeAsVrml(String file, @Const @StdVector("CvScalar, cv::Scalar") CvScalar colors/*=null*/);
 
         @StdVector("CvPoint3D32f,cv::Point3f")
-        public native CvPoint3D32f vtx();     public native Mesh3D vtx(@Const CvPoint3D32f vtx);
+        public native CvPoint3D32f vtx();     public native Mesh3D vtx(CvPoint3D32f vtx);
         @StdVector("CvPoint3D32f,cv::Point3f")
-        public native CvPoint3D32f normals(); public native Mesh3D normals(@Const CvPoint3D32f normals);
+        public native CvPoint3D32f normals(); public native Mesh3D normals(CvPoint3D32f normals);
         public native float resolution();     public native Mesh3D resolution(float resolution);
         public native @ByRef Octree octree(); public native Mesh3D octree(Octree octree);
 
