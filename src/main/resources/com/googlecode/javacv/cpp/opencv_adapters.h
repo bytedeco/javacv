@@ -38,7 +38,7 @@ public:
             mat2(cv::cvarrToMat(ptr)), mat(mat2) { }
     MatAdapter(const cv::Mat& mat) : ptr(0), size(0), mat2(mat), mat(mat2) { }
     MatAdapter(      cv::Mat& mat) : ptr(0), size(0), mat(mat) { }
-    static void deallocate(CvArr* ptr) {
+    static void deallocate(void* ptr) {
         if (CV_IS_MAT(ptr)) {
             cvReleaseMat  ((CvMat**)   &ptr);
         } else if (CV_IS_MATND(ptr)) {
@@ -65,7 +65,7 @@ public:
             mat(ptr ? std::vector<T>((T*)ptr, (T*)ptr + size) : std::vector<T>(), true), arr2(mat), arr(arr2) { }
     ArrayAdapter(const cv::_OutputArray& arr) : ptr(0), size(0), arr2(arr), arr(arr2) { }
     ArrayAdapter(      cv::_OutputArray& arr) : ptr(0), size(0), arr(arr) { }
-    static void deallocate(CvArr* ptr) {
+    static void deallocate(void* ptr) {
         if (CV_IS_MAT(ptr)) {
             cvReleaseMat  ((CvMat**)   &ptr);
         } else if (CV_IS_MATND(ptr)) {
@@ -115,7 +115,7 @@ public:
     RNGAdapter(const cv::RNG *rng) : ptr(new CvRNG(rng->state)), size(0), rng2(*rng), rng(rng2) { }
     RNGAdapter(      cv::RNG &rng) : ptr(new CvRNG(rng.state )), size(0), rng( rng) { }
     RNGAdapter(      cv::RNG *rng) : ptr(new CvRNG(rng->state)), size(0), rng(*rng) { }
-    static void deallocate(CvRNG* ptr) { delete ptr; }
+    static void deallocate(void* ptr) { delete (CvRNG*)ptr; }
     operator CvRNG*() { *ptr = rng.state; return ptr; }
     operator cv::RNG&() { return  rng; }
     operator cv::RNG*() { return &rng; }
@@ -132,7 +132,7 @@ public:
             size(size), fs2((CvFileStorage*)ptr), fs(fs2) { fs.fs.addref(); }
     FileStorageAdapter(const cv::FileStorage &fs) : size(0), fs2(fs), fs(fs2) { }
     FileStorageAdapter(      cv::FileStorage &fs) : size(0), fs(fs) { }
-    static void deallocate(CvFileStorage* ptr) { }
+    static void deallocate(void* ptr) { }
     operator CvFileStorage*()   { return fs.fs; }
     operator cv::FileStorage&() { return fs; }
     operator cv::FileStorage*() { return &fs; }
@@ -148,7 +148,7 @@ public:
             size(size), size2(size2), fn2(ptr, ptr2), fn(fn2) { }
     FileNodeAdapter(const cv::FileNode& fn) : size(0), size2(0), fn2(fn), fn(fn2) { }
     FileNodeAdapter(      cv::FileNode& fn) : size(0), size2(0), fn(fn) { }
-    static void deallocate(CvFileStorage* ptr, CvFileNode* ptr2) { }
+    static void deallocate(void* ptr) { }
     operator CvFileStorage*() { return (CvFileStorage*)fn.fs; }
     operator CvFileNode*()    { return (CvFileNode*)   fn.node; }
     operator cv::FileNode&()  { return  fn; }
@@ -165,7 +165,7 @@ public:
             rect2(ptr ? cv::Rect(*ptr) : cv::Rect()), rect(rect2) { }
     RectAdapter(const cv::Rect& rect) : ptr(new CvRect), size(0), rect2(rect), rect(rect2) { }
     RectAdapter(      cv::Rect& rect) : ptr(new CvRect), size(0), rect(rect) { }
-    static void deallocate(CvRect* ptr) { delete ptr; }
+    static void deallocate(void* ptr) { delete (CvRect*)ptr; }
     operator CvRect*()   { if (ptr) { *ptr = rect; } return ptr; }
     operator cv::Rect&() { return rect; }
     operator cv::Rect*() { return ptr ? &rect : 0; }
@@ -182,7 +182,7 @@ public:
             point2d2(ptr ? cv::Point2d(ptr->x, ptr->y) : cv::Point2d()), point2d(point2d2) { }
     Point2dAdapter(const cv::Point2d& point2d) : ptr(new CvPoint2D64f), size(0), point2d2(point2d), point2d(point2d2) { }
     Point2dAdapter(      cv::Point2d& point2d) : ptr(new CvPoint2D64f), size(0), point2d(point2d) { }
-    static void deallocate(CvPoint2D64f* ptr) { delete ptr; }
+    static void deallocate(void* ptr) { delete (CvPoint2D64f*)ptr; }
     operator CvPoint2D64f*(){ if (ptr) { ptr->x = point2d.x; ptr->y = point2d.y; } return ptr; }
     operator cv::Point2d&() { return point2d; }
     operator cv::Point2d*() { return ptr ? &point2d : 0; }
@@ -204,7 +204,7 @@ public:
         this->size = size;
         this->cvPtr = ptr;
     }
-    static void deallocate(T* ptr) { cv::Ptr<T> deallocator(ptr); }
+    static void deallocate(void* ptr) { cv::Ptr<T> deallocator((T*)ptr); }
     operator T*() {
         // take ownership
         ptr = cvPtr.obj;
