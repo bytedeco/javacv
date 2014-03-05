@@ -132,10 +132,10 @@ public class opencv_core {
     public static native void SetLibraryPath(String path);
     static {
         if (load() != null) {
-            String platformName = getPlatformName();
-            if (platformName.equals("windows-x86")) {
+            String platform = getPlatform();
+            if (platform.equals("windows-x86")) {
                 SetLibraryPath("C:/opencv/build/x86/vc10/bin/");
-            } else if (platformName.equals("windows-x86_64")) {
+            } else if (platform.equals("windows-x86_64")) {
                 SetLibraryPath("C:/opencv/build/x64/vc10/bin/");
             }
         }

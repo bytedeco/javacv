@@ -125,7 +125,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
         release();
     }
 
-    private static final boolean linux = Loader.getPlatformName().startsWith("linux");
+    private static final boolean linux = Loader.getPlatform().startsWith("linux");
     private dc1394_t d = null;
     private dc1394camera_t camera = null;
     private pollfd fds = new pollfd();

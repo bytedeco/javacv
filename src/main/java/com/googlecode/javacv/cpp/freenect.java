@@ -109,8 +109,8 @@ import static com.googlecode.javacpp.Loader.*;
  * @author Samuel Audet
  */
 @Properties({
-    @Platform(include={"<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>"}, link={"freenect@0.1", "freenect_sync@0.1"},
-        includepath  ={"/usr/local/include/libfreenect/", "/opt/local/include/libfreenect/", "/usr/include/libfreenect/"}),
+    @Platform(not="android", include={"<libfreenect.h>", "<libfreenect-registration.h>", "<libfreenect_sync.h>"}, link={"freenect@0.1", "freenect_sync@0.1"},
+        includepath={"/usr/local/include/libfreenect/", "/opt/local/include/libfreenect/", "/usr/include/libfreenect/"}),
     @Platform(value="windows", link={"freenect", "freenect_sync", "pthreadVC2"}),
     @Platform(value="windows-x86", includepath="C:/Program Files (x86)/libfreenect/include/libfreenect/",
         linkpath={"C:/pthreads-w32-2-9-1-release/Pre-built.2/lib/x86", "C:/Program Files (x86)/libfreenect/lib/"}),

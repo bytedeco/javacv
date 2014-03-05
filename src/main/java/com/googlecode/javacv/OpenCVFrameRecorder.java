@@ -70,7 +70,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         release();
     }
 
-    private static final boolean windows = Loader.getPlatformName().startsWith("windows");
+    private static final boolean windows = Loader.getPlatform().startsWith("windows");
     private String filename;
     private CvVideoWriter writer = null;
 

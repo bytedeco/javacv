@@ -41,7 +41,7 @@ import static com.googlecode.javacv.cpp.opencv_core.*;
  * @author Samuel Audet
  */
 @Properties(inherit=opencv_core.class, value={
-    @Platform(define={"MAX_SIZE 16", "CV_INLINE static inline"}, include="cvkernels.h", options="fastfpu") })
+    @Platform(define={"MAX_SIZE 16", "CV_INLINE static inline"}, include="cvkernels.h", compiler="fastfpu") })
 public class cvkernels {
     static { load(); }
 
