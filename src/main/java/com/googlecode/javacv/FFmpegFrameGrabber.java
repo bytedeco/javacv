@@ -357,7 +357,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_dict_set(options, "channels", "" + audioChannels, 0);
         }
         if ((ret = avformat_open_input(oc, filename, f, options)) < 0) {
-            throw new Exception("avformat_open_input() error " + ret + ": Could not open input \"" + filename + "\". (Has setFormat() been called?)");
+            av_dict_set(options, "pixel_format", null, 0);
+            if ((ret = avformat_open_input(oc, filename, f, options)) < 0) {
+                throw new Exception("avformat_open_input() error " + ret + ": Could not open input \"" + filename + "\". (Has setFormat() been called?)");
+            }
         }
         av_dict_free(options);
 

@@ -900,11 +900,11 @@ public class opencv_features2d {
                 @ByRef DMatchVectorVector matches, float maxDistance, @InputMat CvArr mask/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
 
         public native void match(@InputMat CvArr queryDescriptors, @StdVector DMatch matches,
-                @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/);
+                @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/);
         public native void knnMatch(@InputMat CvArr queryDescriptors, @ByRef DMatchVectorVector matches, int k,
-                @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
+                @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
         public native void radiusMatch(@InputMat CvArr queryDescriptors, @ByRef DMatchVectorVector matches, float maxDistance,
-                @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
+                @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
 
 //        public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);
 //        public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs);
@@ -1038,12 +1038,12 @@ public class opencv_features2d {
                 float maxDistance, @InputMat CvArr mask/*=null*/, @Cast("bool") boolean compactResult/*=false*/);
 
         public native void match(@InputMat CvArr queryImage, @StdVector KeyPoint queryKeypoints,
-                @StdVector DMatch matches, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/);
+                @StdVector DMatch matches, @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/);
         public native void knnMatch(@InputMat CvArr queryImage, @StdVector KeyPoint queryKeypoints,
-                @ByRef DMatchVectorVector matches, int k, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/,
+                @ByRef DMatchVectorVector matches, int k, @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/,
                 @Cast("bool") boolean compactResult/*=false*/);
         public native void radiusMatch(@InputMat CvArr queryImage, @StdVector KeyPoint queryKeypoints,
-                @ByRef DMatchVectorVector matches, float maxDistance, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/,
+                @ByRef DMatchVectorVector matches, float maxDistance, @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks/*=null*/,
                 @Cast("bool") boolean compactResult/*=false*/);
 
         public native void read(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode fn);

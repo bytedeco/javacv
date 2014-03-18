@@ -1,7 +1,8 @@
 package com.googlecode.javacv;
 
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import java.nio.Buffer;
+
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *

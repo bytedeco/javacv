@@ -120,7 +120,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this(filename, imageWidth, imageHeight, 0);
     }
     public FFmpegFrameRecorder(File file, int imageWidth, int imageHeight, int audioChannels) {
-        this(file.getAbsolutePath(), imageWidth, imageHeight);
+        this(file.getAbsolutePath(), imageWidth, imageHeight, audioChannels);
     }
     public FFmpegFrameRecorder(String filename, int imageWidth, int imageHeight, int audioChannels) {
         this.filename      = filename;

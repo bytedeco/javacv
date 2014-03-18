@@ -270,11 +270,11 @@ public class ProCamColorCalibrator {
                 boardPts[j*2    ] -= (boardPts[j*2    ] - cx)*settings.trimmingFraction;
                 boardPts[j*2 + 1] -= (boardPts[j*2 + 1] - cy)*settings.trimmingFraction;
             }
-            cvFillConvexPoly(mask, new CvPoint((byte)16, boardPts, 0, 8),
+            cvFillConvexPoly(mask, new CvPoint(4).put((byte)16, boardPts, 0, 8),
                     4, CvScalar.WHITE, 8, 16);
 
             for (int j = 0; j < (boardPts.length-8)/8; j++) {
-                cvFillConvexPoly(mask, new CvPoint((byte)16, boardPts, 8 + j*8, 8),
+                cvFillConvexPoly(mask, new CvPoint(4).put((byte)16, boardPts, 8 + j*8, 8),
                         4, CvScalar.BLACK, 8, 16);
             }
 
@@ -289,7 +289,7 @@ public class ProCamColorCalibrator {
                 projPts[j*2    ] -= (projPts[j*2    ] - cx)*settings.trimmingFraction;
                 projPts[j*2 + 1] -= (projPts[j*2 + 1] - cy)*settings.trimmingFraction;
             }
-            cvFillConvexPoly(mask2, new CvPoint((byte)16, projPts, 0, 8),
+            cvFillConvexPoly(mask2, new CvPoint(4).put((byte)16, projPts, 0, 8),
                     4, CvScalar.WHITE, 8, 16);
 
             cvAnd(mask, mask2, mask, null);

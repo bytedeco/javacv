@@ -869,11 +869,11 @@ public class opencv_objdetect {
         private native void allocate();
         private native void allocate(@ByRef ModalityVector modalities, @Const @StdVector int[] T_pyramid);
 
-        public native void match(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray sources, float threshold,
+        public native void match(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray sources, float threshold,
                 @StdVector Match matches, @ByRef StringVector class_ids/*=null*/, @InputArray IplImageArray quantized_images/*=null*/,
-                @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray masks/*=null*/);
+                @Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray masks/*=null*/);
 
-        public native int addTemplate(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray sources,
+        public native int addTemplate(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray sources,
                 String class_id, IplImage object_mask, @Const @Adapter("RectAdapter") CvRect bounding_box/*=null*/);
 
         public native int addSyntheticTemplate(@Const @StdVector Template templates, String class_id);

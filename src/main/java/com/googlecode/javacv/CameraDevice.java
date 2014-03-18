@@ -526,7 +526,7 @@ public class CameraDevice extends ProjectiveDevice {
         for (int i = 0; i < count; i++) {
             Pointer p = cvGetSeqElem(seq, i);
             if (p == null) continue;
-            String name = cvReadString(new CvFileNode(p), null);
+            String name = cvReadString(new CvFileNode(p), (String)null);
             devices[i] = new CameraDevice(name, fs);
         }
         return devices;

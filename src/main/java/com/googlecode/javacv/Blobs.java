@@ -1,7 +1,6 @@
 package com.googlecode.javacv;
 
-import com.googlecode.javacv.cpp.opencv_core.CvMat;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 //***************************************************************//
 //* Blob analysis package  Version3.0 3 Oct 2012                *//

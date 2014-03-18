@@ -109,11 +109,11 @@ public class opencv_nonfree {
 
         public native AlgorithmInfo info();
 
-        public native void buildGaussianPyramid(IplImage base, @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr, int nOctaves);
-        public native void buildDoGPyramid(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
-                                           @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray dogpyr);
-        public native void findScaleSpaceExtrema(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray gauss_pyr,
-                                                 @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray dog_pyr,
+        public native void buildGaussianPyramid(IplImage base, @Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr, int nOctaves);
+        public native void buildDoGPyramid(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+                                           @Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray dogpyr);
+        public native void findScaleSpaceExtrema(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray gauss_pyr,
+                                                 @Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray dog_pyr,
                                                  @StdVector KeyPoint keypoints);
 
 //        protected native void detectImpl(@InputMat CvArr image,

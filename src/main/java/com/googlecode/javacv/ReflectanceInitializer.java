@@ -85,7 +85,7 @@ public class ReflectanceInitializer {
 
         IplImage mask = IplImage.create(w, h, IPL_DEPTH_8U, 1);
         cvSetZero(mask);
-        cvFillConvexPoly(mask, new CvPoint((byte)(16-cameraDevice.getMapsPyramidLevel()), roiPts),
+        cvFillConvexPoly(mask, new CvPoint(roiPts.length/2).put((byte)(16-cameraDevice.getMapsPyramidLevel()), roiPts),
                 4, CvScalar.WHITE, 8, 16);
 
         // make the images very very smooth to compensate for small movements

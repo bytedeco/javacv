@@ -1673,7 +1673,7 @@ public class opencv_legacy {
 
         public native @Name("operator()") void detect(@InputMat CvArr image, @StdVector KeyPoint keypoints,
                 int maxCount/*=0*/, @Cast("bool") boolean scaleCoords/*=true*/);
-        public native @Name("operator()") void detect(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+        public native @Name("operator()") void detect(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
                 @StdVector KeyPoint keypoints, int maxCount/*=0*/, @Cast("bool") boolean scaleCoords/*=true*/);
         public native void getMostStable2D(@InputMat CvArr image, @StdVector KeyPoint keypoints,
                 int maxCount, @ByRef PatchGenerator patchGenerator);
@@ -1700,7 +1700,7 @@ public class opencv_legacy {
         public FernClassifier(Pointer p) { super(p); }
         public FernClassifier(CvFileStorage fs, CvFileNode node) { allocate(fs, node); }
         public FernClassifier(@ByRef Point2fVectorVector points,
-                   @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray refimgs,
+                   @Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray refimgs,
                    @ByRef IntVectorVector labels/*=vector<vector<int> >()*/,
                    int _nclasses/*=0*/, int _patchSize/*=PATCH_SIZE*/,
                    int _signatureSize/*=DEFAULT_SIGNATURE_SIZE*/,
@@ -1715,7 +1715,7 @@ public class opencv_legacy {
         private native void allocate();
         private native void allocate(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
         private native void allocate(@ByRef Point2fVectorVector points,
-                   @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray refimgs,
+                   @Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray refimgs,
                    @ByRef IntVectorVector labels/*=vector<vector<int> >()*/,
                    int _nclasses/*=0*/, int _patchSize/*=PATCH_SIZE*/,
                    int _signatureSize/*=DEFAULT_SIGNATURE_SIZE*/,
@@ -1733,7 +1733,7 @@ public class opencv_legacy {
                 int _nviews/*=DEFAULT_VIEWS*/, int _compressionMethod/*=COMPRESSION_NONE*/,
                 @ByRef PatchGenerator patchGenerator/*=PatchGenerator()*/);
         public native void train(@ByRef Point2fVectorVector points,
-                @Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray refimgs,
+                @Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray refimgs,
                 @ByRef IntVectorVector labels/*=vector<vector<int> >()*/,
                 int _nclasses/*=0*/, int _patchSize/*=PATCH_SIZE*/,
                 int _signatureSize/*=DEFAULT_SIGNATURE_SIZE*/, int _nstructs/*=DEFAULT_STRUCTS*/,
@@ -2222,9 +2222,9 @@ public class opencv_legacy {
 //        public native @Ptr GenericDescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, int k, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
+//                @ByRef DMatchVectorVector matches, int k, @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected native void radiusMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, float maxDistance, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
+//                @ByRef DMatchVectorVector matches, float maxDistance, @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
 //        protected native @Const @Ptr OneWayDescriptorBase base();
 //        protected native Params params();
@@ -2290,9 +2290,9 @@ public class opencv_legacy {
 //        public native @Ptr GenericDescriptorMatcher clone(@Cast("bool") boolean emptyTrainData/*=false*/);
 //
 //        protected native void knnMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, int k, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
+//                @ByRef DMatchVectorVector matches, int k, @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //        protected native void radiusMatchImpl(@InputMat CvArr queryImage, @Const @StdVector KeyPoint queryKeypoints,
-//                @ByRef DMatchVectorVector matches, float maxDistance, @Const(true) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
+//                @ByRef DMatchVectorVector matches, float maxDistance, @Const({false, true}) @StdVector("CvMat*,cv::Mat") CvMatArray masks, @Cast("bool") boolean compactResult);
 //
 //        protected native void trainFernClassifier();
 //        protected native void calcBestProbAndMatchIdx(@InputMat CvArr image, @ByRef CvPoint2D32f pt,
@@ -2307,7 +2307,7 @@ public class opencv_legacy {
         public PlanarObjectDetector() { allocate(); }
         public PlanarObjectDetector(Pointer p) { super(p); }
         public PlanarObjectDetector(CvFileStorage fs, CvFileNode node) { allocate(fs, node); }
-        public PlanarObjectDetector(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+        public PlanarObjectDetector(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
                 int _npoints/*=300*/, int _patchSize/*=FernClassifier::PATCH_SIZE*/,
                 int _nstructs/*=FernClassifier::DEFAULT_STRUCTS*/,
                 int _structSize/*=FernClassifier::DEFAULT_STRUCT_SIZE*/,
@@ -2319,7 +2319,7 @@ public class opencv_legacy {
         }
         private native void allocate();
         private native void allocate(@Const @Adapter(value="FileNodeAdapter", argc=2) CvFileStorage fs, CvFileNode node);
-        private native void allocate(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+        private native void allocate(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
                 int _npoints/*=300*/, int _patchSize/*=FernClassifier::PATCH_SIZE*/,
                 int _nstructs/*=FernClassifier::DEFAULT_STRUCTS*/,
                 int _structSize/*=FernClassifier::DEFAULT_STRUCT_SIZE*/,
@@ -2327,14 +2327,14 @@ public class opencv_legacy {
                 @ByRef LDetector detector/*=LDetector()*/,
                 @ByRef PatchGenerator patchGenerator/*=PatchGenerator()*/);
 
-        public native void train(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+        public native void train(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
                 int _npoints/*=300*/, int _patchSize/*=FernClassifier::PATCH_SIZE*/,
                 int _nstructs/*=FernClassifier::DEFAULT_STRUCTS*/,
                 int _structSize/*=FernClassifier::DEFAULT_STRUCT_SIZE*/,
                 int _nviews/*=FernClassifier::DEFAULT_VIEWS*/,
                 @ByRef LDetector detector/*=LDetector()*/,
                 @ByRef PatchGenerator patchGenerator/*=PatchGenerator()*/);
-        public native void train(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+        public native void train(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
                 @Const @StdVector KeyPoint keypoints,
                 int _patchSize/*=FernClassifier::PATCH_SIZE*/,
                 int _nstructs/*=FernClassifier::DEFAULT_STRUCTS*/,
@@ -2353,7 +2353,7 @@ public class opencv_legacy {
         public native void write(@Const @Adapter("FileStorageAdapter") CvFileStorage fs, String name);
         public native @Name("operator()") boolean detect(@InputMat CvArr image, @InputMat CvMat H,
                 @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f corners);
-        public native @Name("operator()") boolean detect(@Const(true) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
+        public native @Name("operator()") boolean detect(@Const({false, true}) @StdVector("IplImage*,cv::Mat") IplImageArray pyr,
                 @Const @StdVector KeyPoint keypoints, @InputMat CvMat H, @StdVector("CvPoint2D32f,cv::Point2f") CvPoint2D32f corners,
                 @StdVector IntPointer pairs/*=null*/);
 

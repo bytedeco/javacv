@@ -21,6 +21,7 @@
 package com.googlecode.javacv;
 
 import com.googlecode.javacpp.Loader;
+import com.googlecode.javacpp.BytePointer;
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLBuffer;
@@ -378,9 +379,9 @@ public class JavaCVCL {
 
     class PinnedIplImage extends IplImage {
         PinnedIplImage(int width, int height, int depth, int channels) {
-            super(cvCreateImageHeader(new CvSize(width, height), depth, channels));
+            super(cvCreateImageHeader(new CvSize().width(width).height(height), depth, channels));
             pinnedBuffer = createPinnedBuffer(imageSize());
-            imageData(getByteBuffer());
+            imageData(new BytePointer(getByteBuffer()));
         }
 
         final CLBuffer pinnedBuffer;
