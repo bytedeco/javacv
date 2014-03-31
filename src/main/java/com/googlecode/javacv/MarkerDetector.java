@@ -22,6 +22,7 @@ package com.googlecode.javacv;
 
 import java.util.Arrays;
 
+import com.googlecode.javacpp.IntPointer;
 import static com.googlecode.javacv.cpp.ARToolKitPlus.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
@@ -105,6 +106,7 @@ public class MarkerDetector {
     }
 
     private MultiTracker tracker = null;
+    private IntPointer markerNum = new IntPointer(1);
     private int width = 0, height = 0, depth = 0, channels = 0;
     private IplImage tempImage, tempImage2, sumImage, sqSumImage, thresholdedImage;
     private CvMat points = CvMat.create(1, 4, CV_32F, 2);
@@ -113,8 +115,7 @@ public class MarkerDetector {
     private CvSize subPixelSize = null, subPixelZeroZone = null;
     private CvTermCriteria subPixelTermCriteria = null;
 
-    private CvPoint pts = new CvPoint(4), pt1 = new CvPoint(), pt2 = new CvPoint();
-    private CvFont font = new CvFont(CV_FONT_HERSHEY_PLAIN, 1, 1);
+    private CvFont font = cvFont(1, 1);
     private CvSize textSize = new CvSize();
 
     public IplImage getThresholdedImage() {
@@ -192,13 +193,12 @@ public class MarkerDetector {
 //CanvasFrame.global.waitKey();
 //long time2 = System.currentTimeMillis();
 
-        int[] n = new int[1];
+        int n = 0;
         ARMarkerInfo markers = new ARMarkerInfo(null);
-        tracker.arDetectMarkerLite(thresholdedImage.getByteBuffer(), 128 /*tracker.getThreshold()*/, markers, n);
+        tracker.arDetectMarkerLite(thresholdedImage.imageData(), 128 /*tracker.getThreshold()*/, markers, markerNum);
 //long time3 = System.currentTimeMillis();
-        Marker[] markers2 = new Marker[n[0]];
-        int n2 = 0;
-        for (int i = 0; i < n[0] && !markers.isNull(); i++) {
+        Marker[] markers2 = new Marker[markerNum.get(0)];
+        for (int i = 0; i < markers2.length && !markers.isNull(); i++) {
             markers.position(i);
             int id = markers.id();
             if (id < 0) {
@@ -260,7 +260,7 @@ if (false) {
                            corners.position((6-dir)%4).x(), corners.position((6-dir)%4).y(),
                            corners.position((7-dir)%4).x(), corners.position((7-dir)%4).y() };
 
-            markers2[n2++] = new Marker(id, d, confidence);
+            markers2[n++] = new Marker(id, d, confidence);
         }
 //long time4 = System.currentTimeMillis();
 //System.out.println("thresholdTime = " + (time2-time1) + "  detectTime = " + (time3-time2) + "  subPixTime = " + (time4-time3));
@@ -268,17 +268,18 @@ if (false) {
         //cvCvtColor(thresholdedImage, image, CV_GRAY2BGR);
         //cvCopy(thresholdedImage, image, null);
 
-        return Arrays.copyOf(markers2, n2);
+        return Arrays.copyOf(markers2, n);
     }
 
     public void draw(IplImage image, Marker[] markers) {
         for (Marker m : markers) {
             int cx = 0, cy = 0;
+            int[] pts = new int[8];
             for (int i = 0; i < 4; i++) {
                 int x = (int)Math.round(m.corners[i*2  ] * (1<<16));
                 int y = (int)Math.round(m.corners[i*2+1] * (1<<16));
-                pts.position(i).x(x);
-                pts.position(i).y(y);
+                pts[2*i    ] = x;
+                pts[2*i + 1] = y;
                 cx += x;
                 cy += y;
 
@@ -295,21 +296,21 @@ if (false) {
             cx /= 4;
             cy /= 4;
 
-            cvPolyLine(image, pts.position(0), new int[] { 4 }, 1, 1, CV_RGB(0, 0, image.highValue()), 1, CV_AA, 16);
+            cvPolyLine(image, pts, new int[] { pts.length/2 }, 1, 1, CV_RGB(0, 0, image.highValue()), 1, CV_AA, 16);
 
             String text = Integer.toString(m.id);
             int[] baseline = new int[1];
             cvGetTextSize(text, font, textSize, baseline);
 
-            pt1.x(cx - (textSize.width() *3/2 << 16)/2);
-            pt1.y(cy + (textSize.height()*3/2 << 16)/2);
-            pt2.x(cx + (textSize.width() *3/2 << 16)/2);
-            pt2.y(cy - (textSize.height()*3/2 << 16)/2);
+            int[] pt1 = { cx - (textSize.width() *3/2 << 16)/2,
+                          cy + (textSize.height()*3/2 << 16)/2 };
+            int[] pt2 = { cx + (textSize.width() *3/2 << 16)/2,
+                          cy - (textSize.height()*3/2 << 16)/2 };
             cvRectangle(image, pt1, pt2, CV_RGB(0, image.highValue(), 0), CV_FILLED, CV_AA, 16);
 
-            pt1.x((int)Math.round((double)cx/(1<<16) - textSize.width()/2));
-            pt1.y((int)Math.round((double)cy/(1<<16) + textSize.height()/2 + 1));
-            cvPutText(image, text, pt1, font, CvScalar.BLACK);
+            int[] pt = { (int)Math.round((double)cx/(1<<16) - textSize.width()/2),
+                         (int)Math.round((double)cy/(1<<16) + textSize.height()/2) + 1 };
+            cvPutText(image, text, pt, font, CvScalar.BLACK);
         }
     }
 }

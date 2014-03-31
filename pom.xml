@@ -29,13 +29,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
-    <javacpp.skip>false</javacpp.skip>         <!-- To skip native compilation phase: -Djavacpp.skip=true                -->
-    <platform>${os.name}-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm                                  -->
-    <platform.root></platform.root>            <!--              -Dplatform.root=<path/to/android-ndk-r9c>               -->
-    <platform.compiler></platform.compiler>    <!--              -Dplatform.compiler=<path/to/arm-linux-androideabi-g++> -->
-    <platform.name>${platform}</platform.name>
-    <compiler.path>${platform.compiler}</compiler.path>
-    <javacpp.options></javacpp.options> <!-- To pass other options to JavaCPP -->
+    <platform>${os.name}-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm -->
     <!-- Reinclude the following with profiles, either all: -Pall
          or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
     <exclude.artoolkitplus>**/cpp/ARToolKitPlus.java</exclude.artoolkitplus>
@@ -60,6 +54,85 @@
       <groupId>com.googlecode.javacpp</groupId>
       <artifactId>javacpp</artifactId>
       <version>0.8-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>opencv</artifactId>
+      <version>2.4.8</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>ffmpeg</artifactId>
+      <version>2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>flycapture</artifactId>
+      <version>1.7.17</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>libdc1394</artifactId>
+      <version>2.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>libfreenect</artifactId>
+      <version>0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>videoinput</artifactId>
+      <version>0.200</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>artoolkitplus</artifactId>
+      <version>2.3.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>opencv</artifactId>
+      <version>2.4.8</version>
+      <classifier>${platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>ffmpeg</artifactId>
+      <version>2.2</version>
+      <classifier>${platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>flycapture</artifactId>
+      <version>1.7.17</version>
+      <classifier>${platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>libdc1394</artifactId>
+      <version>2.2.2</version>
+      <classifier>${platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>libfreenect</artifactId>
+      <version>0.4</version>
+      <classifier>${platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>videoinput</artifactId>
+      <version>0.200</version>
+      <classifier>${platform}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.javacpp.presets</groupId>
+      <artifactId>artoolkitplus</artifactId>
+      <version>2.3.0</version>
+      <classifier>${platform}</classifier>
     </dependency>
   </dependencies>
 
@@ -123,45 +196,10 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2</version>
-        <executions>
-          <execution>
-            <id>javacpp</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <skip>${javacpp.skip}</skip>
-              <environmentVariables>
-                <!-- Hack required for Windows SDK v7.1 and videoInputLib -->
-                <CL>&quot;/I${env.SDKDIR}/Include/&quot;</CL>
-              </environmentVariables>
-              <executable>java</executable>
-              <commandlineArgs>-jar "${com.googlecode.javacpp:javacpp:jar}" -properties ${platform.name} -Dplatform.root=${platform.root} -Dplatform.compiler=${compiler.path} ${javacpp.options} -classpath "${project.build.outputDirectory}" -jarprefix "${project.build.directory}/${project.artifactId}" com.googlecode.javacv.cpp.*</commandlineArgs>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.4</version>
         <configuration>
-          <excludes>
-            <exclude>com/googlecode/javacv/cpp/*.h</exclude>
-            <exclude>com/googlecode/javacv/cpp/android-arm/</exclude>
-            <exclude>com/googlecode/javacv/cpp/android-x86/</exclude>
-            <exclude>com/googlecode/javacv/cpp/linux-arm/</exclude>
-            <exclude>com/googlecode/javacv/cpp/linux-x86/</exclude>
-            <exclude>com/googlecode/javacv/cpp/linux-x86_64/</exclude>
-            <exclude>com/googlecode/javacv/cpp/macosx-x86/</exclude>
-            <exclude>com/googlecode/javacv/cpp/macosx-x86_64/</exclude>
-            <exclude>com/googlecode/javacv/cpp/windows-x86/</exclude>
-            <exclude>com/googlecode/javacv/cpp/windows-x86_64/</exclude>
-          </excludes>
           <archive>
             <manifest>
               <mainClass>com.googlecode.javacv.JavaCV</mainClass>
@@ -169,7 +207,7 @@
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
-              <Class-Path>./ javacpp.jar javacv-linux-arm.jar javacv-linux-x86.jar javacv-linux-x86_64.jar javacv-macosx-x86.jar javacv-macosx-x86_64.jar javacv-windows-x86.jar javacv-windows-x86_64.jar</Class-Path>
+              <Class-Path>./ javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar videoinput.jar artoolkitplus.jar</Class-Path>
               <Name>com/googlecode/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Samuel Audet</Implementation-Vendor>
@@ -188,45 +226,6 @@
         <configuration>
           <createChecksum>true</createChecksum>
         </configuration>
-        <executions>
-          <execution>
-            <phase>install</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <configuration>
-              <groupId>${project.groupId}</groupId>
-              <artifactId>${project.artifactId}</artifactId>
-              <version>${project.version}</version>
-              <classifier>${platform.name}</classifier>
-              <packaging>jar</packaging>
-              <file>${project.build.directory}/${project.artifactId}-${platform.name}.jar</file>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.5</version>
-        <executions>
-          <execution>
-            <phase>deploy</phase>
-            <goals>
-              <goal>deploy-file</goal>
-            </goals>
-            <configuration>
-              <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
-              <url>${project.distributionManagement.repository.url}</url>
-              <groupId>${project.groupId}</groupId>
-              <artifactId>${project.artifactId}</artifactId>
-              <version>${project.version}</version>
-              <classifier>${platform.name}</classifier>
-              <packaging>jar</packaging>
-              <file>${project.build.directory}/${project.artifactId}-${platform.name}.jar</file>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

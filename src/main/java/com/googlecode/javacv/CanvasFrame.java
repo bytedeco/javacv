@@ -359,10 +359,10 @@ public class CanvasFrame extends JFrame {
 
     // Java2D will do gamma correction for TYPE_CUSTOM BufferedImage, but
     // not for the standard types, so we need to do it manually.
-    public void showImage(IplImage image) {
+    public void showImage(AbstractArray image) {
         showImage(image, false);
     }
-    public void showImage(IplImage image, boolean flipChannels) {
+    public void showImage(AbstractArray image, boolean flipChannels) {
         showImage(image.getBufferedImage(image.getBufferedImageType() ==
                 BufferedImage.TYPE_CUSTOM ? 1.0 : inverseGamma, flipChannels));
     }

@@ -20,81 +20,17 @@
 
 package com.googlecode.javacv.cpp;
 
-import com.googlecode.javacpp.DoublePointer;
-import com.googlecode.javacpp.Pointer;
-import com.googlecode.javacpp.annotation.ByRef;
-import com.googlecode.javacpp.annotation.MemberSetter;
-import com.googlecode.javacpp.annotation.Name;
-import com.googlecode.javacpp.annotation.Platform;
-import com.googlecode.javacpp.annotation.Properties;
 import com.googlecode.javacv.Parallel;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.DoubleBuffer;
-import java.util.Arrays;
 
-import static com.googlecode.javacpp.Loader.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**
  *
  * @author Samuel Audet
  */
-@Properties(inherit=opencv_core.class, value={
-    @Platform(define={"MAX_SIZE 16", "CV_INLINE static inline"}, include="cvkernels.h", compiler="fastfpu") })
-public class cvkernels {
-    static { load(); }
-
-    public static class KernelData extends Pointer {
-        static { load(); }
-        public KernelData() { allocate(); }
-        public KernelData(int size) { allocateArray(size); }
-        public KernelData(Pointer p) { super(p); }
-        private native void allocate();
-        private native void allocateArray(int size);
-
-        @Override public KernelData position(int position) {
-            return (KernelData)super.position(position);
-        }
-
-        // input
-        public native IplImage srcImg();         public native KernelData srcImg(IplImage srcImg);
-        public native IplImage srcImg2();        public native KernelData srcImg2(IplImage srcImg2);
-        public native IplImage subImg();         public native KernelData subImg(IplImage subImg);
-        public native IplImage srcDotImg();      public native KernelData srcDotImg(IplImage srcDotImg);
-        public native IplImage mask();           public native KernelData mask(IplImage mask);
-        public native double zeroThreshold();    public native KernelData zeroThreshold(double zeroThreshold);
-        public native double outlierThreshold(); public native KernelData outlierThreshold(double outlierThreshold);
-        public native CvMat H1();                public native KernelData H1(CvMat H1);
-        public native CvMat H2();                public native KernelData H2(CvMat H2);
-        public native CvMat X();                 public native KernelData X (CvMat X);
-
-        // output
-        public native IplImage transImg();       public native KernelData transImg(IplImage transImg);
-        public native IplImage dstImg();         public native KernelData dstImg(IplImage dstImg);
-        public native int dstCount();            public native KernelData dstCount(int dstCount);
-        public native int dstCountZero();        public native KernelData dstCountZero(int dstCountZero);
-        public native int dstCountOutlier();     public native KernelData dstCountOutlier(int dstCountOutlier);
-        public native double srcDstDot();        public native KernelData srcDstDot(double srcDstDot);
-//        public native DoublePointer dstDstDot(); public native KernelData dstDstDot(DoublePointer dstDstDot);
-
-        // Hack to let us use DoubleBuffer directly instead of DoublePointer, which also
-        // provides us with Java references to boot, keeping the garbage collector happy
-        private native @MemberSetter @Name("dstDstDot") KernelData setDstDstDot(DoubleBuffer dstDstDot);
-        private DoubleBuffer[] dstDstDotBuffers = new DoubleBuffer[1];
-        public DoubleBuffer dstDstDot() {
-            return dstDstDotBuffers[position];
-        }
-        public KernelData dstDstDot(DoubleBuffer dstDstDot) {
-            if (dstDstDotBuffers.length < capacity) {
-                dstDstDotBuffers = Arrays.copyOf(dstDstDotBuffers, capacity);
-            }
-            dstDstDotBuffers[position] = dstDstDot;
-            return setDstDstDot(dstDstDot);
-        }
-
-        private native @Name("operator=") @ByRef KernelData put(@ByRef KernelData x);
-    }
+public class cvkernels extends com.googlecode.javacpp.cvkernels {
 
     private static class ParallelData {
         KernelData data = null;
@@ -110,8 +46,6 @@ public class cvkernels {
         }
     };
 
-    public static native void multiWarpColorTransform32F(KernelData data, int size, CvRect roi, CvScalar fillColor);
-    public static native void multiWarpColorTransform8U(KernelData data, int size, CvRect roi, CvScalar fillColor);
     public static void multiWarpColorTransform(final KernelData data, final CvRect roi, final CvScalar fillColor) {
         final int size = data.capacity();
         final ParallelData[] pd = parallelData.get();

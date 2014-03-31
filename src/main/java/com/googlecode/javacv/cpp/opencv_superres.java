@@ -25,4 +25,4 @@ package com.googlecode.javacv.cpp;
  *
  * @author Samuel Audet
  */
-public class swresample extends com.googlecode.javacpp.swresample { }
+public class opencv_superres extends com.googlecode.javacpp.opencv_superres { }

@@ -20,6 +20,7 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.Pointer;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -55,14 +56,14 @@ public class JavaCvErrorCallback extends CvErrorCallback {
     private boolean showDialog;
     private int rc;
 
-    @Override public int call(int status, String func_name, String err_msg,
-            String file_name, int line, Pointer userdata) {
+    @Override public int call(int status, BytePointer func_name, BytePointer err_msg,
+            BytePointer file_name, int line, Pointer userdata) {
         final String title = "OpenCV Error";
         final String message = cvErrorStr(status) +
-                " (" + err_msg + ")\nin function " +
-                func_name + ", " + file_name + "(" + line + ")";
+                " (" + err_msg.getString() + ")\nin function " +
+                func_name.getString() + ", " + file_name.getString() + "(" + line + ")";
         Logger.getLogger(JavaCvErrorCallback.class.getName()).log(Level.SEVERE,
-                title + ": " + message, new Exception("Strack trace"));
+                title + ": " + message, new java.lang.Exception("Strack trace"));
         if (showDialog) {
             // Show no more than 1 dialog per second since we cannot stop OpenCV
             // from processing and throwing more errors. Maybe in the future

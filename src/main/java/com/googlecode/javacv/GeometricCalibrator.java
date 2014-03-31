@@ -348,7 +348,8 @@ public class GeometricCalibrator {
         cvCalibrateCamera2(points[0], points[1], points[2],
                 cvSize(d.imageWidth, d.imageHeight),
                 d.cameraMatrix, d.distortionCoeffs,
-                rotVects, transVects, dsettings.flags);
+                rotVects, transVects, dsettings.flags,
+                cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 30, JavaCV.DBL_EPSILON));
 
         if (cvCheckArr(d.cameraMatrix,     CV_CHECK_QUIET, 0, 0) != 0 &&
             cvCheckArr(d.distortionCoeffs, CV_CHECK_QUIET, 0, 0) != 0 &&

@@ -213,10 +213,10 @@ public class GLCanvasFrame extends CanvasFrame {
         getGLCanvas().display();
     }
 
-    @Override public void showImage(IplImage image) {
+    @Override public void showImage(AbstractArray image) {
         showImage(image, false);
     }
-    @Override public void showImage(IplImage image, boolean flipChannels) {
+    @Override public void showImage(AbstractArray image, boolean flipChannels) {
         if (flipChannels) {
             throw new RuntimeException("GLCanvasFrame does not support channel flipping.");
         }
@@ -224,21 +224,20 @@ public class GLCanvasFrame extends CanvasFrame {
             return;
         }
         this.color  = null;
-        this.width  = image.width();
-        this.height = image.height();
+        this.width  = image.arrayWidth();
+        this.height = image.arrayHeight();
         this.buffer = image.getByteBuffer();
-        int size = 0;
-        switch (image.depth()) {
-            case IPL_DEPTH_8S:  this.type = GL2.GL_BYTE;           size = 1; break;
-            case IPL_DEPTH_8U:  this.type = GL2.GL_UNSIGNED_BYTE;  size = 1; break;
-            case IPL_DEPTH_16S: this.type = GL2.GL_SHORT;          size = 2; break;
-            case IPL_DEPTH_16U: this.type = GL2.GL_UNSIGNED_SHORT; size = 2; break;
-            case IPL_DEPTH_32S: this.type = GL2.GL_INT;            size = 4; break;
-            case IPL_DEPTH_32F: this.type = GL2.GL_FLOAT;          size = 4; break;
-            case IPL_DEPTH_64F: this.type = GL2.GL_DOUBLE;         size = 8; break;
+        switch (image.arrayDepth()) {
+            case IPL_DEPTH_8S:  this.type = GL2.GL_BYTE;           break;
+            case IPL_DEPTH_8U:  this.type = GL2.GL_UNSIGNED_BYTE;  break;
+            case IPL_DEPTH_16S: this.type = GL2.GL_SHORT;          break;
+            case IPL_DEPTH_16U: this.type = GL2.GL_UNSIGNED_SHORT; break;
+            case IPL_DEPTH_32S: this.type = GL2.GL_INT;            break;
+            case IPL_DEPTH_32F: this.type = GL2.GL_FLOAT;          break;
+            case IPL_DEPTH_64F: this.type = GL2.GL_DOUBLE;         break;
             default: assert false;
         }
-        switch (image.nChannels()) {
+        switch (image.arrayChannels()) {
             case 1: this.format = GL2.GL_LUMINANCE; break;
             case 2: this.format = GL2.GL_RG;        break;
             case 3: this.format = GL2.GL_RGB;       break;

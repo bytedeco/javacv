@@ -20,6 +20,7 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Loader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -140,6 +141,7 @@ public class HandMouse {
     private CvRect roi = null;
     private CvMemStorage storage = CvMemStorage.create();
     private int contourPointsSize = 0;
+    private IntPointer intPointer = new IntPointer(1);
     private CvPoint contourPoints = null;
     private IntBuffer contourPointsBuffer = null;
     private CvMoments moments = new CvMoments();
@@ -344,7 +346,7 @@ public class HandMouse {
     public IplImage getResultImage() {
         if (imageUpdateNeeded) {
             cvSetZero(binaryImage);
-            cvFillPoly(binaryImage, contourPoints, new int[] { contourPointsSize }, 1, CvScalar.WHITE, 8, 0);
+            cvFillPoly(binaryImage, contourPoints, intPointer.put(contourPointsSize), 1, CvScalar.WHITE, 8, 0);
 
             pt1.put((byte)16, edgeX, edgeY);
             cvCircle(binaryImage, pt1, 5<<16, CvScalar.GRAY, 2, 8, 16);

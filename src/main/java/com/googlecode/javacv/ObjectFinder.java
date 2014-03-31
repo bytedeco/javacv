@@ -166,10 +166,10 @@ public class ObjectFinder {
         }
         if (settings.useFLANN) {
             int length = objectDescriptors[0].capacity();
-            objectMat  = CvMat.create(total, length, CV_32F, 1);
-            imageMat   = CvMat.create(total, length, CV_32F, 1);
-            indicesMat = CvMat.create(total,      2, CV_32S, 1);
-            distsMat   = CvMat.create(total,      2, CV_32F, 1);
+            objectMat  = new Mat(total, length, CV_32FC1);
+            imageMat   = new Mat(total, length, CV_32FC1);
+            indicesMat = new Mat(total,      2, CV_32SC1);
+            distsMat   = new Mat(total,      2, CV_32FC1);
 
             flannIndex = new Index();
             indexParams = new KDTreeIndexParams(4); // using 4 randomized kdtrees
@@ -189,7 +189,7 @@ public class ObjectFinder {
     private CvMemStorage tempStorage = CvMemStorage.create();
     private CvSURFPoint[] objectKeypoints   = null, imageKeypoints = null;
     private FloatBuffer[] objectDescriptors = null, imageDescriptors = null;
-    private CvMat objectMat, imageMat, indicesMat, distsMat;
+    private Mat objectMat, imageMat, indicesMat, distsMat;
     private Index flannIndex = null;
     private IndexParams indexParams = null;
     private SearchParams searchParams = null;
@@ -275,7 +275,7 @@ public class ObjectFinder {
         int length = objectDescriptors[0].capacity();
 
         if (imageMat.rows() < imageDescriptors.length) {
-            imageMat = CvMat.create(imageDescriptors.length, length, CV_32F, 1);
+            imageMat.create(imageDescriptors.length, length, CV_32FC1);
         }
         int imageRows = imageMat.rows();
         imageMat.rows(imageDescriptors.length);
