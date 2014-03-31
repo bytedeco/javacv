@@ -230,6 +230,8 @@ This project was conceived at the Okutomi & Tanaka Laboratory, Tokyo Institute o
 
 ==Changes==
 
+ * Fixed `ObjectFinder` not working with recent versions of OpenCV, especially on Android (issue #214)
+ * Added new `FrameRecorder.gopSize` property to let users set a desired GOP size instead of the default one of 12
  * `FFmpegFrameGrabber` now takes into account calls to `setPixelFormat()` (issue #429), but does not enforce it
  * Added a `Frame.audioChannels` field for resampling purposes in `FFmpegFrameRecorder` (issue #388)
  * In `FFmpegFrameRecorder`, fixed audio encoding with the Vorbis codec (issue #428) and the WebM container (issue #435), and other audio related things

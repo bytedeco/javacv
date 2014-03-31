@@ -104,7 +104,7 @@ public abstract class FrameRecorder {
 
     protected String format, videoCodecName, audioCodecName;
     protected int imageWidth, imageHeight, audioChannels;
-    protected int pixelFormat, videoCodec, videoBitrate;
+    protected int pixelFormat, videoCodec, videoBitrate, gopSize = -1;
     protected double frameRate, videoQuality = -1;
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
     protected double audioQuality = -1;
@@ -175,6 +175,13 @@ public abstract class FrameRecorder {
     }
     public void setVideoBitrate(int videoBitrate) {
         this.videoBitrate = videoBitrate;
+    }
+
+    public int getGopSize() {
+        return gopSize;
+    }
+    public void setGopSize(int gopSize) {
+        this.gopSize = gopSize;
     }
 
     public double getFrameRate() {

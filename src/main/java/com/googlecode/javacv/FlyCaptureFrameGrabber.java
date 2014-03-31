@@ -86,7 +86,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureCreateContext() Error " + error);
         }
-        error = flycaptureInitializePlus(context, deviceNumber, numBuffers, null);
+        error = flycaptureInitializePlus(context, deviceNumber, numBuffers, (BytePointer)null);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureInitialize() Error " + error);
         }

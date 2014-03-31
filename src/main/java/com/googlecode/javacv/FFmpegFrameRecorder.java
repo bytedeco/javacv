@@ -353,7 +353,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                timebase should be 1/framerate and timestamp increments should be
                identically 1. */
             video_c.time_base(av_inv_q(frame_rate));
-            video_c.gop_size(12); /* emit one intra frame every twelve frames at most */
+            if (gopSize >= 0) {
+                video_c.gop_size(gopSize); /* emit one intra frame every gopSize frames at most */
+            }
             if (videoQuality >= 0) {
                 video_c.flags(video_c.flags() | CODEC_FLAG_QSCALE);
                 video_c.global_quality((int)Math.round(FF_QP2LAMBDA * videoQuality));

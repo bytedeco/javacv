@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009,2010,2011,2012 Samuel Audet
+ * Copyright (C) 2009,2010,2011,2012,2014 Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -28,6 +28,8 @@
 
 package com.googlecode.javacv;
 
+import com.googlecode.javacpp.Loader;
+import com.googlecode.javacv.cpp.opencv_nonfree;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -53,6 +55,8 @@ import static com.googlecode.javacv.cpp.opencv_legacy.*;
  * 3. In your project, define empty classes BaseChildSettings and BaseSettings under the com.googlecode.javacv package name
  */
 public class ObjectFinder {
+    static { Loader.load(opencv_nonfree.class); }
+
     public ObjectFinder(IplImage objectImage) {
         settings = new Settings();
         settings.objectImage = objectImage;
@@ -354,8 +358,8 @@ public class ObjectFinder {
     public static void main(String[] args) throws Exception {
 //        Logger.getLogger("com.googlecode.javacv").setLevel(Level.OFF);
 
-        String objectFilename = args.length == 2 ? args[0] : "/usr/share/opencv/samples/c/box.png";
-        String sceneFilename  = args.length == 2 ? args[1] : "/usr/share/opencv/samples/c/box_in_scene.png";
+        String objectFilename = args.length == 2 ? args[0] : "/usr/local/share/OpenCV/samples/c/box.png";
+        String sceneFilename  = args.length == 2 ? args[1] : "/usr/local/share/OpenCV/samples/c/box_in_scene.png";
 
         IplImage object = cvLoadImage(objectFilename, CV_LOAD_IMAGE_GRAYSCALE);
         IplImage image  = cvLoadImage(sceneFilename,  CV_LOAD_IMAGE_GRAYSCALE);

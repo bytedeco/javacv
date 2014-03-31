@@ -33,13 +33,13 @@ public class BlobDemo
         // Read an image.
         for(int k = 0; k < 7; k++)
         {
-            if(k == 0) { RawImage = cvLoadImage("Images/BlackBalls.jpg"); MinArea = 250; ErodeCount = 0; DilateCount = 1; }
-            else if(k == 1) { RawImage = cvLoadImage("Images/Shapes1.jpg"); MinArea = 6; ErodeCount = 0; DilateCount = 1; }
-            else if(k == 2) { RawImage = cvLoadImage("Images/Shapes2.jpg"); MinArea = 250; ErodeCount = 0; DilateCount = 1; }
-            else if(k == 3) { RawImage = cvLoadImage("Images/Blob1.jpg"); MinArea = 2800; ErodeCount = 1; DilateCount = 1; }
-            else if(k == 4) { RawImage = cvLoadImage("Images/Blob2.jpg"); MinArea = 2800; ErodeCount = 1; DilateCount = 1; }
-            else if(k == 5) { RawImage = cvLoadImage("Images/Blob3.jpg"); MinArea = 2800; ErodeCount = 1; DilateCount = 1; }
-            else if(k == 6) { RawImage = cvLoadImage("Images/Rice.jpg"); MinArea = 30; ErodeCount = 2; DilateCount = 1; }       
+            if(k == 0) { RawImage = cvLoadImage("BlackBalls.jpg"); MinArea = 250; ErodeCount = 0; DilateCount = 1; }
+            else if(k == 1) { RawImage = cvLoadImage("Shapes1.jpg"); MinArea = 6; ErodeCount = 0; DilateCount = 1; }
+            else if(k == 2) { RawImage = cvLoadImage("Shapes2.jpg"); MinArea = 250; ErodeCount = 0; DilateCount = 1; }
+            else if(k == 3) { RawImage = cvLoadImage("Blob1.jpg"); MinArea = 2800; ErodeCount = 1; DilateCount = 1; }
+            else if(k == 4) { RawImage = cvLoadImage("Blob2.jpg"); MinArea = 2800; ErodeCount = 1; DilateCount = 1; }
+            else if(k == 5) { RawImage = cvLoadImage("Blob3.jpg"); MinArea = 2800; ErodeCount = 1; DilateCount = 1; }
+            else if(k == 6) { RawImage = cvLoadImage("Rice.jpg"); MinArea = 30; ErodeCount = 2; DilateCount = 1; }
             //ShowImage(RawImage, "RawImage", 512);
         
             IplImage GrayImage = cvCreateImage(cvGetSize(RawImage), IPL_DEPTH_8U, 1);     
@@ -55,7 +55,7 @@ public class BlobDemo
             cvDilate(WorkingImage, WorkingImage, null, DilateCount);
             //ShowImage(WorkingImage, "WorkingImage", 512);
         
-            //cvSaveImage("Images/Working.jpg", WorkingImage);
+            //cvSaveImage("Working.jpg", WorkingImage);
             //PrintGrayImage(WorkingImage, "WorkingImage");
             //BinaryHistogram(WorkingImage);
         
