@@ -22,7 +22,7 @@ package com.googlecode.javacv;
 
 import java.util.Arrays;
 
-import static com.googlecode.javacv.cpp.cvkernels.*;
+import static com.googlecode.javacv.cvkernels.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 
 /**

@@ -5,6 +5,9 @@
  * burgetrm@gmail.com
  */
 
+import com.googlecode.javacpp.BytePointer;
+import com.googlecode.javacpp.FloatPointer;
+import com.googlecode.javacpp.IntPointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacv.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
@@ -36,20 +39,20 @@ public class OpticalFlowTracker {
         IplImage eig_image = cvCreateImage(img_sz, IPL_DEPTH_32F, 1);
         IplImage tmp_image = cvCreateImage(img_sz, IPL_DEPTH_32F, 1);
 
-        int[] corner_count = { MAX_CORNERS };
+        IntPointer corner_count = new IntPointer(1).put(MAX_CORNERS);
         CvPoint2D32f cornersA = new CvPoint2D32f(MAX_CORNERS);
 
         CvArr mask = null;
         cvGoodFeaturesToTrack(imgA, eig_image, tmp_image, cornersA,
                 corner_count, 0.05, 5.0, mask, 3, 0, 0.04);
 
-        cvFindCornerSubPix(imgA, cornersA, corner_count[0],
+        cvFindCornerSubPix(imgA, cornersA, corner_count.get(),
                 cvSize(win_size, win_size), cvSize(-1, -1),
                 cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
 
         // Call Lucas Kanade algorithm
-        byte[] features_found = new byte[MAX_CORNERS];
-        float[] feature_errors = new float[MAX_CORNERS];
+        BytePointer features_found = new BytePointer(MAX_CORNERS);
+        FloatPointer feature_errors = new FloatPointer(MAX_CORNERS);
 
         CvSize pyr_sz = cvSize(imgA.width() + 8, imgB.height() / 3);
 
@@ -58,14 +61,14 @@ public class OpticalFlowTracker {
 
         CvPoint2D32f cornersB = new CvPoint2D32f(MAX_CORNERS);
         cvCalcOpticalFlowPyrLK(imgA, imgB, pyrA, pyrB, cornersA, cornersB,
-                corner_count[0], cvSize(win_size, win_size), 5,
+                corner_count.get(), cvSize(win_size, win_size), 5,
                 features_found, feature_errors,
                 cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3), 0);
 
         // Make an image of the results
-        for (int i = 0; i < corner_count[0]; i++) {
-            if (features_found[i] == 0 || feature_errors[i] > 550) {
-                System.out.println("Error is " + feature_errors[i] + "/n");
+        for (int i = 0; i < corner_count.get(); i++) {
+            if (features_found.get(i) == 0 || feature_errors.get(i) > 550) {
+                System.out.println("Error is " + feature_errors.get(i) + "/n");
                 continue;
             }
             System.out.println("Got it/n");

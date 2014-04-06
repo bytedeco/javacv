@@ -625,11 +625,9 @@ public class FaceRecognition {
     IplImage dstImg;
     if ((srcImg != null) && (srcImg.width() > 0 && srcImg.height() > 0)) {
       // Spread the 32bit floating point pixels to fit within 8bit pixel range.
-      CvPoint minloc = new CvPoint();
-      CvPoint maxloc = new CvPoint();
       double[] minVal = new double[1];
       double[] maxVal = new double[1];
-      cvMinMaxLoc(srcImg, minVal, maxVal, minloc, maxloc, null);
+      cvMinMaxLoc(srcImg, minVal, maxVal);
       // Deal with NaN and extreme values, since the DFT seems to give some NaN results.
       if (minVal[0] < -1e30) {
         minVal[0] = -1e30;

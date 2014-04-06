@@ -18,7 +18,7 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.googlecode.javacv.cpp;
+package com.googlecode.javacv;
 
 import com.googlecode.javacv.Parallel;
 import java.nio.ByteBuffer;

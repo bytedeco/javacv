@@ -26,6 +26,24 @@
     </developer>
   </developers>
 
+  <scm>
+    <url>https://javacv.googlecode.com/git/</url>
+    <connection>scm:git:https://javacv.googlecode.com/git/</connection>
+  </scm>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Sonatype Nexus Staging</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
@@ -53,85 +71,85 @@
     <dependency>
       <groupId>com.googlecode.javacpp</groupId>
       <artifactId>javacpp</artifactId>
-      <version>0.8-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>opencv</artifactId>
-      <version>2.4.8</version>
+      <version>2.4.8-${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.2</version>
+      <version>2.2-${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>flycapture</artifactId>
-      <version>1.7.17</version>
+      <version>1.7.17-${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.2</version>
+      <version>2.2.2-${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>libfreenect</artifactId>
-      <version>0.4</version>
+      <version>0.4-${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>videoinput</artifactId>
-      <version>0.200</version>
+      <version>0.200-${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>artoolkitplus</artifactId>
-      <version>2.3.0</version>
+      <version>2.3.0-${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>opencv</artifactId>
-      <version>2.4.8</version>
+      <version>2.4.8-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.2</version>
+      <version>2.2-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>flycapture</artifactId>
-      <version>1.7.17</version>
+      <version>1.7.17-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.2</version>
+      <version>2.2.2-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>libfreenect</artifactId>
-      <version>0.4</version>
+      <version>0.4-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>videoinput</artifactId>
-      <version>0.200</version>
+      <version>0.200-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>com.googlecode.javacpp.presets</groupId>
       <artifactId>artoolkitplus</artifactId>
-      <version>2.3.0</version>
+      <version>2.3.0-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
   </dependencies>

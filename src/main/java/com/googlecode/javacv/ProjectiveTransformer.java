@@ -20,7 +20,7 @@
 
 package com.googlecode.javacv;
 
-import static com.googlecode.javacv.cpp.cvkernels.*;
+import static com.googlecode.javacv.cvkernels.*;
 import static com.googlecode.javacv.cpp.opencv_calib3d.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
