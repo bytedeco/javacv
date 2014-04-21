@@ -6,15 +6,15 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import com.googlecode.javacpp.Loader;
-import com.googlecode.javacv.FrameGrabber;
-import com.googlecode.javacv.OpenCVFrameGrabber;
-import com.googlecode.javacv.cpp.opencv_objdetect;
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
+import org.bytedeco.javacv.cpp.opencv_objdetect;
 
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.opencv_objdetect.*;
-import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import static org.bytedeco.javacv.cpp.opencv_core.*;
+import static org.bytedeco.javacv.cpp.opencv_imgproc.*;
+import static org.bytedeco.javacv.cpp.opencv_objdetect.*;
+import static org.bytedeco.javacv.cpp.opencv_highgui.*;
 
 /**
  *

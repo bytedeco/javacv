@@ -1,9 +1,9 @@
-import com.googlecode.javacv.Blobs;
-import com.googlecode.javacv.CanvasFrame;
+import org.bytedeco.javacv.Blobs;
+import org.bytedeco.javacv.CanvasFrame;
 
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_highgui.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static org.bytedeco.javacv.cpp.opencv_core.*;
+import static org.bytedeco.javacv.cpp.opencv_highgui.*;
+import static org.bytedeco.javacv.cpp.opencv_imgproc.*;
 
 ///////////////////////////////////////////////////////////////////
 //*                                                             *//

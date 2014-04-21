@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.googlecode.javacv</groupId>
+  <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
   <version>0.8-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV and more</description>
-  <url>http://code.google.com/p/javacv/</url>
+  <url>https://github.com/bytedeco/javacv</url>
 
   <licenses>
     <license>
@@ -27,8 +27,9 @@
   </developers>
 
   <scm>
-    <url>https://javacv.googlecode.com/git/</url>
-    <connection>scm:git:https://javacv.googlecode.com/git/</connection>
+    <url>https://github.com/bytedeco/javacv</url>
+    <connection>scm:git:git://github.com/bytedeco/javacv.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/bytedeco/javacv.git</developerConnection>
   </scm>
 
   <distributionManagement>
@@ -50,117 +51,104 @@
     <platform>${os.name}-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm -->
     <!-- Reinclude the following with profiles, either all: -Pall
          or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
-    <exclude.artoolkitplus>**/cpp/ARToolKitPlus.java</exclude.artoolkitplus>
-    <exclude.markers>**/Marke*.java</exclude.markers>
+    <exclude.markers>**/Mark*.java</exclude.markers>
     <exclude.calibration>**/*Calibrator.java</exclude.calibration>
-    <exclude.libav>**/cpp/av*.java</exclude.libav>
-    <exclude.libsw>**/cpp/sw*.java</exclude.libsw>
-    <exclude.postproc>**/cpp/postproc.java</exclude.postproc>
     <exclude.ffmpeg>**/FFmpeg*.java</exclude.ffmpeg>
-    <exclude.dc1394>**/??1394*.java</exclude.dc1394>
-    <exclude.flycapture>**/*FlyCapture*.java</exclude.flycapture>
-    <exclude.freenect>**/cpp/freenect.java</exclude.freenect>
-    <exclude.openkinect>**/OpenKinectFrameGrabber.java</exclude.openkinect>
-    <exclude.ps3eye>**/PS3EyeFrameGrabber.java</exclude.ps3eye>
-    <exclude.videoinput>**/?ideoInput*.java</exclude.videoinput>
-    <exclude.opengl>**/GLCanvasFrame.java</exclude.opengl>
+    <exclude.dc1394>**/DC1394*.java</exclude.dc1394>
+    <exclude.flycapture>**/FlyCapture*.java</exclude.flycapture>
+    <exclude.openkinect>**/OpenKinect*.java</exclude.openkinect>
+    <exclude.ps3eye>**/PS3Eye*.java</exclude.ps3eye>
+    <exclude.videoinput>**/VideoInput*.java</exclude.videoinput>
+    <exclude.opengl>**/GL*.java</exclude.opengl>
     <exclude.opencl>**/*CL.java</exclude.opencl>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.googlecode.javacpp</groupId>
+      <groupId>org.bytedeco</groupId>
       <artifactId>javacpp</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv</artifactId>
       <version>2.4.8-${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.2-${project.version}</version>
+      <version>2.2.1-${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
       <version>1.7.17-${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
       <version>2.2.2-${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect</artifactId>
       <version>0.4-${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>videoinput</artifactId>
       <version>0.200-${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>artoolkitplus</artifactId>
       <version>2.3.0-${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv</artifactId>
       <version>2.4.8-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.2-${project.version}</version>
+      <version>2.2.1-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
       <version>1.7.17-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
       <version>2.2.2-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect</artifactId>
       <version>0.4-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>videoinput</artifactId>
       <version>0.200-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
-      <groupId>com.googlecode.javacpp.presets</groupId>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>artoolkitplus</artifactId>
       <version>2.3.0-${project.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
   </dependencies>
-
-  <repositories>
-    <repository>
-      <id>javacpp</id>
-      <name>JavaCPP</name>
-      <url>http://maven2.javacpp.googlecode.com/git/</url>
-    </repository>
-  </repositories>
 
   <build>
     <finalName>${project.artifactId}</finalName>
@@ -172,16 +160,11 @@
           <source>1.5</source>
           <target>1.5</target>
           <excludes>
-            <exclude>${exclude.artoolkitplus}</exclude>
             <exclude>${exclude.markers}</exclude>
             <exclude>${exclude.calibration}</exclude>
-            <exclude>${exclude.libav}</exclude>
-            <exclude>${exclude.libsw}</exclude>
-            <exclude>${exclude.postproc}</exclude>
             <exclude>${exclude.ffmpeg}</exclude>
             <exclude>${exclude.dc1394}</exclude>
             <exclude>${exclude.flycapture}</exclude>
-            <exclude>${exclude.freenect}</exclude>
             <exclude>${exclude.openkinect}</exclude>
             <exclude>${exclude.ps3eye}</exclude>
             <exclude>${exclude.videoinput}</exclude>
@@ -220,18 +203,18 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.googlecode.javacv.JavaCV</mainClass>
+              <mainClass>org.bytedeco.javacv.JavaCV</mainClass>
               <addClasspath>true</addClasspath>
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
               <Class-Path>./ javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar videoinput.jar artoolkitplus.jar</Class-Path>
-              <Name>com/googlecode/javacv/</Name>
+              <Name>org/bytedeco/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
-              <Implementation-Vendor>Samuel Audet</Implementation-Vendor>
+              <Implementation-Vendor>Bytedeco</Implementation-Vendor>
               <Implementation-Version>${project.version}</Implementation-Version>
               <Specification-Title>${project.name}</Specification-Title>
-              <Specification-Vendor>Samuel Audet</Specification-Vendor>
+              <Specification-Vendor>Bytedeco</Specification-Vendor>
               <Specification-Version>${project.version}</Specification-Version>
             </manifestEntries>
           </archive>

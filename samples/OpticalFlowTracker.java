@@ -5,15 +5,15 @@
  * burgetrm@gmail.com
  */
 
-import com.googlecode.javacpp.BytePointer;
-import com.googlecode.javacpp.FloatPointer;
-import com.googlecode.javacpp.IntPointer;
-import com.googlecode.javacpp.Loader;
-import com.googlecode.javacv.*;
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.opencv_video.*;
-import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.FloatPointer;
+import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacv.*;
+import static org.bytedeco.javacv.cpp.opencv_core.*;
+import static org.bytedeco.javacv.cpp.opencv_imgproc.*;
+import static org.bytedeco.javacv.cpp.opencv_video.*;
+import static org.bytedeco.javacv.cpp.opencv_highgui.*;
 
 public class OpticalFlowTracker {
     private static final int MAX_CORNERS = 500;

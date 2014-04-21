@@ -5,7 +5,7 @@
  *
  * <?xml version="1.0" encoding="utf-8"?>
  * <manifest xmlns:android="http://schemas.android.com/apk/res/android"
- *     package="com.googlecode.javacv.recordactivity"
+ *     package="org.bytedeco.javacv.recordactivity"
  *     android:versionCode="1"
  *     android:versionName="1.0" >
  *     <uses-sdk android:minSdkVersion="4" />
@@ -58,7 +58,7 @@
  * </LinearLayout>
  */
 
-package com.googlecode.javacv.recordactivity;
+package org.bytedeco.javacv.recordactivity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -86,9 +86,9 @@ import android.widget.RelativeLayout;
 import java.io.IOException;
 import java.nio.ShortBuffer;
 
-import com.googlecode.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.FFmpegFrameRecorder;
 
-import static com.googlecode.javacv.cpp.opencv_core.*;
+import static org.bytedeco.javacv.cpp.opencv_core.*;
 
 public class RecordActivity extends Activity implements OnClickListener {
 

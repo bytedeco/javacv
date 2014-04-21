@@ -26,7 +26,7 @@
  *
  * <?xml version="1.0" encoding="utf-8"?>
  * <manifest xmlns:android="http://schemas.android.com/apk/res/android"
- *     package="com.googlecode.javacv.facepreview"
+ *     package="org.bytedeco.javacv.facepreview"
  *     android:versionCode="1"
  *     android:versionName="1.0" >
  *     <uses-sdk android:minSdkVersion="4" />
@@ -46,7 +46,7 @@
  * </manifest>
  */
 
-package com.googlecode.javacv.facepreview;
+package org.bytedeco.javacv.facepreview;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -68,13 +68,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
-import com.googlecode.javacpp.Loader;
-import com.googlecode.javacv.cpp.opencv_objdetect;
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacv.cpp.opencv_objdetect;
 
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-import static com.googlecode.javacv.cpp.opencv_objdetect.*;
-import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import static org.bytedeco.javacv.cpp.opencv_core.*;
+import static org.bytedeco.javacv.cpp.opencv_imgproc.*;
+import static org.bytedeco.javacv.cpp.opencv_objdetect.*;
+import static org.bytedeco.javacv.cpp.opencv_highgui.*;
 
 // ----------------------------------------------------------------------
 
@@ -122,7 +122,7 @@ class FaceView extends View implements Camera.PreviewCallback {
 
         // Load the classifier file from Java resources.
         File classifierFile = Loader.extractResource(getClass(),
-            "/com/googlecode/javacv/facepreview/haarcascade_frontalface_alt.xml",
+            "/org/bytedeco/javacv/facepreview/haarcascade_frontalface_alt.xml",
             context.getCacheDir(), "classifier", ".xml");
         if (classifierFile == null || classifierFile.length() <= 0) {
             throw new IOException("Could not extract the classifier file from Java resource.");
