@@ -12,10 +12,10 @@
 
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.*;
-import static org.bytedeco.javacv.cpp.opencv_core.*;
-import static org.bytedeco.javacv.cpp.opencv_imgproc.*;
-import static org.bytedeco.javacv.cpp.opencv_calib3d.*;
-import static org.bytedeco.javacv.cpp.opencv_objdetect.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
+import static org.bytedeco.javacpp.opencv_objdetect.*;
 
 public class MotionDetector {
     public static void main(String[] args) throws Exception {

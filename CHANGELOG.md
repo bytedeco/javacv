@@ -1,5 +1,9 @@
 
+### April 28, 2014 version 0.8
  * Move from Google Code to GitHub as main source code repository
+ * Upgrade support to OpenCV 2.4.9
+ * Upgrade supported FFmpeg API to the 2.2 release branch
+ * Fix `FFmpegFrameRecorder` not refreshing the resampler when the format of samples changes (issue #465)
  * Rename the `com.googlecode.javacv.cpp` package to `org.bytedeco.javacpp`, and `com.googlecode.javacv` to `org.bytedeco.javacv`
  * Removed old NetBeans project files that cause a conflict when trying to open as a Maven project (issue #210)
  * Adjusted the samples a bit because of small changes in the API with the move to the JavaCPP Presets

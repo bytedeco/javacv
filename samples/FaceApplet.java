@@ -9,12 +9,12 @@ import java.io.IOException;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
-import org.bytedeco.javacv.cpp.opencv_objdetect;
+import org.bytedeco.javacpp.opencv_objdetect;
 
-import static org.bytedeco.javacv.cpp.opencv_core.*;
-import static org.bytedeco.javacv.cpp.opencv_imgproc.*;
-import static org.bytedeco.javacv.cpp.opencv_objdetect.*;
-import static org.bytedeco.javacv.cpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_objdetect.*;
+import static org.bytedeco.javacpp.opencv_highgui.*;
 
 /**
  *

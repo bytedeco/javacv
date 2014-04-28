@@ -14,8 +14,8 @@ Please keep me informed of any updates or fixes you make to the code so that I m
 
 Downloads
 ---------
- * JavaCV 0.8 binary package  [javacv-0.8-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.8/javacv-0.8-bin.zip)
- * JavaCV 0.8 source package  [javacv-0.8-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.8/javacv-0.8-src.zip)
+ * JavaCV 0.8 binary package  [javacv-0.8-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.8/javacv-0.8-bin.zip) (121 MB)
+ * JavaCV 0.8 source package  [javacv-0.8-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.8/javacv-0.8-src.zip) (369 KB)
 
 The binary package contains builds for Linux, Mac OS X, Windows, and Android.
 
@@ -52,7 +52,7 @@ Once installed, simply call the usual `mvn install` command for JavaCPP, its Pre
 
 Quick Start for OpenCV and FFmpeg
 ---------------------------------
-Simply put all the JAR files of JavaCPP, JavaCV, OpenCV, and FFmpeg (`javacpp.jar`, `javacv.jar`, `opencv-*.jar`, and `ffmpeg-*.jar`, respectively) somewhere in your CLASSPATH, or point your build file to the [Maven Central Repository](http://search.maven.org/). Here are some more specific instructions for common cases:
+Simply put all the JAR files of JavaCPP, JavaCV, OpenCV, and FFmpeg (`javacpp.jar`, `javacv.jar`, `opencv-*.jar`, and `ffmpeg-*.jar`, respectively) somewhere in your CLASSPATH, or point your build file to the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco). Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or newer):
 
@@ -89,7 +89,7 @@ public class Smoother {
     public static void smooth(String filename) { 
         IplImage image = cvLoadImage(filename);
         if (image != null) {
-            cvSmooth(image, image, CV_GAUSSIAN, 3);
+            cvSmooth(image, image);
             cvSaveImage(filename, image);
             cvReleaseImage(image);
         }
@@ -229,7 +229,7 @@ public class Demo {
 
 
 ----
-Original author: Samuel Audet &lt;samuel.audet `at` gmail.com&gt;  
+Original author: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet at gmail.com)  
 Project site: https://github.com/bytedeco/javacv  
 Discussion group: http://groups.google.com/group/javacv
 

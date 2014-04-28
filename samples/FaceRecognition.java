@@ -39,9 +39,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import static org.bytedeco.javacv.cpp.opencv_core.*;
-import static org.bytedeco.javacv.cpp.opencv_highgui.*;
-import static org.bytedeco.javacv.cpp.opencv_legacy.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_legacy.*;
 
 /** Recognizes faces.
  *

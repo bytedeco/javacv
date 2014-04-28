@@ -88,7 +88,7 @@ import java.nio.ShortBuffer;
 
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 
-import static org.bytedeco.javacv.cpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_core.*;
 
 public class RecordActivity extends Activity implements OnClickListener {
 

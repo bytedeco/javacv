@@ -10,10 +10,10 @@ import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.*;
-import static org.bytedeco.javacv.cpp.opencv_core.*;
-import static org.bytedeco.javacv.cpp.opencv_imgproc.*;
-import static org.bytedeco.javacv.cpp.opencv_video.*;
-import static org.bytedeco.javacv.cpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_video.*;
+import static org.bytedeco.javacpp.opencv_highgui.*;
 
 public class OpticalFlowTracker {
     private static final int MAX_CORNERS = 500;

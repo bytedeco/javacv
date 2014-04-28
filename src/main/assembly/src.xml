@@ -14,8 +14,6 @@
         <include>LICENSE*</include>
         <include>NOTICE*</include>
         <include>pom.xml</include>
-        <include>build.xml</include>
-        <include>nbproject/*</include>
       </includes>
       <useDefaultExcludes>true</useDefaultExcludes>
     </fileSet>
