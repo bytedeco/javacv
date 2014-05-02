@@ -1,4 +1,6 @@
 
+ * Make it easier to try out the `FaceRecognition.java` sample ([issue #1](https://github.com/bytedeco/javacv/issues/1))
+
 ### April 28, 2014 version 0.8
  * Move from Google Code to GitHub as main source code repository
  * Upgrade support to OpenCV 2.4.9

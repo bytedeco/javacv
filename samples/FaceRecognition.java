@@ -5,7 +5,7 @@
  *
  * Description: Recognizes faces.
  *
- * Copyright (C) Dec 7, 2011, Stephen L. Reed, Texai.org. (Fixed April 22, 2012, Samuel Audet)
+ * Copyright (C) Dec 7, 2011, Stephen L. Reed, Texai.org.
  *
  * This file is a translation from the OpenCV example http://www.shervinemami.info/faceRecognition.html, ported
  * to Java using the JavaCV library.  Notable changes are the addition of the Java Logging framework and the
@@ -15,6 +15,13 @@
  * for a technical explanation of the algorithm.
  *
  * stephenreed@yahoo.com
+ *
+ *
+ * Fixes and changes by Samuel Audet:
+ * The all10.txt, lower3.txt, and upper3.txt were taken from the http://www.shervinemami.info/facerecExample_ORL.zip archive.
+ * Please also extract the content of http://www.shervinemami.info/Cambridge_FaceDB.zip inside this directory.
+ * The need for the data subdirectory has been removed.
+ *
  *
  * FaceRecognition is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +85,7 @@ public class FaceRecognition {
   public FaceRecognition() {
   }
 
-  /** Trains from the data in the given training text index file, and store the trained data into the file 'data/facedata.xml'.
+  /** Trains from the data in the given training text index file, and store the trained data into the file 'facedata.xml'.
    *
    * @param trainingFileName the given training text index file
    */
@@ -388,16 +395,16 @@ public class FaceRecognition {
             null); // mask
   }
 
-  /** Stores the training data to the file 'data/facedata.xml'. */
+  /** Stores the training data to the file 'facedata.xml'. */
   private void storeTrainingData() {
     CvFileStorage fileStorage;
     int i;
 
-    LOGGER.info("writing data/facedata.xml");
+    LOGGER.info("writing facedata.xml");
 
     // create a file-storage interface
     fileStorage = cvOpenFileStorage(
-            "data/facedata.xml", // filename
+            "facedata.xml", // filename
             null, // memstorage
             CV_STORAGE_WRITE, // flags
             null); // encoding
@@ -459,7 +466,7 @@ public class FaceRecognition {
     cvReleaseFileStorage(fileStorage);
   }
 
-  /** Opens the training data from the file 'data/facedata.xml'.
+  /** Opens the training data from the file 'facedata.xml'.
    *
    * @param pTrainPersonNumMat
    * @return the person numbers during training, or null if not successful
@@ -472,12 +479,12 @@ public class FaceRecognition {
 
     // create a file-storage interface
     fileStorage = cvOpenFileStorage(
-            "data/facedata.xml", // filename
+            "facedata.xml", // filename
             null, // memstorage
             CV_STORAGE_READ, // flags
             null); // encoding
     if (fileStorage == null) {
-      LOGGER.severe("Can't open training database file 'data/facedata.xml'.");
+      LOGGER.severe("Can't open training database file 'facedata.xml'.");
       return null;
     }
 
@@ -489,7 +496,7 @@ public class FaceRecognition {
             "nPersons", // name
             0); // default_value
     if (nPersons == 0) {
-      LOGGER.severe("No people found in the training database 'data/facedata.xml'.");
+      LOGGER.severe("No people found in the training database 'facedata.xml'.");
       return null;
     } else {
       LOGGER.info(nPersons + " persons read from the training database");
@@ -573,12 +580,12 @@ public class FaceRecognition {
   /** Saves all the eigenvectors as images, so that they can be checked. */
   private void storeEigenfaceImages() {
     // Store the average image to a file
-    LOGGER.info("Saving the image of the average face as 'data/out_averageImage.bmp'");
-    cvSaveImage("data/out_averageImage.bmp", pAvgTrainImg);
+    LOGGER.info("Saving the image of the average face as 'out_averageImage.bmp'");
+    cvSaveImage("out_averageImage.bmp", pAvgTrainImg);
 
     // Create a large image made of many eigenface images.
     // Must also convert each eigenface image to a normal 8-bit UCHAR image instead of a 32-bit float image.
-    LOGGER.info("Saving the " + nEigens + " eigenvector images as 'data/out_eigenfaces.bmp'");
+    LOGGER.info("Saving the " + nEigens + " eigenvector images as 'out_eigenfaces.bmp'");
 
     if (nEigens > 0) {
       // Put all the eigenfaces next to each other.
@@ -610,7 +617,7 @@ public class FaceRecognition {
         cvReleaseImage(byteImg);
       }
       cvSaveImage(
-              "data/out_eigenfaces.bmp", // filename
+              "out_eigenfaces.bmp", // filename
               bigImg); // image
       cvReleaseImage(bigImg);
     }
@@ -777,9 +784,9 @@ public class FaceRecognition {
   public static void main(final String[] args) {
 
     final FaceRecognition faceRecognition = new FaceRecognition();
-    //faceRecognition.learn("data/some-training-faces.txt");
-    faceRecognition.learn("data/all10.txt");
-    //faceRecognition.recognizeFileList("data/some-test-faces.txt");
-    faceRecognition.recognizeFileList("data/lower3.txt");
+    //faceRecognition.learn("some-training-faces.txt");
+    faceRecognition.learn("all10.txt");
+    //faceRecognition.recognizeFileList("some-test-faces.txt");
+    faceRecognition.recognizeFileList("lower3.txt");
   }
 }
