@@ -18,7 +18,7 @@
  *
  *
  * Fixes and changes by Samuel Audet:
- * The all10.txt, lower3.txt, and upper3.txt were taken from the http://www.shervinemami.info/facerecExample_ORL.zip archive.
+ * all10.txt, lower3.txt, and upper6.txt were taken from the http://www.shervinemami.info/facerecExample_ORL.zip archive.
  * Please also extract the content of http://www.shervinemami.info/Cambridge_FaceDB.zip inside this directory.
  * The need for the data subdirectory has been removed.
  *
@@ -38,14 +38,14 @@
  * along with JavaCV.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-import org.bytedeco.javacpp.FloatPointer;
-import org.bytedeco.javacpp.Pointer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.bytedeco.javacpp.FloatPointer;
+import org.bytedeco.javacpp.Pointer;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
 import static org.bytedeco.javacpp.opencv_legacy.*;

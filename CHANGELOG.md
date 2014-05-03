@@ -1,4 +1,5 @@
 
+ * Add new `OpticalFlowDense` sample, thanks to Dawit Gebreyohannes ([issue #468](http://code.google.com/p/javacv/issues/detail?id=468))
  * Make it easier to try out the `FaceRecognition.java` sample ([issue #1](https://github.com/bytedeco/javacv/issues/1))
 
 ### April 28, 2014 version 0.8
