@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>0.8</version>
+  <version>0.8-1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaCV</name>
@@ -147,6 +147,22 @@
       <artifactId>artoolkitplus</artifactId>
       <version>2.3.0-${project.version}</version>
       <classifier>${platform}</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jogamp.gluegen</groupId>
+      <artifactId>gluegen-rt-main</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jogamp.jogl</groupId>
+      <artifactId>jogl-all-main</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jogamp.jocl</groupId>
+      <artifactId>jocl-main</artifactId>
+      <version>2.0.2</version>
     </dependency>
   </dependencies>
 

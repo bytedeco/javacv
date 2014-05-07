@@ -1,4 +1,5 @@
 
+ * Add missing dependencies for JogAmp in the `pom.xml` file ([issue #2](https://github.com/bytedeco/javacv/issues/2))
  * Add new `OpenCVFaceRecognizer` sample, thanks to Petter Christian Bjelland
  * Add new `OpticalFlowDense` sample, thanks to Dawit Gebreyohannes ([issue #468](http://code.google.com/p/javacv/issues/detail?id=468))
  * Make it easier to try out the `FaceRecognition.java` sample ([issue #1](https://github.com/bytedeco/javacv/issues/1))
