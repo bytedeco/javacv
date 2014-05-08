@@ -1,4 +1,5 @@
 
+ * Increase the flexibility of the `pom.xml` file by making it possible to specify a custom version of JavaCPP
  * Add missing dependencies for JogAmp in the `pom.xml` file ([issue #2](https://github.com/bytedeco/javacv/issues/2))
  * Add new `OpenCVFaceRecognizer` sample, thanks to Petter Christian Bjelland
  * Add new `OpticalFlowDense` sample, thanks to Dawit Gebreyohannes ([issue #468](http://code.google.com/p/javacv/issues/detail?id=468))

@@ -48,6 +48,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
+    <javacpp.version>0.8</javacpp.version>
     <platform>${os.name}-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm -->
     <!-- Reinclude the following with profiles, either all: -Pall
          or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
@@ -67,85 +68,85 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>javacpp</artifactId>
-      <version>${project.version}</version>
+      <version>${javacpp.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv</artifactId>
-      <version>2.4.9-${project.version}</version>
+      <version>2.4.9-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.2.1-${project.version}</version>
+      <version>2.2.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
-      <version>1.7.17-${project.version}</version>
+      <version>1.7.17-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.2-${project.version}</version>
+      <version>2.2.2-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect</artifactId>
-      <version>0.4-${project.version}</version>
+      <version>0.4-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>videoinput</artifactId>
-      <version>0.200-${project.version}</version>
+      <version>0.200-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>artoolkitplus</artifactId>
-      <version>2.3.0-${project.version}</version>
+      <version>2.3.0-${javacpp.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv</artifactId>
-      <version>2.4.9-${project.version}</version>
+      <version>2.4.9-${javacpp.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.2.1-${project.version}</version>
+      <version>2.2.1-${javacpp.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
-      <version>1.7.17-${project.version}</version>
+      <version>1.7.17-${javacpp.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.2-${project.version}</version>
+      <version>2.2.2-${javacpp.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect</artifactId>
-      <version>0.4-${project.version}</version>
+      <version>0.4-${javacpp.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>videoinput</artifactId>
-      <version>0.200-${project.version}</version>
+      <version>0.200-${javacpp.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>artoolkitplus</artifactId>
-      <version>2.3.0-${project.version}</version>
+      <version>2.3.0-${javacpp.version}</version>
       <classifier>${platform}</classifier>
     </dependency>
 
