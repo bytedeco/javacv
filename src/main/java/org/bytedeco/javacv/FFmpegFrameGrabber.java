@@ -287,10 +287,16 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 pkt2.size(0);
                 av_free_packet(pkt);
             }
-            while (this.timestamp > timestamp && grabFrame(false) != null) {
+            /* comparing to timestamp +/- 1 avoids rouding issues for framerates
+             which are no proper divisors of 1000000, e.g. where
+             av_frame_get_best_effort_timestamp in grabFrame sets this.timestamp
+             to ...666 and the given timestamp has been rounded to ...667 
+             (or vice versa)
+             */
+            while (this.timestamp > timestamp + 1 && grabFrame(false) != null) {
                 // flush frames if seeking backwards
             }
-            while (this.timestamp < timestamp && grabFrame(false) != null) {
+            while (this.timestamp < timestamp - 1&& grabFrame(false) != null) {
                 // decode up to the desired frame
             }
             if (video_c != null) {
