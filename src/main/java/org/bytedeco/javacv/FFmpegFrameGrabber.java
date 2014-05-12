@@ -296,7 +296,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             while (this.timestamp > timestamp + 1 && grabFrame(false) != null) {
                 // flush frames if seeking backwards
             }
-            while (this.timestamp < timestamp - 1&& grabFrame(false) != null) {
+            while (this.timestamp < timestamp - 1 && grabFrame(false) != null) {
                 // decode up to the desired frame
             }
             if (video_c != null) {
