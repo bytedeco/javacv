@@ -1,4 +1,4 @@
- * Fix a timestamp rounding issue in FfmpegFrameGrabber which causes setFrameNumber to sometimes pick the wrong frame if fps is not a proper divisor of 1000000
+ * Fix a timestamp rounding issue in `FFmpegFrameGrabber` that causes `setFrameNumber()` to sometimes pick the wrong frame if FPS is not a proper divisor of 1000000 ([issue #5](https://github.com/bytedeco/javacv/issues/5))
  * Increase the flexibility of the `pom.xml` file by making it possible to specify a custom version of JavaCPP
  * Add missing dependencies for JogAmp in the `pom.xml` file ([issue #2](https://github.com/bytedeco/javacv/issues/2))
  * Add new `OpenCVFaceRecognizer` sample, thanks to Petter Christian Bjelland
