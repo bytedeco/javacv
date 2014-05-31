@@ -229,8 +229,8 @@ public class Demo {
 
 
 ----
-Original author: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet at gmail.com)  
-Project site: https://github.com/bytedeco/javacv  
+Project lead: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet at gmail.com)  
+Developer site: https://github.com/bytedeco/javacv  
 Discussion group: http://groups.google.com/group/javacv
 
 Licensed under the GNU General Public License version 2 (GPLv2) **with Classpath exception**.  

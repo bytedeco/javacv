@@ -1,3 +1,5 @@
+
+ * Add new `RLSA` sample, thanks to Nicholas Woodward ([issue #469](http://code.google.com/p/javacv/issues/detail?id=469))
  * Fix a timestamp rounding issue in `FFmpegFrameGrabber` that causes `setFrameNumber()` to sometimes pick the wrong frame if FPS is not a proper divisor of 1000000 ([issue #5](https://github.com/bytedeco/javacv/issues/5))
  * Increase the flexibility of the `pom.xml` file by making it possible to specify a custom version of JavaCPP
  * Add missing dependencies for JogAmp in the `pom.xml` file ([issue #2](https://github.com/bytedeco/javacv/issues/2))
