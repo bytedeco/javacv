@@ -19,6 +19,21 @@ Downloads
 
 The binary package contains builds for Linux, Mac OS X, Windows, and Android.
 
+ * Gradle
+```groovy
+dependencies {
+  compile group: 'org.bytedeco', name: 'javacv', version: '0.8-2-SNAPSHOT'
+  compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '2.4.9-0.8-2-SNAPSHOT'
+  compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '2.4.9-0.8-2-SNAPSHOT', classifier: 'android-arm'
+}
+```
+
+```groovy
+repositories {
+  maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+```
+
 
 Required Software
 -----------------
