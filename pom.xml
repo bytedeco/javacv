@@ -49,7 +49,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
     <javacpp.version>${project.version}</javacpp.version>
-    <platform>${os.name}-${os.arch}</platform> <!-- For Android: -Dplatform=android-arm -->
     <!-- Reinclude the following with profiles, either all: -Pall
          or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
     <exclude.markers>**/Mark*.java</exclude.markers>
@@ -75,93 +74,36 @@
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv</artifactId>
       <version>2.4.9-${javacpp.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
       <version>2.2.1-${javacpp.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
       <version>1.7.17-${javacpp.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
       <version>2.2.2-${javacpp.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect</artifactId>
       <version>0.4-${javacpp.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>videoinput</artifactId>
       <version>0.200-${javacpp.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>artoolkitplus</artifactId>
       <version>2.3.0-${javacpp.version}</version>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>opencv</artifactId>
-      <version>2.4.9-${javacpp.version}</version>
-      <classifier>${platform}</classifier>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>ffmpeg</artifactId>
-      <version>2.2.1-${javacpp.version}</version>
-      <classifier>${platform}</classifier>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>flycapture</artifactId>
-      <version>1.7.17-${javacpp.version}</version>
-      <classifier>${platform}</classifier>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>libdc1394</artifactId>
-      <version>2.2.2-${javacpp.version}</version>
-      <classifier>${platform}</classifier>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>libfreenect</artifactId>
-      <version>0.4-${javacpp.version}</version>
-      <classifier>${platform}</classifier>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>videoinput</artifactId>
-      <version>0.200-${javacpp.version}</version>
-      <classifier>${platform}</classifier>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>artoolkitplus</artifactId>
-      <version>2.3.0-${javacpp.version}</version>
-      <classifier>${platform}</classifier>
-      <optional>true</optional>
     </dependency>
 
     <dependency>
@@ -362,20 +304,14 @@
       </build>
     </profile>
 
-    <!-- If someone knows a better way to do this, please do let me know! -->
     <profile>
       <id>all</id>
       <properties>
-        <exclude.artoolkitplus>none</exclude.artoolkitplus>
         <exclude.markers>none</exclude.markers>
         <exclude.calibration>none</exclude.calibration>
-        <exclude.libav>none</exclude.libav>
-        <exclude.libsw>none</exclude.libsw>
-        <exclude.postproc>none</exclude.postproc>
         <exclude.ffmpeg>none</exclude.ffmpeg>
         <exclude.dc1394>none</exclude.dc1394>
         <exclude.flycapture>none</exclude.flycapture>
-        <exclude.freenect>none</exclude.freenect>
         <exclude.openkinect>none</exclude.openkinect>
         <exclude.ps3eye>none</exclude.ps3eye>
         <exclude.videoinput>none</exclude.videoinput>
@@ -386,7 +322,6 @@
     <profile>
       <id>markers</id>
       <properties>
-        <exclude.artoolkitplus>none</exclude.artoolkitplus>
         <exclude.markers>none</exclude.markers>
         <exclude.calibration>none</exclude.calibration>
       </properties>
@@ -394,9 +329,6 @@
     <profile>
       <id>ffmpeg</id>
       <properties>
-        <exclude.libav>none</exclude.libav>
-        <exclude.libsw>none</exclude.libsw>
-        <exclude.postproc>none</exclude.postproc>
         <exclude.ffmpeg>none</exclude.ffmpeg>
       </properties>
     </profile>
@@ -415,7 +347,6 @@
     <profile>
       <id>openkinect</id>
       <properties>
-        <exclude.freenect>none</exclude.freenect>
         <exclude.openkinect>none</exclude.openkinect>
       </properties>
     </profile>
@@ -436,88 +367,6 @@
       <properties>
         <exclude.opengl>none</exclude.opengl>
         <exclude.opencl>none</exclude.opencl>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>linux</id>
-      <activation>
-        <os><name>linux</name></os>
-      </activation>
-      <properties>
-        <os.name>linux</os.name>
-      </properties>
-    </profile>
-    <profile>
-      <id>macosx</id>
-      <activation>
-        <os><name>mac os x</name></os>
-      </activation>
-      <properties>
-        <os.name>macosx</os.name>
-      </properties>
-    </profile>
-    <profile>
-      <id>windows</id>
-      <activation>
-        <os><family>windows</family></os>
-      </activation>
-      <properties>
-        <os.name>windows</os.name>
-      </properties>
-    </profile>
-    <profile>
-      <id>i386</id>
-      <activation>
-        <os><arch>i386</arch></os>
-      </activation>
-      <properties>
-        <os.arch>x86</os.arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>i486</id>
-      <activation>
-        <os><arch>i486</arch></os>
-      </activation>
-      <properties>
-        <os.arch>x86</os.arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>i586</id>
-      <activation>
-        <os><arch>i586</arch></os>
-      </activation>
-      <properties>
-        <os.arch>x86</os.arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>i686</id>
-      <activation>
-        <os><arch>i686</arch></os>
-      </activation>
-      <properties>
-        <os.arch>x86</os.arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>amd64</id>
-      <activation>
-        <os><arch>amd64</arch></os>
-      </activation>
-      <properties>
-        <os.arch>x86_64</os.arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>x86-64</id>
-      <activation>
-        <os><arch>x86-64</arch></os>
-      </activation>
-      <properties>
-        <os.arch>x86_64</os.arch>
       </properties>
     </profile>
   </profiles>
