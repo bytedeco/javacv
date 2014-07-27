@@ -14,10 +14,37 @@ Please keep me informed of any updates or fixes you make to the code so that I m
 
 Downloads
 ---------
- * JavaCV 0.8 binary package  [javacv-0.8-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.8/javacv-0.8-bin.zip) (121 MB)
- * JavaCV 0.8 source package  [javacv-0.8-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.8/javacv-0.8-src.zip) (369 KB)
+ * JavaCV 0.9 binary archive  [javacv-0.9-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.9/javacv-0.9-bin.zip) (130 MB)
+ * JavaCV 0.9 source archive  [javacv-0.9-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.9/javacv-0.9-src.zip) (374 KB)
 
-The binary package contains builds for Linux, Mac OS X, Windows, and Android.
+The binary archive contains builds for Linux, Mac OS X, Windows, and Android.
+
+
+We can also have everything downloaded and installed automatically with:
+
+ * Maven (inside the `pom.xml` file)
+```xml
+  <dependency>
+    <groupId>org.bytedeco</groupId>
+    <artifactId>javacv</artifactId>
+    <version>0.9</version>
+  </dependency>
+```
+
+ * Gradle (inside the `build.gradle` file)
+```groovy
+  dependencies {
+    compile group: 'org.bytedeco', name: 'javacv', version: '0.9'
+  }
+```
+
+* SBT (inside the `build.sbt` file)
+```scala
+  libraryDependencies += "org.bytedeco" % "javacv" % "0.9"
+```
+
+Additionally, we need to either set the `platform.dependency` property to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Linux, Mac OS X, and Windows.
+
 
 
 Required Software
@@ -44,8 +71,8 @@ Build Instructions
 To rebuild the source code, please note that the project files were created for:
 
  * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP 0.8  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 0.8  https://github.com/bytedeco/javacpp-presets
+ * JavaCPP 0.9  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 0.9  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP. Please refer to the comments inside the `pom.xml` files for further details.
 

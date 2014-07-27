@@ -1,4 +1,5 @@
 
+### July 27, 2014 version 0.9
  * Remove `platform` property from `pom.xml`, replaced with the `platform.dependency` one in JavaCPP Presets ([issue #10](https://github.com/bytedeco/javacv/issues/10))
  * Add new `RLSA` sample, thanks to Nicholas Woodward ([issue #469](http://code.google.com/p/javacv/issues/detail?id=469))
  * Fix a timestamp rounding issue in `FFmpegFrameGrabber` that causes `setFrameNumber()` to sometimes pick the wrong frame if FPS is not a proper divisor of 1000000 ([issue #5](https://github.com/bytedeco/javacv/issues/5))

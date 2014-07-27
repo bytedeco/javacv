@@ -23,6 +23,11 @@
       <includes>
         <include>*.jar</include>
       </includes>
+      <excludes>
+        <exclude>gluegen*.jar</exclude>
+        <exclude>jogl*.jar</exclude>
+        <exclude>jocl*.jar</exclude>
+      </excludes>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/site</directory>
