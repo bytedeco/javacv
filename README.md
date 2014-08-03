@@ -7,17 +7,19 @@ JavaCV uses wrappers from the [JavaCPP Presets](https://github.com/bytedeco/java
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), a blob analysis package (`Blobs`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL` or starting with `GL`, i.e.: `JavaCVCL`, `GLCanvasFrame`, etc.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [Quick Start for OpenCV and FFmpeg](#quick-start-for-opencv-and-ffmpeg) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [Examples ported from OpenCV2 Cookbook](http://code.google.com/p/javacv/source/browse?repo=examples) and the associated [Wiki pages](http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples).
+To learn how to use the API, since documentation currently lacks, please refer to the [Sample Usage](#sample-usage) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [Examples ported from OpenCV2 Cookbook](http://code.google.com/p/javacv/source/browse?repo=examples) and the associated [Wiki pages](http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples).
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you! And feel free to ask questions on [the mailing list](http://groups.google.com/group/javacv) if you encounter any problems with the software! I am sure it is far from perfect...
 
 
 Downloads
 ---------
+To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation-for-opencv-and-ffmpeg) section below.
+
  * JavaCV 0.9 binary archive  [javacv-0.9-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.9/javacv-0.9-bin.zip) (130 MB)
  * JavaCV 0.9 source archive  [javacv-0.9-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.9/javacv-0.9-src.zip) (374 KB)
 
-The binary archive contains builds for Linux, Mac OS X, Windows, and Android.
+The binary archive contains builds for Linux, Mac OS X, Windows, and Android. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
 
 
 We can also have everything downloaded and installed automatically with:
@@ -43,7 +45,7 @@ We can also have everything downloaded and installed automatically with:
   libraryDependencies += "org.bytedeco" % "javacv" % "0.9"
 ```
 
-Additionally, we need to either set the `platform.dependency` property to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Linux, Mac OS X, and Windows.
+Additionally, we need to either set the `platform.dependency` system property to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Linux, Mac OS X, and Windows.
 
 
 
@@ -77,9 +79,9 @@ To rebuild the source code, please note that the project files were created for:
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP. Please refer to the comments inside the `pom.xml` files for further details.
 
 
-Quick Start for OpenCV and FFmpeg
----------------------------------
-Simply put all the JAR files of JavaCPP, JavaCV, OpenCV, and FFmpeg (`javacpp.jar`, `javacv.jar`, `opencv-*.jar`, and `ffmpeg-*.jar`, respectively) somewhere in your CLASSPATH, or point your build file to the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco). Here are some more specific instructions for common cases:
+Manual Installation for OpenCV and FFmpeg
+-----------------------------------------
+Simply put all the JAR files of JavaCPP, JavaCV, OpenCV, and FFmpeg (`javacpp.jar`, `javacv.jar`, `opencv-*.jar`, and `ffmpeg-*.jar`, respectively) somewhere in your CLASSPATH. Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or newer):
 
@@ -105,6 +107,9 @@ After that, the wrapper classes for OpenCV and FFmpeg can automatically access a
  * [OpenCV documentation](http://docs.opencv.org/)
  * [FFmpeg documentation](http://ffmpeg.org/doxygen/)
 
+
+Sample Usage
+------------
 The class definitions are basically ports to Java of the original header files in C/C++, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 ```java
