@@ -725,7 +725,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 }
             }
         }
-        return picture.key_frame() != 0;
+        return (video_pkt.flags() & AV_PKT_FLAG_KEY) == 1;
     }
 
     @Override public boolean record(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
