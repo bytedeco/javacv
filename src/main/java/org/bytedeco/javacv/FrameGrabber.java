@@ -41,7 +41,7 @@ import static org.bytedeco.javacpp.opencv_core.*;
 public abstract class FrameGrabber {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
-            "DC1394", "FlyCapture", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg" }));
+            "DC1394", "FlyCapture", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera" }));
     public static void init() {
         for (String name : list) {
             try {
@@ -169,9 +169,9 @@ public abstract class FrameGrabber {
     protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
     protected long sensorPattern = -1L;
-    protected int pixelFormat = -1;
+    protected int pixelFormat = -1, videoCodec, videoBitrate = 0;
     protected double frameRate = 0;
-    protected int sampleFormat = 0, sampleRate = 0;
+    protected int sampleFormat = 0, audioCodec, audioBitrate = 0, sampleRate = 0;
     protected boolean triggerMode = false;
     protected int bpp = 0;
     protected int timeout = 10000;
@@ -230,11 +230,39 @@ public abstract class FrameGrabber {
         this.pixelFormat = pixelFormat;
     }
 
+    public int getVideoCodec() {
+        return videoCodec;
+    }
+    public void setVideoCodec(int videoCodec) {
+        this.videoCodec = videoCodec;
+    }
+
+    public int getVideoBitrate() {
+        return videoBitrate;
+    }
+    public void setVideoBitrate(int videoBitrate) {
+        this.videoBitrate = videoBitrate;
+    }
+
     public double getFrameRate() {
         return frameRate;
     }
     public void setFrameRate(double frameRate) {
         this.frameRate = frameRate;
+    }
+
+    public int getAudioCodec() {
+        return audioCodec;
+    }
+    public void setAudioCodec(int audioCodec) {
+        this.audioCodec = audioCodec;
+    }
+
+    public int getAudioBitrate() {
+        return audioBitrate;
+    }
+    public void setAudioBitrate(int audioBitrate) {
+        this.audioBitrate = audioBitrate;
     }
 
     public int getSampleFormat() {

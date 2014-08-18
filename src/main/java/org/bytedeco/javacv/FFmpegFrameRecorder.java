@@ -88,9 +88,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         } else {
             try {
                 Loader.load(org.bytedeco.javacpp.avutil.class);
+                Loader.load(org.bytedeco.javacpp.swresample.class);
                 Loader.load(org.bytedeco.javacpp.avcodec.class);
                 Loader.load(org.bytedeco.javacpp.avformat.class);
                 Loader.load(org.bytedeco.javacpp.swscale.class);
+
+                /* initialize libavcodec, and register all codecs and formats */
+                av_register_all();
+                avformat_network_init();
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -102,9 +107,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     static {
-        /* initialize libavcodec, and register all codecs and formats */
-        av_register_all();
-        avformat_network_init();
+        try {
+            tryLoad();
+        } catch (Exception ex) { }
     }
 
     public FFmpegFrameRecorder(File file, int audioChannels) {

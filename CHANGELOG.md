@@ -1,4 +1,8 @@
 
+ * Add `videoCodec`, `videoBitrate`, `audioCodec`, and `audioBitrate` properties to `FrameGrabber`
+ * Work around `avcodec` and `avdevice` not loading properly for `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #24](https://github.com/bytedeco/javacv/issues/24))
+ * Do key frame detection in `FFmpegFrameRecorder` based on `AVPacket`, not `AVPicture` ([pull #20](https://github.com/bytedeco/javacv/pull/20))
+
 ### July 27, 2014 version 0.9
  * Remove `platform` property from `pom.xml`, replaced with the `platform.dependency` one in JavaCPP Presets ([issue #10](https://github.com/bytedeco/javacv/issues/10))
  * Add new `RLSA` sample, thanks to Nicholas Woodward ([issue #469](http://code.google.com/p/javacv/issues/detail?id=469))

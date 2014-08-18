@@ -84,10 +84,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } else {
             try {
                 Loader.load(org.bytedeco.javacpp.avutil.class);
+                Loader.load(org.bytedeco.javacpp.swresample.class);
                 Loader.load(org.bytedeco.javacpp.avcodec.class);
                 Loader.load(org.bytedeco.javacpp.avformat.class);
-                Loader.load(org.bytedeco.javacpp.avdevice.class);
                 Loader.load(org.bytedeco.javacpp.swscale.class);
+
+                // Register all formats and codecs
+                avcodec_register_all();
+                av_register_all();
+                avformat_network_init();
+
+                Loader.load(org.bytedeco.javacpp.avdevice.class);
+                avdevice_register_all();
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -99,11 +107,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     static {
-        // Register all formats and codecs
-        avcodec_register_all();
-        avdevice_register_all();
-        av_register_all();
-        avformat_network_init();
+        try {
+            tryLoad();
+        } catch (Exception ex) { }
     }
 
     public FFmpegFrameGrabber(File file) {
@@ -242,6 +248,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
+    @Override public int getVideoCodec() {
+        return video_c == null ? super.getVideoCodec() : video_c.codec_id();
+    }
+
+    @Override public int getVideoBitrate() {
+        return video_c == null ? super.getVideoBitrate() : video_c.bit_rate();
+    }
+
     @Override public double getFrameRate() {
         if (video_st == null) {
             return super.getFrameRate();
@@ -249,6 +263,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             AVRational r = video_st.r_frame_rate();
             return (double)r.num() / r.den();
         }
+    }
+
+    @Override public int getAudioCodec() {
+        return audio_c == null ? super.getAudioCodec() : audio_c.codec_id();
+    }
+
+    @Override public int getAudioBitrate() {
+        return audio_c == null ? super.getAudioBitrate() : audio_c.bit_rate();
     }
 
     @Override public int getSampleFormat() {

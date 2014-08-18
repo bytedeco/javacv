@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>0.9</version>
+  <version>0.9.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaCV</name>
@@ -48,7 +48,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
-    <javacpp.version>${project.version}</javacpp.version>
+    <javacpp.version>0.9</javacpp.version>
     <!-- Reinclude the following with profiles, either all: -Pall
          or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
     <exclude.markers>**/Mark*.java</exclude.markers>

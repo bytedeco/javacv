@@ -30,9 +30,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
-import org.bytedeco.javacpp.BytePointer;
-
 import javax.imageio.ImageIO;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.Loader;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
@@ -45,6 +45,19 @@ public class IPCameraFrameGrabber extends FrameGrabber {
      * http://192.168.0.59:60/videostream.cgi?user=admin&pwd=password android ip
      * cam http://192.168.0.57:8080/videofeed
      */
+
+    private static Exception loadingException = null;
+    public static void tryLoad() throws Exception {
+        if (loadingException != null) {
+            throw loadingException;
+        } else {
+            try {
+                Loader.load(org.bytedeco.javacpp.opencv_highgui.class);
+            } catch (Throwable t) {
+                throw loadingException = new Exception("Failed to load " + IPCameraFrameGrabber.class, t);
+            }
+        }
+    }
 
     private URL url;
     private URLConnection connection;
