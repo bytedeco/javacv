@@ -44,8 +44,8 @@ public class VideoInputFrameGrabber extends FrameGrabber {
         return descriptions;
     }
 
-    public static VideoInputFrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
-    public static VideoInputFrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static VideoInputFrameGrabber createDefault(File deviceFile)   throws Exception { throw new Exception(VideoInputFrameGrabber.class + " does not support device files."); }
+    public static VideoInputFrameGrabber createDefault(String devicePath) throws Exception { throw new Exception(VideoInputFrameGrabber.class + " does not support device paths."); }
     public static VideoInputFrameGrabber createDefault(int deviceNumber)  throws Exception { return new VideoInputFrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;

@@ -63,8 +63,8 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         return descriptions;
     }
 
-    public static OpenKinectFrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
-    public static OpenKinectFrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static OpenKinectFrameGrabber createDefault(File deviceFile)   throws Exception { throw new Exception(OpenKinectFrameGrabber.class + " does not support device files."); }
+    public static OpenKinectFrameGrabber createDefault(String devicePath) throws Exception { throw new Exception(OpenKinectFrameGrabber.class + " does not support device paths."); }
     public static OpenKinectFrameGrabber createDefault(int deviceNumber)  throws Exception { return new OpenKinectFrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;

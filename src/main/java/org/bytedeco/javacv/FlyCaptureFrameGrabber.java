@@ -64,8 +64,8 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         return descriptions;
     }
 
-    public static FlyCaptureFrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
-    public static FlyCaptureFrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static FlyCaptureFrameGrabber createDefault(File deviceFile)   throws Exception { throw new Exception(FlyCaptureFrameGrabber.class + " does not support device files."); }
+    public static FlyCaptureFrameGrabber createDefault(String devicePath) throws Exception { throw new Exception(FlyCaptureFrameGrabber.class + " does not support device paths."); }
     public static FlyCaptureFrameGrabber createDefault(int deviceNumber)  throws Exception { return new FlyCaptureFrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;

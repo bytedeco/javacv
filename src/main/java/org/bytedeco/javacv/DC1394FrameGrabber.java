@@ -71,8 +71,8 @@ public class DC1394FrameGrabber extends FrameGrabber {
         return descriptions;
     }
 
-    public static DC1394FrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
-    public static DC1394FrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static DC1394FrameGrabber createDefault(File deviceFile)   throws Exception { throw new Exception(DC1394FrameGrabber.class + " does not support device files."); }
+    public static DC1394FrameGrabber createDefault(String devicePath) throws Exception { throw new Exception(DC1394FrameGrabber.class + " does not support device paths."); }
     public static DC1394FrameGrabber createDefault(int deviceNumber)  throws Exception { return new DC1394FrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;

@@ -1,4 +1,5 @@
 
+ * Make `FrameGrabber.createDefault()` throw an exception on unsupported input, instead of returning a cryptic `null` ([issue #30](https://github.com/bytedeco/javacv/issues/30))
  * Add `videoCodec`, `videoBitrate`, `audioCodec`, and `audioBitrate` properties to `FrameGrabber`
  * Work around `avcodec` and `avdevice` not loading properly for `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #24](https://github.com/bytedeco/javacv/issues/24))
  * Do key frame detection in `FFmpegFrameRecorder` based on `AVPacket`, not `AVPicture` ([pull #20](https://github.com/bytedeco/javacv/pull/20))

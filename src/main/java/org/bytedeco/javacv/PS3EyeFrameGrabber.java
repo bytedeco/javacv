@@ -73,8 +73,8 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
         return descriptions;
     }
 
-    public static PS3EyeFrameGrabber createDefault(File deviceFile)   throws Exception { return null; }
-    public static PS3EyeFrameGrabber createDefault(String devicePath) throws Exception { return null; }
+    public static PS3EyeFrameGrabber createDefault(File deviceFile)   throws Exception { throw new Exception(PS3EyeFrameGrabber.class + " does not support device files."); }
+    public static PS3EyeFrameGrabber createDefault(String devicePath) throws Exception { throw new Exception(PS3EyeFrameGrabber.class + " does not support device paths."); }
     public static PS3EyeFrameGrabber createDefault(int deviceNumber)  throws Exception { return new PS3EyeFrameGrabber(deviceNumber); }
 
     private static Exception loadingException = null;

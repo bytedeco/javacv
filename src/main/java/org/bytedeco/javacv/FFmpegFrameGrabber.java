@@ -75,7 +75,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     public static FFmpegFrameGrabber createDefault(File deviceFile)   throws Exception { return new FFmpegFrameGrabber(deviceFile); }
     public static FFmpegFrameGrabber createDefault(String devicePath) throws Exception { return new FFmpegFrameGrabber(devicePath); }
-    public static FFmpegFrameGrabber createDefault(int deviceNumber)  throws Exception { return null; }
+    public static FFmpegFrameGrabber createDefault(int deviceNumber)  throws Exception { throw new Exception(FFmpegFrameGrabber.class + " does not support device numbers."); }
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {
