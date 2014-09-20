@@ -168,11 +168,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             picture_buf = null;
         }
         if (picture != null) {
-            avcodec_free_frame(picture);
+            av_frame_free(picture);
             picture = null;
         }
         if (tmp_picture != null) {
-            avcodec_free_frame(tmp_picture);
+            av_frame_free(tmp_picture);
             tmp_picture = null;
         }
         if (video_outbuf != null) {
@@ -180,7 +180,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_outbuf = null;
         }
         if (frame != null) {
-            avcodec_free_frame(frame);
+            av_frame_free(frame);
             frame = null;
         }
         if (samples_out != null) {

@@ -135,6 +135,13 @@ public class RecordActivity extends Activity implements OnClickListener {
     private int screenWidth, screenHeight;
     private Button btnRecorderControl;
 
+    /** The number of seconds in the continuous record loop (or 0 to disable loop). */
+    final int RECORD_LENGTH = 10;
+    IplImage[] images;
+    long[] timestamps;
+    ShortBuffer[] samples;
+    int imagesIndex, samplesIndex;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,7 +154,6 @@ public class RecordActivity extends Activity implements OnClickListener {
         mWakeLock.acquire(); 
 
         initLayout();
-        initRecorder();
     }
 
 
@@ -244,7 +250,15 @@ public class RecordActivity extends Activity implements OnClickListener {
 
         Log.w(LOG_TAG,"init recorder");
 
-        if (yuvIplimage == null) {
+        if (RECORD_LENGTH > 0) {
+            imagesIndex = 0;
+            images = new IplImage[RECORD_LENGTH * frameRate];
+            timestamps = new long[images.length];
+            for (int i = 0; i < images.length; i++) {
+                images[i] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_8U, 2);
+                timestamps[i] = -1;
+            }
+        } else if (yuvIplimage == null) {
             yuvIplimage = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_8U, 2);
             Log.i(LOG_TAG, "create yuvIplimage");
         }
@@ -264,6 +278,8 @@ public class RecordActivity extends Activity implements OnClickListener {
     }
 
     public void startRecording() {
+
+        initRecorder();
 
         try {
             recorder.start();
@@ -288,6 +304,49 @@ public class RecordActivity extends Activity implements OnClickListener {
         audioThread = null;
 
         if (recorder != null && recording) {
+            if (RECORD_LENGTH > 0) {
+                Log.v(LOG_TAG,"Writing frames");
+                try {
+                    int firstIndex = imagesIndex % samples.length;
+                    int lastIndex = (imagesIndex - 1) % images.length;
+                    if (imagesIndex <= images.length) {
+                        firstIndex = 0;
+                        lastIndex = imagesIndex - 1;
+                    }
+                    if ((startTime = timestamps[lastIndex] - RECORD_LENGTH * 1000000L) < 0) {
+                        startTime = 0;
+                    }
+                    if (lastIndex < firstIndex) {
+                        lastIndex += images.length;
+                    }
+                    for (int i = firstIndex; i <= lastIndex; i++) {
+                        long t = timestamps[i % timestamps.length] - startTime;
+                        if (t >= 0) {
+                            if (t > recorder.getTimestamp()) {
+                                recorder.setTimestamp(t);
+                            }
+                            recorder.record(images[i % images.length]);
+                        }
+                    }
+
+                    firstIndex = samplesIndex % samples.length;
+                    lastIndex = (samplesIndex - 1) % samples.length;
+                    if (samplesIndex <= samples.length) {
+                        firstIndex = 0;
+                        lastIndex = samplesIndex - 1;
+                    }
+                    if (lastIndex < firstIndex) {
+                        lastIndex += samples.length;
+                    }
+                    for (int i = firstIndex; i <= lastIndex; i++) {
+                        recorder.record(samples[i % samples.length]);
+                    }
+                } catch (FFmpegFrameRecorder.Exception e) {
+                    Log.v(LOG_TAG,e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+
             recording = false;
             Log.v(LOG_TAG,"Finishing recording, calling stop and release on recorder");
             try {
@@ -329,7 +388,7 @@ public class RecordActivity extends Activity implements OnClickListener {
 
             // Audio
             int bufferSize;
-            short[] audioData;
+            ShortBuffer audioData;
             int bufferReadResult;
 
             bufferSize = AudioRecord.getMinBufferSize(sampleAudioRateInHz, 
@@ -337,22 +396,35 @@ public class RecordActivity extends Activity implements OnClickListener {
             audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleAudioRateInHz, 
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
 
-            audioData = new short[bufferSize];
+            if (RECORD_LENGTH > 0) {
+                samplesIndex = 0;
+                samples = new ShortBuffer[RECORD_LENGTH * sampleAudioRateInHz * 2 / bufferSize + 1];
+                for (int i = 0; i < samples.length; i++) {
+                    samples[i] = ShortBuffer.allocate(bufferSize);
+                }
+            } else {
+                audioData = ShortBuffer.allocate(bufferSize);
+            }
 
             Log.d(LOG_TAG, "audioRecord.startRecording()");
             audioRecord.startRecording();
 
             /* ffmpeg_audio encoding loop */
             while (runAudioThread) {
+                if (RECORD_LENGTH > 0) {
+                    audioData = samples[samplesIndex++ % samples.length];
+                    audioData.position(0).limit(0);
+                }
                 //Log.v(LOG_TAG,"recording? " + recording);
-                bufferReadResult = audioRecord.read(audioData, 0, audioData.length);
+                bufferReadResult = audioRecord.read(audioData.array(), 0, audioData.capacity());
+                audioData.limit(bufferReadResult);
                 if (bufferReadResult > 0) {
                     Log.v(LOG_TAG,"bufferReadResult: " + bufferReadResult);
                     // If "recording" isn't true when start this thread, it never get's set according to this if statement...!!!
                     // Why?  Good question...
                     if (recording) {
-                        try {
-                            recorder.record(ShortBuffer.wrap(audioData, 0, bufferReadResult));
+                        if (RECORD_LENGTH <= 0) try {
+                            recorder.record(audioData);
                             //Log.v(LOG_TAG,"recording " + 1024*i + " to " + 1024*i+1024);
                         } catch (FFmpegFrameRecorder.Exception e) {
                             Log.v(LOG_TAG,e.getMessage());
@@ -440,12 +512,21 @@ public class RecordActivity extends Activity implements OnClickListener {
 
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
+            if (audioRecord == null || audioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+                startTime = System.currentTimeMillis();
+                return;
+            }
+            if (RECORD_LENGTH > 0) {
+                int i = imagesIndex++ % images.length;
+                yuvIplimage = images[i];
+                timestamps[i] = 1000 * (System.currentTimeMillis() - startTime);
+            }
             /* get video data */
             if (yuvIplimage != null && recording) {
                 yuvIplimage.getByteBuffer().put(data);
 
-                Log.v(LOG_TAG,"Writing Frame");
-                try {
+                if (RECORD_LENGTH <= 0) try {
+                    Log.v(LOG_TAG,"Writing Frame");
                     long t = 1000 * (System.currentTimeMillis() - startTime);
                     if (t > recorder.getTimestamp()) {
                         recorder.setTimestamp(t);
