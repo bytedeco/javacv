@@ -1,4 +1,5 @@
 
+ * Fix issue that would prevent `CanvasFrame` from working on Mac OS X with recent versions of the JDK ([issue #39](https://github.com/bytedeco/javacv/issues/39) and [issue #314](http://code.google.com/p/javacv/issues/detail?id=314))
  * Upgrade `RecordActivity` sample with a continuous record loop, thanks to Federico Sendra and Juan Manuel Sobral
  * Make `FrameGrabber.createDefault()` throw an exception on unsupported input, instead of returning a cryptic `null` ([issue #30](https://github.com/bytedeco/javacv/issues/30))
  * Add `videoCodec`, `videoBitrate`, `audioCodec`, and `audioBitrate` properties to `FrameGrabber`

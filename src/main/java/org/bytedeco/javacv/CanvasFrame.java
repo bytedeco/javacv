@@ -222,6 +222,7 @@ public class CanvasFrame extends JFrame {
             canvas.setSize(getSize());
             needInitialResize = false;
         } else {
+            canvas.setSize(10,10); // mac bug
             needInitialResize = true;
         }
         getContentPane().add(canvas);
