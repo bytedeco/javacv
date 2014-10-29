@@ -41,7 +41,7 @@ import static org.bytedeco.javacpp.opencv_core.*;
 public abstract class FrameGrabber {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
-            "DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg" }));
+		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera"  }));
     public static void init() {
         for (String name : list) {
             try {
