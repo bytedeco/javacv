@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011,2012,2013 Samuel Audet
+ * Copyright (C) 2014 Jeremy Laviole, Samuel Audet
  *
  * This file is part of JavaCV.
  *
@@ -32,10 +32,6 @@ import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import org.bytedeco.javacpp.FlyCapture2.Error;
 import static org.bytedeco.javacpp.FlyCapture2.*;
-import static org.bytedeco.javacv.FrameGrabber.SENSOR_PATTERN_BGGR;
-import static org.bytedeco.javacv.FrameGrabber.SENSOR_PATTERN_GBRG;
-import static org.bytedeco.javacv.FrameGrabber.SENSOR_PATTERN_GRBG;
-import static org.bytedeco.javacv.FrameGrabber.SENSOR_PATTERN_RGGB;
 
 /**
  *
@@ -55,7 +51,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
 
         for (int i = 0; i < numCameras[0]; i++) {
             PGRGuid guid = new PGRGuid();
-            error = busMgr.GetCameraFromIndex(i, guid);
+            Error error = busMgr.GetCameraFromIndex(i, guid);
             if (error.notEquals(PGRERROR_OK)) {
                 PrintError(error);
                 System.exit(-1);
@@ -128,7 +124,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
 
         // Get the camera
         PGRGuid guid = new PGRGuid();
-        error = busMgr.GetCameraFromIndex(deviceNumber, guid);
+        Error error = busMgr.GetCameraFromIndex(deviceNumber, guid);
         if (error.notEquals(PGRERROR_OK)) {
             PrintError(error);
             System.exit(-1);
@@ -174,7 +170,6 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
             IMAGE_DATA_FORMAT = 0x1048;
 
     private BusManager busMgr = new BusManager();
-    private static Error error;
     private Camera camera;
     private CameraInfo cameraInfo;
     private Image raw_image = new Image();
@@ -272,7 +267,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
             }
         }
 
-        error = camera.StartCapture();
+        Error error = camera.StartCapture();
         if (error.notEquals(PGRERROR_OK)) {
             PrintError(error);
         }
@@ -280,7 +275,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
     }
 
     public void stop() throws FrameGrabber.Exception {
-        error = camera.StopCapture();
+        Error error = camera.StopCapture();
         if (error.notEquals(PGRERROR_OK)) {
             throw new FrameGrabber.Exception("flycapture camera StopCapture() Error " + error);
         }
@@ -297,7 +292,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
      */
     public void trigger() throws FrameGrabber.Exception {
         // waitForTriggerReady();
-        error = camera.FireSoftwareTrigger();
+        Error error = camera.FireSoftwareTrigger();
         if (error.notEquals(PGRERROR_OK)) {
             throw new FrameGrabber.Exception("flycaptureSetCameraRegister() Error " + error);
         }
@@ -373,7 +368,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
     }
 
     public IplImage grab() throws FrameGrabber.Exception {
-        error = camera.RetrieveBuffer(raw_image);
+        Error error = camera.RetrieveBuffer(raw_image);
         if (error.notEquals(PGRERROR_OK)) {
             throw new FrameGrabber.Exception("flycaptureGrabImage2() Error " + error + " (Has start() been called?)");
         }

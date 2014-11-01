@@ -48,7 +48,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
-    <javacpp.version>0.9</javacpp.version>
+    <javacpp.version>${project.version}</javacpp.version>
     <!-- Reinclude the following with profiles, either all: -Pall
          or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
     <exclude.markers>**/Mark*.java</exclude.markers>
@@ -78,12 +78,12 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.3-${javacpp.version}</version>
+      <version>2.4.2-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
-      <version>2.6.3.4-${javacpp.version}</version>
+      <version>2.7.3.13-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -104,6 +104,11 @@
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>artoolkitplus</artifactId>
       <version>2.3.0-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>flandmark</artifactId>
+      <version>1.07-${javacpp.version}</version>
     </dependency>
 
     <dependency>
@@ -277,6 +282,23 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>doclint-java8-disable</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <profile>
       <id>sign-artifacts</id>
       <activation>

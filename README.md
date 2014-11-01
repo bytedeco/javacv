@@ -40,14 +40,13 @@ We can also have everything downloaded and installed automatically with:
   }
 ```
 
-* SBT (inside the `build.sbt` file)
+ * SBT (inside the `build.sbt` file)
 ```scala
   classpathTypes += "maven-plugin"
   libraryDependencies += "org.bytedeco" % "javacv" % "0.9"
 ```
 
-Additionally, we need to either set the `platform.dependency` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Linux, Mac OS X, and Windows.
-
+Additionally, we need to either set the `platform.dependency` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Linux, Mac OS X, and Windows. On build systems where this does not work, we need to add the platform-specific artifacts manually.
 
 
 Required Software
@@ -67,17 +66,6 @@ Further, although not always required, some functionality of JavaCV also relies 
  * JOCL and JOGL from JogAmp  http://jogamp.org/
 
 Finally, please make sure everything has the same bitness: **32-bit and 64-bit modules do not mix under any circumstances**.
-
-
-Build Instructions
-------------------
-To rebuild the source code, please note that the project files were created for:
-
- * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP 0.9  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 0.9  https://github.com/bytedeco/javacpp-presets
-
-Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, all the dependencies listed above are NOT required, except for OpenCV and a C++ compiler for JavaCPP. Please refer to the comments inside the `pom.xml` files for further details.
 
 
 Manual Installation for OpenCV and FFmpeg
@@ -259,6 +247,17 @@ public class Demo {
     }
 }
 ```
+
+
+Build Instructions
+------------------
+If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
+
+ * Maven 2 or 3  http://maven.apache.org/download.html
+ * JavaCPP 0.9  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 0.9  https://github.com/bytedeco/javacpp-presets
+
+Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 
 
 ----

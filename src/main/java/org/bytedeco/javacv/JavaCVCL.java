@@ -21,7 +21,6 @@
 package org.bytedeco.javacv;
 
 import com.jogamp.opencl.CLCommandQueue;
-import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLDevice;
@@ -107,7 +106,7 @@ public class JavaCVCL {
         GLPbuffer pbuffer = null;
         if (caps != null) {
             GLDrawableFactory factory = GLDrawableFactory.getFactory(caps.getGLProfile());
-            if (factory.canCreateGLPbuffer(null)) {
+            if (factory.canCreateGLPbuffer(null, caps.getGLProfile())) {
                 try {
                     // makes a new buffer
                     pbuffer = factory.createGLPbuffer(null, caps, null, 32, 32, shareWith);
