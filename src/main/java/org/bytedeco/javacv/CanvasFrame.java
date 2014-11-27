@@ -196,6 +196,9 @@ public class CanvasFrame extends JFrame {
                 // NullPointerException or IllegalStateException,
                 // but otherwise seems to work fine.
                 try {
+                	if (canvas.getWidth() <= 0 || canvas.getHeight() <= 0) {
+						return;
+					}
                     BufferStrategy strategy = canvas.getBufferStrategy();
                     do {
                         do {
@@ -222,6 +225,7 @@ public class CanvasFrame extends JFrame {
             canvas.setSize(getSize());
             needInitialResize = false;
         } else {
+        	canvas.setSize(10, 10);
             needInitialResize = true;
         }
         getContentPane().add(canvas);
