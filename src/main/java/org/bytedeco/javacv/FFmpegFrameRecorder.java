@@ -514,9 +514,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             /* allocate the encoded raw picture */
-            if ((picture = avcodec_alloc_frame()) == null) {
+            if ((picture = av_frame_alloc()) == null) {
                 release();
-                throw new Exception("avcodec_alloc_frame() error: Could not allocate picture.");
+                throw new Exception("av_frame_alloc() error: Could not allocate picture.");
             }
             picture.pts(0); // magic required by libx264
 
@@ -528,9 +528,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             /* if the output format is not equal to the image format, then a temporary
                picture is needed too. It is then converted to the required output format */
-            if ((tmp_picture = avcodec_alloc_frame()) == null) {
+            if ((tmp_picture = av_frame_alloc()) == null) {
                 release();
-                throw new Exception("avcodec_alloc_frame() error: Could not allocate temporary picture.");
+                throw new Exception("av_frame_alloc() error: Could not allocate temporary picture.");
             }
         }
 
@@ -583,9 +583,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             samples_out_ptr = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS);
 
             /* allocate the audio frame */
-            if ((frame = avcodec_alloc_frame()) == null) {
+            if ((frame = av_frame_alloc()) == null) {
                 release();
-                throw new Exception("avcodec_alloc_frame() error: Could not allocate audio frame.");
+                throw new Exception("av_frame_alloc() error: Could not allocate audio frame.");
             }
             frame.pts(0); // magic required by libvorbis and webm
         }

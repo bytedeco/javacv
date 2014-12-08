@@ -260,7 +260,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         if (video_st == null) {
             return super.getFrameRate();
         } else {
-            AVRational r = video_st.r_frame_rate();
+            AVRational r = video_st.avg_frame_rate();
             return (double)r.num() / r.den();
         }
     }
@@ -437,11 +437,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             // Allocate video frame and an AVFrame structure for the RGB image
-            if ((picture = avcodec_alloc_frame()) == null) {
-                throw new Exception("avcodec_alloc_frame() error: Could not allocate raw picture frame.");
+            if ((picture = av_frame_alloc()) == null) {
+                throw new Exception("av_frame_alloc() error: Could not allocate raw picture frame.");
             }
-            if ((picture_rgb = avcodec_alloc_frame()) == null) {
-                throw new Exception("avcodec_alloc_frame() error: Could not allocate RGB picture frame.");
+            if ((picture_rgb = av_frame_alloc()) == null) {
+                throw new Exception("av_frame_alloc() error: Could not allocate RGB picture frame.");
             }
 
             int width  = getImageWidth()  > 0 ? getImageWidth()  : video_c.width();
@@ -486,8 +486,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             // Allocate audio samples frame
-            if ((samples_frame = avcodec_alloc_frame()) == null) {
-                throw new Exception("avcodec_alloc_frame() error: Could not allocate audio frame.");
+            if ((samples_frame = av_frame_alloc()) == null) {
+                throw new Exception("av_frame_alloc() error: Could not allocate audio frame.");
             }
         }
     }

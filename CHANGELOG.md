@@ -1,5 +1,6 @@
 
- * Disable DocLint, which prevents the build from succeeding on Java 8 ([issue javacpp#5](https://github.com/bytedeco/javacpp/issues/5))
+ * Make `FFmpegFrameGrabber.getFrameRate()` return `AVStream.avg_frame_rate` instead of `r_frame_rate` ([issue #63](https://github.com/bytedeco/javacv/issues/63))
+ * Disable DocLint, which prevents the build from succeeding on Java 8 ([issue bytedeco/javacpp#5](https://github.com/bytedeco/javacpp/issues/5))
  * Add `FlyCapture2FrameGrabber` with cross-platform support of FlyCapture2 ([pull #45](https://github.com/bytedeco/javacv/pull/45))
  * Fix issue that would prevent `CanvasFrame` from working on Mac OS X with recent versions of the JDK ([issue #39](https://github.com/bytedeco/javacv/issues/39) and [issue #314](http://code.google.com/p/javacv/issues/detail?id=314))
  * Upgrade `RecordActivity` sample with a continuous record loop, thanks to Federico Sendra and Juan Manuel Sobral
