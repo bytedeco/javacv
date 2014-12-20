@@ -78,7 +78,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.4.2-${javacpp.version}</version>
+      <version>2.5.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>

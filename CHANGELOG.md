@@ -1,4 +1,6 @@
 
+ * Upgrade support to OpenCV 2.4.10
+ * Upgrade supported FFmpeg API to the 2.5 release branch
  * Update instructions in the `README.md` file for manual installation in Android Studio
  * Replace deprecated `CvMat` and `IplImage` functionality used in the `Demo` class with new `Indexer` API, and provide sample `pom.xml` file for Maven
  * Make `FFmpegFrameGrabber.getFrameRate()` return `AVStream.avg_frame_rate` instead of `r_frame_rate` ([issue #63](https://github.com/bytedeco/javacv/issues/63))
