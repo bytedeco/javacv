@@ -3,18 +3,18 @@ JavaCV
 
 Introduction
 ------------
-JavaCV uses wrappers from the [JavaCPP Presets](https://github.com/bytedeco/javacpp-presets) of commonly used libraries by researchers in the field of computer vision ([OpenCV](http://opencv.org/), [FFmpeg](http://ffmpeg.org/), [libdc1394](http://damien.douxchamps.net/ieee1394/libdc1394/), [PGR FlyCapture](http://www.ptgrey.com/products/pgrflycapture/), [OpenKinect](http://openkinect.org/), [videoInput](http://muonics.net/school/spring05/videoInput/), and [ARToolKitPlus](http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php)), and provides utility classes to make their functionality easier to use on the Java platform, including Android.
+JavaCV uses wrappers from the [JavaCPP Presets](https://github.com/bytedeco/javacpp-presets) of commonly used libraries by researchers in the field of computer vision ([OpenCV](http://opencv.org/), [FFmpeg](http://ffmpeg.org/), [libdc1394](http://damien.douxchamps.net/ieee1394/libdc1394/), [PGR FlyCapture](http://www.ptgrey.com/products/pgrflycapture/), [OpenKinect](http://openkinect.org/), [videoInput](http://muonics.net/school/spring05/videoInput/), [ARToolKitPlus](http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php), and [flandmark](http://cmp.felk.cvut.cz/~uricamic/flandmark/)), and provides utility classes to make their functionality easier to use on the Java platform, including Android.
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), a blob analysis package (`Blobs`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL` or starting with `GL`, i.e.: `JavaCVCL`, `GLCanvasFrame`, etc.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [Sample Usage](#sample-usage) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [Examples ported from OpenCV2 Cookbook](http://code.google.com/p/javacv/source/browse?repo=examples) and the associated [Wiki pages](http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples).
+To learn how to use the API, since documentation currently lacks, please refer to the [Sample Usage](#sample-usage) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [examples ported from OpenCV2 Cookbook](https://github.com/bytedeco/javacv-examples/) and the associated [wiki pages](http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples).
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you! And feel free to ask questions on [the mailing list](http://groups.google.com/group/javacv) if you encounter any problems with the software! I am sure it is far from perfect...
 
 
 Downloads
 ---------
-To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation-for-opencv-and-ffmpeg) section below.
+To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation) section below.
 
  * JavaCV 0.9 binary archive  [javacv-0.9-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.9/javacv-0.9-bin.zip) (130 MB)
  * JavaCV 0.9 source archive  [javacv-0.9-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.9/javacv-0.9-src.zip) (374 KB)
@@ -68,9 +68,9 @@ Further, although not always required, some functionality of JavaCV also relies 
 Finally, please make sure everything has the same bitness: **32-bit and 64-bit modules do not mix under any circumstances**.
 
 
-Manual Installation for OpenCV and FFmpeg
------------------------------------------
-Simply put all the JAR files of JavaCPP, JavaCV, OpenCV, and FFmpeg (`javacpp.jar`, `javacv.jar`, `opencv-*.jar`, and `ffmpeg-*.jar`, respectively) somewhere in your CLASSPATH. Here are some more specific instructions for common cases:
+Manual Installation
+-------------------
+Simply put all the desired JAR files (`opencv*.jar`, `ffmpeg*.jar`, etc.), in addition to `javacpp.jar` and `javacv.jar`, somewhere in your CLASSPATH. Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or newer):
 
@@ -82,16 +82,14 @@ Eclipse (Java SE 6 or newer):
  1. Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs...".
  2. Locate the JAR files, select them, and click OK.
 
-Eclipse (Android 2.2 or newer):
+IntelliJ IDEA (Android 2.2 or newer):
 
  1. Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
- 2. Go to File > New > Folder, select your project as parent folder, type "libs/armeabi" as Folder name, and click Finish.
- 3. Copy `javacpp.jar`, `javacv.jar`, `opencv.jar`, and `ffmpeg.jar` into the newly created "libs" folder.
- 4. Extract all the `*.so` files from `opencv-android-arm.jar` and `ffmpeg-android-arm.jar` directly into the newly created "libs/armeabi" folder, without creating any of the subdirectories found in the JAR files.
- 5. Navigate to Project > Properties > Java Build Path > Libraries and click "Add JARs...".
- 6. Select all of `javacpp.jar`, `javacv.jar`, `opencv.jar`, and `ffmpeg.jar` from the newly created "libs" folder.
+ 2. Copy all the JAR files into the `app/libs` subdirectory.
+ 3. Navigate to File > Project Structure > app > Dependencies, click `+`, and select "2 File dependency".
+ 4. Select all the JAR files from the `libs` subdirectory.
 
-After that, the wrapper classes for OpenCV and FFmpeg can automatically access all of their C/C++ APIs:
+After that, the wrapper classes for OpenCV and FFmpeg, for example, can automatically access all of their C/C++ APIs:
 
  * [OpenCV documentation](http://docs.opencv.org/)
  * [FFmpeg documentation](http://ffmpeg.org/doxygen/)
@@ -125,6 +123,7 @@ import java.io.File;
 import java.net.URL;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.indexer.*;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_calib3d.*;
@@ -159,7 +158,7 @@ public class Demo {
         grabber.start();
 
         // FAQ about IplImage:
-        // - For custom raw processing of data, getByteBuffer() returns an NIO direct
+        // - For custom raw processing of data, createBuffer() returns an NIO direct
         //   buffer wrapped around the memory pointed by imageData, and under Android we can
         //   also use that Buffer with Bitmap.copyPixelsFromBuffer() and copyPixelsToBuffer().
         // - To get a BufferedImage from an IplImage, we may call getBufferedImage().
@@ -188,14 +187,15 @@ public class Demo {
 
         // Let's create some random 3D rotation...
         CvMat randomR = CvMat.create(3, 3), randomAxis = CvMat.create(3, 1);
-        // We can easily and efficiently access the elements of CvMat objects
-        // with the set of get() and put() methods.
-        randomAxis.put((Math.random()-0.5)/4, (Math.random()-0.5)/4, (Math.random()-0.5)/4);
+        // We can easily and efficiently access the elements of matrices and images
+        // through an Indexer object with the set of get() and put() methods.
+        DoubleIndexer Ridx = randomR.createIndexer(), axisIdx = randomAxis.createIndexer();
+        axisIdx.put(0, (Math.random()-0.5)/4, (Math.random()-0.5)/4, (Math.random()-0.5)/4);
         cvRodrigues2(randomAxis, randomR, null);
-        double f = (width + height)/2.0;        randomR.put(0, 2, randomR.get(0, 2)*f);
-                                                randomR.put(1, 2, randomR.get(1, 2)*f);
-        randomR.put(2, 0, randomR.get(2, 0)/f); randomR.put(2, 1, randomR.get(2, 1)/f);
-        System.out.println(randomR);
+        double f = (width + height)/2.0;  Ridx.put(0, 2, Ridx.get(0, 2)*f);
+                                          Ridx.put(1, 2, Ridx.get(1, 2)*f);
+        Ridx.put(2, 0, Ridx.get(2, 0)/f); Ridx.put(2, 1, Ridx.get(2, 1)/f);
+        System.out.println(Ridx);
 
         // We can allocate native arrays using constructors taking an integer as argument.
         CvPoint hatPoints = new CvPoint(3);
@@ -246,6 +246,28 @@ public class Demo {
         grabber.stop();
     }
 }
+```
+
+Furthermore, after creating a `pom.xml` file with the following content:
+```xml
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.bytedeco.javacv</groupId>
+    <artifactId>demo</artifactId>
+    <version>0.9.1-SNAPSHOT</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv</artifactId>
+            <version>0.9.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+And by placing the source code above in `src/main/java/Demo.java`, we can use the following command to have everything first installed automatically and then executed by Maven:
+```bash
+ $ mvn package exec:java -Dplatform.dependencies -Dexec.mainClass=Demo
 ```
 
 

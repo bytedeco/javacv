@@ -1,4 +1,6 @@
 
+ * Update instructions in the `README.md` file for manual installation in Android Studio
+ * Replace deprecated `CvMat` and `IplImage` functionality used in the `Demo` class with new `Indexer` API, and provide sample `pom.xml` file for Maven
  * Make `FFmpegFrameGrabber.getFrameRate()` return `AVStream.avg_frame_rate` instead of `r_frame_rate` ([issue #63](https://github.com/bytedeco/javacv/issues/63))
  * Disable DocLint, which prevents the build from succeeding on Java 8 ([issue bytedeco/javacpp#5](https://github.com/bytedeco/javacpp/issues/5))
  * Add `FlyCapture2FrameGrabber` with cross-platform support of FlyCapture2 ([pull #45](https://github.com/bytedeco/javacv/pull/45))
