@@ -359,6 +359,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                timebase should be 1/framerate and timestamp increments should be
                identically 1. */
             video_c.time_base(av_inv_q(frame_rate));
+            video_st.time_base(av_inv_q(frame_rate));
             if (gopSize >= 0) {
                 video_c.gop_size(gopSize); /* emit one intra frame every gopSize frames at most */
             }
@@ -454,6 +455,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 audio_c.sample_fmt(AV_SAMPLE_FMT_S16);
             }
             audio_c.time_base().num(1).den(sampleRate);
+            audio_st.time_base().num(1).den(sampleRate);
             switch (audio_c.sample_fmt()) {
                 case AV_SAMPLE_FMT_U8:
                 case AV_SAMPLE_FMT_U8P:  audio_c.bits_per_raw_sample(8);  break;
