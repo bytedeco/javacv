@@ -1,4 +1,5 @@
 
+### December 23, 2014 version 0.10
  * Upgrade support to OpenCV 2.4.10
  * Upgrade supported FFmpeg API to the 2.5 release branch
  * Fix `time_base` warnings displayed by `FFmpegFrameRecorder` ([issue #75](https://github.com/bytedeco/javacv/issues/75))
