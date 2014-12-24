@@ -677,11 +677,20 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 avpicture_fill(new AVPicture(tmp_picture), data, pixelFormat, width, height);
                 avpicture_fill(new AVPicture(picture), picture_buf, video_c.pix_fmt(), video_c.width(), video_c.height());
                 tmp_picture.linesize(0, step);
+                tmp_picture.format(pixelFormat);
+                tmp_picture.width(width);
+                tmp_picture.height(height);
+                picture.format(video_c.pix_fmt());
+                picture.width(video_c.width());
+                picture.height(video_c.height());
                 sws_scale(img_convert_ctx, new PointerPointer(tmp_picture), tmp_picture.linesize(),
                           0, height, new PointerPointer(picture), picture.linesize());
             } else {
                 avpicture_fill(new AVPicture(picture), data, pixelFormat, width, height);
                 picture.linesize(0, step);
+                picture.format(pixelFormat);
+                picture.width(width);
+                picture.height(height);
             }
         }
 

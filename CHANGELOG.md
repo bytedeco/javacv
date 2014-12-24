@@ -1,4 +1,6 @@
 
+ * Fix "AVFrame.format is not set" and "AVFrame.width or height is not set" warning messages ([issue #76](https://github.com/bytedeco/javacv/issues/76))
+
 ### December 23, 2014 version 0.10
  * Upgrade support to OpenCV 2.4.10
  * Upgrade supported FFmpeg API to the 2.5 release branch

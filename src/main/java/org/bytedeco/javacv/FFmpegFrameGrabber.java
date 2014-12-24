@@ -459,6 +459,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     // Assign appropriate parts of buffer to image planes in picture_rgb
                     // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
                     avpicture_fill(new AVPicture(picture_rgb), buffer_rgb, fmt, width, height);
+                    picture_rgb.format(fmt);
+                    picture_rgb.width(width);
+                    picture_rgb.height(height);
 
                     return_image = IplImage.createHeader(width, height, IPL_DEPTH_8U, 1);
                     break;
