@@ -24,6 +24,7 @@ import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -178,6 +179,7 @@ public abstract class FrameGrabber {
     protected int numBuffers = 4;
     protected double gamma = 0.0;
     protected boolean deinterlace = false;
+    protected HashMap<String, String> options = new HashMap<String, String>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
 
@@ -319,6 +321,13 @@ public abstract class FrameGrabber {
     }
     public void setDeinterlace(boolean deinterlace) {
         this.deinterlace = deinterlace;
+    }
+
+    public String getOption(String key) {
+        return options.get(key);
+    }
+    public void setOption(String key, String value) {
+        options.put(key, value);
     }
 
     public int getFrameNumber() {

@@ -1,4 +1,5 @@
 
+ * Add `option` property to `FFmpegFrameGrabber` to let users set such things as "analyzeduration", "probesize", or "list_devices"
  * Fix "AVFrame.format is not set" and "AVFrame.width or height is not set" warning messages ([issue #76](https://github.com/bytedeco/javacv/issues/76))
 
 ### December 23, 2014 version 0.10

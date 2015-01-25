@@ -50,6 +50,7 @@ package org.bytedeco.javacv;
 import java.io.File;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.Map.Entry;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.IntPointer;
@@ -383,6 +384,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
         if (audioChannels > 0) {
             av_dict_set(options, "channels", "" + audioChannels, 0);
+        }
+        for (Entry<String, String> e : this.options.entrySet()) {
+            av_dict_set(options, e.getKey(), e.getValue(), 0);
         }
         if ((ret = avformat_open_input(oc, filename, f, options)) < 0) {
             av_dict_set(options, "pixel_format", null, 0);
