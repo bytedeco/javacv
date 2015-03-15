@@ -135,7 +135,7 @@ public class Demo {
         if (args.length > 0) {
             classifierName = args[0];
         } else {
-            URL url = new URL("https://raw.github.com/Itseez/opencv/2.4/data/haarcascades/haarcascade_frontalface_alt.xml");
+            URL url = new URL("https://raw.github.com/Itseez/opencv/2.4.0/data/haarcascades/haarcascade_frontalface_alt.xml");
             File file = Loader.extractResource(url, null, "classifier", ".xml");
             file.deleteOnExit();
             classifierName = file.getAbsolutePath();
