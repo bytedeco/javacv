@@ -69,7 +69,6 @@ import org.bytedeco.javacpp.ShortPointer;
 import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avformat.*;
 import static org.bytedeco.javacpp.avutil.*;
-import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.swresample.*;
 import static org.bytedeco.javacpp.swscale.*;
 
@@ -610,8 +609,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (oc != null) {
             try {
                 /* flush all the buffers */
-                while (video_st != null && record((IplImage)null, AV_PIX_FMT_NONE));
-                while (audio_st != null && record(0, 0, (Buffer[])null));
+                while (video_st != null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
+                while (audio_st != null && recordSamples(0, 0, (Buffer[])null));
 
                 if (interleaved && video_st != null && audio_st != null) {
                     av_interleaved_write_frame(oc, null);
@@ -627,38 +626,47 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
-    public boolean record(IplImage image) throws Exception {
-        return record(image, AV_PIX_FMT_NONE);
+    @Override public void record(Frame frame) throws Exception {
+        if (frame == null || (frame.image == null && frame.samples == null)) {
+            recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null);
+        } else {
+            if (frame.image != null) {
+                frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
+                        frame.imageChannels, frame.imageStride, AV_PIX_FMT_NONE, frame.image);
+            }
+            if (frame.samples != null) {
+                frame.keyFrame = recordSamples(frame.sampleRate, frame.audioChannels, frame.samples);
+            }
+        }
     }
-    public boolean record(IplImage image, int pixelFormat) throws Exception {
+
+    public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
         }
         int ret;
 
-        if (image == null) {
+        if (image == null || image.length == 0) {
             /* no more frame to compress. The codec has a latency of a few
                frames if using B frames, so we get the last frames by
                passing the same picture again */
         } else {
-            int width = image.width();
-            int height = image.height();
-            int step = image.widthStep();
-            BytePointer data = image.imageData();
+            int step = stride * Math.abs(depth) / 8;
+            BytePointer data = image[0] instanceof ByteBuffer
+                    ? new BytePointer((ByteBuffer)image[0].position(0))
+                    : new BytePointer(new Pointer(image[0].position(0)));
 
             if (pixelFormat == AV_PIX_FMT_NONE) {
-                int depth = image.depth();
-                int channels = image.nChannels();
-                if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 3) {
+                if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 3) {
                     pixelFormat = AV_PIX_FMT_BGR24;
-                } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 1) {
+                } else if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 1) {
                     pixelFormat = AV_PIX_FMT_GRAY8;
-                } else if ((depth == IPL_DEPTH_16U || depth == IPL_DEPTH_16S) && channels == 1) {
+                } else if ((depth == Frame.DEPTH_USHORT || depth == Frame.DEPTH_SHORT) && channels == 1) {
                     pixelFormat = ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ?
                             AV_PIX_FMT_GRAY16BE : AV_PIX_FMT_GRAY16LE;
-                } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 4) {
+                } else if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 4) {
                     pixelFormat = AV_PIX_FMT_RGBA;
-                } else if ((depth == IPL_DEPTH_8U || depth == IPL_DEPTH_8S) && channels == 2) {
+                } else if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 2) {
                     pixelFormat = AV_PIX_FMT_NV21; // Android's camera capture format
                     step = width;
                 } else {
@@ -695,7 +703,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if ((oformat.flags() & AVFMT_RAWPICTURE) != 0) {
-            if (image == null) {
+            if (image == null || image.length == 0) {
                 return false;
             }
             /* raw video case. The API may change slightly in the future for that? */
@@ -710,7 +718,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_pkt.data(video_outbuf);
             video_pkt.size(video_outbuf_size);
             picture.quality(video_c.global_quality());
-            if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null ? null : picture, got_video_packet)) < 0) {
+            if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null || image.length == 0 ? null : picture, got_video_packet)) < 0) {
                 throw new Exception("avcodec_encode_video2() error " + ret + ": Could not encode video packet.");
             }
             picture.pts(picture.pts() + 1); // magic required by libx264
@@ -744,7 +752,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         return (video_pkt.flags() & AV_PKT_FLAG_KEY) == 1;
     }
 
-    @Override public boolean record(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
+    public boolean recordSamples(Buffer ... samples) throws Exception {
+        return recordSamples(0, 0, samples);
+    }
+    public boolean recordSamples(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }

@@ -76,6 +76,7 @@ public class VideoInputFrameGrabber extends FrameGrabber {
     private videoInput myVideoInput = null;
     private IplImage bgrImage = null, grayImage = null;
     private BytePointer bgrImageData = null;
+    private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
@@ -154,7 +155,7 @@ public class VideoInputFrameGrabber extends FrameGrabber {
         }
     }
 
-    public IplImage grab() throws Exception {
+    public Frame grab() throws Exception {
         if (myVideoInput == null) {
             throw new Exception("videoInput is null. (Has start() been called?)");
         }
@@ -174,9 +175,9 @@ public class VideoInputFrameGrabber extends FrameGrabber {
                 grayImage = IplImage.create(w, h, IPL_DEPTH_8U, 1);
             }
             cvCvtColor(bgrImage, grayImage, CV_BGR2GRAY);
-            return grayImage;
+            return converter.convert(grayImage);
         } else {
-            return bgrImage;
+            return converter.convert(bgrImage);
         }
     }
 }

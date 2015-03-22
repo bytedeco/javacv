@@ -73,6 +73,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
     private static final boolean windows = Loader.getPlatform().startsWith("windows");
     private String filename;
     private CvVideoWriter writer = null;
+    private OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
 
     public void start() throws Exception {
         writer = cvCreateVideoWriter(filename, videoCodec, frameRate, cvSize(imageWidth, imageHeight), pixelFormat);
@@ -85,14 +86,15 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         release();
     }
 
-    public boolean record(IplImage frame) throws Exception {
+    public void record(Frame frame) throws Exception {
+        IplImage image = converter.convert(frame);
         if (writer != null) {
-            if (cvWriteFrame(writer, frame) == 0) {
+            if (cvWriteFrame(writer, image) == 0) {
                 throw new Exception("cvWriteFrame(): Could not record frame");
             }
         } else {
             throw new Exception("Cannot record: There is no writer (Has start() been called?)");
         }
-        return true;
+        frame.keyFrame = true;
     }
 }

@@ -1,5 +1,5 @@
 import javax.swing.JFrame;
-import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -28,6 +28,8 @@ public class HoughLines {
 
         CanvasFrame source = new CanvasFrame("Source");
         CanvasFrame hough = new CanvasFrame("Hough");
+        OpenCVFrameConverter.ToIplImage sourceConverter = new OpenCVFrameConverter.ToIplImage();
+        OpenCVFrameConverter.ToIplImage houghConverter = new OpenCVFrameConverter.ToIplImage();
         if (src == null) {
             System.out.println("Couldn't load source image.");
             return;
@@ -106,8 +108,8 @@ public class HoughLines {
                 cvLine(colorDst, pt1, pt2, CV_RGB(255, 0, 0), 3, CV_AA, 0);
             }
         }
-        source.showImage(src);
-        hough.showImage(colorDst);
+        source.showImage(sourceConverter.convert(src));
+        hough.showImage(houghConverter.convert(colorDst));
 
         source.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         hough.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

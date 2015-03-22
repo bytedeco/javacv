@@ -75,6 +75,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     private String filename = null;
     private CvCapture capture = null;
     private IplImage return_image = null;
+    private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
@@ -230,7 +231,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         }
     }
 
-    public IplImage grab() throws Exception {
+    public Frame grab() throws Exception {
         IplImage image = cvRetrieveFrame(capture);
         if (image == null) {
             throw new Exception("cvRetrieveFrame() Error: Could not retrieve frame. (Has start() been called?)");
@@ -255,6 +256,6 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         } else {
             return_image = image;
         }
-        return return_image;
+        return converter.convert(return_image);
     }
 }

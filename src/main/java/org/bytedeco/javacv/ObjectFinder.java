@@ -411,15 +411,16 @@ public class ObjectFinder {
 
         CanvasFrame objectFrame = new CanvasFrame("Object");
         CanvasFrame correspondFrame = new CanvasFrame("Object Correspond");
+        OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
-        correspondFrame.showImage(correspond);
+        correspondFrame.showImage(converter.convert(correspond));
         for (int i = 0; i < finder.objectKeypoints.length; i++ ) {
             CvSURFPoint r = finder.objectKeypoints[i];
             CvPoint center = cvPointFrom32f(r.pt());
             int radius = Math.round(r.size()*1.2f/9*2);
             cvCircle(objectColor, center, radius, CvScalar.RED, 1, 8, 0);
         }
-        objectFrame.showImage(objectColor);
+        objectFrame.showImage(converter.convert(objectColor));
 
         objectFrame.waitKey();
 

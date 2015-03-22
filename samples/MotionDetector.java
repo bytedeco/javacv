@@ -10,19 +10,18 @@
  * Angelo Marchesin <marchesin.angelo@gmail.com>
  */
 
-import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_objdetect.*;
 
 public class MotionDetector {
     public static void main(String[] args) throws Exception {
         OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
+        OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
         grabber.start();
 
-        IplImage frame = grabber.grab();
+        IplImage frame = converter.convert(grabber.grab());
         IplImage image = null;
         IplImage prevImage = null;
         IplImage diff = null;
@@ -32,7 +31,7 @@ public class MotionDetector {
 
         CvMemStorage storage = CvMemStorage.create();
 
-        while (canvasFrame.isVisible() && (frame = grabber.grab()) != null) {
+        while (canvasFrame.isVisible() && (frame = converter.convert(grabber.grab())) != null) {
             cvClearMemStorage(storage);
 
             cvSmooth(frame, frame, CV_GAUSSIAN, 9, 9, 2, 2);
@@ -56,7 +55,7 @@ public class MotionDetector {
                 // do some threshold for wipe away useless details
                 cvThreshold(diff, diff, 64, 255, CV_THRESH_BINARY);
 
-                canvasFrame.showImage(diff);
+                canvasFrame.showImage(converter.convert(diff));
 
                 // recognize contours
                 CvSeq contour = new CvSeq(null);

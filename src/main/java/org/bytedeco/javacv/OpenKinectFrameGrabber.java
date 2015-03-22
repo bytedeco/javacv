@@ -96,6 +96,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
     private BytePointer rawDepthImageData = new BytePointer((Pointer)null),
                         rawVideoImageData = new BytePointer((Pointer)null);
     private IplImage rawDepthImage = null, rawVideoImage = null, returnImage = null;
+    private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
     private int[] timestamp = { 0 };
     private ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
     private int depthFormat = -1;
@@ -242,7 +243,7 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         return rawVideoImage;
     }
 
-    public IplImage grab() throws Exception {
+    public Frame grab() throws Exception {
         IplImage image = depth ? grabDepth() :  grabVideo();
         int w = image.width();
         int h = image.height();
@@ -254,15 +255,15 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
                 returnImage = IplImage.create(w, h, iplDepth, 3);
             }
             cvCvtColor(image, returnImage, CV_GRAY2BGR);
-            return returnImage;
+            return converter.convert(returnImage);
         } else if (imageMode == ImageMode.GRAY && channels == 3) {
             if (returnImage == null) {
                 returnImage = IplImage.create(w, h, iplDepth, 1);
             }
             cvCvtColor(image, returnImage, CV_BGR2GRAY);
-            return returnImage;
+            return converter.convert(returnImage);
         } else {
-            return image;
+            return converter.convert(image);
         }
     }
 }

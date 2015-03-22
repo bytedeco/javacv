@@ -29,7 +29,6 @@ import static org.bytedeco.javacpp.opencv_highgui.*;
  * Source: http://pcbje.com/2012/12/doing-face-recognition-with-javacv/
  *
  * @author Petter Christian Bjelland
- * @author Samuel Audet
  */
 public class OpenCVFaceRecognizer {
     public static void main(String[] args) {

@@ -137,6 +137,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
     private dc1394video_frame_t frame = null;
     private dc1394video_frame_t enqueue_image = null;
     private IplImage temp_image, return_image = null;
+    private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
     private final int[] out = new int[1];
     private final float[] outFloat = new float[1];
     private final float[] gammaOut = new float[1];
@@ -418,7 +419,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
         }
     }
 
-    public IplImage grab() throws Exception {
+    public Frame grab() throws Exception {
         enqueue();
         if (linux) {
             fds.events(POLLIN);
@@ -601,6 +602,6 @@ public class DC1394FrameGrabber extends FrameGrabber {
 //        long[] local_time = { 0 };
 //        dc1394_read_cycle_timer(camera, cycle_timer, local_time);
 //System.out.println("frame age = " + (local_time[0] - timestamp));
-        return return_image;
+        return converter.convert(return_image);
     }
 }

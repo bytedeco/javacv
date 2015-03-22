@@ -1,5 +1,7 @@
 
+ * Add `Java2DFrameConverter` and `OpenCVFrameConverter`, and use them to refactor `Frame`, `CanvasFrame`, `FrameGrabber`, and `FrameRecorder` in a way to help users reduce coupling with Java 2D or OpenCV ([issue #84](https://github.com/bytedeco/javacv/issues/84))
  * Fix `Demo` class in the `README.md` file ([issue #102](https://github.com/bytedeco/javacv/issues/102))
+ * Add new `ColoredObjectTrack` sample ([pull #99](https://github.com/bytedeco/javacv/pull/99))
  * Add `option` property to `FFmpegFrameGrabber` to let users set such things as "analyzeduration", "probesize", or "list_devices"
  * Fix "AVFrame.format is not set" and "AVFrame.width or height is not set" warning messages ([issue #76](https://github.com/bytedeco/javacv/issues/76))
 

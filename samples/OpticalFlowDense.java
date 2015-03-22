@@ -8,7 +8,6 @@ import static org.bytedeco.javacpp.opencv_video.*;
  * (Frame-1 & Frame-2) and put the velocity of every pixel to another image (OF) in their coordinate.
  *
  * @author Dawit Gebreyohannes
- * @author Samuel Audet
  */
 public class OpticalFlowDense {
     public static void main(String[] args) {

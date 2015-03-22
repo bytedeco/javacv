@@ -1,5 +1,6 @@
 import org.bytedeco.javacv.Blobs;
 import org.bytedeco.javacv.CanvasFrame;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
@@ -118,7 +119,8 @@ public class BlobDemo
         CanvasFrame canvas = new CanvasFrame(caption, 1);   // gamma=1
         canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
         canvas.setCanvasSize(width, height);
-        canvas.showImage(image);
+        OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+        canvas.showImage(converter.convert(image));
     }
     
     public static void Highlight(IplImage image, int [] inVec)

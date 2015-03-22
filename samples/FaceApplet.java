@@ -7,14 +7,16 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenCVFrameGrabber;
 import org.bytedeco.javacpp.opencv_objdetect;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_objdetect.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
 
 /**
  *
@@ -29,6 +31,8 @@ public class FaceApplet extends Applet implements Runnable {
     private CvSeq faces = null;
     private boolean stop = false;
     private Exception exception = null;
+    OpenCVFrameConverter.ToIplImage grabberConverter = new OpenCVFrameConverter.ToIplImage();
+    Java2DFrameConverter paintConverter = new Java2DFrameConverter();
 
     @Override public void init() {
         try {
@@ -74,19 +78,19 @@ public class FaceApplet extends Applet implements Runnable {
                 grabber.setImageWidth(getWidth());
                 grabber.setImageHeight(getHeight());
                 grabber.start();
-                grabbedImage = grabber.grab();
+                grabbedImage = grabberConverter.convert(grabber.grab());
             } catch (Exception e) {
                 if (grabber != null) grabber.release();
                 grabber = new OpenCVFrameGrabber(0);
                 grabber.setImageWidth(getWidth());
                 grabber.setImageHeight(getHeight());
                 grabber.start();
-                grabbedImage = grabber.grab();
+                grabbedImage = grabberConverter.convert(grabber.grab());
             }
             grayImage  = IplImage.create(grabbedImage.width(),   grabbedImage.height(),   IPL_DEPTH_8U, 1);
             smallImage = IplImage.create(grabbedImage.width()/4, grabbedImage.height()/4, IPL_DEPTH_8U, 1);
             stop = false;
-            while (!stop && (grabbedImage = grabber.grab()) != null) {
+            while (!stop && (grabbedImage = grabberConverter.convert(grabber.grab())) != null) {
                 if (faces == null) {
                     cvClearMemStorage(storage);
                     cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
@@ -113,7 +117,8 @@ public class FaceApplet extends Applet implements Runnable {
 
     @Override public void paint(Graphics g) {
         if (grabbedImage != null) {
-            BufferedImage image = grabbedImage.getBufferedImage(2.2/grabber.getGamma());
+            Frame frame = grabberConverter.convert(grabbedImage);
+            BufferedImage image = paintConverter.getBufferedImage(frame, 2.2/grabber.getGamma());
             Graphics2D g2 = image.createGraphics();
             if (faces != null) {
                 g2.setColor(Color.RED);

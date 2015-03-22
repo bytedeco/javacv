@@ -22,13 +22,10 @@ package org.bytedeco.javacv;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
-import static org.bytedeco.javacpp.opencv_core.*;
 
 /**
  *
@@ -275,24 +272,6 @@ public abstract class FrameRecorder {
 
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
-    public abstract boolean record(IplImage image) throws Exception;
-    public boolean record(Buffer ... samples) throws Exception {
-        return record(0, 0, samples);
-    }
-    public boolean record(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
-        throw new UnsupportedOperationException("This FrameRecorder does not support audio.");
-    }
-    public void record(Frame frame) throws Exception {
-        if (frame == null || (frame.image == null && frame.samples == null)) {
-            record((IplImage)null);
-        } else {
-            if (frame.image != null) {
-                frame.keyFrame = record(frame.image);
-            }
-            if (frame.samples != null) {
-                frame.keyFrame = record(frame.sampleRate, frame.audioChannels, frame.samples);
-            }
-        }
-    }
+    public abstract void record(Frame frame) throws Exception;
     public abstract void release() throws Exception;
 }

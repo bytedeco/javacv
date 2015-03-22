@@ -84,11 +84,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
+import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
-
-import static org.bytedeco.javacpp.opencv_core.*;
 
 public class RecordActivity extends Activity implements OnClickListener {
 
@@ -102,7 +102,7 @@ public class RecordActivity extends Activity implements OnClickListener {
     long startTime = 0;
     boolean recording = false;
 
-    private volatile FFmpegFrameRecorder recorder;
+    private FFmpegFrameRecorder recorder;
 
     private boolean isPreviewOn = false;
 
@@ -121,7 +121,7 @@ public class RecordActivity extends Activity implements OnClickListener {
     private Camera cameraDevice;
     private CameraView cameraView;
 
-    private IplImage yuvIplimage = null;
+    private Frame yuvImage = null;
 
     /* layout setting */
     private final int bg_screen_bx = 232;
@@ -137,7 +137,7 @@ public class RecordActivity extends Activity implements OnClickListener {
 
     /** The number of seconds in the continuous record loop (or 0 to disable loop). */
     final int RECORD_LENGTH = 10;
-    IplImage[] images;
+    Frame[] images;
     long[] timestamps;
     ShortBuffer[] samples;
     int imagesIndex, samplesIndex;
@@ -252,15 +252,15 @@ public class RecordActivity extends Activity implements OnClickListener {
 
         if (RECORD_LENGTH > 0) {
             imagesIndex = 0;
-            images = new IplImage[RECORD_LENGTH * frameRate];
+            images = new Frame[RECORD_LENGTH * frameRate];
             timestamps = new long[images.length];
             for (int i = 0; i < images.length; i++) {
-                images[i] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_8U, 2);
+                images[i] = new Frame(imageWidth, imageHeight, Frame.DEPTH_UBYTE, 2);
                 timestamps[i] = -1;
             }
-        } else if (yuvIplimage == null) {
-            yuvIplimage = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_8U, 2);
-            Log.i(LOG_TAG, "create yuvIplimage");
+        } else if (yuvImage == null) {
+            yuvImage = new Frame(imageWidth, imageHeight, Frame.DEPTH_UBYTE, 2);
+            Log.i(LOG_TAG, "create yuvImage");
         }
 
         Log.i(LOG_TAG, "ffmpeg_url: " + ffmpeg_link);
@@ -339,7 +339,7 @@ public class RecordActivity extends Activity implements OnClickListener {
                         lastIndex += samples.length;
                     }
                     for (int i = firstIndex; i <= lastIndex; i++) {
-                        recorder.record(samples[i % samples.length]);
+                        recorder.recordSamples(samples[i % samples.length]);
                     }
                 } catch (FFmpegFrameRecorder.Exception e) {
                     Log.v(LOG_TAG,e.getMessage());
@@ -424,7 +424,7 @@ public class RecordActivity extends Activity implements OnClickListener {
                     // Why?  Good question...
                     if (recording) {
                         if (RECORD_LENGTH <= 0) try {
-                            recorder.record(audioData);
+                            recorder.recordSamples(audioData);
                             //Log.v(LOG_TAG,"recording " + 1024*i + " to " + 1024*i+1024);
                         } catch (FFmpegFrameRecorder.Exception e) {
                             Log.v(LOG_TAG,e.getMessage());
@@ -518,12 +518,12 @@ public class RecordActivity extends Activity implements OnClickListener {
             }
             if (RECORD_LENGTH > 0) {
                 int i = imagesIndex++ % images.length;
-                yuvIplimage = images[i];
+                yuvImage = images[i];
                 timestamps[i] = 1000 * (System.currentTimeMillis() - startTime);
             }
             /* get video data */
-            if (yuvIplimage != null && recording) {
-                yuvIplimage.getByteBuffer().put(data);
+            if (yuvImage != null && recording) {
+                ((ByteBuffer)yuvImage.image[0].position(0)).put(data);
 
                 if (RECORD_LENGTH <= 0) try {
                     Log.v(LOG_TAG,"Writing Frame");
@@ -531,7 +531,7 @@ public class RecordActivity extends Activity implements OnClickListener {
                     if (t > recorder.getTimestamp()) {
                         recorder.setTimestamp(t);
                     }
-                    recorder.record(yuvIplimage);
+                    recorder.record(yuvImage);
                 } catch (FFmpegFrameRecorder.Exception e) {
                     Log.v(LOG_TAG,e.getMessage());
                     e.printStackTrace();

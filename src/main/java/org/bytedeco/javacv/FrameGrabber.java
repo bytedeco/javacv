@@ -33,8 +33,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-
 /**
  *
  * @author Samuel Audet
@@ -359,10 +357,8 @@ public abstract class FrameGrabber {
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void trigger() throws Exception;
-    public abstract IplImage grab() throws Exception;
-    public Frame grabFrame() throws Exception {
-        throw new UnsupportedOperationException("This FrameGrabber does not support audio.");
-    }
+    public abstract Frame grab() throws Exception;
+    public Frame grabFrame() throws Exception { return grab(); }
     public abstract void release() throws Exception;
 
     public void restart() throws Exception {
@@ -377,10 +373,10 @@ public abstract class FrameGrabber {
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private Future<Void> future = null;
-    private IplImage delayedImage = null;
+    private Frame delayedFrame = null;
     private long delayedTime = 0;
     public void delayedGrab(final long delayTime) {
-        delayedImage = null;
+        delayedFrame = null;
         delayedTime = 0;
         final long start = System.nanoTime()/1000;
         if (future != null && !future.isDone()) {
@@ -388,7 +384,7 @@ public abstract class FrameGrabber {
         }
         future = executor.submit(new Callable<Void>() { public Void call() throws Exception {
             do {
-                delayedImage = grab();
+                delayedFrame = grab();
                 delayedTime = System.nanoTime()/1000 - start;
             } while (delayedTime < delayTime);
             return null;
@@ -401,12 +397,12 @@ public abstract class FrameGrabber {
         future.get();
         return delayedTime;
     }
-    public IplImage getDelayedImage() throws InterruptedException, ExecutionException {
+    public Frame getDelayedFrame() throws InterruptedException, ExecutionException {
         if (future == null) {
             return null;
         }
         future.get();
-        return delayedImage;
+        return delayedFrame;
     }
 
     public static class Array {
@@ -416,7 +412,7 @@ public abstract class FrameGrabber {
             setFrameGrabbers(frameGrabbers);
         }
 
-        private IplImage[] grabbedImages = null;
+        private Frame[] grabbedFrames = null;
         private long[] latencies = null;
         private long[] bestLatencies = null;
         private long lastNewestTimestamp = 0;
@@ -428,7 +424,7 @@ public abstract class FrameGrabber {
         }
         public void setFrameGrabbers(FrameGrabber[] frameGrabbers) {
             this.frameGrabbers = frameGrabbers;
-            grabbedImages = new IplImage[frameGrabbers.length];
+            grabbedFrames = new Frame[frameGrabbers.length];
             latencies = new long[frameGrabbers.length];
             bestLatencies = null;
             lastNewestTimestamp = 0;
@@ -456,10 +452,10 @@ public abstract class FrameGrabber {
             }
         }
         // should be overriden to implement a broadcast grab...
-        public IplImage[] grab() throws Exception {
+        public Frame[] grab() throws Exception {
             if (frameGrabbers.length == 1) {
-                grabbedImages[0] = frameGrabbers[0].grab();
-                return grabbedImages;
+                grabbedFrames[0] = frameGrabbers[0].grab();
+                return grabbedFrames;
             }
 
             // assume we sometimes get perfectly synchronized images,
@@ -469,8 +465,8 @@ public abstract class FrameGrabber {
             long newestTimestamp = 0;
             boolean unsynchronized = false;
             for (int i = 0; i < frameGrabbers.length; i++) {
-                grabbedImages[i] = frameGrabbers[i].grab();
-                if (grabbedImages[i] != null) {
+                grabbedFrames[i] = frameGrabbers[i].grab();
+                if (grabbedFrames[i] != null) {
                     newestTimestamp = Math.max(newestTimestamp, frameGrabbers[i].getTimestamp());
                 }
                 if (frameGrabbers[i].getClass() != frameGrabbers[(i + 1) % frameGrabbers.length].getClass()) {
@@ -479,10 +475,10 @@ public abstract class FrameGrabber {
                 }
             }
             if (unsynchronized) {
-                return grabbedImages;
+                return grabbedFrames;
             }
             for (int i = 0; i < frameGrabbers.length; i++) {
-                if (grabbedImages[i] != null) {
+                if (grabbedFrames[i] != null) {
                     latencies[i] = newestTimestamp - Math.max(0, frameGrabbers[i].getTimestamp());
                 }
             }
@@ -510,13 +506,13 @@ public abstract class FrameGrabber {
             // the bestLatencies looking up to 2 frames ahead ...
             for (int j = 0; j < 2; j++) {
                 for (int i = 0; i < frameGrabbers.length; i++) {
-                    if (frameGrabbers[i].isTriggerMode() || grabbedImages[i] == null) {
+                    if (frameGrabbers[i].isTriggerMode() || grabbedFrames[i] == null) {
                         continue;
                     }
                     int latency = (int)(newestTimestamp - Math.max(0, frameGrabbers[i].getTimestamp()));
                     while (latency-bestLatencies[i] > 0.1*bestLatencies[i]) {
-                        grabbedImages[i] = frameGrabbers[i].grab();
-                        if (grabbedImages[i] == null) {
+                        grabbedFrames[i] = frameGrabbers[i].grab();
+                        if (grabbedFrames[i] == null) {
                             break;
                         }
                         latency = (int)(newestTimestamp - Math.max(0, frameGrabbers[i].getTimestamp()));
@@ -531,14 +527,14 @@ public abstract class FrameGrabber {
             }
 
 //for (int i = 0; i < frameGrabbers.length; i++) {
-//    long latency = newestTimestamp - Math.max(0, grabbedImages[i].getTimestamp());
+//    long latency = newestTimestamp - Math.max(0, frameGrabbers[i].getTimestamp());
 //    System.out.print(bestLatencies[i] + " " + latency + "  ");
 //}
 //System.out.println("  " + bestInterval);
 
             lastNewestTimestamp = newestTimestamp;
 
-            return grabbedImages;
+            return grabbedFrames;
         }
         public void release() throws Exception {
             for (FrameGrabber f : frameGrabbers) {

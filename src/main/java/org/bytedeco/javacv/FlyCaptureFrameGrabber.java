@@ -119,6 +119,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
     private FlyCaptureImage raw_image = new FlyCaptureImage();
     private FlyCaptureImage conv_image = new FlyCaptureImage();
     private IplImage temp_image, return_image = null;
+    private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
     private final int[] regOut = new int[1];
     private final float[] outFloat = new float[1];
     private final float[] gammaOut = new float[1];
@@ -357,7 +358,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         }
     }
 
-    public IplImage grab() throws Exception {
+    public Frame grab() throws Exception {
         int error = flycaptureGrabImage2(context, raw_image);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureGrabImage2() Error " + error + " (Has start() been called?)");
@@ -469,6 +470,6 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
 
         FlyCaptureTimestamp timeStamp = raw_image.timeStamp();
         timestamp = timeStamp.ulSeconds() * 1000000L + timeStamp.ulMicroSeconds();
-        return return_image;
+        return converter.convert(return_image);
     }
 }

@@ -97,6 +97,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
 
     IplImage image_4ch = null;
     IplImage image_1ch = null;
+    FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
     String stat;                  // status of PS3 camera handling - mostly for debugging
     String uuid;                  // assigned camera unique key
@@ -265,7 +266,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
      *  @return "read-only" RGB, 4-channel or GRAY/1-channel image, it throws exception if no image is available
      */
     @Override
-    public IplImage grab() throws Exception {
+    public Frame grab() throws Exception {
         IplImage img = null;
         switch (triggered) {
             case NO_TRIGGER:
@@ -285,7 +286,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
                 cvCvtColor(img, image_1ch, CV_RGB2GRAY);
                 img = image_1ch;
         }
-        return img;
+        return converter.convert(img);
     }
 
 

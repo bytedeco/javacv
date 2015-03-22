@@ -2,6 +2,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -11,7 +13,6 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
  * http://stackoverflow.com/questions/21554431/implementation-run-length-smoothing-algorithm-in-c
  *
  * @author Nicholas Woodward
- * @author Samuel Audet
  */
 public class RLSA {
 
@@ -20,8 +21,10 @@ public class RLSA {
 
         IplImage image = null;
         try {
+            Java2DFrameConverter converter1 = new Java2DFrameConverter();
+            OpenCVFrameConverter.ToIplImage converter2 = new OpenCVFrameConverter.ToIplImage();
             BufferedImage img = ImageIO.read(new File(imagePath));
-            image = IplImage.createFrom(img);
+            image = converter2.convert(converter1.convert(img));
         } catch (Exception ex)  {
             ex.printStackTrace();
         }

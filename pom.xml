@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>0.10</version>
+  <version>0.11-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaCV</name>
@@ -73,12 +73,12 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv</artifactId>
-      <version>2.4.10-${javacpp.version}</version>
+      <version>2.4.11-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.5.1-${javacpp.version}</version>
+      <version>2.5.4-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>

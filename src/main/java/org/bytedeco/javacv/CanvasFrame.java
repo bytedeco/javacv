@@ -46,8 +46,6 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JRootPane;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-
 /**
  *
  * @author Samuel Audet
@@ -263,6 +261,7 @@ public class CanvasFrame extends JFrame {
     private Color color = null;
     private Image image = null;
     private BufferedImage buffer = null;
+    private Java2DFrameConverter converter = new Java2DFrameConverter();
 
     public long getLatency() {
         // if there exists some way to estimate the latency in real time,
@@ -352,9 +351,6 @@ public class CanvasFrame extends JFrame {
         canvas.paint(null);
     }
 
-    public void showColor(CvScalar color) {
-        showColor(new Color((int)color.red(), (int)color.green(), (int)color.blue()));
-    }
     public void showColor(Color color) {
         this.color = color;
         this.image = null;
@@ -363,12 +359,12 @@ public class CanvasFrame extends JFrame {
 
     // Java2D will do gamma correction for TYPE_CUSTOM BufferedImage, but
     // not for the standard types, so we need to do it manually.
-    public void showImage(AbstractArray image) {
+    public void showImage(Frame image) {
         showImage(image, false);
     }
-    public void showImage(AbstractArray image, boolean flipChannels) {
-        showImage(image.getBufferedImage(image.getBufferedImageType() ==
-                BufferedImage.TYPE_CUSTOM ? 1.0 : inverseGamma, flipChannels));
+    public void showImage(Frame image, boolean flipChannels) {
+        showImage(converter.getBufferedImage(image, converter.getBufferedImageType(image) ==
+                BufferedImage.TYPE_CUSTOM ? 1.0 : inverseGamma, flipChannels, null));
     }
     public void showImage(Image image) {
         if (image == null) {

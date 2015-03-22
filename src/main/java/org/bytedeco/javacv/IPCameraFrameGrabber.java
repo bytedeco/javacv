@@ -65,6 +65,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     private Map<String, List<String>> headerfields;
     private String boundryKey;
     private IplImage decoded = null;
+    private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
     public IPCameraFrameGrabber(String urlstr) throws MalformedURLException {
         url = new URL(urlstr);
@@ -112,14 +113,14 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public IplImage grab() throws Exception {
+    public Frame grab() throws Exception {
         try {
             byte[] b = readImage();
             CvMat mat = cvMat(1, b.length, CV_8UC1, new BytePointer(b));
             if (decoded != null){
                 cvReleaseImage(decoded);
             }
-            return decoded = cvDecodeImage(mat);
+            return converter.convert(decoded = cvDecodeImage(mat));
         } catch (IOException e) {
             throw new Exception(e.getMessage(), e);
         }

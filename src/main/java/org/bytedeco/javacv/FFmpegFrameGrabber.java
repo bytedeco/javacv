@@ -61,7 +61,6 @@ import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avdevice.*;
 import static org.bytedeco.javacpp.avformat.*;
 import static org.bytedeco.javacpp.avutil.*;
-import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.swscale.*;
 
 /**
@@ -133,9 +132,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         // Free the RGB image
-        if (buffer_rgb != null) {
-            av_free(buffer_rgb);
-            buffer_rgb = null;
+        if (image_ptr != null) {
+            for (int i = 0; i < image_ptr.length; i++) {
+                av_free(image_ptr[i]);
+            }
+            image_ptr = null;
         }
         if (picture_rgb != null) {
             av_frame_free(picture_rgb);
@@ -178,7 +179,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         got_frame     = null;
-        return_image  = null;
         frameGrabbed  = false;
         frame         = null;
         timestamp     = 0;
@@ -194,7 +194,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVStream        video_st, audio_st;
     private AVCodecContext  video_c, audio_c;
     private AVFrame         picture, picture_rgb;
-    private BytePointer     buffer_rgb;
+    private BytePointer[]   image_ptr;
+    private Buffer[]        image_buf;
     private AVFrame         samples_frame;
     private BytePointer[]   samples_ptr;
     private Buffer[]        samples_buf;
@@ -202,7 +203,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             sizeof_pkt;
     private int[]           got_frame;
     private SwsContext      img_convert_ctx;
-    private IplImage        return_image;
     private boolean         frameGrabbed;
     private Frame           frame;
 
@@ -224,11 +224,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getImageWidth() {
-        return return_image == null ? super.getImageWidth() : return_image.width();
+        return video_c == null ? super.getImageWidth() : video_c.width();
     }
 
     @Override public int getImageHeight() {
-        return return_image == null ? super.getImageHeight() : return_image.height();
+        return video_c == null ? super.getImageHeight() : video_c.height();
     }
 
     @Override public int getAudioChannels() {
@@ -351,7 +351,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         pkt2            = new AVPacket();
         sizeof_pkt      = pkt.sizeof();
         got_frame       = new int[1];
-        return_image    = null;
         frameGrabbed    = false;
         frame           = new Frame();
         timestamp       = 0;
@@ -458,21 +457,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
                     // Determine required buffer size and allocate buffer
                     int size = avpicture_get_size(fmt, width, height);
-                    buffer_rgb = new BytePointer(av_malloc(size));
+                    image_ptr = new BytePointer[] { new BytePointer(av_malloc(size)).capacity(size) };
+                    image_buf = new Buffer[] { image_ptr[0].asBuffer() };
 
                     // Assign appropriate parts of buffer to image planes in picture_rgb
                     // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
-                    avpicture_fill(new AVPicture(picture_rgb), buffer_rgb, fmt, width, height);
+                    avpicture_fill(new AVPicture(picture_rgb), image_ptr[0], fmt, width, height);
                     picture_rgb.format(fmt);
                     picture_rgb.width(width);
                     picture_rgb.height(height);
-
-                    return_image = IplImage.createHeader(width, height, IPL_DEPTH_8U, 1);
                     break;
 
                 case RAW:
-                    buffer_rgb = null;
-                    return_image = IplImage.createHeader(video_c.width(), video_c.height(), IPL_DEPTH_8U, 1);
+                    image_ptr = new BytePointer[] { null };
+                    image_buf = new Buffer[] { null };
                     break;
 
                 default:
@@ -520,6 +518,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     private void processImage() throws Exception {
+        frame.imageWidth = video_c.width();
+        frame.imageHeight = video_c.height();
+        frame.imageDepth = Frame.DEPTH_UBYTE;
         switch (imageMode) {
             case COLOR:
             case GRAY:
@@ -541,29 +542,28 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 // Convert the image from its native format to RGB or GRAY
                 sws_scale(img_convert_ctx, new PointerPointer(picture), picture.linesize(), 0,
                         video_c.height(), new PointerPointer(picture_rgb), picture_rgb.linesize());
-                return_image.imageData(buffer_rgb);
-                return_image.widthStep(picture_rgb.linesize(0));
+                frame.imageStride = picture_rgb.linesize(0);
+                frame.image = image_buf;
                 break;
 
             case RAW:
-                assert video_c.width()  == return_image.width() &&
-                       video_c.height() == return_image.height();
-                return_image.imageData(picture.data(0));
-                return_image.widthStep(picture.linesize(0));
+                frame.imageStride = picture.linesize(0);
+                BytePointer ptr = picture.data(0);
+                if (ptr != null && !ptr.equals(image_ptr[0])) {
+                    image_ptr[0] = ptr.capacity(frame.imageHeight * frame.imageStride);
+                    image_buf[0] = ptr.asBuffer();
+                }
+                frame.image = image_buf;
                 break;
 
             default:
                 assert false;
         }
-        return_image.imageSize(return_image.height() * return_image.widthStep());
-        return_image.nChannels(return_image.widthStep() / return_image.width());
+        frame.image[0].limit(frame.imageHeight * frame.imageStride);
+        frame.imageChannels = frame.imageStride / frame.imageWidth;
     }
 
-    public IplImage grab() throws Exception {
-        Frame f = grabFrame(true, false, false);
-        return f != null ? f.image : null;
-    }
-    @Override public Frame grabFrame() throws Exception {
+    public Frame grab() throws Exception {
         return grabFrame(true, true, false);
     }
     public Frame grabFrame(boolean processImage) throws Exception {
@@ -577,6 +577,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }
         frame.keyFrame = false;
+        frame.imageWidth = 0;
+        frame.imageHeight = 0;
+        frame.imageDepth = 0;
+        frame.imageChannels = 0;
+        frame.imageStride = 0;
         frame.image = null;
         frame.sampleRate = 0;
         frame.audioChannels = 0;
@@ -588,7 +593,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 processImage();
             }
             frame.keyFrame = picture.key_frame() != 0;
-            frame.image = return_image;
+            frame.image = image_buf;
             frame.opaque = picture;
             return frame;
         }
@@ -627,7 +632,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     }
                     done = true;
                     frame.keyFrame = picture.key_frame() != 0;
-                    frame.image = return_image;
+                    frame.image = image_buf;
                     frame.opaque = picture;
                 } else if (pkt.data() == null && pkt.size() == 0) {
                     return null;
@@ -638,7 +643,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     // pkt2.put(pkt);
                     BytePointer.memcpy(pkt2, pkt, sizeof_pkt);
                 }
-                avcodec_get_frame_defaults(samples_frame);
+                av_frame_unref(samples_frame);
                 // Decode audio frame
                 int len = avcodec_decode_audio4(audio_c, samples_frame, got_frame, pkt2);
                 if (len <= 0) {
