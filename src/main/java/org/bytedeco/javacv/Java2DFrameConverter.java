@@ -568,8 +568,10 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
         }
         int type = getBufferedImageType(frame);
 
-        if (bufferedImage == null && type != BufferedImage.TYPE_CUSTOM && cs == null) {
-            bufferedImage = new BufferedImage(frame.imageWidth, frame.imageHeight, type);
+        if (bufferedImage == null || bufferedImage.getWidth() != frame.imageWidth
+                || bufferedImage.getHeight() != frame.imageHeight || bufferedImage.getType() != type) {
+            bufferedImage = type == BufferedImage.TYPE_CUSTOM || cs != null ? null
+                    : new BufferedImage(frame.imageWidth, frame.imageHeight, type);
         }
 
         if (bufferedImage == null) {

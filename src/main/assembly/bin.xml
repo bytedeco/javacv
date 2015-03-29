@@ -24,6 +24,7 @@
         <include>*.jar</include>
       </includes>
       <excludes>
+        <exclude>android*.jar</exclude>
         <exclude>gluegen*.jar</exclude>
         <exclude>jogl*.jar</exclude>
         <exclude>jocl*.jar</exclude>
