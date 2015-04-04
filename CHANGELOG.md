@@ -1,4 +1,5 @@
 
+### April 4, 2014 version 0.11
  * Add new `Square` sample, thanks to Geir Ruud
  * Add `AndroidFrameConverter`, `Java2DFrameConverter` and `OpenCVFrameConverter`, and use them to refactor `Frame`, `CanvasFrame`, `FrameGrabber`, and `FrameRecorder` in a way to help users avoid coupling with Android, Java 2D, or OpenCV ([issue #84](https://github.com/bytedeco/javacv/issues/84))
  * Fix `Demo` class in the `README.md` file ([issue #102](https://github.com/bytedeco/javacv/issues/102))

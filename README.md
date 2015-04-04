@@ -7,7 +7,7 @@ JavaCV uses wrappers from the [JavaCPP Presets](https://github.com/bytedeco/java
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), a blob analysis package (`Blobs`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL` or starting with `GL`, i.e.: `JavaCVCL`, `GLCanvasFrame`, etc.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [Sample Usage](#sample-usage) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [examples ported from OpenCV2 Cookbook](https://github.com/bytedeco/javacv-examples/) and the associated [wiki pages](http://code.google.com/p/javacv/wiki/OpenCV2_Cookbook_Examples).
+To learn how to use the API, since documentation currently lacks, please refer to the [Sample Usage](#sample-usage) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [examples ported from OpenCV2 Cookbook](https://github.com/bytedeco/javacv-examples/) and the associated [wiki pages](https://github.com/bytedeco/javacv-examples/blob/master/OpenCV2_Cookbook).
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you! And feel free to ask questions on [the mailing list](http://groups.google.com/group/javacv) if you encounter any problems with the software! I am sure it is far from perfect...
 
@@ -16,10 +16,10 @@ Downloads
 ---------
 To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation) section below.
 
- * JavaCV 0.10 binary archive  [javacv-0.10-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.10/javacv-0.10-bin.zip) (136 MB)
- * JavaCV 0.10 source archive  [javacv-0.10-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.10/javacv-0.10-src.zip) (381 KB)
+ * JavaCV 0.11 binary archive  [javacv-0.11-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.11/javacv-0.11-bin.zip) (142 MB)
+ * JavaCV 0.11 source archive  [javacv-0.11-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.11/javacv-0.11-src.zip) (398 KB)
 
-The binary archive contains builds for Linux, Mac OS X, Windows, and Android. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
+The binary archive contains builds for Android, Linux, Mac OS X, and Windows. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
 
 
 We can also have everything downloaded and installed automatically with:
@@ -29,24 +29,24 @@ We can also have everything downloaded and installed automatically with:
   <dependency>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacv</artifactId>
-    <version>0.10</version>
+    <version>0.11</version>
   </dependency>
 ```
 
  * Gradle (inside the `build.gradle` file)
 ```groovy
   dependencies {
-    compile group: 'org.bytedeco', name: 'javacv', version: '0.10'
+    compile group: 'org.bytedeco', name: 'javacv', version: '0.11'
   }
 ```
 
  * SBT (inside the `build.sbt` file)
 ```scala
   classpathTypes += "maven-plugin"
-  libraryDependencies += "org.bytedeco" % "javacv" % "0.10"
+  libraryDependencies += "org.bytedeco" % "javacv" % "0.11"
 ```
 
-Additionally, we need to either set the `platform.dependency` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Linux, Mac OS X, and Windows. On build systems where this does not work, we need to add the platform-specific artifacts manually.
+Additionally, we need to either set the `platform.dependency` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.**
 
 
 Required Software
@@ -70,7 +70,7 @@ Finally, please make sure everything has the same bitness: **32-bit and 64-bit m
 
 Manual Installation
 -------------------
-Simply put all the desired JAR files (`opencv*.jar`, `ffmpeg*.jar`, etc.), in addition to `javacpp.jar` and `javacv.jar`, somewhere in your CLASSPATH. Here are some more specific instructions for common cases:
+Simply put all the desired JAR files (`opencv*.jar`, `ffmpeg*.jar`, etc.), in addition to `javacpp.jar` and `javacv.jar`, somewhere in your class path. Here are some more specific instructions for common cases:
 
 NetBeans (Java SE 6 or newer):
 
@@ -157,14 +157,19 @@ public class Demo {
         FrameGrabber grabber = FrameGrabber.createDefault(0);
         grabber.start();
 
-        // FAQ about IplImage:
+        // CanvasFrame, FrameGrabber, and FrameRecorder use Frame objects to communicate image data.
+        // We need a FrameConverter to interface with other APIs (Android, Java 2D, or OpenCV).
+        OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
+
+        // FAQ about IplImage and Mat objects from OpenCV:
         // - For custom raw processing of data, createBuffer() returns an NIO direct
         //   buffer wrapped around the memory pointed by imageData, and under Android we can
         //   also use that Buffer with Bitmap.copyPixelsFromBuffer() and copyPixelsToBuffer().
-        // - To get a BufferedImage from an IplImage, we may call getBufferedImage().
-        // - The createFrom() factory method can construct an IplImage from a BufferedImage.
-        // - There are also a few copy*() methods for BufferedImage<->IplImage data transfers.
-        IplImage grabbedImage = grabber.grab();
+        // - To get a BufferedImage from an IplImage, or vice versa, we can chain calls to
+        //   Java2DFrameConverter and OpenCVFrameConverter, one after the other.
+        // - Java2DFrameConverter also has static copy() methods that we can use to transfer
+        //   data more directly between BufferedImage and IplImage or Mat via Frame objects.
+        IplImage grabbedImage = converter.convert(grabber.grab());
         int width  = grabbedImage.width();
         int height = grabbedImage.height();
         IplImage grayImage    = IplImage.create(width, height, IPL_DEPTH_8U, 1);
@@ -200,7 +205,7 @@ public class Demo {
         // We can allocate native arrays using constructors taking an integer as argument.
         CvPoint hatPoints = new CvPoint(3);
 
-        while (frame.isVisible() && (grabbedImage = grabber.grab()) != null) {
+        while (frame.isVisible() && (grabbedImage = converter.convert(grabber.grab())) != null) {
             cvClearMemStorage(storage);
 
             // Let's try to detect some faces! but we need a grayscale image...
@@ -238,8 +243,9 @@ public class Demo {
 
             cvWarpPerspective(grabbedImage, rotatedImage, randomR);
 
-            frame.showImage(rotatedImage);
-            recorder.record(rotatedImage);
+            Frame rotatedFrame = converter.convert(rotatedImage);
+            frame.showImage(rotatedFrame);
+            recorder.record(rotatedFrame);
         }
         frame.dispose();
         recorder.stop();
@@ -254,12 +260,12 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>0.10</version>
+    <version>0.11</version>
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>0.10</version>
+            <version>0.11</version>
         </dependency>
     </dependencies>
 </project>
@@ -267,7 +273,7 @@ Furthermore, after creating a `pom.xml` file with the following content:
 
 And by placing the source code above in `src/main/java/Demo.java`, we can use the following command to have everything first installed automatically and then executed by Maven:
 ```bash
- $ mvn package exec:java -Dplatform.dependencies -Dexec.mainClass=Demo
+ $ mvn package exec:java -Dexec.mainClass=Demo
 ```
 
 
@@ -276,8 +282,8 @@ Build Instructions
 If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
 
  * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP 0.10  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 0.10  https://github.com/bytedeco/javacpp-presets
+ * JavaCPP 0.11  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 0.11  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 
