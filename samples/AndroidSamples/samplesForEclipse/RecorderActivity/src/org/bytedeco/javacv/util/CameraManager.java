@@ -45,8 +45,10 @@ public class CameraManager {
 	}
 	
 	/***In order to get a better preview:
-	 * 1. autofocus
-	 * 2. 
+	 * 1. focusmode
+	 * 2. framerate
+	 * 3. whitestablization
+	 * 4. ....
 	 * */
 	@SuppressLint("NewApi") 
 	private static void fixParameters(Parameters mParameters2) {
@@ -70,7 +72,7 @@ public class CameraManager {
 		mParameters.setPreviewFormat(ImageFormat.NV21);
 
 		// set focus mode
-		String mode = getAutoFocusMode();
+		String mode = checkFocusMode();
 		
 		// sansung need to handle special
 		if (TextUtils.isEmpty(mode)) {
@@ -104,7 +106,9 @@ public class CameraManager {
 		return getCamera();
 	}
 	
-	private static String getAutoFocusMode() {
+	/***check the autofocus mode*/
+	private static String checkFocusMode() {
+		
 		if (mParameters != null) {
 			
 			List<String> focusModes = mParameters.getSupportedFocusModes();
