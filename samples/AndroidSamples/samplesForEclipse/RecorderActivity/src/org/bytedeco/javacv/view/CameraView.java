@@ -1,7 +1,10 @@
 package org.bytedeco.javacv.view;
 
 import java.io.IOException;
-import or.bytedeco.javac.constant.Constant;
+import java.util.logging.Logger;
+
+import org.bytedeco.javacv.constant.Constant;
+import org.bytedeco.javacv.util.CameraManager;
 
 import android.content.Context;
 import android.hardware.Camera;
@@ -23,7 +26,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, P
     /***during preview, we can do somthing like image processing..,etc*/
     private PreviewCallback mPreviewCallbackDelegate;
 
-    public CameraView(Context context, Camera camera,PreviewCallback _previewCallbackDelegate) {
+    private CameraView(Context context, Camera camera,PreviewCallback _previewCallbackDelegate) {
         super(context);
         Log.w("camera","camera view");
         mCamera = camera;
@@ -34,7 +37,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, P
         mCamera.setPreviewCallback(CameraView.this);
     }
     
-    public CameraView(Context context, Camera camera) {
+    private CameraView(Context context, Camera camera) {
     	super(context);
     	Log.w("camera","camera view");
     	mCamera = camera;
@@ -44,11 +47,22 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, P
     	mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     	mCamera.setPreviewCallback(CameraView.this);
     }
+    
+    public CameraView(Context context, PreviewCallback _previewCallbackDelegate) {
+    	super(context);
+    	Log.w("camera","camera view");
+    	mCamera = CameraManager.getCamera();
+    	Log.w("CameraView", "camera:"+String.valueOf(mCamera==null));
+    	mHolder = getHolder();
+    	mPreviewCallbackDelegate=_previewCallbackDelegate;
+    	mHolder.addCallback(CameraView.this);
+    	mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    	mCamera.setPreviewCallback(CameraView.this);
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            stopPreview();
             mCamera.setPreviewDisplay(holder);
         } catch (IOException exception) {
             mCamera.release();
@@ -88,7 +102,13 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, P
     public void stopPreview() {
         if (isPreviewOn && mCamera != null) {
             isPreviewOn = false;
-            mCamera.stopPreview();
+        }
+        
+        if(mCamera != null) {
+        	mCamera.stopPreview();
+        	mCamera.setPreviewCallback(null);
+        	mCamera.release();
+        	mCamera = null;
         }
     }
 
@@ -97,5 +117,12 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, P
     	if(mPreviewCallbackDelegate!=null){
     		mPreviewCallbackDelegate.onPreviewFrame(data, camera);
     	}
+    }
+    
+    //logic is not complete,
+    public void switchCamera(int cameraFrontOrBack){
+    	stopPreview();
+    	mCamera=CameraManager.switchCamera(cameraFrontOrBack);
+		startPreview();
     }
 }
