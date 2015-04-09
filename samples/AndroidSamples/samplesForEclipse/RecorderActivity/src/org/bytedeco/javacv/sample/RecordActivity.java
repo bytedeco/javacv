@@ -163,8 +163,7 @@ public class RecordActivity extends Activity implements OnClickListener {
 
     @Override
     public void onClick(View v) {
-    	
-        if (!mManager.recording) {
+        if (mManager.recording) {
             mManager.startRecording();
             Log.w(LOG_TAG, "Start Button Pushed");
             btnRecorderControl.setText("Stop");

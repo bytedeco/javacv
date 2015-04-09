@@ -42,7 +42,6 @@ public class RecorderManager implements PreviewCallback{
 	
 	
 	public boolean recording = false;
-	
     /** The number of seconds in the continuous record loop (or 0 to disable loop). */
     final int RECORD_LENGTH = 10;
     int imagesIndex, samplesIndex;
@@ -69,7 +68,7 @@ public class RecorderManager implements PreviewCallback{
     
     
     public void startRecording() {
-    	
+
         initRecorder();
 
         try {
