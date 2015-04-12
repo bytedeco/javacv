@@ -257,6 +257,16 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return video_c == null ? super.getVideoBitrate() : video_c.bit_rate();
     }
 
+    @Override public double getAspectRatio() {
+        if (video_st == null) {
+            return super.getAspectRatio();
+        } else {
+            AVRational r = av_guess_sample_aspect_ratio(oc, video_st, picture);
+            double a = (double)r.num() / r.den();
+            return a == 0.0 ? 1.0 : a;
+        }
+    }
+
     @Override public double getFrameRate() {
         if (video_st == null) {
             return super.getFrameRate();

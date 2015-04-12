@@ -353,6 +353,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* resolution must be a multiple of two, but round up to 16 as often required */
             video_c.width((imageWidth + 15) / 16 * 16);
             video_c.height(imageHeight);
+            if (aspectRatio > 0) {
+                AVRational r = av_d2q(aspectRatio, 255);
+                video_c.sample_aspect_ratio(r);
+                video_st.sample_aspect_ratio(r);
+            }
             /* time base: this is the fundamental unit of time (in seconds) in terms
                of which frame timestamps are represented. for fixed-fps content,
                timebase should be 1/framerate and timestamp increments should be

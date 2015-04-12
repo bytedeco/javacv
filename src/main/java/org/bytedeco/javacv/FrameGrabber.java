@@ -169,7 +169,7 @@ public abstract class FrameGrabber {
     protected ImageMode imageMode = ImageMode.COLOR;
     protected long sensorPattern = -1L;
     protected int pixelFormat = -1, videoCodec, videoBitrate = 0;
-    protected double frameRate = 0;
+    protected double aspectRatio = 0, frameRate = 0;
     protected int sampleFormat = 0, audioCodec, audioBitrate = 0, sampleRate = 0;
     protected boolean triggerMode = false;
     protected int bpp = 0;
@@ -242,6 +242,13 @@ public abstract class FrameGrabber {
     }
     public void setVideoBitrate(int videoBitrate) {
         this.videoBitrate = videoBitrate;
+    }
+
+    public double getAspectRatio() {
+        return aspectRatio;
+    }
+    public void setAspectRatio(double aspectRatio) {
+        this.aspectRatio = aspectRatio;
     }
 
     public double getFrameRate() {

@@ -102,7 +102,7 @@ public abstract class FrameRecorder {
     protected String format, videoCodecName, audioCodecName;
     protected int imageWidth, imageHeight, audioChannels;
     protected int pixelFormat, videoCodec, videoBitrate, gopSize = -1;
-    protected double frameRate, videoQuality = -1;
+    protected double aspectRatio, frameRate, videoQuality = -1;
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
     protected double audioQuality = -1;
     protected boolean interleaved;
@@ -179,6 +179,13 @@ public abstract class FrameRecorder {
     }
     public void setGopSize(int gopSize) {
         this.gopSize = gopSize;
+    }
+
+    public double getAspectRatio() {
+        return aspectRatio;
+    }
+    public void setAspectRatio(double aspectRatio) {
+        this.aspectRatio = aspectRatio;
     }
 
     public double getFrameRate() {

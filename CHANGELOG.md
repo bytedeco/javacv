@@ -1,5 +1,9 @@
 
+ * Add `aspectRatio` property to `FrameGrabber` and `FrameRecorder`, to be able to use pixel aspect ratios other than 1.0 ([issue #90](https://github.com/bytedeco/javacv/issues/90))
+
 ### April 4, 2014 version 0.11
+ * Upgrade support to OpenCV 2.4.11
+ * Upgrade supported FFmpeg API to the 2.6 release branch
  * Add new `Square` sample, thanks to Geir Ruud
  * Add `AndroidFrameConverter`, `Java2DFrameConverter` and `OpenCVFrameConverter`, and use them to refactor `Frame`, `CanvasFrame`, `FrameGrabber`, and `FrameRecorder` in a way to help users avoid coupling with Android, Java 2D, or OpenCV ([issue #84](https://github.com/bytedeco/javacv/issues/84))
  * Fix `Demo` class in the `README.md` file ([issue #102](https://github.com/bytedeco/javacv/issues/102))
