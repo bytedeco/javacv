@@ -44,6 +44,12 @@ We can also have everything downloaded and installed automatically with:
 ```scala
   classpathTypes += "maven-plugin"
   libraryDependencies += "org.bytedeco" % "javacv" % "0.11"
+  libraryDependencies += "org.bytedeco.javacpp-presets" % "opencv" % "2.4.11-0.11"
+  libraryDependencies += "org.bytedeco.javacpp-presets" % "opencv" % "2.4.11-0.11" classifier "linux-x86"
+  libraryDependencies += "org.bytedeco.javacpp-presets" % "opencv" % "2.4.11-0.11" classifier "linux-x86_64"
+  libraryDependencies += "org.bytedeco.javacpp-presets" % "opencv" % "2.4.11-0.11" classifier "macosx-x86_64"
+  libraryDependencies += "org.bytedeco.javacpp-presets" % "opencv" % "2.4.11-0.11" classifier "windows-x86"
+  libraryDependencies += "org.bytedeco.javacpp-presets" % "opencv" % "2.4.11-0.11" classifier "windows-x86_64"
 ```
 
 Additionally, we need to either set the `platform.dependency` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.**
