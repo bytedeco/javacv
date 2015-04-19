@@ -488,9 +488,8 @@ public class GeometricCalibrator {
 
         cvStereoCalibrate(objectPointsMat, imagePoints1Mat, imagePoints2Mat, pointCountsMat,
                 d.cameraMatrix, d.distortionCoeffs, dp.cameraMatrix, dp.distortionCoeffs,
-                cvSize(d.imageWidth, d.imageHeight), dp.R, dp.T, dp.E, dp.F,
-                cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,100,1e-6),
-                dpsettings.flags);
+                cvSize(d.imageWidth, d.imageHeight), dp.R, dp.T, dp.E, dp.F, dpsettings.flags,
+                cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,100,1e-6));
 
         // compute and return epipolar error...
         d.avgEpipolarErr = 0.0;

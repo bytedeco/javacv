@@ -1,4 +1,6 @@
 
+ * Upgrade support to OpenCV 3.0.0-beta
+ * Switch descriptor used by `ObjectFinder` from SURF to AKAZE
  * Let users get resized images from `FFmpegFrameGrabber` by calling `setImageWidth()` and `setImageHeight()` before `start()`
  * Add check for supported display size in the `RecordActivity` sample ([pull #153](https://github.com/bytedeco/javacv/pull/153))
  * Clarify the semantics of `FrameConverter` ([issue #150](https://github.com/bytedeco/javacv/issues/150))

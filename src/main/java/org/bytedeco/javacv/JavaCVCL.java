@@ -58,7 +58,7 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.BytePointer;
 
 import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 /**

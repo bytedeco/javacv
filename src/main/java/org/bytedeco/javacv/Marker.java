@@ -25,6 +25,7 @@ import java.util.Arrays;
 
 import static org.bytedeco.javacpp.ARToolKitPlus.*;
 import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 /**
  *
