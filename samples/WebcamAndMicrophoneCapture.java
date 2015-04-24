@@ -10,6 +10,8 @@
  * chime in if you can fig it out :o)
  */
 
+package javacv;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -63,7 +65,7 @@ public class WebcamAndMicrophoneCapture
 		// imageHeight = height we specified for the grabber
 		// audioChannels = 2, because we like stereo
 		FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(
-				"rtmp://origin-cc.mixify.com/liveremote/test/encoder",
+				"rtmp://my-streaming-server/app_name_here/instance_name/stream_name",
 				captureWidth, captureHeight, 2);
 		recorder.setInterleaved(true);
 
