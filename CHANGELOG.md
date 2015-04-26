@@ -1,4 +1,5 @@
 
+ * Fix `Java2DFrameConverter` when used with `BufferedImage.TYPE_INT_RGB` or other types based on `int`
  * Add new `WebcamAndMicrophoneCapture` sample ([pull #131](https://github.com/bytedeco/javacv/pull/131))
  * Add `aspectRatio` property to `FrameGrabber` and `FrameRecorder`, to be able to use pixel aspect ratios other than 1.0 ([issue #90](https://github.com/bytedeco/javacv/issues/90))
 
