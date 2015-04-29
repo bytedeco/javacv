@@ -413,23 +413,24 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         // Dump information about file onto standard error
         av_dump_format(oc, 0, filename, 0);
 
-        // Find the first video and audio stream
+        // Find the first video and audio stream, unless the user specified otherwise
         video_st = audio_st = null;
         int nb_streams = oc.nb_streams();
         for (int i = 0; i < nb_streams; i++) {
             AVStream st = oc.streams(i);
             // Get a pointer to the codec context for the video or audio stream
             AVCodecContext c = st.codec();
-            if (video_st == null && c.codec_type() == AVMEDIA_TYPE_VIDEO) {
+            if (video_st == null && c.codec_type() == AVMEDIA_TYPE_VIDEO && (videoStream < 0 || videoStream == i)) {
                 video_st = st;
                 video_c = c;
-            } else if (audio_st == null && c.codec_type() == AVMEDIA_TYPE_AUDIO) {
+            } else if (audio_st == null && c.codec_type() == AVMEDIA_TYPE_AUDIO && (audioStream < 0 || audioStream == i)) {
                 audio_st = st;
                 audio_c = c;
             }
         }
         if (video_st == null && audio_st == null) {
-            throw new Exception("Did not find a video or audio stream inside \"" + filename + "\".");
+            throw new Exception("Did not find a video or audio stream inside \"" + filename
+                    + "\" for videoStream == " + videoStream + " and audioStream == " + audioStream + ".");
         }
 
         if (video_st != null) {

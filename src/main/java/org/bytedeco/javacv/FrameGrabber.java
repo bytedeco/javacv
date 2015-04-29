@@ -164,6 +164,7 @@ public abstract class FrameGrabber {
             SENSOR_PATTERN_GRBG = 1,
             SENSOR_PATTERN_BGGR = (1L << 32) | 1;
 
+    protected int videoStream = -1, audioStream = -1;
     protected String format = null;
     protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
@@ -180,6 +181,20 @@ public abstract class FrameGrabber {
     protected HashMap<String, String> options = new HashMap<String, String>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
+
+    public int getVideoStream() {
+        return videoStream;
+    }
+    public void setVideoStream(int videoStream) {
+        this.videoStream = videoStream;
+    }
+
+    public int getAudioStream() {
+        return audioStream;
+    }
+    public void setAudioStream(int audioStream) {
+        this.audioStream = audioStream;
+    }
 
     public String getFormat() {
         return format;
