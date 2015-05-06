@@ -452,11 +452,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             audio_c.channel_layout(av_get_default_channel_layout(audioChannels));
             if (sampleFormat != AV_SAMPLE_FMT_NONE) {
                 audio_c.sample_fmt(sampleFormat);
-            } else if ((audio_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0
-                    && (audio_c.codec_id() == AV_CODEC_ID_VORBIS || audio_c.codec_id() == AV_CODEC_ID_AAC)) {
-                audio_c.sample_fmt(AV_SAMPLE_FMT_FLTP);
             } else {
-                audio_c.sample_fmt(AV_SAMPLE_FMT_S16);
+                // use AV_SAMPLE_FMT_S16 by default, if available
+                audio_c.sample_fmt(AV_SAMPLE_FMT_FLTP);
+                IntPointer formats = audio_c.codec().sample_fmts();
+                for (int i = 0; formats.get(i) != -1; i++) {
+                    if (formats.get(i) == AV_SAMPLE_FMT_S16) {
+                        audio_c.sample_fmt(AV_SAMPLE_FMT_S16);
+                        break;
+                    }
+                }
             }
             audio_c.time_base().num(1).den(sampleRate);
             audio_st.time_base().num(1).den(sampleRate);
@@ -538,6 +543,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 release();
                 throw new Exception("av_frame_alloc() error: Could not allocate temporary picture.");
             }
+
+            AVDictionary metadata = new AVDictionary(null);
+            for (Entry<String, String> e : videoMetadata.entrySet()) {
+                av_dict_set(metadata, e.getKey(), e.getValue(), 0);
+            }
+            video_st.metadata(metadata);
         }
 
         if (audio_st != null) {
@@ -594,6 +605,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 throw new Exception("av_frame_alloc() error: Could not allocate audio frame.");
             }
             frame.pts(0); // magic required by libvorbis and webm
+
+            AVDictionary metadata = new AVDictionary(null);
+            for (Entry<String, String> e : audioMetadata.entrySet()) {
+                av_dict_set(metadata, e.getKey(), e.getValue(), 0);
+            }
+            audio_st.metadata(metadata);
         }
 
         /* open the output file, if needed */
@@ -606,8 +623,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             oc.pb(pb);
         }
 
+        AVDictionary options = new AVDictionary(null);
+        for (Entry<String, String> e : this.options.entrySet()) {
+            av_dict_set(options, e.getKey(), e.getValue(), 0);
+        }
+        AVDictionary metadata = new AVDictionary(null);
+        for (Entry<String, String> e : this.metadata.entrySet()) {
+            av_dict_set(metadata, e.getKey(), e.getValue(), 0);
+        }
         /* write the stream header, if any */
-        avformat_write_header(oc, (PointerPointer)null);
+        avformat_write_header(oc.metadata(metadata), options);
     }
 
     public void stop() throws Exception {

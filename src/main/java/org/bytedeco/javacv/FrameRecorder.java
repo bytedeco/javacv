@@ -106,8 +106,12 @@ public abstract class FrameRecorder {
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
     protected double audioQuality = -1;
     protected boolean interleaved;
+    protected HashMap<String, String> options = new HashMap<String, String>();
     protected HashMap<String, String> videoOptions = new HashMap<String, String>();
     protected HashMap<String, String> audioOptions = new HashMap<String, String>();
+    protected HashMap<String, String> metadata = new HashMap<String, String>();
+    protected HashMap<String, String> videoMetadata = new HashMap<String, String>();
+    protected HashMap<String, String> audioMetadata = new HashMap<String, String>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
 
@@ -244,6 +248,13 @@ public abstract class FrameRecorder {
         this.interleaved = interleaved;
     }
 
+    public String getOption(String key) {
+        return options.get(key);
+    }
+    public void setOption(String key, String value) {
+        options.put(key, value);
+    }
+
     public String getVideoOption(String key) {
         return videoOptions.get(key);
     }
@@ -256,6 +267,27 @@ public abstract class FrameRecorder {
     }
     public void setAudioOption(String key, String value) {
         audioOptions.put(key, value);
+    }
+
+    public String getMetadata(String key) {
+        return metadata.get(key);
+    }
+    public void setMetadata(String key, String value) {
+        metadata.put(key, value);
+    }
+
+    public String getVideoMetadata(String key) {
+        return videoMetadata.get(key);
+    }
+    public void setVideoMetadata(String key, String value) {
+        videoMetadata.put(key, value);
+    }
+
+    public String getAudioMetadata(String key) {
+        return audioMetadata.get(key);
+    }
+    public void setAudioMetadata(String key, String value) {
+        audioMetadata.put(key, value);
     }
 
     public int getFrameNumber() {

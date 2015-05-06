@@ -292,6 +292,30 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return audio_c == null ? super.getSampleRate() : audio_c.sample_rate();
     }
 
+    @Override public String getMetadata(String key) {
+        if (oc == null) {
+            return super.getMetadata(key);
+        }
+        AVDictionaryEntry entry = av_dict_get(oc.metadata(), key, null, 0);
+        return entry == null || entry.value() == null ? null : entry.value().getString();
+    }
+
+    @Override public String getVideoMetadata(String key) {
+        if (video_st == null) {
+            return super.getVideoMetadata(key);
+        }
+        AVDictionaryEntry entry = av_dict_get(video_st.metadata(), key, null, 0);
+        return entry == null || entry.value() == null ? null : entry.value().getString();
+    }
+
+    @Override public String getAudioMetadata(String key) {
+        if (audio_st == null) {
+            return super.getAudioMetadata(key);
+        }
+        AVDictionaryEntry entry = av_dict_get(audio_st.metadata(), key, null, 0);
+        return entry == null || entry.value() == null ? null : entry.value().getString();
+    }
+
     @Override public void setFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
         setTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
@@ -440,8 +464,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 throw new Exception("avcodec_find_decoder() error: Unsupported video format or codec not found: " + video_c.codec_id() + ".");
             }
 
+            options = new AVDictionary(null);
+            for (Entry<String, String> e : videoOptions.entrySet()) {
+                av_dict_set(options, e.getKey(), e.getValue(), 0);
+            }
             // Open video codec
-            if ((ret = avcodec_open2(video_c, codec, (PointerPointer)null)) < 0) {
+            if ((ret = avcodec_open2(video_c, codec, options)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open video codec.");
             }
 
@@ -496,8 +524,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 throw new Exception("avcodec_find_decoder() error: Unsupported audio format or codec not found: " + audio_c.codec_id() + ".");
             }
 
+            options = new AVDictionary(null);
+            for (Entry<String, String> e : audioOptions.entrySet()) {
+                av_dict_set(options, e.getKey(), e.getValue(), 0);
+            }
             // Open audio codec
-            if ((ret = avcodec_open2(audio_c, codec, (PointerPointer)null)) < 0) {
+            if ((ret = avcodec_open2(audio_c, codec, options)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open audio codec.");
             }
 

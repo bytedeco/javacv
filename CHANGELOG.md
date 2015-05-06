@@ -1,6 +1,7 @@
 
+ * Give users of `FFmpegFrameGrabber` and `FFmpegFrameRecorder` access to more options and metadata ([issue #132](https://github.com/bytedeco/javacv/issues/132))
  * Add the ability to specify from which video and audio streams `FFmpegFrameGrabber` should grab from ([issue #135](https://github.com/bytedeco/javacv/issues/135))
- * Fix `Java2DFrameConverter` when used with `BufferedImage.TYPE_INT_RGB` or other types based on `int`
+ * Fix `Java2DFrameConverter` when used with `BufferedImage.TYPE_INT_RGB` or other types based on `int` ([issue #140](https://github.com/bytedeco/javacv/issues/140))
  * Add new `WebcamAndMicrophoneCapture` sample ([pull #131](https://github.com/bytedeco/javacv/pull/131))
  * Add `aspectRatio` property to `FrameGrabber` and `FrameRecorder`, to be able to use pixel aspect ratios other than 1.0 ([issue #90](https://github.com/bytedeco/javacv/issues/90))
 
