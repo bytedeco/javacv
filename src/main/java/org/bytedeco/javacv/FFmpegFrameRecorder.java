@@ -192,6 +192,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_free(audio_outbuf);
             audio_outbuf = null;
         }
+        if (video_st.metadata() != null) {
+            av_dict_free(video_st.metadata());
+            video_st.metadata(null);
+        }
+        if (audio_st.metadata() != null) {
+            av_dict_free(audio_st.metadata());
+            audio_st.metadata(null);
+        }
         video_st = null;
         audio_st = null;
 
@@ -206,6 +214,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             for(int i = 0; i < nb_streams; i++) {
                 av_free(oc.streams(i).codec());
                 av_free(oc.streams(i));
+            }
+
+            /* free metadata */
+            if (oc.metadata() != null) {
+                av_dict_free(oc.metadata());
+                oc.metadata(null);
             }
 
             /* free the stream */
@@ -633,6 +647,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
         /* write the stream header, if any */
         avformat_write_header(oc.metadata(metadata), options);
+        av_dict_free(options);
     }
 
     public void stop() throws Exception {
