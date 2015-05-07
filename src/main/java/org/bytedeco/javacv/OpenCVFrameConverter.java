@@ -38,10 +38,12 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
     Mat mat;
 
     public static class ToIplImage extends OpenCVFrameConverter<IplImage> {
+        @Override public Frame convert(IplImage img) { return super.convert(img); }
         @Override public IplImage convert(Frame frame) { return convertToIplImage(frame); }
     }
 
     public static class ToMat extends OpenCVFrameConverter<Mat> {
+        @Override public Frame convert(Mat mat) { return super.convert(mat); }
         @Override public Mat convert(Frame frame) { return convertToMat(frame); }
     }
 
