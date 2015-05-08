@@ -123,7 +123,9 @@ public class WebcamAndMicrophoneCapture
                 try
                 {
                     // Open and start capturing audio
-                    TargetDataLine line = (TargetDataLine) mixer.getLine(dataLineInfo);
+                    // It's possible to have more control over the chosen audio device with this line:
+                    // TargetDataLine line = (TargetDataLine)mixer.getLine(dataLineInfo);
+                    TargetDataLine line = (TargetDataLine)AudioSystem.getLine(dataLineInfo);
                     line.open(audioFormat);
                     line.start();
 
