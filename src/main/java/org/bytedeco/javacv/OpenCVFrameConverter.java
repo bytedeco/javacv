@@ -60,8 +60,8 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
         }
     }
 
-    public static int getIplImageDepth(Frame frame) {
-        switch (frame.imageDepth) {
+    public static int getIplImageDepth(int depth) {
+        switch (depth) {
             case Frame.DEPTH_UBYTE:  return IPL_DEPTH_8U;
             case Frame.DEPTH_BYTE:   return IPL_DEPTH_8S;
             case Frame.DEPTH_USHORT: return IPL_DEPTH_16U;
@@ -75,7 +75,7 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
     static boolean isEqual(Frame frame, IplImage img) {
         return img != null && frame != null && frame.image != null && frame.image.length > 0
                 && frame.imageWidth == img.width() && frame.imageHeight == img.height()
-                && frame.imageChannels == img.nChannels() && getIplImageDepth(frame) == img.depth()
+                && frame.imageChannels == img.nChannels() && getIplImageDepth(frame.imageDepth) == img.depth()
                 && new Pointer(frame.image[0]).address() == img.imageData().address()
                 && frame.imageStride * Math.abs(frame.imageDepth) / 8 == img.widthStep();
     }
@@ -85,9 +85,11 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
         } else if (frame.opaque instanceof IplImage) {
             return (IplImage)frame.opaque;
         } else if (!isEqual(frame, img)) {
-            int depth = getIplImageDepth(frame);
+            int depth = getIplImageDepth(frame.imageDepth);
             img = depth < 0 ? null : IplImage.createHeader(frame.imageWidth, frame.imageHeight, depth, frame.imageChannels)
-                    .imageData(new BytePointer(new Pointer(frame.image[0].position(0)))).widthStep(frame.imageStride * Math.abs(frame.imageDepth) / 8);
+                    .imageData(new BytePointer(new Pointer(frame.image[0].position(0))))
+                    .widthStep(frame.imageStride * Math.abs(frame.imageDepth) / 8)
+                    .imageSize(frame.image[0].capacity() * Math.abs(frame.imageDepth) / 8);
         }
         return img;
     }
@@ -107,8 +109,8 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
         return frame;
     }
 
-    public static int getMatDepth(Frame frame) {
-        switch (frame.imageDepth) {
+    public static int getMatDepth(int depth) {
+        switch (depth) {
             case Frame.DEPTH_UBYTE:  return CV_8U;
             case Frame.DEPTH_BYTE:   return CV_8S;
             case Frame.DEPTH_USHORT: return CV_16U;
@@ -122,7 +124,7 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
     static boolean isEqual(Frame frame, Mat mat) {
         return mat != null && frame != null && frame.image != null && frame.image.length > 0
                 && frame.imageWidth == mat.cols() && frame.imageHeight == mat.rows()
-                && frame.imageChannels == mat.channels() && getMatDepth(frame) == mat.depth()
+                && frame.imageChannels == mat.channels() && getMatDepth(frame.imageDepth) == mat.depth()
                 && new Pointer(frame.image[0]).address() == mat.data().address()
                 && frame.imageStride * Math.abs(frame.imageDepth) / 8 == (int)mat.step();
     }
@@ -132,7 +134,7 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
         } else if (frame.opaque instanceof Mat) {
             return (Mat)frame.opaque;
         } else if (!isEqual(frame, mat)) {
-            int depth = getMatDepth(frame);
+            int depth = getMatDepth(frame.imageDepth);
             mat = depth < 0 ? null : new Mat(frame.imageHeight, frame.imageWidth, CV_MAKETYPE(depth, frame.imageChannels),
                     new Pointer(frame.image[0].position(0)), frame.imageStride * Math.abs(frame.imageDepth) / 8);
         }
