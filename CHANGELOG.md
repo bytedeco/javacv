@@ -1,4 +1,5 @@
 
+ * Make `Frame implements Indexable` for easy and efficient access to image pixels
  * Fix `AbstractMethodError` thrown from `OpenCVFrameConverter` on some versions of the JDK ([issue #143](https://github.com/bytedeco/javacv/issues/143))
  * Add `FFmpegFrameGrabber.grabImage()` method to restore the functionality previously provided by `IplImage grab()` ([issue #116](https://github.com/bytedeco/javacv/issues/116))
  * Give users of `FFmpegFrameGrabber` and `FFmpegFrameRecorder` access to more options and metadata ([issue #132](https://github.com/bytedeco/javacv/issues/132))

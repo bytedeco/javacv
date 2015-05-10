@@ -23,6 +23,27 @@ package org.bytedeco.javacv;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.DoublePointer;
+import org.bytedeco.javacpp.FloatPointer;
+import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.javacpp.LongPointer;
+import org.bytedeco.javacpp.ShortPointer;
+import org.bytedeco.javacpp.indexer.ByteIndexer;
+import org.bytedeco.javacpp.indexer.DoubleIndexer;
+import org.bytedeco.javacpp.indexer.FloatIndexer;
+import org.bytedeco.javacpp.indexer.Indexable;
+import org.bytedeco.javacpp.indexer.Indexer;
+import org.bytedeco.javacpp.indexer.IntIndexer;
+import org.bytedeco.javacpp.indexer.LongIndexer;
+import org.bytedeco.javacpp.indexer.ShortIndexer;
+import org.bytedeco.javacpp.indexer.UByteIndexer;
+import org.bytedeco.javacpp.indexer.UShortIndexer;
 
 /**
  * A class to manage the data of audio and video frames. It it used by
@@ -32,7 +53,7 @@ import java.nio.ByteOrder;
  *
  * @author Samuel Audet
  */
-public class Frame {
+public class Frame implements Indexable {
     /** A flag set by a FrameGrabber or a FrameRecorder to indicate a key frame. */
     public boolean keyFrame;
 
@@ -66,6 +87,7 @@ public class Frame {
     /** The underlying data object, for example, AVFrame, IplImage, or Mat. */
     public Object opaque;
 
+    /** Empty constructor. */
     public Frame() { }
 
     /** Allocates a new packed image frame in native memory where rows are 8-byte aligned. */
@@ -91,4 +113,56 @@ public class Frame {
             default: throw new UnsupportedOperationException("Unsupported depth value: " + imageDepth);
         }
     }
+
+    /** Returns {@code createIndexer(true, 0)}. */
+    public <I extends Indexer> I createIndexer() {
+        return (I)createIndexer(true, 0);
+    }
+    @Override public <I extends Indexer> I createIndexer(boolean direct) {
+        return (I)createIndexer(direct, 0);
+    }
+    /** Returns an {@link Indexer} for the <i>i</i>th image plane. */
+    public <I extends Indexer> I createIndexer(boolean direct, int i) {
+        int[] sizes = {imageHeight, imageWidth, imageChannels};
+        int[] strides = {imageStride, imageChannels, 1};
+        Buffer buffer = image[i];
+        Object array = buffer.hasArray() ? buffer.array() : null;
+        switch (imageDepth) {
+            case DEPTH_UBYTE:
+                return array != null ? (I)UByteIndexer.create((byte[])array, sizes, strides)
+                            : direct ? (I)UByteIndexer.create((ByteBuffer)buffer, sizes, strides)
+                                     : (I)UByteIndexer.create(new BytePointer((ByteBuffer)buffer), sizes, strides, false);
+            case DEPTH_BYTE:
+                return array != null ? (I)ByteIndexer.create((byte[])array, sizes, strides)
+                            : direct ? (I)ByteIndexer.create((ByteBuffer)buffer, sizes, strides)
+                                     : (I)ByteIndexer.create(new BytePointer((ByteBuffer)buffer), sizes, strides, false);
+            case DEPTH_USHORT:
+                return array != null ? (I)UShortIndexer.create((short[])array, sizes, strides)
+                            : direct ? (I)UShortIndexer.create((ShortBuffer)buffer, sizes, strides)
+                                     : (I)UShortIndexer.create(new ShortPointer((ShortBuffer)buffer), sizes, strides, false);
+            case DEPTH_SHORT:
+                return array != null ? (I)ShortIndexer.create((short[])array, sizes, strides)
+                            : direct ? (I)ShortIndexer.create((ShortBuffer)buffer, sizes, strides)
+                                     : (I)ShortIndexer.create(new ShortPointer((ShortBuffer)buffer), sizes, strides, false);
+            case DEPTH_INT:
+                return array != null ? (I)IntIndexer.create((int[])array, sizes, strides)
+                            : direct ? (I)IntIndexer.create((IntBuffer)buffer, sizes, strides)
+                                     : (I)IntIndexer.create(new IntPointer((IntBuffer)buffer), sizes, strides, false);
+            case DEPTH_LONG:
+                return array != null ? (I)LongIndexer.create((long[])array, sizes, strides)
+                            : direct ? (I)LongIndexer.create((LongBuffer)buffer, sizes, strides)
+                                     : (I)LongIndexer.create(new LongPointer((LongBuffer)buffer), sizes, strides, false);
+            case DEPTH_FLOAT:
+                return array != null ? (I)FloatIndexer.create((float[])array, sizes, strides)
+                            : direct ? (I)FloatIndexer.create((FloatBuffer)buffer, sizes, strides)
+                                     : (I)FloatIndexer.create(new FloatPointer((FloatBuffer)buffer), sizes, strides, false);
+            case DEPTH_DOUBLE:
+                return array != null ? (I)DoubleIndexer.create((double[])array, sizes, strides)
+                            : direct ? (I)DoubleIndexer.create((DoubleBuffer)buffer, sizes, strides)
+                                     : (I)DoubleIndexer.create(new DoublePointer((DoubleBuffer)buffer), sizes, strides, false);
+            default: assert false;
+        }
+        return null;
+    }
+
 }
