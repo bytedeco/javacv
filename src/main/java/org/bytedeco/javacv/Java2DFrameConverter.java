@@ -41,6 +41,7 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -517,7 +518,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             int[] a = ((DataBufferInt)in).getData();
             int stride = frame.imageStride;
             if (out instanceof ByteBuffer) {
-                out = ((ByteBuffer)out).asIntBuffer();
+                out = ((ByteBuffer)out).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
                 stride /= 4;
             }
             flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), step, (IntBuffer)out, stride, gamma, false, flipChannels ? channels : 0);

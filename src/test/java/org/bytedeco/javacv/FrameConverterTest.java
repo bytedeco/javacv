@@ -102,8 +102,8 @@ public class FrameConverterTest {
             WritableRaster raster2 = image2.getRaster();
             byte[] array2 = ((DataBufferByte)raster2.getDataBuffer()).getData();
             for (int j = 0; j < array.length; j++) {
-                int n = ((array2[4 * j + 3] & 0xFF) << 24) | ((array2[4 * j + 2] & 0xFF) << 16)
-                      | ((array2[4 * j + 1] & 0xFF) << 8) | (array2[4 * j] & 0xFF);
+                int n = ((array2[4 * j    ] & 0xFF) << 24) | ((array2[4 * j + 1] & 0xFF) << 16)
+                      | ((array2[4 * j + 2] & 0xFF) << 8)  |  (array2[4 * j + 3] & 0xFF);
                 assertEquals(array[j], n);
             }
         }
