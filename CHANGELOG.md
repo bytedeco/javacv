@@ -1,4 +1,5 @@
 
+ * Fix `FFmpegFrameRecorder` not saving the last few frames, especially when encoding with x264 ([issue #491](https://code.google.com/p/javacv/issues/detail?id=491))
  * Add `FrameConverterTest` and fix a couple of bugs uncovered by it
  * Make `Frame implements Indexable` for easy and efficient access to image pixels
  * Fix `AbstractMethodError` thrown from `OpenCVFrameConverter` on some versions of the JDK ([issue #143](https://github.com/bytedeco/javacv/issues/143))
