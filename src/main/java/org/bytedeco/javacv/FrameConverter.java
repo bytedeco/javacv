@@ -20,6 +20,18 @@
 
 package org.bytedeco.javacv;
 
+/**
+ * Defines two methods to convert between a {@link Frame} and another generic
+ * data object that can contain the same data. The idea with this design is
+ * to allow users to convert easily between multiple potentially mutually
+ * exclusive types of image data objects over which we have no control. Because
+ * of this, and for performance reasons, any object returned by this class is
+ * guaranteed to remain valid only until the next call to {@code convert()},
+ * anywhere in a chain of {@code FrameConverter} objects, and only as long as
+ * the latter themselves are not garbage collected.
+ *
+ * @author Samuel Audet
+ */
 public abstract class FrameConverter<F> {
     protected Frame frame;
 
