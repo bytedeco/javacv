@@ -135,7 +135,7 @@ public class RecordActivity extends Activity implements OnClickListener {
     private int screenWidth, screenHeight;
     private Button btnRecorderControl;
 
-    /** The number of seconds in the continuous record loop (or 0 to disable loop). */
+    /* The number of seconds in the continuous record loop (or 0 to disable loop). */
     final int RECORD_LENGTH = 10;
     Frame[] images;
     long[] timestamps;
@@ -475,13 +475,33 @@ public class RecordActivity extends Activity implements OnClickListener {
         }
 
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            Log.v(LOG_TAG,"Setting imageWidth: " + imageWidth + " imageHeight: " + imageHeight + " frameRate: " + frameRate);
             Camera.Parameters camParams = mCamera.getParameters();
+            List<Camera.Size> sizes = camParams.getSupportedPreviewSizes();
+            // Sort the list in ascending order
+            Collections.sort(sizes, new Comparator<Camera.Size>() {
+
+                public int compare(final Camera.Size a, final Camera.Size b) {
+                    return a.width * a.height - b.width * b.height;
+                }
+            });
+
+			// Pick the first preview size that is equal or bigger, or pick the last (biggest) option if we cannot
+			// reach the initial settings of imageWidth/imageHeight.
+            for (int i = 0; i < sizes.size(); i++) {
+                if ((sizes.get(i).width >= imageWidth && sizes.get(i).height >= imageHeight) || i == sizes.size() - 1) {
+                    imageWidth = sizes.get(i).width;
+                    imageHeight = sizes.get(i).height;
+                    Log.v(LOG_TAG, "Changed to supported resolution: " + imageWidth + "x" + imageHeight);
+                    break;
+                }
+            }
             camParams.setPreviewSize(imageWidth, imageHeight);
-    
-            Log.v(LOG_TAG,"Preview Framerate: " + camParams.getPreviewFrameRate());
+			
+            Log.v(LOG_TAG,"Setting imageWidth: " + imageWidth + " imageHeight: " + imageHeight + " frameRate: " + frameRate);
     
             camParams.setPreviewFrameRate(frameRate);
+			Log.v(LOG_TAG,"Preview Framerate: " + camParams.getPreviewFrameRate());
+			
             mCamera.setParameters(camParams);
             startPreview();
         }
