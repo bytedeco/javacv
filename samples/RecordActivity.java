@@ -485,8 +485,8 @@ public class RecordActivity extends Activity implements OnClickListener {
                 }
             });
 
-			// Pick the first preview size that is equal or bigger, or pick the last (biggest) option if we cannot
-			// reach the initial settings of imageWidth/imageHeight.
+            // Pick the first preview size that is equal or bigger, or pick the last (biggest) option if we cannot
+            // reach the initial settings of imageWidth/imageHeight.
             for (int i = 0; i < sizes.size(); i++) {
                 if ((sizes.get(i).width >= imageWidth && sizes.get(i).height >= imageHeight) || i == sizes.size() - 1) {
                     imageWidth = sizes.get(i).width;
@@ -496,12 +496,12 @@ public class RecordActivity extends Activity implements OnClickListener {
                 }
             }
             camParams.setPreviewSize(imageWidth, imageHeight);
-			
+
             Log.v(LOG_TAG,"Setting imageWidth: " + imageWidth + " imageHeight: " + imageHeight + " frameRate: " + frameRate);
     
             camParams.setPreviewFrameRate(frameRate);
-			Log.v(LOG_TAG,"Preview Framerate: " + camParams.getPreviewFrameRate());
-			
+            Log.v(LOG_TAG,"Preview Framerate: " + camParams.getPreviewFrameRate());
+
             mCamera.setParameters(camParams);
             startPreview();
         }

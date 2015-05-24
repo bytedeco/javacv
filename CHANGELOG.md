@@ -1,4 +1,5 @@
 
+ * Add check for supported display size in the `RecordActivity` sample ([pull #153](https://github.com/bytedeco/javacv/pull/153))
  * Clarify the semantics of `FrameConverter` ([issue #150](https://github.com/bytedeco/javacv/issues/150))
  * Fix `FFmpegFrameRecorder` not saving the last few frames, especially when encoding with x264 ([issue #50](https://github.com/bytedeco/javacv/issues/50))
  * Add `FrameConverterTest` and fix a couple of bugs uncovered by it
