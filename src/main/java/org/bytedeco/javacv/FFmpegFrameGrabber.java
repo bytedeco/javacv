@@ -224,11 +224,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getImageWidth() {
-        return video_c == null ? super.getImageWidth() : video_c.width();
+        return imageWidth > 0 || video_c == null ? super.getImageWidth() : video_c.width();
     }
 
     @Override public int getImageHeight() {
-        return video_c == null ? super.getImageHeight() : video_c.height();
+        return imageHeight > 0 || video_c == null ? super.getImageHeight() : video_c.height();
     }
 
     @Override public int getAudioChannels() {
@@ -487,8 +487,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 throw new Exception("av_frame_alloc() error: Could not allocate RGB picture frame.");
             }
 
-            int width  = getImageWidth()  > 0 ? getImageWidth()  : video_c.width();
-            int height = getImageHeight() > 0 ? getImageHeight() : video_c.height();
+            int width  = imageWidth  > 0 ? imageWidth  : video_c.width();
+            int height = imageHeight > 0 ? imageHeight : video_c.height();
 
             switch (imageMode) {
                 case COLOR:
@@ -563,8 +563,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     private void processImage() throws Exception {
-        frame.imageWidth = video_c.width();
-        frame.imageHeight = video_c.height();
+        frame.imageWidth  = imageWidth  > 0 ? imageWidth  : video_c.width();
+        frame.imageHeight = imageHeight > 0 ? imageHeight : video_c.height();
         frame.imageDepth = Frame.DEPTH_UBYTE;
         switch (imageMode) {
             case COLOR:
@@ -578,7 +578,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 // Convert the image into BGR or GRAY format that OpenCV uses
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx,
                         video_c.width(), video_c.height(), video_c.pix_fmt(),
-                        getImageWidth(), getImageHeight(), getPixelFormat(), SWS_BILINEAR,
+                        frame.imageWidth, frame.imageHeight, getPixelFormat(), SWS_BILINEAR,
                         null, null, (DoublePointer)null);
                 if (img_convert_ctx == null) {
                     throw new Exception("sws_getCachedContext() error: Cannot initialize the conversion context.");
