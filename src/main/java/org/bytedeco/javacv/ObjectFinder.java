@@ -156,12 +156,12 @@ public class ObjectFinder {
     public void setSettings(Settings settings) {
         this.settings = settings;
 
-        objectKeypoints = new KeyPoint(null);
+        objectKeypoints = new KeyPointVector();
         objectDescriptors = new Mat();
         settings.detector.detectAndCompute(cvarrToMat(settings.objectImage),
-                Mat.EMPTY, objectKeypoints.position(0), objectDescriptors, false);
+                new Mat(), objectKeypoints, objectDescriptors, false);
 
-        int total = objectKeypoints.limit();
+        int total = (int)objectKeypoints.size();
         if (settings.useFLANN) {
             indicesMat = new Mat(total, 2, CV_32SC1);
             distsMat   = new Mat(total, 2, CV_32FC1);
@@ -169,9 +169,9 @@ public class ObjectFinder {
             indexParams = new LshIndexParams(12, 20, 2); // using LSH Hamming distance
             searchParams = new SearchParams(64, 0, true); // maximum number of leafs checked
         }
-        pt1  = new Mat(1, total, CV_32FC2);
-        pt2  = new Mat(1, total, CV_32FC2);
-        mask = new Mat(1, total, CV_8UC1);
+        pt1  = new Mat(total, 1, CV_32FC2);
+        pt2  = new Mat(total, 1, CV_32FC2);
+        mask = new Mat(total, 1, CV_8UC1);
         H    = new Mat(3, 3, CV_64FC1);
         ptpairs = new ArrayList<Integer>(2*objectDescriptors.rows());
         logger.info(total + " object descriptors");
@@ -179,7 +179,7 @@ public class ObjectFinder {
 
     static final Logger logger = Logger.getLogger(ObjectFinder.class.getName());
 
-    KeyPoint objectKeypoints = null, imageKeypoints = null;
+    KeyPointVector objectKeypoints = null, imageKeypoints = null;
     Mat objectDescriptors = null, imageDescriptors = null;
     Mat indicesMat, distsMat;
     Index flannIndex = null;
@@ -189,12 +189,18 @@ public class ObjectFinder {
     ArrayList<Integer> ptpairs = null;
 
     public double[] find(IplImage image) {
-        imageKeypoints = new KeyPoint(null);
+        if (objectDescriptors.rows() < settings.getMatchesMin()) {
+            return null;
+        }
+        imageKeypoints = new KeyPointVector();
         imageDescriptors = new Mat();
         settings.detector.detectAndCompute(cvarrToMat(image),
-                Mat.EMPTY, imageKeypoints.position(0), imageDescriptors, false);
+                new Mat(), imageKeypoints, imageDescriptors, false);
+        if (imageDescriptors.rows() < settings.getMatchesMin()) {
+            return null;
+        }
 
-        int total = imageKeypoints.limit();
+        int total = (int)imageKeypoints.size();
         logger.info(total + " image descriptors");
 
         int w = settings.objectImage.width();
@@ -279,8 +285,8 @@ public class ObjectFinder {
     }
 
     /** a rough implementation for object location */
-    double[] locatePlanarObject(KeyPoint objectKeypoints, Mat objectDescriptors,
-            KeyPoint imageKeypoints, Mat imageDescriptors, double[] srcCorners) {
+    double[] locatePlanarObject(KeyPointVector objectKeypoints, Mat objectDescriptors,
+            KeyPointVector imageKeypoints, Mat imageDescriptors, double[] srcCorners) {
         ptpairs.clear();
         if (settings.useFLANN) {
             flannFindPairs(objectDescriptors, imageDescriptors);
@@ -293,15 +299,15 @@ public class ObjectFinder {
             return null;
         }
 
-        pt1 .cols(n);
-        pt2 .cols(n);
-        mask.cols(n);
+        pt1 .resize(n);
+        pt2 .resize(n);
+        mask.resize(n);
         FloatBuffer pt1Idx = pt1.createBuffer();
         FloatBuffer pt2Idx = pt2.createBuffer();
         for (int i = 0; i < n; i++) {
-            Point2f p1 = objectKeypoints.position(ptpairs.get(2*i)).pt();
+            Point2f p1 = objectKeypoints.get(ptpairs.get(2*i)).pt();
             pt1Idx.put(2*i, p1.x()); pt1Idx.put(2*i+1, p1.y());
-            Point2f p2 = imageKeypoints.position(ptpairs.get(2*i+1)).pt();
+            Point2f p2 = imageKeypoints.get(ptpairs.get(2*i+1)).pt();
             pt2Idx.put(2*i, p2.x()); pt2Idx.put(2*i+1, p2.y());
         }
 
@@ -320,10 +326,6 @@ public class ObjectFinder {
             dstCorners[2*i    ] = X;
             dstCorners[2*i + 1] = Y;
         }
-
-        pt1 .cols(objectDescriptors.rows());
-        pt2 .cols(objectDescriptors.rows());
-        mask.cols(objectDescriptors.rows());
         return dstCorners;
     }
 
@@ -374,8 +376,8 @@ public class ObjectFinder {
         }
 
         for (int i = 0; i < finder.ptpairs.size(); i += 2) {
-            Point2f pt1 = finder.objectKeypoints.position(finder.ptpairs.get(i)).pt();
-            Point2f pt2 = finder.imageKeypoints.position(finder.ptpairs.get(i + 1)).pt();
+            Point2f pt1 = finder.objectKeypoints.get(finder.ptpairs.get(i)).pt();
+            Point2f pt2 = finder.imageKeypoints.get(finder.ptpairs.get(i + 1)).pt();
             line(cvarrToMat(correspond), new Point(Math.round(pt1.x()), Math.round(pt1.y())),
                     new Point(Math.round(pt2.x()), Math.round(pt2.y() + object.height())),
                     Scalar.WHITE, 1, 8, 0);
@@ -386,8 +388,8 @@ public class ObjectFinder {
         OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
         correspondFrame.showImage(converter.convert(correspond));
-        for (int i = 0; i < finder.objectKeypoints.limit(); i++) {
-            KeyPoint r = finder.objectKeypoints.position(i);
+        for (int i = 0; i < finder.objectKeypoints.size(); i++) {
+            KeyPoint r = finder.objectKeypoints.get(i);
             Point center = new Point(Math.round(r.pt().x()), Math.round(r.pt().y()));
             int radius = Math.round(r.size() / 2);
             circle(cvarrToMat(objectColor), center, radius, Scalar.RED, 1, 8, 0);
