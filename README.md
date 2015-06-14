@@ -292,6 +292,3 @@ Once installed, simply call the usual `mvn install` command for JavaCPP, its Pre
 Project lead: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet at gmail.com)  
 Developer site: https://github.com/bytedeco/javacv  
 Discussion group: http://groups.google.com/group/javacv
-
-Licensed under the GNU General Public License version 2 (GPLv2) **with Classpath exception**.  
-Please refer to LICENSE.txt or http://www.gnu.org/software/classpath/license.html for details.

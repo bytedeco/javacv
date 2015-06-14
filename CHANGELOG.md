@@ -1,4 +1,5 @@
 
+ * Offer the Apache License, Version 2.0, as a new choice of license, in addition to the GPLv2 with Classpath exception
  * Upgrade support to OpenCV 3.0.0
  * Switch descriptor used by `ObjectFinder` from SURF to AKAZE
  * Let users get resized images from `FFmpegFrameGrabber` by calling `setImageWidth()` and `setImageHeight()` before `start()`

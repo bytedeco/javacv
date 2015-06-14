@@ -13,6 +13,16 @@
 
   <licenses>
     <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>GNU General Public License (GPL) version 2, or any later version</name>
+      <url>http://www.gnu.org/licenses/</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
       <name>GPLv2 with Classpath exception</name>
       <url>http://www.gnu.org/software/classpath/license.html</url>
       <distribution>repo</distribution>
@@ -78,7 +88,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>2.6.3-${javacpp.version}</version>
+      <version>2.7-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
