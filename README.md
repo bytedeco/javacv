@@ -16,8 +16,8 @@ Downloads
 ---------
 To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation) section below.
 
- * JavaCV 0.11 binary archive  [javacv-0.11-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.11/javacv-0.11-bin.zip) (142 MB)
- * JavaCV 0.11 source archive  [javacv-0.11-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/0.11/javacv-0.11-src.zip) (398 KB)
+ * JavaCV 1.0 binary archive  [javacv-1.0-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/1.0/javacv-1.0-bin.zip) (131 MB)
+ * JavaCV 1.0 source archive  [javacv-1.0-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/1.0/javacv-1.0-src.zip) (413 KB)
 
 The binary archive contains builds for Android, Linux, Mac OS X, and Windows. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
 
@@ -29,21 +29,21 @@ We can also have everything downloaded and installed automatically with:
   <dependency>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacv</artifactId>
-    <version>0.11</version>
+    <version>1.0</version>
   </dependency>
 ```
 
  * Gradle (inside the `build.gradle` file)
 ```groovy
   dependencies {
-    compile group: 'org.bytedeco', name: 'javacv', version: '0.11'
+    compile group: 'org.bytedeco', name: 'javacv', version: '1.0'
   }
 ```
 
  * sbt (inside the `build.sbt` file)
 ```scala
   classpathTypes += "maven-plugin"
-  libraryDependencies += "org.bytedeco" % "javacv" % "0.11"
+  libraryDependencies += "org.bytedeco" % "javacv" % "1.0"
 ```
 
 Additionally, we need to either set the `platform.dependency` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.**
@@ -102,7 +102,7 @@ The class definitions are basically ports to Java of the original header files i
 ```java
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 public class Smoother {
     public static void smooth(String filename) { 
@@ -260,12 +260,12 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>0.11</version>
+    <version>1.0</version>
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>0.11</version>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 </project>
@@ -282,8 +282,8 @@ Build Instructions
 If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
 
  * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP 0.11  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 0.11  https://github.com/bytedeco/javacpp-presets
+ * JavaCPP 1.0  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 1.0  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 

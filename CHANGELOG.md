@@ -1,6 +1,8 @@
 
+### July 11, 2015 version 1.0
  * Offer the Apache License, Version 2.0, as a new choice of license, in addition to the GPLv2 with Classpath exception
  * Upgrade support to OpenCV 3.0.0
+ * Upgrade supported FFmpeg API to the 2.7 release branch
  * Switch descriptor used by `ObjectFinder` from SURF to AKAZE
  * Let users get resized images from `FFmpegFrameGrabber` by calling `setImageWidth()` and `setImageHeight()` before `start()`
  * Add check for supported display size in the `RecordActivity` sample ([pull #153](https://github.com/bytedeco/javacv/pull/153))
@@ -16,7 +18,7 @@
  * Add new `WebcamAndMicrophoneCapture` sample ([pull #131](https://github.com/bytedeco/javacv/pull/131))
  * Add `aspectRatio` property to `FrameGrabber` and `FrameRecorder`, to be able to use pixel aspect ratios other than 1.0 ([issue #90](https://github.com/bytedeco/javacv/issues/90))
 
-### April 4, 2014 version 0.11
+### April 4, 2015 version 0.11
  * Upgrade support to OpenCV 2.4.11
  * Upgrade supported FFmpeg API to the 2.6 release branch
  * Add new `Square` sample, thanks to Geir Ruud
