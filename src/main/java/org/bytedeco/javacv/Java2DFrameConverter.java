@@ -468,7 +468,12 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             flipCopyWithGamma((FloatBuffer)in, frame.imageStride, FloatBuffer.wrap(a, start, a.length - start), step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferInt) {
             int[] a = ((DataBufferInt)out).getData();
-            flipCopyWithGamma((IntBuffer)in, frame.imageStride, IntBuffer.wrap(a, start, a.length - start), step, gamma, false, flipChannels ? channels : 0);
+            int stride = frame.imageStride;
+            if (in instanceof ByteBuffer) {
+                in = ((ByteBuffer)in).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+                stride /= 4;
+            }
+            flipCopyWithGamma((IntBuffer)in, stride, IntBuffer.wrap(a, start, a.length - start), step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferShort) {
             short[] a = ((DataBufferShort)out).getData();
             flipCopyWithGamma((ShortBuffer)in, frame.imageStride, ShortBuffer.wrap(a, start, a.length - start), step, true, gamma, false, flipChannels ? channels : 0);

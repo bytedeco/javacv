@@ -1,3 +1,4 @@
+ * Let `Java2DFrameConverter.copy()` from `ByteBuffer` with 4 channels to `BufferedImage.TYPE_INT_RGB` among others ([issue #181](https://github.com/bytedeco/javacv/issues/181))
 
 ### July 11, 2015 version 1.0
  * Offer the Apache License, Version 2.0, as a new choice of license, in addition to the GPLv2 with Classpath exception
