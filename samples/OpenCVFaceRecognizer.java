@@ -3,7 +3,7 @@ import java.io.FilenameFilter;
 import java.nio.IntBuffer;
 import static org.bytedeco.javacpp.opencv_contrib.*;
 import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 /**
  * I couldn't find any tutorial on how to perform face recognition using OpenCV and Java,

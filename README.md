@@ -151,7 +151,7 @@ public class Demo {
             System.exit(1);
         }
 
-        // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_highgui),
+        // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_videoio),
         // DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber,
         // PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
         FrameGrabber grabber = FrameGrabber.createDefault(0);
@@ -180,7 +180,7 @@ public class Demo {
         // You shall NOT call cvReleaseImage(), cvReleaseMemStorage(), etc. on objects allocated this way.
         CvMemStorage storage = CvMemStorage.create();
 
-        // The OpenCVFrameRecorder class simply uses the CvVideoWriter of opencv_highgui,
+        // The OpenCVFrameRecorder class simply uses the CvVideoWriter of opencv_videoio,
         // but FFmpegFrameRecorder also exists as a more versatile alternative.
         FrameRecorder recorder = FrameRecorder.createDefault("output.avi", width, height);
         recorder.start();

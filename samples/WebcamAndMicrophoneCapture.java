@@ -46,7 +46,7 @@ public class WebcamAndMicrophoneCapture
         int captureWidth = 1280;
         int captureHeight = 720;
 
-        // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_highgui),
+        // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_videoio),
         // DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber,
         // PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
         OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(WEBCAM_DEVICE_INDEX);

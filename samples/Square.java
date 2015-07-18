@@ -5,7 +5,7 @@ import org.bytedeco.javacv.*;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 /**
  * I was unable to find the OpenCV squares.c translated into JavaCV, so this

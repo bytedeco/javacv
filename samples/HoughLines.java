@@ -3,7 +3,7 @@ import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 /**
  * C to Java translation of the houghlines.c sample provided in the c sample directory of OpenCV 2.1,
@@ -48,7 +48,7 @@ public class HoughLines {
          */
         if (args.length == 2 && args[1].contentEquals("probabilistic")) { 
             System.out.println("Using the Probabilistic Hough Transform");
-            lines = cvHoughLines2(dst, storage, CV_HOUGH_PROBABILISTIC, 1, Math.PI / 180, 40, 50, 10);
+            lines = cvHoughLines2(dst, storage, CV_HOUGH_PROBABILISTIC, 1, Math.PI / 180, 40, 50, 10, 0, CV_PI);
             for (int i = 0; i < lines.total(); i++) {
                 // Based on JavaCPP, the equivalent of the C code:
                 // CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
@@ -71,7 +71,7 @@ public class HoughLines {
          */
         else if(args.length==2 && args[1].contentEquals("multiscale")){
                         System.out.println("Using the multiscale Hough Transform"); //
-            lines = cvHoughLines2(dst, storage, CV_HOUGH_MULTI_SCALE, 1, Math.PI / 180, 40, 1, 1);
+            lines = cvHoughLines2(dst, storage, CV_HOUGH_MULTI_SCALE, 1, Math.PI / 180, 40, 1, 1, 0, CV_PI);
             for (int i = 0; i < lines.total(); i++) {
                 CvPoint2D32f point = new CvPoint2D32f(cvGetSeqElem(lines, i));
 
@@ -92,7 +92,7 @@ public class HoughLines {
          */
         else {
             System.out.println("Using the Standard Hough Transform");
-            lines = cvHoughLines2(dst, storage, CV_HOUGH_STANDARD, 1, Math.PI / 180, 90, 0, 0);
+            lines = cvHoughLines2(dst, storage, CV_HOUGH_STANDARD, 1, Math.PI / 180, 90, 0, 0, 0, CV_PI);
             for (int i = 0; i < lines.total(); i++) {
                 CvPoint2D32f point = new CvPoint2D32f(cvGetSeqElem(lines, i));
 
