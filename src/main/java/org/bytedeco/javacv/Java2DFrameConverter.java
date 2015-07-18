@@ -470,7 +470,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             int[] a = ((DataBufferInt)out).getData();
             int stride = frame.imageStride;
             if (in instanceof ByteBuffer) {
-                in = ((ByteBuffer)in).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+                in = ((ByteBuffer)in).order(flipChannels ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN).asIntBuffer();
                 stride /= 4;
             }
             flipCopyWithGamma((IntBuffer)in, stride, IntBuffer.wrap(a, start, a.length - start), step, gamma, false, flipChannels ? channels : 0);
@@ -525,7 +525,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             int[] a = ((DataBufferInt)in).getData();
             int stride = frame.imageStride;
             if (out instanceof ByteBuffer) {
-                out = ((ByteBuffer)out).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+                out = ((ByteBuffer)out).order(flipChannels ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN).asIntBuffer();
                 stride /= 4;
             }
             flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), step, (IntBuffer)out, stride, gamma, false, flipChannels ? channels : 0);

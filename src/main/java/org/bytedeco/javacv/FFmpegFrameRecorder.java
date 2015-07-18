@@ -674,12 +674,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     @Override public void record(Frame frame) throws Exception {
+        record(frame, AV_PIX_FMT_NONE);
+    }
+    public void record(Frame frame, int pixelFormat) throws Exception {
         if (frame == null || (frame.image == null && frame.samples == null)) {
-            recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null);
+            recordImage(0, 0, 0, 0, 0, pixelFormat, (Buffer[])null);
         } else {
             if (frame.image != null) {
                 frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
-                        frame.imageChannels, frame.imageStride, AV_PIX_FMT_NONE, frame.image);
+                        frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
             }
             if (frame.samples != null) {
                 frame.keyFrame = recordSamples(frame.sampleRate, frame.audioChannels, frame.samples);
