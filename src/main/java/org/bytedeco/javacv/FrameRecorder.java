@@ -72,7 +72,7 @@ public abstract class FrameRecorder {
     public static FrameRecorder create(Class<? extends FrameRecorder> c, Class p, Object o, int w, int h) throws Exception {
         Throwable cause = null;
         try {
-            return (FrameRecoder)c.getConstructor(p, int.class, int.class).newInstance(o, w, h);
+            return (FrameRecorder)c.getConstructor(p, int.class, int.class).newInstance(o, w, h);
         } catch (InstantiationException ex) {
             cause = ex;
         } catch (IllegalAccessException ex) {
