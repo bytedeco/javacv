@@ -1,4 +1,5 @@
 
+ * Return `AVStream.r_frame_rate` when `AVStream.avg_frame_rate` is invalid in `FFmpegFrameGrabber.getFrameRate()` ([issue #292](https://code.google.com/p/javacv/issues/detail?id=292))
  * Update some samples to make them work with OpenCV 3.0
  * Add new convenience `FFmpegFrameRecorder.record(Frame frame, int pixelFormat)` method ([issue #181](https://github.com/bytedeco/javacv/issues/181))
  * Let `Java2DFrameConverter.copy()` from `ByteBuffer` with 4 channels to `BufferedImage.TYPE_INT_RGB`, among others, also taking into account the `flipChannels` argument ([issue #181](https://github.com/bytedeco/javacv/issues/181))

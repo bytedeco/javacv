@@ -274,6 +274,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getFrameRate();
         } else {
             AVRational r = video_st.avg_frame_rate();
+            if (r.num() == 0 && r.den() == 0) {
+                r = video_st.r_frame_rate();
+            }
             return (double)r.num() / r.den();
         }
     }
