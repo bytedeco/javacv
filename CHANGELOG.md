@@ -1,4 +1,5 @@
 
+ * Add `FaceRecognizerInVideo.java` sample that does a combo of face detection and recognition ([issue #203](https://github.com/bytedeco/javacv/issues/203))
  * Return `AVStream.r_frame_rate` when `AVStream.avg_frame_rate` is invalid in `FFmpegFrameGrabber.getFrameRate()` ([issue #292](https://code.google.com/p/javacv/issues/detail?id=292))
  * Update some samples to make them work with OpenCV 3.0
  * Add new convenience `FFmpegFrameRecorder.record(Frame frame, int pixelFormat)` method ([issue #181](https://github.com/bytedeco/javacv/issues/181))

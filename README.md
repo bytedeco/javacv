@@ -46,7 +46,7 @@ We can also have everything downloaded and installed automatically with:
   libraryDependencies += "org.bytedeco" % "javacv" % "1.0"
 ```
 
-Additionally, we need to either set the `platform.dependency` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.**
+Additionally, we need to either set the `platform` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.**
 
 
 Required Software
