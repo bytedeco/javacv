@@ -154,7 +154,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             releaseUnsafe();
         }
     }
-    public void releaseUnsafe() throws Exception {
+    void releaseUnsafe() throws Exception {
         /* close each codec */
         if (video_c != null) {
             avcodec_close(video_c);
@@ -288,7 +288,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             startUnsafe();
         }
     }
-    public void startUnsafe() throws Exception {
+    void startUnsafe() throws Exception {
         int ret;
         picture = null;
         tmp_picture = null;

@@ -125,7 +125,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             releaseUnsafe();
         }
     }
-    public void releaseUnsafe() throws Exception {
+    void releaseUnsafe() throws Exception {
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
                 av_free_packet(pkt);
@@ -380,7 +380,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             startUnsafe();
         }
     }
-    public void startUnsafe() throws Exception {
+    void startUnsafe() throws Exception {
         int ret;
         img_convert_ctx = null;
         oc              = new AVFormatContext(null);
