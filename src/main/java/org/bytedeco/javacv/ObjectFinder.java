@@ -170,6 +170,7 @@ public class ObjectFinder {
             flannIndex = new Index();
             indexParams = new LshIndexParams(12, 20, 2); // using LSH Hamming distance
             searchParams = new SearchParams(64, 0, true); // maximum number of leafs checked
+            searchParams.deallocate(false); // for some reason FLANN seems to do it for us
         }
         pt1  = new Mat(total, 1, CV_32FC2);
         pt2  = new Mat(total, 1, CV_32FC2);
