@@ -1,4 +1,5 @@
 
+ * Remove `FaceRecognition.java` sample, which requires the deprecated `opencv_legacy` module ([issue #200](https://github.com/bytedeco/javacv/issues/200))
  * Fix potential crash in `ObjectFinder` with FLANN ([issue #210](https://github.com/bytedeco/javacv/issues/210))
  * Add `FFmpegFrameFilter` to let users process `Frame` images with `libavfilter` easily ([issue #164](https://github.com/bytedeco/javacv/issues/164))
  * Add `FaceRecognizerInVideo.java` sample that does a combo of face detection and recognition ([issue #203](https://github.com/bytedeco/javacv/issues/203))
