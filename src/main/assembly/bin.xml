@@ -26,6 +26,8 @@
       <excludes>
         <exclude>android*.jar</exclude>
         <exclude>gluegen*.jar</exclude>
+        <exclude>hamcrest*.jar</exclude>
+        <exclude>junit*.jar</exclude>
         <exclude>jogl*.jar</exclude>
         <exclude>jocl*.jar</exclude>
         <exclude>*-javadoc.jar</exclude>
