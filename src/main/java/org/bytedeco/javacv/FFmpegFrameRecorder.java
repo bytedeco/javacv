@@ -347,6 +347,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 release();
                 throw new Exception("avcodec_find_encoder() error: Video codec not found.");
             }
+            oformat.video_codec(video_codec.id());
 
             AVRational frame_rate = av_d2q(frameRate, 1001000);
             AVRational supported_framerates = video_codec.supported_framerates();
