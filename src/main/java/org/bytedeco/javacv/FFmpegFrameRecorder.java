@@ -453,6 +453,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 release();
                 throw new Exception("avcodec_find_encoder() error: Audio codec not found.");
             }
+            oformat.audio_codec(audio_codec.id());
 
             if ((audio_st = avformat_new_stream(oc, audio_codec)) == null) {
                 release();
