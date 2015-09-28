@@ -1,4 +1,5 @@
 
+ * Add `FFmpegFrameGrabber.grabSamples()` to grab only audio samples, and ignore video frames ([issue #235](https://github.com/bytedeco/javacv/issues/235))
  * Fix broken `setVideoCodecName()` and `setAudioCodecName()` for `FFmpegFrameRecorder` ([issue #229](https://github.com/bytedeco/javacv/issues/229))
  * Remove `FaceRecognition.java` sample, which requires the deprecated `opencv_legacy` module ([issue #200](https://github.com/bytedeco/javacv/issues/200))
  * Fix potential crash in `ObjectFinder` with FLANN ([issue #210](https://github.com/bytedeco/javacv/issues/210))

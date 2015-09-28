@@ -355,10 +355,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                to ...666 and the given timestamp has been rounded to ...667
                (or vice versa)
             */
-            while (this.timestamp > timestamp + 1 && grabFrame(false) != null) {
+            while (this.timestamp > timestamp + 1 && grabFrame(true, true, false, false) != null) {
                 // flush frames if seeking backwards
             }
-            while (this.timestamp < timestamp - 1 && grabFrame(false) != null) {
+            while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null) {
                 // decode up to the desired frame
             }
             if (video_c != null) {
@@ -614,18 +614,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public Frame grab() throws Exception {
-        return grabFrame(true, true, false);
+        return grabFrame(true, true, true, false);
     }
     public Frame grabImage() throws Exception {
-        return grabFrame(true, false, false);
+        return grabFrame(false, true, true, false);
     }
-    public Frame grabFrame(boolean processImage) throws Exception {
-        return grabFrame(processImage, true, false);
+    public Frame grabSamples() throws Exception {
+        return grabFrame(true, false, true, false);
     }
     public Frame grabKeyFrame() throws Exception {
-        return grabFrame(true, false, true);
+        return grabFrame(false, true, true, true);
     }
-    public Frame grabFrame(boolean processImage, boolean doAudio, boolean keyFrames) throws Exception {
+    public Frame grabFrame(boolean doAudio, boolean doVideo, boolean processImage, boolean keyFrames) throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }
@@ -640,7 +640,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.audioChannels = 0;
         frame.samples = null;
         frame.opaque = null;
-        if (frameGrabbed) {
+        if (doVideo && frameGrabbed) {
             frameGrabbed = false;
             if (processImage) {
                 processImage();
@@ -654,7 +654,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         while (!done) {
             if (pkt2.size() <= 0) {
                 if (av_read_frame(oc, pkt) < 0) {
-                    if (video_st != null) {
+                    if (doVideo && video_st != null) {
                         // The video codec may have buffered some frames
                         pkt.stream_index(video_st.index());
                         pkt.flags(AV_PKT_FLAG_KEY);
@@ -667,7 +667,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             // Is this a packet from the video stream?
-            if (video_st != null && pkt.stream_index() == video_st.index()
+            if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
                     && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
                 // Decode video frame
                 int len = avcodec_decode_video2(video_c, picture, got_frame, pkt);
