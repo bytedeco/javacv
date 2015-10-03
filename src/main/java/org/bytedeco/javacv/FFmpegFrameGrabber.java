@@ -355,10 +355,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                to ...666 and the given timestamp has been rounded to ...667
                (or vice versa)
             */
-            while (this.timestamp > timestamp + 1 && grabFrame(true, true, false, false) != null) {
+            while (this.timestamp > timestamp + 1 && grabFrame(false, true, false, false) != null) {
                 // flush frames if seeking backwards
             }
-            while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null) {
+            while (this.timestamp < timestamp - 1 && grabFrame(false, true, false, false) != null) {
                 // decode up to the desired frame
             }
             if (video_c != null) {
