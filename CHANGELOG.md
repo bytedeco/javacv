@@ -1,4 +1,5 @@
 
+ * Upgrade all Maven dependencies and plugins to latest versions, thus bumping minimum requirements to Java SE 7, Android 4.0, and Maven 3.0
  * Fix broken `FFmpegFrameGrabber.grabImage()` after `setTimestamp()` ([issue #236](https://github.com/bytedeco/javacv/issues/236))
  * Add `FFmpegFrameGrabber.grabSamples()` to grab only audio samples, and ignore video frames ([issue #235](https://github.com/bytedeco/javacv/issues/235))
  * Fix broken `setVideoCodecName()` and `setAudioCodecName()` for `FFmpegFrameRecorder` ([issue #229](https://github.com/bytedeco/javacv/issues/229))

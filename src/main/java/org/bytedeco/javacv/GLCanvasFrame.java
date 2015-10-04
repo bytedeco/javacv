@@ -24,6 +24,12 @@ package org.bytedeco.javacv;
 
 import com.jogamp.opencl.CLImage2d;
 import com.jogamp.opencl.gl.CLGLImage2d;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilitiesImmutable;
+import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.Gamma;
 import java.awt.Color;
 import java.awt.DisplayMode;
@@ -44,12 +50,6 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilitiesImmutable;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
 
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -101,7 +101,10 @@ public class GLCanvasFrame extends CanvasFrame {
         Runnable r = new Runnable() { public void run() {
             String wasErase = System.setProperty("sun.awt.noerasebackground", "true");
 
-            canvas = new GLCanvas(caps, shareWith);
+            canvas = new GLCanvas(caps);
+            if (shareWith != null) {
+                ((GLCanvas)canvas).setSharedContext(shareWith);
+            }
             ((GLCanvas)canvas).addGLEventListener(eventListener);
             if (fullScreen) {
                 canvas.setSize(getSize());
@@ -145,7 +148,7 @@ public class GLCanvasFrame extends CanvasFrame {
 
             if (inverseGamma != 1.0) {
                 // Yeah baby, gamma correction in hardware!
-                Gamma.setDisplayGamma(gl, (float)inverseGamma, 0, 1);
+                Gamma.setDisplayGamma(drawable, (float)inverseGamma, 0, 1);
             }
             gl.glGenFramebuffers(1, params, 0);
             frameBuffer = params[0];
@@ -156,7 +159,7 @@ public class GLCanvasFrame extends CanvasFrame {
             params[0] = frameBuffer;
             gl.glDeleteFramebuffers(1, params, 0);
             if (inverseGamma != 1.0) {
-                Gamma.resetDisplayGamma(gl);
+                Gamma.resetDisplayGamma(drawable);
             }
         }
         public void display(GLAutoDrawable drawable) {

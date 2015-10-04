@@ -40,22 +40,21 @@ import com.jogamp.opencl.CLProgram.CompilerOptions;
 import com.jogamp.opencl.gl.CLGLContext;
 import com.jogamp.opencl.gl.CLGLImage2d;
 import com.jogamp.opencl.gl.CLGLObject;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLCapabilitiesImmutable;
+import com.jogamp.opengl.GLContext;
+import com.jogamp.opengl.GLDrawableFactory;
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.glu.GLU;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.SequenceInputStream;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 import java.util.logging.Logger;
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLCapabilitiesImmutable;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLDrawableFactory;
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLPbuffer;
-import javax.media.opengl.GLProfile;
-import javax.media.opengl.glu.GLU;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.BytePointer;
 
@@ -77,7 +76,7 @@ public class JavaCVCL {
         this(context, context.getDevices()[0]);
     }
     public JavaCVCL(CLContext context, CLDevice device) {
-        this.pbuffer = null;
+//        this.pbuffer = null;
         this.context = context;
         this.glu = context instanceof CLGLContext ? new GLU() : null;
         this.commandQueue = device.createCommandQueue(/*Mode.PROFILING_MODE*/);
@@ -105,23 +104,23 @@ public class JavaCVCL {
             shareWith.getGLDrawable().getGLProfile()), shareWith, null);
     }
     public JavaCVCL(GLCapabilitiesImmutable caps, GLContext shareWith, CLDevice device) {
-        GLPbuffer pbuffer = null;
-        if (caps != null) {
-            GLDrawableFactory factory = GLDrawableFactory.getFactory(caps.getGLProfile());
-            if (factory.canCreateGLPbuffer(null, caps.getGLProfile())) {
-                try {
-                    // makes a new buffer
-                    pbuffer = factory.createGLPbuffer(null, caps, null, 32, 32, shareWith);
-                    // required for drawing to the buffer
-                    pbuffer.createContext(shareWith).makeCurrent();
-                } catch (GLException e) {
-                    logger.warning("Could not create PBuffer: " + e);
-                }
-            } else {
-                logger.warning("OpenGL implementation does not support PBuffers.");
-            }
-        }
-        this.pbuffer = pbuffer;
+//        GLPbuffer pbuffer = null;
+//        if (caps != null) {
+//            GLDrawableFactory factory = GLDrawableFactory.getFactory(caps.getGLProfile());
+//            if (factory.canCreateGLPbuffer(null, caps.getGLProfile())) {
+//                try {
+//                    // makes a new buffer
+//                    pbuffer = factory.createGLPbuffer(null, caps, null, 32, 32, shareWith);
+//                    // required for drawing to the buffer
+//                    pbuffer.createContext(shareWith).makeCurrent();
+//                } catch (GLException e) {
+//                    logger.warning("Could not create PBuffer: " + e);
+//                }
+//            } else {
+//                logger.warning("OpenGL implementation does not support PBuffers.");
+//            }
+//        }
+//        this.pbuffer = pbuffer;
 
         GLContext glContext = GLContext.getCurrent();
         if (device == null && glContext != null) {
@@ -167,12 +166,12 @@ public class JavaCVCL {
     public void release() {
         if (!context.isReleased()) {
             context.release();
-            if (pbuffer != null) {
-                pbuffer.getContext().makeCurrent();
-                pbuffer.getContext().release();
-                pbuffer.getContext().destroy();
-                pbuffer.destroy();
-            }
+//            if (pbuffer != null) {
+//                pbuffer.getContext().makeCurrent();
+//                pbuffer.getContext().release();
+//                pbuffer.getContext().destroy();
+//                pbuffer.destroy();
+//            }
         }
     }
     @Override protected void finalize() throws Throwable {
@@ -185,7 +184,7 @@ public class JavaCVCL {
 
     private static final Logger logger = Logger.getLogger(JavaCVCL.class.getName());
 
-    private final GLPbuffer pbuffer;
+//    private final GLPbuffer pbuffer;
     private final CLContext context;
     private final CLCommandQueue commandQueue;
     private final GLU glu;
