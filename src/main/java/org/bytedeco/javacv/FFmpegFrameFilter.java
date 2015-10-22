@@ -320,15 +320,15 @@ public class FFmpegFrameFilter extends FrameFilter {
         } else {
             frame.imageStride = frame.imageWidth;
             int size = avpicture_get_size(filt_frame.format(), frame.imageWidth, frame.imageHeight);
-            if (image_ptr[0] == null || image_ptr[0].capacity() < size) {
-                image_ptr[0] = new BytePointer(size);
-                image_buf[0] = image_ptr[0].asBuffer();
+            // Fix bug on Android4.0，check out https://github.com/bytedeco/javacpp/issues/39
+            if (image_buf[0] == null || image_buf[0].capacity() < size) {
+                image_buf[0] = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
             }
             frame.image = image_buf;
             frame.image[0].position(0).limit(size);
             frame.imageChannels = 2;
             ret = avpicture_layout(new AVPicture(filt_frame), filt_frame.format(),
-                    frame.imageWidth, frame.imageHeight, image_ptr[0].position(0), image_ptr[0].capacity());
+                    frame.imageWidth, frame.imageHeight, (ByteBuffer) frame.image[0].position(0), frame.image[0].capacity());
         }
         return frame;
     }
