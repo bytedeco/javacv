@@ -576,7 +576,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
         return getBufferedImage(frame, gamma, false, null);
     }
     public BufferedImage getBufferedImage(Frame frame, double gamma, boolean flipChannels, ColorSpace cs) {
-        if (frame == null) {
+        if (frame == null || frame.image == null) {
             return null;
         }
         int type = getBufferedImageType(frame);

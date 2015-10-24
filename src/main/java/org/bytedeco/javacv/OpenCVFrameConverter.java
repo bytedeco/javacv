@@ -82,7 +82,7 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
                 && frame.imageStride * Math.abs(frame.imageDepth) / 8 == img.widthStep();
     }
     public IplImage convertToIplImage(Frame frame) {
-        if (frame == null) {
+        if (frame == null || frame.image == null) {
             return null;
         } else if (frame.opaque instanceof IplImage) {
             return (IplImage)frame.opaque;
@@ -131,7 +131,7 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
                 && frame.imageStride * Math.abs(frame.imageDepth) / 8 == (int)mat.step();
     }
     public Mat convertToMat(Frame frame) {
-        if (frame == null) {
+        if (frame == null || frame.image == null) {
             return null;
         } else if (frame.opaque instanceof Mat) {
             return (Mat)frame.opaque;

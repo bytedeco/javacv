@@ -118,7 +118,7 @@ public class AndroidFrameConverter extends FrameConverter<Bitmap> {
     }
 
     @Override public Bitmap convert(Frame frame) {
-        if (frame == null) {
+        if (frame == null || frame.image == null) {
             return null;
         }
 

@@ -1,4 +1,5 @@
 
+ * Make `FrameConverter` for images return `null` when `Frame.image == null` ([issue #249](https://github.com/bytedeco/javacv/issues/249))
  * Add `FFmpegLogCallback` to redirect easily to Java log messages from FFmpeg
  * Upgrade all Maven dependencies and plugins to latest versions, thus bumping minimum requirements to Java SE 7, Android 4.0, and Maven 3.0
  * Fix broken `FFmpegFrameGrabber.grabImage()` after `setTimestamp()` ([issue #236](https://github.com/bytedeco/javacv/issues/236))
