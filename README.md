@@ -16,8 +16,8 @@ Downloads
 ---------
 To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation) section below.
 
- * JavaCV 1.0 binary archive  [javacv-1.0-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/1.0/javacv-1.0-bin.zip) (131 MB)
- * JavaCV 1.0 source archive  [javacv-1.0-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/1.0/javacv-1.0-src.zip) (413 KB)
+ * JavaCV 1.1 binary archive  [javacv-1.1-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/1.1/javacv-1.1-bin.zip) (140 MB)
+ * JavaCV 1.1 source archive  [javacv-1.1-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv/1.1/javacv-1.1-src.zip) (415 KB)
 
 The binary archive contains builds for Android, Linux, Mac OS X, and Windows. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
 
@@ -29,21 +29,21 @@ We can also have everything downloaded and installed automatically with:
   <dependency>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacv</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
   </dependency>
 ```
 
  * Gradle (inside the `build.gradle` file)
 ```groovy
   dependencies {
-    compile group: 'org.bytedeco', name: 'javacv', version: '1.0'
+    compile group: 'org.bytedeco', name: 'javacv', version: '1.1'
   }
 ```
 
  * sbt (inside the `build.sbt` file)
 ```scala
   classpathTypes += "maven-plugin"
-  libraryDependencies += "org.bytedeco" % "javacv" % "1.0"
+  libraryDependencies += "org.bytedeco" % "javacv" % "1.1"
 ```
 
 Additionally, we need to either set the `platform` system property (via the `-D` command line option) to something like `android-arm`, or set the `platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.**
@@ -53,16 +53,15 @@ Required Software
 -----------------
 To use JavaCV, you will first need to download and install the following software:
 
- * An implementation of Java SE 6 or newer
+ * An implementation of Java SE 7 or newer:
    * OpenJDK  http://openjdk.java.net/install/  or
    * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
-   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
-   * Java SE for Mac OS X  http://developer.apple.com/java/  etc.
+   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/
 
 Further, although not always required, some functionality of JavaCV also relies on:
 
  * CL Eye Platform SDK (Windows only)  http://codelaboratories.com/downloads/
- * Android SDK API 8 or newer  http://developer.android.com/sdk/
+ * Android SDK API 14 or newer  http://developer.android.com/sdk/
  * JOCL and JOGL from JogAmp  http://jogamp.org/
 
 Finally, please make sure everything has the same bitness: **32-bit and 64-bit modules do not mix under any circumstances**.
@@ -72,17 +71,17 @@ Manual Installation
 -------------------
 Simply put all the desired JAR files (`opencv*.jar`, `ffmpeg*.jar`, etc.), in addition to `javacpp.jar` and `javacv.jar`, somewhere in your class path. Here are some more specific instructions for common cases:
 
-NetBeans (Java SE 6 or newer):
+NetBeans (Java SE 7 or newer):
 
  1. In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
  2. Locate the JAR files, select them, and click OK.
 
-Eclipse (Java SE 6 or newer):
+Eclipse (Java SE 7 or newer):
 
  1. Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs...".
  2. Locate the JAR files, select them, and click OK.
 
-IntelliJ IDEA (Android 2.2 or newer):
+IntelliJ IDEA (Android 4.0 or newer):
 
  1. Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  2. Copy all the JAR files into the `app/libs` subdirectory.
@@ -91,8 +90,8 @@ IntelliJ IDEA (Android 2.2 or newer):
 
 After that, the wrapper classes for OpenCV and FFmpeg, for example, can automatically access all of their C/C++ APIs:
 
- * [OpenCV documentation](http://docs.opencv.org/)
- * [FFmpeg documentation](http://ffmpeg.org/doxygen/)
+ * [OpenCV documentation](http://docs.opencv.org/master/)
+ * [FFmpeg documentation](http://ffmpeg.org/doxygen/trunk/)
 
 
 Sample Usage
@@ -211,7 +210,7 @@ public class Demo {
             // Let's try to detect some faces! but we need a grayscale image...
             cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
             CvSeq faces = cvHaarDetectObjects(grayImage, classifier, storage,
-                    1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
+                    1.1, 3, CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH);
             int total = faces.total();
             for (int i = 0; i < total; i++) {
                 CvRect r = new CvRect(cvGetSeqElem(faces, i));
@@ -260,12 +259,12 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 </project>
@@ -281,9 +280,9 @@ Build Instructions
 ------------------
 If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
 
- * Maven 2 or 3  http://maven.apache.org/download.html
- * JavaCPP 1.0  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 1.0  https://github.com/bytedeco/javacpp-presets
+ * Maven 3.x  http://maven.apache.org/download.html
+ * JavaCPP 1.1  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 1.1  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 
