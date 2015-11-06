@@ -88,6 +88,9 @@ public class Frame implements Indexable {
 
     /** The underlying data object, for example, AVFrame, IplImage, or Mat. */
     public Object opaque;
+    
+    /** Timestamp of the frame creation. */
+    public long timestamp;
 
     /** Empty constructor. */
     public Frame() { }
@@ -166,5 +169,135 @@ public class Frame implements Indexable {
         }
         return null;
     }
+
+    /**Care must be taken if this method is to be used in conjunction with movie recordings.
+     *  Cloning a frame containing a full HD picture (alpha channel included) would take 1920 x 1080 * 4 = 8.294.400 Bytes.
+     *  Expect a heap overflow exception when using this method without cleaning up.
+     *  
+     * @return A deep copy of this frame.
+     * @see {@link #cloneBufferArray} 
+     *  
+     * @author Extension proposed by Dragos Dutu
+     * */
+    @Override
+    public Frame clone() {
+        Frame newFrame = new Frame();
+
+
+        // Video part
+        newFrame.imageWidth = imageWidth;
+        newFrame.imageHeight = imageHeight;
+        newFrame.imageDepth = imageDepth;
+        newFrame.imageChannels = imageChannels;
+        newFrame.imageStride = imageStride;
+        newFrame.keyFrame = keyFrame;
+        newFrame.opaque = opaque;
+        newFrame.image = cloneBufferArray(image);
+
+        // Audio part
+        newFrame.audioChannels = audioChannels;
+        newFrame.sampleRate = sampleRate;
+        newFrame.samples = cloneBufferArray(samples);
+
+        // Add timestamp
+        newFrame.timestamp = timestamp;
+
+        return newFrame;
+
+    }
+
+    /**
+     * This private method takes a buffer array as input and returns a deep copy.
+     * It is assumed that all buffers in the input array are of the same subclass.
+     * 
+     * @param srcBuffers - Buffer array to be cloned
+     * @return New buffer array
+     * 
+     *  @author Extension proposed by Dragos Dutu
+     */
+    private static Buffer[] cloneBufferArray(Buffer[] srcBuffers) {
+
+        Buffer[] clonedBuffers = null;
+        int i;
+        short dataSize;
+
+        if (srcBuffers != null) {
+            clonedBuffers = new Buffer[srcBuffers.length];
+
+            for (i = 0; i < srcBuffers.length; i++)
+                srcBuffers[i].rewind();
+
+            /*
+             * In order to optimize the transfer we need a type check.
+             * 
+             * Most CPUs support hardware memory transfer for different data
+             * types, so it's faster to copy more bytes at once rather
+             * than one byte per iteration as in case of ByteBuffer.
+             * 
+             * For example, Intel CPUs support MOVSB (byte transfer), MOVSW
+             * (word transfer), MOVSD (double word transfer), MOVSS (32 bit
+             * scalar single precision floating point), MOVSQ (quad word
+             * transfer) and so on...
+             *
+             * Type checking may be improved by changing the order in
+             * which a buffer is checked against. If it's likely that the
+             * expected buffer is of type "ShortBuffer", then it should be
+             * checked at first place.
+             * 
+             */
+
+            if (srcBuffers[0] instanceof ByteBuffer)
+                // dataSize is 1
+                for (i = 0; i < srcBuffers.length; i++)
+                    clonedBuffers[i] = ByteBuffer.allocateDirect(srcBuffers[i].capacity())
+                            .put((ByteBuffer) srcBuffers[i]).rewind();
+            else if (srcBuffers[0] instanceof ShortBuffer) {
+                dataSize = Short.SIZE >> 3; // dataSize is 2
+                for (i = 0; i < srcBuffers.length; i++)
+                    clonedBuffers[i] = ByteBuffer.allocateDirect(srcBuffers[i].capacity() * dataSize)
+                            .order(ByteOrder.nativeOrder()).asShortBuffer().put((ShortBuffer) srcBuffers[i]).rewind();
+            } else if (srcBuffers[0] instanceof IntBuffer) {
+                dataSize = Integer.SIZE >> 3; // dataSize is 4
+                for (i = 0; i < srcBuffers.length; i++)
+                    clonedBuffers[i] = ByteBuffer.allocateDirect(srcBuffers[i].capacity() * dataSize)
+                            .order(ByteOrder.nativeOrder()).asIntBuffer().put((IntBuffer) srcBuffers[i]).rewind();
+            } else if (srcBuffers[0] instanceof LongBuffer) {
+                dataSize = Long.SIZE >> 3; // dataSize is 8
+                for (i = 0; i < srcBuffers.length; i++)
+                    clonedBuffers[i] = ByteBuffer.allocateDirect(srcBuffers[i].capacity() * dataSize)
+                            .order(ByteOrder.nativeOrder()).asLongBuffer().put((LongBuffer) srcBuffers[i]).rewind();
+            } else if (srcBuffers[0] instanceof FloatBuffer) {
+                dataSize = Float.SIZE >> 3; // dataSize is 4
+                for (i = 0; i < srcBuffers.length; i++)
+                    clonedBuffers[i] = ByteBuffer.allocateDirect(srcBuffers[i].capacity() * dataSize)
+                            .order(ByteOrder.nativeOrder()).asFloatBuffer().put((FloatBuffer) srcBuffers[i]).rewind();
+            } else if (srcBuffers[0] instanceof DoubleBuffer) {
+                dataSize = Double.SIZE >> 3; // dataSize is 8
+                for (i = 0; i < srcBuffers.length; i++)
+                    clonedBuffers[i] = ByteBuffer.allocateDirect(srcBuffers[i].capacity() * dataSize)
+                            .order(ByteOrder.nativeOrder()).asDoubleBuffer().put((DoubleBuffer) srcBuffers[i]).rewind();
+            }
+
+            for (i = 0; i < srcBuffers.length; i++)
+                srcBuffers[i].rewind();
+
+        }
+
+        return clonedBuffers;
+
+    }
+
+    // For test purposes. Should be deleted
+    public static void main(String[] args) {
+        //Frame f = new Frame();
+        Frame f = new Frame(1,1,-16,1);
+        Frame g;
+
+        g = f.clone();
+
+        System.out.println(f.image[0]);
+        System.out.println(g.image[0]);
+
+        }
 
 }
