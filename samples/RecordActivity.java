@@ -12,7 +12,6 @@
  *     <uses-permission android:name="android.permission.CAMERA" />
  *     <uses-permission android:name="android.permission.INTERNET"/>
  *     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
- *     <uses-permission android:name="android.permission.WAKE_LOCK"/>
  *     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
  *     <uses-feature android:name="android.hardware.camera" />
  *     <application android:label="@string/app_name">
@@ -34,7 +33,8 @@
  *     xmlns:tools="http://schemas.android.com/tools"
  *     android:id="@+id/record_layout"
  *     android:layout_width="match_parent"
- *     android:layout_height="match_parent" >
+ *     android:layout_height="match_parent"
+ *     android:keepScreenOn="true">
  * 
  *     <TextView
  *         android:id="@+id/textView1"
@@ -95,8 +95,6 @@ public class RecordActivity extends Activity implements OnClickListener {
     private final static String CLASS_LABEL = "RecordActivity";
     private final static String LOG_TAG = CLASS_LABEL;
 
-    private PowerManager.WakeLock mWakeLock;
-
     private String ffmpeg_link = "/mnt/sdcard/stream.flv";
 
     long startTime = 0;
@@ -149,33 +147,7 @@ public class RecordActivity extends Activity implements OnClickListener {
 
         setContentView(R.layout.main);
 
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE); 
-        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, CLASS_LABEL); 
-        mWakeLock.acquire(); 
-
         initLayout();
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (mWakeLock == null) {
-           PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-           mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, CLASS_LABEL);
-           mWakeLock.acquire();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (mWakeLock != null) {
-            mWakeLock.release();
-            mWakeLock = null;
-        }
     }
 
     @Override
@@ -192,11 +164,6 @@ public class RecordActivity extends Activity implements OnClickListener {
            cameraDevice.stopPreview();
            cameraDevice.release();
            cameraDevice = null;
-        }
-
-        if (mWakeLock != null) {
-            mWakeLock.release();
-            mWakeLock = null;
         }
     }
 
