@@ -1,4 +1,6 @@
 
+ * Change `WakeLock` for `keepScreenOn` in `AndroidManifest.xml` file of the `RecordActivity` sample ([pull #269](https://github.com/bytedeco/javacv/pull/269))
+
 ### October 25, 2015 version 1.1
  * Make `FrameConverter` for images return `null` when `Frame.image == null` ([issue #249](https://github.com/bytedeco/javacv/issues/249))
  * Add `FFmpegLogCallback` to redirect easily to Java log messages from FFmpeg
