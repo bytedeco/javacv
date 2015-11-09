@@ -442,6 +442,8 @@ public class RecordActivity extends Activity implements OnClickListener {
         }
 
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            stopPreview();
+
             Camera.Parameters camParams = mCamera.getParameters();
             List<Camera.Size> sizes = camParams.getSupportedPreviewSizes();
             // Sort the list in ascending order
@@ -470,6 +472,16 @@ public class RecordActivity extends Activity implements OnClickListener {
             Log.v(LOG_TAG,"Preview Framerate: " + camParams.getPreviewFrameRate());
 
             mCamera.setParameters(camParams);
+
+            // Set the holder (which might have changed) again
+            try {
+                mCamera.setPreviewDisplay(holder);
+                mCamera.setPreviewCallback(CameraView.this);
+                startPreview();
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Could not set preview display in surfaceChanged");
+            }
+
             startPreview();
         }
 
