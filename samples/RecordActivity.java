@@ -481,8 +481,6 @@ public class RecordActivity extends Activity implements OnClickListener {
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Could not set preview display in surfaceChanged");
             }
-
-            startPreview();
         }
 
         @Override
