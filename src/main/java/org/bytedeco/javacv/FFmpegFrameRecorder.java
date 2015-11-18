@@ -59,6 +59,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
@@ -113,6 +116,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         } catch (Exception ex) { }
     }
 
+    private BlockingQueue<AVPacket> packetsToSend = new LinkedBlockingDeque<>();
+
     public FFmpegFrameRecorder(File file, int audioChannels) {
         this(file, 0, 0, audioChannels);
     }
@@ -149,6 +154,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.video_pkt = new AVPacket();
         this.audio_pkt = new AVPacket();
     }
+
     public void release() throws Exception {
         synchronized (org.bytedeco.javacpp.avcodec.class) {
             releaseUnsafe();
@@ -283,9 +289,29 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         setFrameNumber((int)Math.round(timestamp * getFrameRate() / 1000000L));
     }
 
+    private void startSenderThread() {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    while (true) {
+                        AVPacket packet = packetsToSend.take();
+                        av_write_frame(oc, packet);
+                        if (packet == null) {
+                            // this should signal the end of the stream
+                            return;
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    // not sure what to do here
+                }
+            }
+        }).start();
+    }
+
     public void start() throws Exception {
         synchronized (org.bytedeco.javacpp.avcodec.class) {
             startUnsafe();
+            startSenderThread();
         }
     }
     void startUnsafe() throws Exception {
@@ -661,11 +687,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 while (video_st != null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
                 while (audio_st != null && recordSamples(0, 0, (Buffer[])null));
 
-                if (interleaved && video_st != null && audio_st != null) {
-                    av_interleaved_write_frame(oc, null);
-                } else {
-                    av_write_frame(oc, null);
-                }
+                packetsToSend.add(null);
 
                 /* write the trailer, if any */
                 av_write_trailer(oc);
@@ -789,18 +811,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
         }
 
-        synchronized (oc) {
-            /* write the compressed frame in the media file */
-            if (interleaved && audio_st != null) {
-                if ((ret = av_interleaved_write_frame(oc, video_pkt)) < 0) {
-                    throw new Exception("av_interleaved_write_frame() error " + ret + " while writing interleaved video frame.");
-                }
-            } else {
-                if ((ret = av_write_frame(oc, video_pkt)) < 0) {
-                    throw new Exception("av_write_frame() error " + ret + " while writing video frame.");
-                }
-            }
-        }
+        // thread safe
+        packetsToSend.add(video_pkt);
+
         return image != null ? (video_pkt.flags() & AV_PKT_FLAG_KEY) != 0 : got_video_packet[0] != 0;
     }
 
@@ -964,17 +977,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         /* write the compressed frame in the media file */
-        synchronized (oc) {
-            if (interleaved && video_st != null) {
-                if ((ret = av_interleaved_write_frame(oc, audio_pkt)) < 0) {
-                    throw new Exception("av_interleaved_write_frame() error " + ret + " while writing interleaved audio frame.");
-                }
-            } else {
-                if ((ret = av_write_frame(oc, audio_pkt)) < 0) {
-                    throw new Exception("av_write_frame() error " + ret + " while writing audio frame.");
-                }
-            }
-        }
+        // thread safe
+        packetsToSend.add(audio_pkt);
+
         return true;
     }
 }
