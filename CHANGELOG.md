@@ -1,5 +1,7 @@
 
- * Change `WakeLock` for `keepScreenOn` in `AndroidManifest.xml` file of the `RecordActivity` sample ([pull #269](https://github.com/bytedeco/javacv/pull/269))
+ * Let users call `FFmpegFrameFilter.push(null)` to indicate EOF, as required by some filters like "palettegen" ([issue #287](https://github.com/bytedeco/javacv/issues/287))
+ * Call `cvHaarDetectObjects()` with `CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH` instead of `CV_HAAR_DO_CANNY_PRUNING` in the face detection samples to get acceptable performance with OpenCV 3.0 ([issue #272](https://github.com/bytedeco/javacv/issues/272))
+ * Change `WakeLock` for `keepScreenOn` in `AndroidManifest.xml` file and add `setPreviewDisplay()` call on `surfaceChanged()` event for the `RecordActivity` sample ([pull #269](https://github.com/bytedeco/javacv/pull/269), [pull #271](https://github.com/bytedeco/javacv/pull/271))
 
 ### October 25, 2015 version 1.1
  * Make `FrameConverter` for images return `null` when `Frame.image == null` ([issue #249](https://github.com/bytedeco/javacv/issues/249))

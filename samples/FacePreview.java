@@ -168,7 +168,8 @@ class FaceView extends View implements Camera.PreviewCallback {
         }
 
         cvClearMemStorage(storage);
-        faces = cvHaarDetectObjects(grayImage, classifier, storage, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
+        faces = cvHaarDetectObjects(grayImage, classifier, storage, 1.1, 3,
+                CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH);
         postInvalidate();
     }
 

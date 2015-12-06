@@ -95,7 +95,8 @@ public class FaceApplet extends Applet implements Runnable {
                     cvClearMemStorage(storage);
                     cvCvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
                     cvResize(grayImage, smallImage, CV_INTER_AREA);
-                    faces = cvHaarDetectObjects(smallImage, classifier, storage, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING);
+                    faces = cvHaarDetectObjects(smallImage, classifier, storage, 1.1, 3,
+                            CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH);
                     repaint();
                 }
             }

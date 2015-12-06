@@ -248,12 +248,14 @@ public class FFmpegFrameFilter extends FrameFilter {
         push(frame, AV_PIX_FMT_NONE);
     }
     public void push(Frame frame, int pixelFormat) throws Exception {
-        if (frame.image != null) {
+        if (frame != null && frame.image != null) {
             pushImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
                     frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
-        }
-        if (frame.samples != null) {
+        } else if (frame != null && frame.samples != null) {
 //            pushSamples(frame.sampleRate, frame.audioChannels, frame.samples);
+        } else {
+            // indicate EOF as required, for example, by the "palettegen" filter
+            av_buffersrc_add_frame_flags(buffersrc_ctx, null, 0);
         }
     }
 
