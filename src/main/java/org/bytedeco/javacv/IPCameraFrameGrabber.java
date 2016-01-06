@@ -91,7 +91,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
             }
             input = connection.getInputStream();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Exception(e.getMessage(), e);
         }
     }
 
@@ -102,7 +102,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
                 input.close();
                 input = null;
                 connection = null;
-                url = null;
+                // Don't set the url to null, it may be needed to restart this object
                 if (decoded != null){
                     cvReleaseImage(decoded);
                 }
