@@ -97,16 +97,18 @@ public class IPCameraFrameGrabber extends FrameGrabber {
 
     @Override
     public void stop() throws Exception {
-        try {
-            input.close();
-            input = null;
-            connection = null;
-            url = null;
-            if (decoded != null){
-                cvReleaseImage(decoded);
+        if (input != null) {
+            try {
+                input.close();
+                input = null;
+                connection = null;
+                url = null;
+                if (decoded != null){
+                    cvReleaseImage(decoded);
+                }
+            } catch (IOException e) {
+                throw new Exception(e.getMessage(), e);
             }
-        } catch (IOException e) {
-            throw new Exception(e.getMessage(), e);
         }
     }
 
