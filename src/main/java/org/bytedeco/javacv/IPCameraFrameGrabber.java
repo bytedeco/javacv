@@ -74,7 +74,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public void start() {
+    public void start() throws Exception {
 
         try {
             connection = url.openConnection();
