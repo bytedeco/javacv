@@ -299,19 +299,19 @@ public class ProCamGeometricCalibrator {
         }
     }
 
-    public void addMarkers() {
+    public void addMarkers() throws InterruptedException {
         addMarkers(0);
     }
-    public void addMarkers(int cameraNumber) {
+    public void addMarkers(int cameraNumber) throws InterruptedException {
         addMarkers(lastDetectedMarkers1[cameraNumber], lastDetectedMarkers2[cameraNumber], cameraNumber);
     }
-    public void addMarkers(Marker[] imagedBoardMarkers, Marker[] imagedProjectorMarkers) {
+    public void addMarkers(Marker[] imagedBoardMarkers, Marker[] imagedProjectorMarkers) throws InterruptedException {
         addMarkers(imagedBoardMarkers, imagedProjectorMarkers, 0);
     }
     private static ThreadLocal<CvMat>
             tempWarp3x3 = CvMat.createThreadLocal(3, 3);
     public void addMarkers(Marker[] imagedBoardMarkers, 
-            Marker[] imagedProjectorMarkers, int cameraNumber) {
+            Marker[] imagedProjectorMarkers, int cameraNumber) throws InterruptedException {
         CvMat tempWarp = tempWarp3x3.get();
 
         if (!settings.useOnlyIntersection) {
@@ -362,9 +362,7 @@ public class ProCamGeometricCalibrator {
         synchronized (projectorCalibrator) {
             // wait our turn to add markers orderly in the projector calibrator...
             while (projectorCalibrator.getImageCount()%cameraCalibrators.length < cameraNumber) {
-                try {
-                    projectorCalibrator.wait();
-                } catch (InterruptedException ex) { }
+                projectorCalibrator.wait();
             }
             projectorCalibrator.addMarkers(imagedProjectorMarkers, prewrappedProjMarkers);
             projectorCalibrator.notify();

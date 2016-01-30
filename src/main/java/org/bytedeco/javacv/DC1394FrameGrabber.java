@@ -331,12 +331,16 @@ public class DC1394FrameGrabber extends FrameGrabber {
         } catch (Exception e) {
             // if we couldn't start, try again with a bus reset
             if (tryReset && !resetDone) {
-                dc1394_reset_bus(camera);
                 try {
+                    dc1394_reset_bus(camera);
                     Thread.sleep(100);
-                } catch (InterruptedException ex) { }
-                resetDone = true;
-                start(false, try1394b);
+                    resetDone = true;
+                    start(false, try1394b);
+                } catch (InterruptedException ex) {
+                    // reset interrupt to be nice
+                    Thread.currentThread().interrupt();
+                    return;
+                }
             } else {
                 throw e;
             }

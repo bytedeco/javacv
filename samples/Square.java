@@ -246,11 +246,11 @@ public class Square {
     String names[] = new String[]{ "pic1.png", "pic2.png", "pic3.png",
                       "pic4.png", "pic5.png", "pic6.png" };
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws Exception {
         new Square().main();
     }
 
-    public void main() {
+    public void main() throws InterruptedException {
         // Java translation: c not used
         int i; // , c;
         // create memory storage that will contain all the dynamic data
@@ -283,11 +283,7 @@ public class Square {
             // wait for key.
             // Also the function cvWaitKey takes care of event processing
             // Java translation
-            KeyEvent key = null;
-            try {
-                key = canvas.waitKey(0);
-            } catch(InterruptedException ie) {
-            }
+            KeyEvent key = canvas.waitKey(0);
             // c = cvWaitKey(0);
 
             // release both images

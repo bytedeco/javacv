@@ -86,6 +86,9 @@ import android.widget.RelativeLayout;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
@@ -265,7 +268,9 @@ public class RecordActivity extends Activity implements OnClickListener {
         try {
             audioThread.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            // reset interrupt to be nice
+            Thread.currentThread().interrupt();
+            return;
         }
         audioRecordRunnable = null;
         audioThread = null;
