@@ -104,7 +104,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     /**
      * @param urlstr A string to be used to create the URL.
      * @throws MalformedURLException if the urlstr is a malformed URL
-     * @gi By not setting the connection timeout and the read timeout if your network ever crashes
+     * @deprecated By not setting the connection timeout and the read timeout if your network ever crashes
      * then {@link #start()} or {@link #grab()} can hang for upwards of 45 to 60 seconds before failing.
      * You should always explicitly set the connectionTimeout and readTimeout so that your application can
      * respond appropriately to a loss or failure to connect.
