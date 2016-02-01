@@ -1,5 +1,6 @@
 
- * Fix swallowed `InterruptedException` ([issue #315](https://github.com/bytedeco/javacv/issues/315))
+ * Clean up `IPCameraFrameGrabber` ([pull #323](https://github.com/bytedeco/javacv/pull/323)
+ * Fix swallowed `InterruptedException` and throw appropriate exception in `FrameGrabber.start()` ([issue #315](https://github.com/bytedeco/javacv/issues/315))
  * Fix `IPCameraFrameGrabber.stop()` not checking for null ([pull #300](https://github.com/bytedeco/javacv/pull/300)
  * Upgrade dependencies for OpenCV 3.1.0, FFmpeg 2.8.4
  * Let users call `FFmpegFrameFilter.push(null)` to indicate EOF, as required by some filters like "palettegen" ([issue #287](https://github.com/bytedeco/javacv/issues/287))
