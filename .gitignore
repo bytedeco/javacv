@@ -10,3 +10,4 @@
 
 # IntelliJ
 *.iml
+.idea
