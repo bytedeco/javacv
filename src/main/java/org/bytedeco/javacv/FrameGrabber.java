@@ -63,7 +63,7 @@ public abstract class FrameGrabber {
                     if (s.length > 0) {
                         mayContainCameras = true;
                     }
-                } catch (Throwable t) { 
+                } catch (Throwable t) {
                     if (t.getCause() instanceof UnsupportedOperationException) {
                         mayContainCameras = true;
                     }
@@ -421,6 +421,25 @@ public abstract class FrameGrabber {
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void trigger() throws Exception;
+
+    /**
+     * Each call to grab stores the new image in the memory address for the previously returned frame. <br/>
+     * IE.<br/>
+     * <code>
+     * grabber.grab() == grabber.grab()
+     * </code>
+     * <br/>
+     * This means that if you need to cache images returned from grab you should {@link Frame#clone()} the
+     * returned frame as the next call to grab will overwrite your existing image's memory.
+     * <br/>
+     * <b>Why?</b><br/>
+     * Using this method instead of allocating a new buffer every time a frame
+     * is grabbed improves performance by reducing the frequency of garbage collections.
+     * Almost no additional heap space is typically allocated per frame.
+     *
+     * @return The frame returned from the grabber
+     * @throws Exception If there is a problem grabbing the frame.
+     */
     public abstract Frame grab() throws Exception;
     public Frame grabFrame() throws Exception { return grab(); }
     public abstract void release() throws Exception;
