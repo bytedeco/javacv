@@ -339,9 +339,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
                 } catch (InterruptedException ex) {
                     // reset interrupt to be nice
                     Thread.currentThread().interrupt();
-                }
-                if (!resetDone) {
-                    throw new Exception("dc1394_reset_bus() Error: Could not reset bus and try to start again.");
+                    throw new Exception("dc1394_reset_bus() Error: Could not reset bus and try to start again.", ex);
                 }
             } else {
                 throw e;
