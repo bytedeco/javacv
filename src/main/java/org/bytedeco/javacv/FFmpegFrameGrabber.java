@@ -256,7 +256,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getVideoBitrate() {
-        return video_c == null ? super.getVideoBitrate() : video_c.bit_rate();
+        return video_c == null ? super.getVideoBitrate() : (int)video_c.bit_rate();
     }
 
     @Override public double getAspectRatio() {
@@ -286,7 +286,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getAudioBitrate() {
-        return audio_c == null ? super.getAudioBitrate() : audio_c.bit_rate();
+        return audio_c == null ? super.getAudioBitrate() : (int)audio_c.bit_rate();
     }
 
     @Override public int getSampleFormat() {
@@ -576,8 +576,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             case GRAY:
                 // Deinterlace Picture
                 if (deinterlace) {
-                    AVPicture p = new AVPicture(picture);
-                    avpicture_deinterlace(p, p, video_c.pix_fmt(), video_c.width(), video_c.height());
+                    throw new Exception("Cannot deinterlace: Functionality moved to FFmpegFrameFilter.");
                 }
 
                 // Convert the image into BGR or GRAY format that OpenCV uses
