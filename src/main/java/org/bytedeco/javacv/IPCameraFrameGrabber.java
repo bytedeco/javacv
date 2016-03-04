@@ -205,11 +205,15 @@ public class IPCameraFrameGrabber extends FrameGrabber {
             }
         }
         // find embedded jpeg in stream
-        final String subheader = sb.toString();
+        /*
+         * Some cameras return headers 'content-length' using different casing
+         * Eg. Axis cameras return 'Content-Length:' while TrendNet cameras return 'content-length:'
+         */
+        final String subheader = sb.toString().toLowerCase();
         //log.debug(subheader);
 
         // Yay! - server was nice and sent content length
-        int c0 = subheader.indexOf("Content-Length: ");
+        int c0 = subheader.indexOf("content-length: ");
         final int c1 = subheader.indexOf('\r', c0);
 
         if (c0 < 0) {
