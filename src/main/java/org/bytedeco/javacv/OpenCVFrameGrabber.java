@@ -32,6 +32,7 @@ import static org.bytedeco.javacpp.opencv_videoio.*;
 /**
  *
  * @author Samuel Audet
+ * @author Lloyd (github.com/lloydmeta)
  */
 public class OpenCVFrameGrabber extends FrameGrabber {
     public static String[] getDeviceDescriptions() throws Exception {
@@ -75,9 +76,9 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
     private int deviceNumber = 0;
     private String filename = null;
-    private CvCapture capture = null;
-    private IplImage return_image = null;
-    private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+    private VideoCapture capture = null;
+    private Mat returnMatrix = null;
+    private OpenCVFrameConverter converter = new OpenCVFrameConverter.ToMat();
 
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
@@ -92,7 +93,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (capture == null) {
             return super.getFormat();
         } else {
-            int fourcc = (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FOURCC);
+            int fourcc = (int)capture.get(CV_CAP_PROP_FOURCC);
             return "" + (char)( fourcc        & 0xFF) +
                         (char)((fourcc >>  8) & 0xFF) +
                         (char)((fourcc >> 16) & 0xFF) +
@@ -101,67 +102,67 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getImageWidth() {
-        if (return_image != null) {
-            return return_image.width();
+        if (returnMatrix != null) {
+            return returnMatrix.cols();
         } else {
-            return capture == null ? super.getImageWidth() : (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
+            return capture == null ? super.getImageWidth() : (int)capture.get(CV_CAP_PROP_FRAME_WIDTH);
         }
     }
 
     @Override public int getImageHeight() {
-        if (return_image != null) {
-            return return_image.height();
+        if (returnMatrix != null) {
+            return returnMatrix.rows();
         } else {
-            return capture == null ? super.getImageHeight() : (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
+            return capture == null ? super.getImageHeight() : (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT);
         }
     }
 
     @Override public int getPixelFormat() {
-        return capture == null ? super.getPixelFormat() : (int)cvGetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB);
+        return capture == null ? super.getPixelFormat() : (int)capture.get(CV_CAP_PROP_CONVERT_RGB);
     }
 
     @Override public double getFrameRate() {
-        return capture == null ? super.getFrameRate() : (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
+        return capture == null ? super.getFrameRate() : (int)capture.get(CV_CAP_PROP_FPS);
     }
 
     @Override public void setImageMode(ImageMode imageMode) {
         if (imageMode != this.imageMode) {
-            return_image = null;
+            returnMatrix = null;
         }
         super.setImageMode(imageMode);
     }
 
     @Override public int getFrameNumber() {
-        return capture == null ? super.getFrameNumber() : 
-                (int)cvGetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES);
+        return capture == null ? super.getFrameNumber() :
+                (int)capture.get(CV_CAP_PROP_POS_FRAMES);
     }
     @Override public void setFrameNumber(int frameNumber) throws Exception {
         if (capture == null) {
             super.setFrameNumber(frameNumber);
         } else {
-            if (cvSetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES, frameNumber) == 0) {
-                throw new Exception("cvSetCaptureProperty() Error: Could not set CV_CAP_PROP_POS_FRAMES to " + frameNumber + ".");
+            if (!capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber)) {
+                throw new Exception("set() Error: Could not set CV_CAP_PROP_POS_FRAMES to " + frameNumber + ".");
             }
         }
     }
 
     @Override public long getTimestamp() {
         return capture == null ? super.getTimestamp() :
-                Math.round(cvGetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC)*1000);
+                Math.round(capture.get(CV_CAP_PROP_POS_MSEC)*1000);
     }
     @Override public void setTimestamp(long timestamp) throws Exception {
         if (capture == null) {
             super.setTimestamp(timestamp);
         } else {
-            if (cvSetCaptureProperty(capture, CV_CAP_PROP_POS_MSEC, timestamp/1000.0) == 0) {
-                throw new Exception("cvSetCaptureProperty() Error: Could not set CV_CAP_PROP_POS_MSEC to " + timestamp/1000.0 + ".");
+            if (!capture.set(CV_CAP_PROP_POS_MSEC, timestamp/1000.0)) {
+                throw new Exception("set() Error: Could not set CV_CAP_PROP_POS_MSEC to " + timestamp/1000.0 + ".");
             }
         }
     }
 
     @Override public int getLengthInFrames() {
         return capture == null ? super.getLengthInFrames() :
-                (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_COUNT);
+                (int)capture.get(CV_CAP_PROP_FRAME_COUNT);
     }
     @Override public long getLengthInTime() {
         return Math.round(getLengthInFrames() * 1000000L / getFrameRate());
@@ -169,102 +170,96 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
     public void start() throws Exception {
         if (filename != null && filename.length() > 0) {
-            capture = cvCreateFileCapture(filename);
-            if (capture == null) {
-                throw new Exception("cvCreateFileCapture() Error: Could not create camera capture.");
-            }
+            capture = new VideoCapture(filename);
         } else {
-            capture = cvCreateCameraCapture(deviceNumber);
-            if (capture == null) {
-                throw new Exception("cvCreateCameraCapture() Error: Could not create camera capture.");
-            }
+            capture = new VideoCapture(deviceNumber);
         }
         if (imageWidth > 0) {
-            if (cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, imageWidth) == 0) {
-                cvSetCaptureProperty(capture, CV_CAP_PROP_MODE, imageWidth); // ??
+            if (!capture.set(CV_CAP_PROP_FRAME_WIDTH, imageWidth)) {
+                capture.set(CV_CAP_PROP_MODE, imageWidth); // ??
             }
         }
         if (imageHeight > 0) {
-            if (cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, imageHeight) == 0) {
-                cvSetCaptureProperty(capture, CV_CAP_PROP_MODE, imageHeight); // ??
+            if (!capture.set(CV_CAP_PROP_FRAME_HEIGHT, imageHeight)) {
+                capture.set(CV_CAP_PROP_MODE, imageHeight); // ??
             }
         }
         if (frameRate > 0) {
-            cvSetCaptureProperty(capture, CV_CAP_PROP_FPS, frameRate);
+            capture.set(CV_CAP_PROP_FPS, frameRate);
         }
         if (bpp > 0) {
-            cvSetCaptureProperty(capture, CV_CAP_PROP_FORMAT, bpp); // ??
+            capture.set(CV_CAP_PROP_FORMAT, bpp); // ??
         }
-        cvSetCaptureProperty(capture, CV_CAP_PROP_CONVERT_RGB, imageMode == ImageMode.COLOR ? 1 : 0);
+        capture.set(CV_CAP_PROP_CONVERT_RGB, imageMode == ImageMode.COLOR ? 1 : 0);
 
-        IplImage frame = null;
+        Mat mat = new Mat();
+
         try {
-            // Before cvRetrieveFrame() starts returning something else then null
+            // Before retrieve() starts returning something else then null
             // QTKit sometimes requires some "warm-up" time for some reason...
             // The first frame on Linux is sometimes null as well,
             // so it's probably a good idea to run this for all platforms... ?
             int count = 0;
-            while (count++ < 100 && cvGrabFrame(capture) != 0 && (frame = cvRetrieveFrame(capture)) == null) {
+            while (count++ < 100 && !capture.read(mat)) {
                 Thread.sleep(100);
             }
         } catch (InterruptedException ex) {
             // reset interrupt to be nice
             Thread.currentThread().interrupt();
         }
-        if (frame == null) {
-            throw new Exception("cvRetrieveFrame() Error: Could not retrieve frame in start().");
+        if (!capture.read(mat)) {
+            throw new Exception("read() Error: Could not read frame in start().");
         }
 
         if (!triggerMode) {
-            int err = cvGrabFrame(capture);
-            if (err == 0) {
-                throw new Exception("cvGrabFrame() Error: Could not grab frame. (Has start() been called?)");
+            if (!capture.grab()) {
+                throw new Exception("grab() Error: Could not grab frame. (Has start() been called?)");
             }
         }
     }
 
     public void stop() throws Exception {
         if (capture != null) {
-            cvReleaseCapture(capture);
+            capture.release();
             capture = null;
         }
     }
 
     public void trigger() throws Exception {
+        Mat mat = new Mat();
         for (int i = 0; i < numBuffers+1; i++) {
-            cvQueryFrame(capture);
+            capture.read(mat);
         }
-        int err = cvGrabFrame(capture);
-        if (err == 0) {
-            throw new Exception("cvGrabFrame() Error: Could not grab frame. (Has start() been called?)");
+        if (!capture.grab()) {
+            throw new Exception("grab() Error: Could not grab frame. (Has start() been called?)");
         }
     }
 
     public Frame grab() throws Exception {
-        IplImage image = cvRetrieveFrame(capture);
-        if (image == null) {
-            throw new Exception("cvRetrieveFrame() Error: Could not retrieve frame. (Has start() been called?)");
+        Mat mat = new Mat();
+        if (!capture.retrieve(mat)) {
+            throw new Exception("retrieve() Error: Could not retrieve frame. (Has start() been called?)");
         }
         if (!triggerMode) {
-            int err = cvGrabFrame(capture);
-            if (err == 0) {
-                throw new Exception("cvGrabFrame() Error: Could not grab frame. (Has start() been called?)");
+            if (!capture.grab()) {
+                throw new Exception("grab() Error: Could not grab frame. (Has start() been called?)");
             }
         }
 
-        if (imageMode == ImageMode.GRAY && image.nChannels() > 1) {
-            if (return_image == null) {
-                return_image = IplImage.create(image.width(), image.height(), image.depth(), 1);
+        if (imageMode == ImageMode.GRAY && mat.channels() > 1) {
+            if (returnMatrix == null) {
+                returnMatrix = new Mat(mat.rows(), mat.cols(), mat.depth(), 1);
             }
-            cvCvtColor(image, return_image, CV_BGR2GRAY);
-        } else if (imageMode == ImageMode.COLOR && image.nChannels() == 1) {
-            if (return_image == null) {
-                return_image = IplImage.create(image.width(), image.height(), image.depth(), 3);
+
+            cvtColor(mat, returnMatrix, CV_BGR2GRAY);
+        } else if (imageMode == ImageMode.COLOR && mat.channels() == 1) {
+            if (returnMatrix == null) {
+                returnMatrix = new Mat(mat.rows(), mat.cols(), mat.depth(), 3);
             }
-            cvCvtColor(image, return_image, CV_GRAY2BGR);
+            cvtColor(mat, returnMatrix, CV_GRAY2BGR);
         } else {
-            return_image = image;
+            returnMatrix = mat;
         }
-        return converter.convert(return_image);
+        return converter.convert(returnMatrix);
     }
 }
