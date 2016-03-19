@@ -48,7 +48,7 @@ public class cvkernels extends org.bytedeco.javacpp.cvkernels {
     };
 
     public static void multiWarpColorTransform(final KernelData data, final CvRect roi, final CvScalar fillColor) {
-        final int size = data.capacity();
+        final int size = (int)data.capacity();
         final ParallelData[] pd = parallelData.get();
 
         // Copy all data to completely independent data sets

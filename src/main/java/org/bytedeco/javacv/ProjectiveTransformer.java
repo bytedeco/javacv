@@ -226,7 +226,7 @@ public class ProjectiveTransformer implements ImageTransformer {
             kernelData.dstDstDot(data[i].dstDstDot);
         }
 
-        int fullCapacity = kernelData.capacity();
+        long fullCapacity = kernelData.capacity();
         kernelData.capacity(data.length);
         multiWarpColorTransform(kernelData, roi, getFillColor());
         kernelData.capacity(fullCapacity);
