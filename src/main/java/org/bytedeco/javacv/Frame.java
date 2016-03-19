@@ -88,7 +88,7 @@ public class Frame implements Indexable {
 
     /** The underlying data object, for example, AVFrame, IplImage, or Mat. */
     public Object opaque;
-    
+
     /** Timestamp of the frame creation. */
     public long timestamp;
 
@@ -173,10 +173,10 @@ public class Frame implements Indexable {
     /**Care must be taken if this method is to be used in conjunction with movie recordings.
      *  Cloning a frame containing a full HD picture (alpha channel included) would take 1920 x 1080 * 4 = 8.294.400 Bytes.
      *  Expect a heap overflow exception when using this method without cleaning up.
-     *  
+     *
      * @return A deep copy of this frame.
-     * @see {@link #cloneBufferArray} 
-     *  
+     * @see {@link #cloneBufferArray}
+     *
      * @author Extension proposed by Dragos Dutu
      * */
     @Override
@@ -209,10 +209,10 @@ public class Frame implements Indexable {
     /**
      * This private method takes a buffer array as input and returns a deep copy.
      * It is assumed that all buffers in the input array are of the same subclass.
-     * 
+     *
      * @param srcBuffers - Buffer array to be cloned
      * @return New buffer array
-     * 
+     *
      *  @author Extension proposed by Dragos Dutu
      */
     private static Buffer[] cloneBufferArray(Buffer[] srcBuffers) {
@@ -229,11 +229,11 @@ public class Frame implements Indexable {
 
             /*
              * In order to optimize the transfer we need a type check.
-             * 
+             *
              * Most CPUs support hardware memory transfer for different data
              * types, so it's faster to copy more bytes at once rather
              * than one byte per iteration as in case of ByteBuffer.
-             * 
+             *
              * For example, Intel CPUs support MOVSB (byte transfer), MOVSW
              * (word transfer), MOVSD (double word transfer), MOVSS (32 bit
              * scalar single precision floating point), MOVSQ (quad word
@@ -243,7 +243,7 @@ public class Frame implements Indexable {
              * which a buffer is checked against. If it's likely that the
              * expected buffer is of type "ShortBuffer", then it should be
              * checked at first place.
-             * 
+             *
              */
 
             if (srcBuffers[0] instanceof ByteBuffer)
@@ -286,18 +286,5 @@ public class Frame implements Indexable {
         return clonedBuffers;
 
     }
-
-    // For test purposes. Should be deleted
-    public static void main(String[] args) {
-        //Frame f = new Frame();
-        Frame f = new Frame(1,1,-16,1);
-        Frame g;
-
-        g = f.clone();
-
-        System.out.println(f.image[0]);
-        System.out.println(g.image[0]);
-
-        }
 
 }
