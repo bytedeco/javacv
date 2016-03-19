@@ -1,7 +1,9 @@
 
- * Clean up `IPCameraFrameGrabber` ([pull #323](https://github.com/bytedeco/javacv/pull/323)
+ * Upgrade `OpenCVFrameGrabber` to use the new C++ `VideoCapture` API ([pull #361](https://github.com/bytedeco/javacv/pull/361))
+ * Add `CaffeGooglenet.java` sample for the `opencv_dnn` module ([pull #341](https://github.com/bytedeco/javacv/pull/341))
+ * Clean up `IPCameraFrameGrabber` and fix incorrectly reading some headers ([pull #323](https://github.com/bytedeco/javacv/pull/323), [pull #345](https://github.com/bytedeco/javacv/pull/345))
  * Fix swallowed `InterruptedException` and throw appropriate exception in `FrameGrabber.start()` ([issue #315](https://github.com/bytedeco/javacv/issues/315))
- * Fix `IPCameraFrameGrabber.stop()` not checking for null ([pull #300](https://github.com/bytedeco/javacv/pull/300)
+ * Fix `IPCameraFrameGrabber.stop()` not checking for null ([pull #300](https://github.com/bytedeco/javacv/pull/300))
  * Upgrade dependencies for OpenCV 3.1.0, FFmpeg 3.0, libdc1394 2.2.4
  * Let users call `FFmpegFrameFilter.push(null)` to indicate EOF, as required by some filters like "palettegen" ([issue #287](https://github.com/bytedeco/javacv/issues/287))
  * Call `cvHaarDetectObjects()` with `CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH` instead of `CV_HAAR_DO_CANNY_PRUNING` in the face detection samples to get acceptable performance with OpenCV 3.0 ([issue #272](https://github.com/bytedeco/javacv/issues/272))
