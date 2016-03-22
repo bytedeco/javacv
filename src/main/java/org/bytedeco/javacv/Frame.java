@@ -128,8 +128,8 @@ public class Frame implements Indexable {
     }
     /** Returns an {@link Indexer} for the <i>i</i>th image plane. */
     public <I extends Indexer> I createIndexer(boolean direct, int i) {
-        int[] sizes = {imageHeight, imageWidth, imageChannels};
-        int[] strides = {imageStride, imageChannels, 1};
+        long[] sizes = {imageHeight, imageWidth, imageChannels};
+        long[] strides = {imageStride, imageChannels, 1};
         Buffer buffer = image[i];
         Object array = buffer.hasArray() ? buffer.array() : null;
         switch (imageDepth) {

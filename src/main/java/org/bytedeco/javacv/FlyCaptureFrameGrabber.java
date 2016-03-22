@@ -213,7 +213,7 @@ public class FlyCaptureFrameGrabber extends FrameGrabber {
         int[] iSource   = new int[1];
         int[] iRawValue = new int[1];
         int[] iMode     = new int[1];
-        int error = flycaptureGetTrigger(context, null, iPolarity, iSource, iRawValue, iMode, null);
+        int error = flycaptureGetTrigger(context, (boolean[])null, iPolarity, iSource, iRawValue, iMode, null);
         if (error != FLYCAPTURE_OK) {
             throw new Exception("flycaptureGetTrigger() Error " + error);
         }
