@@ -63,7 +63,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
     }
     public void release() throws Exception {
         if (writer != null) {
-            cvReleaseVideoWriter(writer);
+            writer.release();
             writer = null;
         }
     }
@@ -74,14 +74,25 @@ public class OpenCVFrameRecorder extends FrameRecorder {
 
     private static final boolean windows = Loader.getPlatform().startsWith("windows");
     private String filename;
-    private CvVideoWriter writer = null;
-    private OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
+    private VideoWriter writer = null;
+    private OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
 
     public void start() throws Exception {
-        writer = cvCreateVideoWriter(filename, videoCodec, frameRate, cvSize(imageWidth, imageHeight), pixelFormat);
-        if (writer == null) {
-            throw new Exception("cvCreateVideoWriter(): Could not create a writer");
-        }
+        writer = new VideoWriter(filename, fourCCCodec(), frameRate, new Size(imageWidth, imageHeight), isColour());
+    }
+
+    /**
+     * Pixel format is an int and maps to colour if != 0, greyscale otherwise.
+     */
+    private boolean isColour() {
+        return pixelFormat != 0;
+    }
+
+    /**
+     * VideoCodec in JavaCV jargon is the same as FourCC code in OpenCV speak
+     */
+    private int fourCCCodec() {
+        return videoCodec;
     }
 
     public void stop() throws Exception {
@@ -89,11 +100,9 @@ public class OpenCVFrameRecorder extends FrameRecorder {
     }
 
     public void record(Frame frame) throws Exception {
-        IplImage image = converter.convert(frame);
+        Mat mat = converter.convert(frame);
         if (writer != null) {
-            if (cvWriteFrame(writer, image) == 0) {
-                throw new Exception("cvWriteFrame(): Could not record frame");
-            }
+            writer.write(mat);
         } else {
             throw new Exception("Cannot record: There is no writer (Has start() been called?)");
         }
