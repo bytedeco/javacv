@@ -1,5 +1,3 @@
-package net.betzel.bytedeco.javacv.pca;
-
 import org.bytedeco.javacpp.indexer.DoubleIndexer;
 import org.bytedeco.javacpp.indexer.IntIndexer;
 import org.bytedeco.javacpp.opencv_core.*;
