@@ -1,4 +1,7 @@
 
+ * Lower Maven prerequisite in the `pom.xml` file to 3.0 ([issue bytedeco/javacpp#93](https://github.com/bytedeco/javacpp/issues/93))
+ * Add new `PrincipalComponentAnalysis` sample ([pull #373](https://github.com/bytedeco/javacv/pull/373))
+ * Upgrade `OpenCVFrameRecorder` to use the new C++ `VideoWriter` API ([pull #370](https://github.com/bytedeco/javacv/pull/370))
  * Upgrade `OpenCVFrameGrabber` to use the new C++ `VideoCapture` API ([pull #361](https://github.com/bytedeco/javacv/pull/361))
  * Add `CaffeGooglenet.java` sample for the `opencv_dnn` module ([pull #341](https://github.com/bytedeco/javacv/pull/341))
  * Clean up `IPCameraFrameGrabber` and fix incorrectly reading some headers ([pull #323](https://github.com/bytedeco/javacv/pull/323), [pull #345](https://github.com/bytedeco/javacv/pull/345))
