@@ -375,6 +375,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return oc.duration() * 1000000L / AV_TIME_BASE;
     }
 
+    public AVFormatContext getFormatContext() {
+
+        return oc;
+    }
+
     public void start() throws Exception {
         synchronized (org.bytedeco.javacpp.avcodec.class) {
             startUnsafe();
@@ -755,5 +760,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
         }
         return frame;
+    }
+
+    public AVPacket grabPacket() throws Exception {
+
+	if (oc == null || oc.isNull()) {
+	    throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
+	}
+
+
+        // Return the next frame of a stream.
+        if (av_read_frame(oc, pkt) < 0) {
+            return null;
+        }
+
+	return pkt;
+
     }
 }
