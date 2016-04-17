@@ -1,4 +1,5 @@
 
+ * Support `AVPacket` in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` to copy without re-encoding ([issue #93](https://github.com/bytedeco/javacv/issues/93))
  * Lower Maven prerequisite in the `pom.xml` file to 3.0 ([issue bytedeco/javacpp#93](https://github.com/bytedeco/javacpp/issues/93))
  * Add new `PrincipalComponentAnalysis` sample ([pull #373](https://github.com/bytedeco/javacv/pull/373))
  * Upgrade `OpenCVFrameRecorder` to use the new C++ `VideoWriter` API ([pull #370](https://github.com/bytedeco/javacv/pull/370))
@@ -7,7 +8,7 @@
  * Clean up `IPCameraFrameGrabber` and fix incorrectly reading some headers ([pull #323](https://github.com/bytedeco/javacv/pull/323), [pull #345](https://github.com/bytedeco/javacv/pull/345))
  * Fix swallowed `InterruptedException` and throw appropriate exception in `FrameGrabber.start()` ([issue #315](https://github.com/bytedeco/javacv/issues/315))
  * Fix `IPCameraFrameGrabber.stop()` not checking for null ([pull #300](https://github.com/bytedeco/javacv/pull/300))
- * Upgrade dependencies for OpenCV 3.1.0, FFmpeg 3.0, libdc1394 2.2.4
+ * Upgrade dependencies for OpenCV 3.1.0, FFmpeg 3.0.1, FlyCapture 2.9.3.13, libdc1394 2.2.4
  * Let users call `FFmpegFrameFilter.push(null)` to indicate EOF, as required by some filters like "palettegen" ([issue #287](https://github.com/bytedeco/javacv/issues/287))
  * Call `cvHaarDetectObjects()` with `CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH` instead of `CV_HAAR_DO_CANNY_PRUNING` in the face detection samples to get acceptable performance with OpenCV 3.0 ([issue #272](https://github.com/bytedeco/javacv/issues/272))
  * Change `WakeLock` for `keepScreenOn` in `AndroidManifest.xml` file and add `setPreviewDisplay()` call on `surfaceChanged()` event for the `RecordActivity` sample ([pull #269](https://github.com/bytedeco/javacv/pull/269), [pull #271](https://github.com/bytedeco/javacv/pull/271))
