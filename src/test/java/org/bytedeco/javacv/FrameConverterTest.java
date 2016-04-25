@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Samuel Audet
+ * Copyright (C) 2015-2016 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -26,21 +26,112 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.WritableRaster;
+import java.nio.ByteBuffer;
+import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
 
 import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.junit.Assert.*;
 
 /**
  * Test cases for FrameConverter classes. Also uses other classes from JavaCV.
  *
- * @todo Figure out something for {@link AndroidFrameConverter}.
- *
  * @author Samuel Audet
  */
 public class FrameConverterTest {
+
+    @Test public void testAndroidFrameConverter() {
+        System.out.println("AndroidFrameConverter");
+
+        AndroidFrameConverter converter = new AndroidFrameConverter();
+
+        int width = 512;
+        int height = 1024;
+        byte[] yuvData = new byte[3 * width * height / 2];
+        for (int i = 0; i < yuvData.length; i++) {
+            yuvData[i] = (byte)i;
+        }
+        Mat yuvImage = new Mat(3 * height / 2, width, CV_8UC1, new BytePointer(yuvData));
+        Mat bgrImage = new Mat(height, width, CV_8UC3);
+        cvtColor(yuvImage, bgrImage, CV_YUV2BGR_NV21);
+        Frame bgrFrame = converter.convert(yuvData, width, height);
+
+        UByteIndexer bgrImageIdx = bgrImage.createIndexer();
+        UByteIndexer bgrFrameIdx = bgrFrame.createIndexer();
+        assertEquals(bgrImageIdx.rows(), bgrFrameIdx.rows());
+        assertEquals(bgrImageIdx.cols(), bgrFrameIdx.cols());
+        assertEquals(bgrImageIdx.channels(), bgrFrameIdx.channels());
+        for (int i = 0; i < bgrImageIdx.rows(); i++) {
+            for (int j = 0; j < bgrImageIdx.cols(); j++) {
+                for (int k = 0; k < bgrImageIdx.channels(); k++) {
+                    assertEquals((float)bgrImageIdx.get(i, j, k), (float)bgrFrameIdx.get(i, j, k), 1.0f);
+                }
+            }
+        }
+        bgrImageIdx.release();
+        bgrFrameIdx.release();
+
+        Frame grayFrame = new Frame(1024 + 1, 768, Frame.DEPTH_UBYTE, 1);
+        Frame colorFrame = new Frame(640 + 1, 480, Frame.DEPTH_UBYTE, 3);
+
+        UByteIndexer grayFrameIdx = grayFrame.createIndexer();
+        for (int i = 0; i < grayFrameIdx.rows(); i++) {
+            for (int j = 0; j < grayFrameIdx.cols(); j++) {
+                grayFrameIdx.put(i, j, i + j);
+            }
+        }
+
+        UByteIndexer colorFrameIdx = colorFrame.createIndexer();
+        for (int i = 0; i < colorFrameIdx.rows(); i++) {
+            for (int j = 0; j < colorFrameIdx.cols(); j++) {
+                for (int k = 0; k < colorFrameIdx.channels(); k++) {
+                    colorFrameIdx.put(i, j, k, i + j + k);
+                }
+            }
+        }
+
+        width = grayFrame.imageWidth;
+        height = grayFrame.imageHeight;
+        int stride = grayFrame.imageStride;
+        int rowBytes = width * 4;
+        ByteBuffer in = (ByteBuffer)grayFrame.image[0];
+        ByteBuffer buffer = converter.gray2rgba(in, width, height, stride, rowBytes);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // GRAY -> RGBA
+                byte B = in.get(y * stride + x);
+                assertEquals(buffer.get(y * rowBytes + 4 * x    ), B);
+                assertEquals(buffer.get(y * rowBytes + 4 * x + 1), B);
+                assertEquals(buffer.get(y * rowBytes + 4 * x + 2), B);
+                assertEquals(buffer.get(y * rowBytes + 4 * x + 3), (byte)0xFF);
+            }
+        }
+
+        width = colorFrame.imageWidth;
+        height = colorFrame.imageHeight;
+        stride = colorFrame.imageStride;
+        rowBytes = width * 4;
+        in = (ByteBuffer)colorFrame.image[0];
+        buffer = converter.bgr2rgba(in, width, height, stride, rowBytes);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // BGR -> RGBA
+                byte B = in.get(y * stride + 3 * x    );
+                byte G = in.get(y * stride + 3 * x + 1);
+                byte R = in.get(y * stride + 3 * x + 2);
+                assertEquals(buffer.get(y * rowBytes + 4 * x    ), R);
+                assertEquals(buffer.get(y * rowBytes + 4 * x + 1), G);
+                assertEquals(buffer.get(y * rowBytes + 4 * x + 2), B);
+                assertEquals(buffer.get(y * rowBytes + 4 * x + 3), (byte)0xFF);
+            }
+        }
+
+        colorFrameIdx.release();
+        grayFrameIdx.release();
+    }
 
     @Test public void testJava2DFrameConverter() {
         System.out.println("Java2DFrameConverter");

@@ -1,4 +1,5 @@
 
+ * Optimize `AndroidFrameConverter` a bit and add a test ([pull #379](https://github.com/bytedeco/javacv/pull/379))
  * Fix `DC1394FrameGrabber` on the Windows platform ([issue bytedeco/procamcalib#4](https://github.com/bytedeco/procamcalib/issues/4))
  * Support `AVPacket` in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` to copy without re-encoding ([issue #93](https://github.com/bytedeco/javacv/issues/93))
  * Lower Maven prerequisite in the `pom.xml` file to 3.0 ([issue bytedeco/javacpp#93](https://github.com/bytedeco/javacpp/issues/93))
