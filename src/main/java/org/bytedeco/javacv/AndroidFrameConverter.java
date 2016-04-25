@@ -39,6 +39,7 @@ import java.nio.ByteBuffer;
 public class AndroidFrameConverter extends FrameConverter<Bitmap> {
     Bitmap bitmap;
     ByteBuffer buffer;
+    byte[] row;
 
     /**
      * Convert YUV 4:2:0 SP (NV21) data to BGR, as received, for example,
@@ -142,18 +143,23 @@ public class AndroidFrameConverter extends FrameConverter<Bitmap> {
         int height = frame.imageHeight;
         int stride = frame.imageStride;
         int rowBytes = bitmap.getRowBytes();
+        int rgba;
         if (frame.imageChannels == 1) {
             if (buffer == null || buffer.capacity() < height * rowBytes) {
                 buffer = ByteBuffer.allocate(height * rowBytes);
             }
+            if (row == null || row.length != stride)
+                row = new byte[stride];
             for (int y = 0; y < height; y++) {
+                in.position(y * stride);
+                in.get(row);
                 for (int x = 0; x < width; x++) {
                     // GRAY -> RGBA
-                    byte B = in.get(y * stride + x);
-                    buffer.put(y * rowBytes + 4 * x,     B);
-                    buffer.put(y * rowBytes + 4 * x + 1, B);
-                    buffer.put(y * rowBytes + 4 * x + 2, B);
-                    buffer.put(y * rowBytes + 4 * x + 3, (byte)0xFF);
+                    byte B = row[x];
+                    rgba = ( B & 0xff) << 24 |
+                            (B & 0xff) << 16 |
+                            (B & 0xff) <<  8 | 0xff;
+                    buffer.putInt(y * rowBytes + 4 * x, rgba);
                 }
             }
             bitmap.copyPixelsFromBuffer(buffer.position(0));
@@ -161,16 +167,20 @@ public class AndroidFrameConverter extends FrameConverter<Bitmap> {
             if (buffer == null || buffer.capacity() < height * rowBytes) {
                 buffer = ByteBuffer.allocate(height * rowBytes);
             }
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    // BGR -> RGBA
-                    byte B = in.get(y * stride + 3 * x    );
-                    byte G = in.get(y * stride + 3 * x + 1);
-                    byte R = in.get(y * stride + 3 * x + 2);
-                    buffer.put(y * rowBytes + 4 * x,     R);
-                    buffer.put(y * rowBytes + 4 * x + 1, G);
-                    buffer.put(y * rowBytes + 4 * x + 2, B);
-                    buffer.put(y * rowBytes + 4 * x + 3, (byte)0xFF);
+            if (in.remaining() > 0) {
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        // BGR -> RGBA
+                        if (x < width - 1 || y < height - 1) {
+                            rgba = in.getInt(y * stride + 3 * x);
+                        } else {
+                            int r = in.get(y * stride + 3 * x)     & 0xff;
+                            int g = in.get(y * stride + 3 * x + 1) & 0xff;
+                            int b = in.get(y * stride + 3 * x + 2) & 0xff;
+                            rgba = (r << 24) | (g << 16) | (b << 8);
+                        }
+                        buffer.putInt(y * rowBytes + 4 * x, (rgba << 8) | 0xff);
+                    }
                 }
             }
             bitmap.copyPixelsFromBuffer(buffer.position(0));
