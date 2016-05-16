@@ -50,7 +50,7 @@ We can also have everything downloaded and installed automatically with:
   libraryDependencies += "org.bytedeco" % "javacv" % "1.2"
 ```
 
-Additionally, we need to either set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, or set the `javacpp.platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.**
+Additionally, we need to either set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, or set the `javacpp.platform.dependencies` one to `true` to get all the binaries for Android, Linux, Mac OS X, and Windows. **On build systems where this does not work, we need to add the platform-specific artifacts manually.** For examples with Gradle and sbt, please refer to the [README.md file of the JavaCPP Presets](https://github.com/bytedeco/javacpp-presets#downloads). Another option available for Scala users is [sbt-javacv](https://github.com/bytedeco/sbt-javacv).
 
 
 Required Software
