@@ -1,4 +1,6 @@
 
+ * Add more appropriate default pixel formats for JPEG formats in `FFmpegFrameRecorder` ([issue #410](https://github.com/bytedeco/javacv/issues/410))
+
 ### May 15, 2016 version 1.2
  * Optimize `AndroidFrameConverter` a bit and add a test ([pull #379](https://github.com/bytedeco/javacv/pull/379))
  * Fix `DC1394FrameGrabber` on the Windows platform ([issue bytedeco/procamcalib#4](https://github.com/bytedeco/procamcalib/issues/4))

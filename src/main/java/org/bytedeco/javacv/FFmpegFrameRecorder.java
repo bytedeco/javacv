@@ -435,6 +435,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else if (video_c.codec_id() == AV_CODEC_ID_RAWVIDEO || video_c.codec_id() == AV_CODEC_ID_PNG ||
                        video_c.codec_id() == AV_CODEC_ID_HUFFYUV  || video_c.codec_id() == AV_CODEC_ID_FFV1) {
                 video_c.pix_fmt(AV_PIX_FMT_RGB32);   // appropriate for common lossless formats
+            } else if (video_c.codec_id() == AV_CODEC_ID_JPEGLS) {
+                video_c.pix_fmt(AV_PIX_FMT_BGR24);
+            } else if (video_c.codec_id() == AV_CODEC_ID_MJPEG || video_c.codec_id() == AV_CODEC_ID_MJPEGB) {
+                video_c.pix_fmt(AV_PIX_FMT_YUVJ420P);
             } else {
                 video_c.pix_fmt(AV_PIX_FMT_YUV420P); // lossy, but works with about everything
             }
