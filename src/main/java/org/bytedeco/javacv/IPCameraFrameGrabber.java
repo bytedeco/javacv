@@ -88,7 +88,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
             throw new IllegalArgumentException("URL can not be null");
         }
         this.url = url;
-        if (timeUnit == null) {
+        if (timeUnit != null) {
             this.connectionTimeout = toIntExact(TimeUnit.MILLISECONDS.convert(startTimeout, timeUnit));
             this.readTimeout = toIntExact(TimeUnit.MILLISECONDS.convert(grabTimeout, timeUnit));
         } else {
