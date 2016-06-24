@@ -632,6 +632,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public Frame grabFrame(boolean doAudio, boolean doVideo, boolean processImage, boolean keyFrames) throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
+        } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
+            return null;
         }
         frame.keyFrame = false;
         frame.imageWidth = 0;

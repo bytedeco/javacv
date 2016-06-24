@@ -34,6 +34,8 @@ import java.nio.ByteOrder;
  * <p>
  * This class is not optimized for speed. For best performance, convert first
  * your data to and from RGBA with optimized functions from FFmpeg or OpenCV.
+ * Further, pixel formats other than grayscale, BGR, and RGBA are not well
+ * supported. Their conversions might fail in undefined ways.
  *
  * @author Samuel Audet
  */

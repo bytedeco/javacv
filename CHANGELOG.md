@@ -1,4 +1,5 @@
 
+ * Fix seeking when calling `FFmpegFrameGrabber.setTimestamp()` on audio-only files
  * Add more appropriate default pixel formats for JPEG formats in `FFmpegFrameRecorder` ([issue #410](https://github.com/bytedeco/javacv/issues/410))
 
 ### May 15, 2016 version 1.2

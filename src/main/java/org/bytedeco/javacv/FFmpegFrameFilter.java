@@ -328,7 +328,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             }
             frame.image = image_buf;
             frame.image[0].position(0).limit(size);
-            frame.imageChannels = 2;
+            frame.imageChannels = (size + frame.imageWidth * frame.imageHeight - 1) / (frame.imageWidth * frame.imageHeight);
             ret = avpicture_layout(new AVPicture(filt_frame), filt_frame.format(),
                     frame.imageWidth, frame.imageHeight, (ByteBuffer) frame.image[0].position(0), frame.image[0].capacity());
         }
