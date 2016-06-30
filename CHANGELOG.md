@@ -1,4 +1,5 @@
 
+ * Update the `JavaCV` class with appropriate documentation comments ([issue #444](https://github.com/bytedeco/javacv/issues/444))
  * Fix Javadoc links for externally referenced classes
  * Fix seeking when calling `FFmpegFrameGrabber.setTimestamp()` on audio-only files
  * Add more appropriate default pixel formats for JPEG formats in `FFmpegFrameRecorder` ([issue #410](https://github.com/bytedeco/javacv/issues/410))

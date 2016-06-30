@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 Samuel Audet
+ * Copyright (C) 2009-2016 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_imgproc;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -43,7 +45,7 @@ public class JavaCV {
             FLT_EPSILON = 1.19209290e-7F,
             DBL_EPSILON = 2.2204460492503131e-16;
 
-    // returns the distance^2 between the line (x1, y1) (x2, y2) and the point (x3, y3)
+    /** returns the distance^2 between the line (x1, y1) (x2, y2) and the point (x3, y3) */
     public static double distanceToLine(double x1, double y1, double x2, double y2, double x3, double y3) {
         double dx = x2 - x1;
         double dy = y2 - y1;
@@ -58,8 +60,10 @@ public class JavaCV {
         return dx*dx + dy*dy;
     }
 
-    // returns the largest rectangle of given aspect ratio and angle,
-    // bounded by the contour and sharing the same centroid
+    /**
+     * returns the largest rectangle of given aspect ratio and angle,
+     * bounded by the contour and sharing the same centroid
+     */
     private static ThreadLocal<CvMoments> moments = CvMoments.createThreadLocal();
     public static CvBox2D boundedRect(CvMat contour, CvBox2D box) {
         int contourLength = contour.length();
@@ -95,10 +99,12 @@ public class JavaCV {
         return box;
     }
 
-    // Similar to cvBoundingRect(), but can also pad the output with some extra
-    // pixels, useful to use as ROI for operations with interpolation. Further
-    // aligns the region to specified boundaries, for easier vectorization and
-    // subsampling, and also uses on input the rect argument as a maximum boundary.
+    /**
+     * Similar to cvBoundingRect(), but can also pad the output with some extra
+     * pixels, useful to use as ROI for operations with interpolation. Further
+     * aligns the region to specified boundaries, for easier vectorization and
+     * subsampling, and also uses on input the rect argument as a maximum boundary.
+     */
     public static CvRect boundingRect(double[] contour, CvRect rect,
             int padX, int padY, int alignX, int alignY) {
         double minX = contour[0];
@@ -121,12 +127,15 @@ public class JavaCV {
         return rect.x(x).y(y).width(Math.max(0, width)).height(Math.max(0, height));
     }
 
-    // this is basically cvGetPerspectiveTransform() using CV_LU instead of
-    // CV_SVD, because the latter gives inaccurate results...
     private static ThreadLocal<CvMat>
             A8x8 = CvMat.createThreadLocal(8, 8),
             b8x1 = CvMat.createThreadLocal(8, 1),
             x8x1 = CvMat.createThreadLocal(8, 1);
+    /**
+     * this is basically cvGetPerspectiveTransform() using CV_LU instead of
+     * CV_SVD, because the latter gives inaccurate results...
+     * Consider using {@link opencv_imgproc#getPerspectiveTransform} instead.
+     */
     public static CvMat getPerspectiveTransform(double[] src, double[] dst, CvMat map_matrix) {
         // creating and releasing matrices via NIO here in this function
         // can easily become a bottleneck, so we use ThreadLocal references
@@ -156,6 +165,7 @@ public class JavaCV {
         return map_matrix;
     }
 
+    /** Consider using {@link opencv_core#perspectiveTransform} instead. */
     public static void perspectiveTransform(double[] src, double[] dst, CvMat map_matrix) {
         double[] mat = map_matrix.get();
         for (int j = 0; j < src.length; j += 2) {
@@ -230,11 +240,13 @@ public class JavaCV {
         perspectiveTransform(src, dst, H);
     }
 
-    // Algorithms for Plane-Based Pose Estimation, Peter Sturm
-    // This assumes plane parameters n == z axis.
     private static ThreadLocal<CvMat>
             M3x2 = CvMat.createThreadLocal(3, 2), S2x2 = CvMat.createThreadLocal(2, 2),
             U3x2 = CvMat.createThreadLocal(3, 2), V2x2 = CvMat.createThreadLocal(2, 2);
+    /**
+     * Algorithms for Plane-Based Pose Estimation, Peter Sturm
+     * This assumes plane parameters n == z axis.
+     */
     public static void HtoRt(CvMat H, CvMat R, CvMat t) {
         CvMat M = M3x2.get(), S = S2x2.get(),
               U = U3x2.get(), V = V2x2.get();
@@ -321,13 +333,15 @@ public class JavaCV {
         return err;
     }
 
-    // Ported to Java/OpenCV from
-    // Bill Triggs. Autocalibration from Planar Scenes. In 5th European Conference
-    // on Computer Vision (ECCV ’98), volume I, pages 89–105. Springer-Verlag, 1998.
     private static ThreadLocal<CvMat>
             S3x3 = CvMat.createThreadLocal(3, 3),
             U3x3 = CvMat.createThreadLocal(3, 3),
             V3x3 = CvMat.createThreadLocal(3, 3);
+    /**
+     * Ported to Java/OpenCV from
+     * Bill Triggs. Autocalibration from Planar Scenes. In 5th European Conference
+     * on Computer Vision (ECCV ’98), volume I, pages 89–105. Springer-Verlag, 1998.
+     */
     public static double homogToRt(CvMat H,
             CvMat R1, CvMat t1, CvMat n1,
             CvMat R2, CvMat t2, CvMat n2) {
@@ -390,7 +404,7 @@ public class JavaCV {
         return new double[] { a, b };
     }
 
-    // more sophisticated than cvAdaptiveThreshold()
+    /** more sophisticated than cvAdaptiveThreshold() */
     public static void adaptiveThreshold(IplImage srcImage, final IplImage sumImage,
             final IplImage sqSumImage, final IplImage dstImage, final boolean invert,
             final int windowMax, final int windowMin, final double varMultiplier, final double k) {
@@ -503,7 +517,7 @@ public class JavaCV {
         }});
     }
 
-    // similar to hysteresis thresholding as used by the Canny edge detector
+    /** similar to hysteresis thresholding as used by the Canny edge detector */
     public static void hysteresisThreshold(IplImage srcImage, IplImage dstImage,
             double highThresh, double lowThresh, double maxValue) {
         int highThreshold = (int)Math.round(highThresh);
@@ -713,7 +727,7 @@ public class JavaCV {
         }
     }
 
-    // Clamps image intensities between min and max.
+    /** Clamps image intensities between min and max. */
     public static void clamp(IplImage src, IplImage dst, double min, double max) {
         switch (src.depth()) {
             case IPL_DEPTH_8U: {
@@ -776,10 +790,11 @@ public class JavaCV {
         }
     }
 
-    // vector norm
+    /** vector norm 2 */
     public static double norm(double[] v) {
         return norm(v, 2.0);
     }
+    /** vector norm p */
     public static double norm(double[] v, double p) {
         double norm = 0;
         if (p == 1.0) {
@@ -815,13 +830,15 @@ public class JavaCV {
         return norm;
     }
 
-    // induced norm
+    /** induced norm 2 */
     public static double norm(CvMat A) {
         return norm(A, 2.0);
     }
+    /** induced norm p */
     public static double norm(CvMat A, double p) {
         return norm(A, p, null);
     }
+    /** induced norm p */
     public static double norm(CvMat A, double p, CvMat W) {
         double norm = -1;
 
@@ -975,7 +992,7 @@ public class JavaCV {
         }
         System.out.println(
             "JavaCV version " + version + "\n" +
-            "Copyright (C) 2009-2015 Samuel Audet <samuel.audet@gmail.com>\n" +
+            "Copyright (C) 2009-2016 Samuel Audet <samuel.audet@gmail.com>\n" +
             "Project site: https://github.com/bytedeco/javacv");
         System.exit(0);
     }
