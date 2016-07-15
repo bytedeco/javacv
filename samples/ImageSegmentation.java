@@ -2,7 +2,7 @@
  * JavaCV version of OpenCV imageSegmentation.cpp
  * https://github.com/opencv/opencv/blob/master/samples/cpp/tutorial_code/ImgTrans/imageSegmentation.cpp
  * 
- * The OpenCV example image is available at the following address
+ * OpenCV example image is available at the following address
  * https://github.com/opencv/opencv/blob/master/samples/data/cards.png
  *
  * Paolo Bolettieri <paolo.bolettieri@gmail.com>
