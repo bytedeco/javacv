@@ -134,37 +134,37 @@ public class Frame implements Indexable {
         Object array = buffer.hasArray() ? buffer.array() : null;
         switch (imageDepth) {
             case DEPTH_UBYTE:
-                return array != null ? (I)UByteIndexer.create((byte[])array, sizes, strides)
-                            : direct ? (I)UByteIndexer.create((ByteBuffer)buffer, sizes, strides)
-                                     : (I)UByteIndexer.create(new BytePointer((ByteBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)UByteIndexer.create((byte[])array, sizes, strides).indexable(this)
+                            : direct ? (I)UByteIndexer.create((ByteBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)UByteIndexer.create(new BytePointer((ByteBuffer)buffer), sizes, strides, false).indexable(this);
             case DEPTH_BYTE:
-                return array != null ? (I)ByteIndexer.create((byte[])array, sizes, strides)
-                            : direct ? (I)ByteIndexer.create((ByteBuffer)buffer, sizes, strides)
-                                     : (I)ByteIndexer.create(new BytePointer((ByteBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)ByteIndexer.create((byte[])array, sizes, strides).indexable(this)
+                            : direct ? (I)ByteIndexer.create((ByteBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)ByteIndexer.create(new BytePointer((ByteBuffer)buffer), sizes, strides, false).indexable(this);
             case DEPTH_USHORT:
-                return array != null ? (I)UShortIndexer.create((short[])array, sizes, strides)
-                            : direct ? (I)UShortIndexer.create((ShortBuffer)buffer, sizes, strides)
-                                     : (I)UShortIndexer.create(new ShortPointer((ShortBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)UShortIndexer.create((short[])array, sizes, strides).indexable(this)
+                            : direct ? (I)UShortIndexer.create((ShortBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)UShortIndexer.create(new ShortPointer((ShortBuffer)buffer), sizes, strides, false).indexable(this);
             case DEPTH_SHORT:
-                return array != null ? (I)ShortIndexer.create((short[])array, sizes, strides)
-                            : direct ? (I)ShortIndexer.create((ShortBuffer)buffer, sizes, strides)
-                                     : (I)ShortIndexer.create(new ShortPointer((ShortBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)ShortIndexer.create((short[])array, sizes, strides).indexable(this)
+                            : direct ? (I)ShortIndexer.create((ShortBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)ShortIndexer.create(new ShortPointer((ShortBuffer)buffer), sizes, strides, false).indexable(this);
             case DEPTH_INT:
-                return array != null ? (I)IntIndexer.create((int[])array, sizes, strides)
-                            : direct ? (I)IntIndexer.create((IntBuffer)buffer, sizes, strides)
-                                     : (I)IntIndexer.create(new IntPointer((IntBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)IntIndexer.create((int[])array, sizes, strides).indexable(this)
+                            : direct ? (I)IntIndexer.create((IntBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)IntIndexer.create(new IntPointer((IntBuffer)buffer), sizes, strides, false).indexable(this);
             case DEPTH_LONG:
-                return array != null ? (I)LongIndexer.create((long[])array, sizes, strides)
-                            : direct ? (I)LongIndexer.create((LongBuffer)buffer, sizes, strides)
-                                     : (I)LongIndexer.create(new LongPointer((LongBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)LongIndexer.create((long[])array, sizes, strides).indexable(this)
+                            : direct ? (I)LongIndexer.create((LongBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)LongIndexer.create(new LongPointer((LongBuffer)buffer), sizes, strides, false).indexable(this);
             case DEPTH_FLOAT:
-                return array != null ? (I)FloatIndexer.create((float[])array, sizes, strides)
-                            : direct ? (I)FloatIndexer.create((FloatBuffer)buffer, sizes, strides)
-                                     : (I)FloatIndexer.create(new FloatPointer((FloatBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)FloatIndexer.create((float[])array, sizes, strides).indexable(this)
+                            : direct ? (I)FloatIndexer.create((FloatBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)FloatIndexer.create(new FloatPointer((FloatBuffer)buffer), sizes, strides, false).indexable(this);
             case DEPTH_DOUBLE:
-                return array != null ? (I)DoubleIndexer.create((double[])array, sizes, strides)
-                            : direct ? (I)DoubleIndexer.create((DoubleBuffer)buffer, sizes, strides)
-                                     : (I)DoubleIndexer.create(new DoublePointer((DoubleBuffer)buffer), sizes, strides, false);
+                return array != null ? (I)DoubleIndexer.create((double[])array, sizes, strides).indexable(this)
+                            : direct ? (I)DoubleIndexer.create((DoubleBuffer)buffer, sizes, strides).indexable(this)
+                                     : (I)DoubleIndexer.create(new DoublePointer((DoubleBuffer)buffer), sizes, strides, false).indexable(this);
             default: assert false;
         }
         return null;
