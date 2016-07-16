@@ -1,4 +1,5 @@
 
+ * Depend on platform artifacts of the JavaCPP Presets for easier cross-platform builds and to avoid issues with some build systems ([issue #395](https://github.com/bytedeco/javacv/issues/395))
  * Update the `JavaCV` class with appropriate documentation comments ([issue #444](https://github.com/bytedeco/javacv/issues/444))
  * Fix Javadoc links for externally referenced classes
  * Fix seeking when calling `FFmpegFrameGrabber.setTimestamp()` on audio-only files
