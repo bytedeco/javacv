@@ -2,7 +2,7 @@
  * JavaCV version of OpenCV imageSegmentation.cpp
  * https://github.com/opencv/opencv/blob/master/samples/cpp/tutorial_code/ImgTrans/imageSegmentation.cpp
  * 
- * OpenCV example image is available at the following address
+ * The OpenCV example image is available at the following address
  * https://github.com/opencv/opencv/blob/master/samples/data/cards.png
  *
  * Paolo Bolettieri <paolo.bolettieri@gmail.com>
@@ -53,8 +53,8 @@ import org.bytedeco.javacv.OpenCVFrameConverter;
 
 public class ImageSegmentation {
 	
-	private static final int[] WHITE = { 255, 255, 255 };
-	private static final int[] BLACK = { 0, 0, 0 };
+	private static final int[] WHITE = {255, 255, 255};
+	private static final int[] BLACK = {0, 0, 0};
 
 	public static void main(String[] args) {
 	    // Load the image
@@ -192,11 +192,12 @@ public class ImageSegmentation {
 		imshow("Final Result", dst);
 	}
 
-	public static void imshow(String txt, Mat mat) {
+	//I wrote a custom imshow method for problems using the OpenCV original one 
+	private static void imshow(String txt, Mat img) {
 		CanvasFrame canvasFrame = new CanvasFrame(txt);
 		canvasFrame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-		canvasFrame.setCanvasSize(mat.cols(), mat.rows());
-		canvasFrame.showImage(new OpenCVFrameConverter.ToMat().convert(mat));
+		canvasFrame.setCanvasSize(img.cols(), img.rows());
+		canvasFrame.showImage(new OpenCVFrameConverter.ToMat().convert(img));
 	}
 
 }
