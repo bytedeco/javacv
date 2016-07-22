@@ -1,6 +1,8 @@
 JavaCV
 ======
 
+[![Join the chat at https://gitter.im/bytedeco/javacv](https://badges.gitter.im/bytedeco/javacv.svg)](https://gitter.im/bytedeco/javacv?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Introduction
 ------------
 JavaCV uses wrappers from the [JavaCPP Presets](https://github.com/bytedeco/javacpp-presets) of commonly used libraries by researchers in the field of computer vision ([OpenCV](http://opencv.org/), [FFmpeg](http://ffmpeg.org/), [libdc1394](http://damien.douxchamps.net/ieee1394/libdc1394/), [PGR FlyCapture](http://www.ptgrey.com/products/pgrflycapture/), [OpenKinect](http://openkinect.org/), [CL PS3 Eye Driver](https://codelaboratories.com/downloads/), [videoInput](http://muonics.net/school/spring05/videoInput/), [ARToolKitPlus](http://studierstube.icg.tugraz.at/handheld_ar/artoolkitplus.php), and [flandmark](http://cmp.felk.cvut.cz/~uricamic/flandmark/)), and provides utility classes to make their functionality easier to use on the Java platform, including Android.
