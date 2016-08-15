@@ -5,7 +5,6 @@
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
   <version>1.2.2</version>
-  <packaging>jar</packaging>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV and more</description>
