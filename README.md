@@ -1,7 +1,7 @@
 JavaCV
 ======
 
-[![Join the chat at https://gitter.im/bytedeco/javacv](https://badges.gitter.im/bytedeco/javacv.svg)](https://gitter.im/bytedeco/javacv?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/bytedeco/javacv](https://badges.gitter.im/bytedeco/javacv.svg)](https://gitter.im/bytedeco/javacv?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.bytedeco/javacv/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.bytedeco/javacv)
 
 Introduction
 ------------
