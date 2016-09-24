@@ -1,3 +1,4 @@
+package matching;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
 
@@ -11,22 +12,24 @@ import static org.bytedeco.javacpp.opencv_objdetect.*;
 /**
  * Example of template javacv (opencv) template matching using the last java build
  *
- * We need 4 default parameters like this
- * "C:\Users\Waldema\Desktop\bg.jpg" "C:\Users\Waldema\Desktop\logosiemens.jpg" "C:\Users\Waldema\Desktop\imageToFind.jpg" 100 200
+ * We need 2 default parameters like this (source image, image to find )
+ * "C:\Users\Waldema\Desktop\bg.jpg" "C:\Users\Waldema\Desktop\imageToFind.jpg" 
  *
  * @author Waldemar Neto
  */
 public class TemplateMatching {
 
     public static void main(String[] args) throws Exception {
-        int width = Integer.parseInt(args[3]);
-        int height = Integer.parseInt(args[4]);
-
-        IplImage src = cvLoadImage(
-                args[0], 0);
-        IplImage tmp = cvLoadImage(
-                args[1], 0);
-
+        //get color source image to draw red rect on later
+        IplImage srcColor = cvLoadImage(args[0]);
+        //create blank 1 channel image same size as the source 
+        IplImage src = cvCreateImage(cvGetSize(srcColor), IPL_DEPTH_8U, 1);
+        //convert source to grey and copy to src
+        cvCvtColor(srcColor, src, CV_BGR2GRAY);
+        //get the image to match loaded in greyscale. 
+        IplImage tmp = cvLoadImage(args[1], 0);
+        //this image will hold the strength of the match
+        //as the template is translated across the image 
         IplImage result = cvCreateImage(
                 cvSize(src.width() - tmp.width() + 1,
                         src.height() - tmp.height() + 1), IPL_DEPTH_32F, src.nChannels());
@@ -55,26 +58,16 @@ public class TemplateMatching {
         point.y(maxLoc.y() + tmp.height());
         // cvMinMaxLoc(src, min_val, max_val,0,0,result);
 
-        cvRectangle(src, maxLoc, point, CvScalar.RED, 2, 8, 0); // Draw a
+        cvRectangle(srcColor, maxLoc, point, CvScalar.RED, 2, 8, 0); // Draw a
                                                                 // Rectangle for
                                                                 // Matched
                                                                 // Region
-        CvRect rect = new CvRect();
-        rect.x(maxLoc.x());
-        rect.y(maxLoc.y());
-        rect.width(tmp.width() + width);
-        rect.height(tmp.width() + height);
-        cvSetImageROI(src, rect);
-        IplImage imageNew = cvCreateImage(cvGetSize(src), src.depth(),
-                src.nChannels());
-        cvCopy(src, imageNew);
-        cvSaveImage(args[2], imageNew);
 
-        cvShowImage("Lena Image", src);
+        cvShowImage("Lena Image", srcColor);
         cvWaitKey(0);
+        cvReleaseImage(srcColor);
         cvReleaseImage(src);
         cvReleaseImage(tmp);
         cvReleaseImage(result);
     }
 }
-
