@@ -39,7 +39,7 @@ public class TemplateMatching {
     	Mat sourceGrey = new Mat(sourceColor.size(), CV_8UC1);
 		cvtColor(sourceColor, sourceGrey, COLOR_BGR2GRAY);
 		//load in template in grey 
-		Mat template = imread(args[1],1);
+		Mat template = imread(args[1],CV_LOAD_IMAGE_GRAYSCALE);//int = 0
 		//Size for the result image
 		Size size = new Size(sourceGrey.cols()-template.cols()+1, sourceGrey.rows()-template.rows()+1);
 		Mat result = new Mat(size, CV_32FC1);
