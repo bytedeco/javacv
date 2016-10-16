@@ -408,8 +408,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             /* put sample parameters */
             video_c.bit_rate(videoBitrate);
-            /* resolution must be a multiple of two, but round up to 16 as often required */
-            video_c.width((imageWidth + 15) / 16 * 16);
+            /* resolution must be a multiple of two. Scale height to maintain the aspect ratio. */
+            if (imageWidth % 2 == 1) {
+                int roundedWidth = imageWidth + 1;
+                imageHeight = (roundedWidth * imageHeight + imageWidth / 2) / imageWidth;
+                imageWidth = roundedWidth;
+            }
+            video_c.width(imageWidth);
             video_c.height(imageHeight);
             if (aspectRatio > 0) {
                 AVRational r = av_d2q(aspectRatio, 255);
