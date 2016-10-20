@@ -68,6 +68,7 @@
     <exclude.markers>**/Mark*.java</exclude.markers>
     <exclude.calibration>**/*Calibrator.java</exclude.calibration>
     <exclude.ffmpeg>**/FFmpeg*.java</exclude.ffmpeg>
+    <exclude.realsense>**/RealSense*.java</exclude.realsense>
     <exclude.dc1394>**/DC1394*.java</exclude.dc1394>
     <exclude.flycapture>**/FlyCapture*.java</exclude.flycapture>
     <exclude.openkinect>**/OpenKinect*.java</exclude.openkinect>
@@ -93,6 +94,11 @@
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
       <version>3.0.2-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>librealsense</artifactId>
+      <version>1.9.6-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -178,6 +184,7 @@
             <exclude>${exclude.markers}</exclude>
             <exclude>${exclude.calibration}</exclude>
             <exclude>${exclude.ffmpeg}</exclude>
+            <exclude>${exclude.realsense}</exclude>
             <exclude>${exclude.dc1394}</exclude>
             <exclude>${exclude.flycapture}</exclude>
             <exclude>${exclude.openkinect}</exclude>
@@ -221,7 +228,7 @@
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
-              <Class-Path>. javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar videoinput.jar artoolkitplus.jar</Class-Path>
+              <Class-Path>. javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar librealsense.jar libfreenect.jar videoinput.jar artoolkitplus.jar</Class-Path>
               <Name>org/bytedeco/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Bytedeco</Implementation-Vendor>
@@ -369,6 +376,7 @@
         <exclude.markers>none</exclude.markers>
         <exclude.calibration>none</exclude.calibration>
         <exclude.ffmpeg>none</exclude.ffmpeg>
+        <exclude.realsense>none</exclude.realsense>
         <exclude.dc1394>none</exclude.dc1394>
         <exclude.flycapture>none</exclude.flycapture>
         <exclude.openkinect>none</exclude.openkinect>
@@ -389,6 +397,12 @@
       <id>ffmpeg</id>
       <properties>
         <exclude.ffmpeg>none</exclude.ffmpeg>
+      </properties>
+    </profile>
+    <profile>
+      <id>realsense</id>
+      <properties>
+        <exclude.realsense>none</exclude.realsense>
       </properties>
     </profile>
     <profile>
