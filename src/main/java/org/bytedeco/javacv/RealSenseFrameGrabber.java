@@ -241,7 +241,8 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         if (rawDepthImage == null || rawDepthImage.width() != deviceWidth || rawDepthImage.height() != deviceHeight) {
             rawDepthImage = IplImage.createHeader(deviceWidth, deviceHeight, iplDepth, channels);
         }
-        cvSetData(rawDepthImage, rawDepthImageData, deviceWidth * deviceHeight * channels * iplDepth / 8);
+        
+        cvSetData(rawDepthImage, rawDepthImageData, deviceWidth * channels * iplDepth / 8);
 
         if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
             // ack, the camera's endianness doesn't correspond to our machine ...
@@ -309,14 +310,14 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         }
         cvSetData(rawIRImage, rawIRImageData, deviceWidth * channels * iplDepth / 8);
         
-//        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
-//            // ack, the camera's endianness doesn't correspond to our machine ...
-//            // swap bytes of 16-bit images
-//            ByteBuffer bb = rawIRImage.getByteBuffer();
-//            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
-//            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
-//            out.put(in);
-//        }
+        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
+            // ack, the camera's endianness doesn't correspond to our machine ...
+            // swap bytes of 16-bit images
+            ByteBuffer bb = rawIRImage.getByteBuffer();
+            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+            out.put(in);
+        }
 
         return rawIRImage;
     }
