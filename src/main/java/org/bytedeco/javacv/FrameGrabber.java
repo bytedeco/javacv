@@ -42,7 +42,7 @@ import java.util.concurrent.Future;
 public abstract class FrameGrabber {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
-		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera"  }));
+		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera", "RealSense"  }));
     public static void init() {
         for (String name : list) {
             try {
