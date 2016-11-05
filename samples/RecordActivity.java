@@ -172,9 +172,9 @@ public class RecordActivity extends Activity implements OnClickListener {
         }
 
         if(cameraDevice != null) {
-           cameraDevice.stopPreview();
-           cameraDevice.release();
-           cameraDevice = null;
+            cameraDevice.stopPreview();
+            cameraDevice.release();
+            cameraDevice = null;
         }
     }
 
@@ -248,6 +248,14 @@ public class RecordActivity extends Activity implements OnClickListener {
         // Set in the surface changed method
         recorder.setFrameRate(frameRate);
 
+        // The filterString  is any ffmpeg filter.
+        // Here is the link for a list: https://ffmpeg.org/ffmpeg-filters.html
+        filterString = "transpose=0";
+        filter = new FFmpegFrameFilter(filterString, imageWidth, imageHeight);
+
+        //default format on android
+        filter.setPixelFormat(avutil.AV_PIX_FMT_NV21);
+
         Log.i(LOG_TAG, "recorder initialize success");
 
         audioRecordRunnable = new AudioRecordRunnable();
@@ -265,7 +273,11 @@ public class RecordActivity extends Activity implements OnClickListener {
             recording = true;
             audioThread.start();
 
-        } catch (FFmpegFrameRecorder.Exception e) {
+            if(addFilter) {
+                filter.start();
+            }
+
+        } catch (FFmpegFrameRecorder.Exception | FrameFilter.Exception e) {
             e.printStackTrace();
         }
     }
@@ -332,7 +344,9 @@ public class RecordActivity extends Activity implements OnClickListener {
             try {
                 recorder.stop();
                 recorder.release();
-            } catch (FFmpegFrameRecorder.Exception e) {
+                filter.stop();
+                filter.release();
+            } catch (FFmpegFrameRecorder.Exception | FrameFilter.Exception e) {
                 e.printStackTrace();
             }
             recorder = null;
@@ -544,20 +558,7 @@ public class RecordActivity extends Activity implements OnClickListener {
                         recorder.setTimestamp(t);
                     }
 
-                    // Add a filter for each of your frames. the filterString  is any
-                    // ffmpeg filter. Here is the link for a list: https://ffmpeg.org/ffmpeg-filters.html
                     if(addFilter) {
-
-                        filterString = "transpose=0";
-                        filter = new FFmpegFrameFilter(filterString, imageWidth, imageHeight);
-
-                        //default format on android
-                        filter.setPixelFormat(avutil.AV_PIX_FMT_NV21);
-
-                        //Must be initalized before it is applied to every frame
-                        filter.start();
-
-
                         filter.push(yuvImage);
                         Frame frame2;
                         while ((frame2 = filter.pull()) != null) {
