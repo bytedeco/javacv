@@ -90,8 +90,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacpp.avutil;
+import org.bytedeco.javacv.FFmpegFrameFilter;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameFilter;
 
 public class RecordActivity extends Activity implements OnClickListener {
 
@@ -106,6 +109,11 @@ public class RecordActivity extends Activity implements OnClickListener {
     private FFmpegFrameRecorder recorder;
 
     private boolean isPreviewOn = false;
+
+    /*Filter information, change boolean to true if adding a fitler*/
+    private boolean addFilter = false;
+    private String filterString = "";
+    FFmpegFrameFilter filter;
 
     private int sampleAudioRateInHz = 44100;
     private int imageWidth = 320;
@@ -164,9 +172,9 @@ public class RecordActivity extends Activity implements OnClickListener {
         }
 
         if(cameraDevice != null) {
-           cameraDevice.stopPreview();
-           cameraDevice.release();
-           cameraDevice = null;
+            cameraDevice.stopPreview();
+            cameraDevice.release();
+            cameraDevice = null;
         }
     }
 
@@ -177,8 +185,8 @@ public class RecordActivity extends Activity implements OnClickListener {
         Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         screenWidth = display.getWidth();
         screenHeight = display.getHeight();
-        RelativeLayout.LayoutParams layoutParam = null; 
-        LayoutInflater myInflate = null; 
+        RelativeLayout.LayoutParams layoutParam = null;
+        LayoutInflater myInflate = null;
         myInflate = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         RelativeLayout topLayout = new RelativeLayout(this);
         setContentView(topLayout);
@@ -240,6 +248,14 @@ public class RecordActivity extends Activity implements OnClickListener {
         // Set in the surface changed method
         recorder.setFrameRate(frameRate);
 
+        // The filterString  is any ffmpeg filter.
+        // Here is the link for a list: https://ffmpeg.org/ffmpeg-filters.html
+        filterString = "transpose=0";
+        filter = new FFmpegFrameFilter(filterString, imageWidth, imageHeight);
+
+        //default format on android
+        filter.setPixelFormat(avutil.AV_PIX_FMT_NV21);
+
         Log.i(LOG_TAG, "recorder initialize success");
 
         audioRecordRunnable = new AudioRecordRunnable();
@@ -257,7 +273,11 @@ public class RecordActivity extends Activity implements OnClickListener {
             recording = true;
             audioThread.start();
 
-        } catch (FFmpegFrameRecorder.Exception e) {
+            if(addFilter) {
+                filter.start();
+            }
+
+        } catch (FFmpegFrameRecorder.Exception | FrameFilter.Exception e) {
             e.printStackTrace();
         }
     }
@@ -324,7 +344,9 @@ public class RecordActivity extends Activity implements OnClickListener {
             try {
                 recorder.stop();
                 recorder.release();
-            } catch (FFmpegFrameRecorder.Exception e) {
+                filter.stop();
+                filter.release();
+            } catch (FFmpegFrameRecorder.Exception | FrameFilter.Exception e) {
                 e.printStackTrace();
             }
             recorder = null;
@@ -363,9 +385,9 @@ public class RecordActivity extends Activity implements OnClickListener {
             ShortBuffer audioData;
             int bufferReadResult;
 
-            bufferSize = AudioRecord.getMinBufferSize(sampleAudioRateInHz, 
+            bufferSize = AudioRecord.getMinBufferSize(sampleAudioRateInHz,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-            audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleAudioRateInHz, 
+            audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleAudioRateInHz,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
 
             if (RECORD_LENGTH > 0) {
@@ -472,7 +494,7 @@ public class RecordActivity extends Activity implements OnClickListener {
             camParams.setPreviewSize(imageWidth, imageHeight);
 
             Log.v(LOG_TAG,"Setting imageWidth: " + imageWidth + " imageHeight: " + imageHeight + " frameRate: " + frameRate);
-    
+
             camParams.setPreviewFrameRate(frameRate);
             Log.v(LOG_TAG,"Preview Framerate: " + camParams.getPreviewFrameRate());
 
@@ -523,6 +545,8 @@ public class RecordActivity extends Activity implements OnClickListener {
                 yuvImage = images[i];
                 timestamps[i] = 1000 * (System.currentTimeMillis() - startTime);
             }
+
+
             /* get video data */
             if (yuvImage != null && recording) {
                 ((ByteBuffer)yuvImage.image[0].position(0)).put(data);
@@ -533,8 +557,17 @@ public class RecordActivity extends Activity implements OnClickListener {
                     if (t > recorder.getTimestamp()) {
                         recorder.setTimestamp(t);
                     }
-                    recorder.record(yuvImage);
-                } catch (FFmpegFrameRecorder.Exception e) {
+
+                    if(addFilter) {
+                        filter.push(yuvImage);
+                        Frame frame2;
+                        while ((frame2 = filter.pull()) != null) {
+                            recorder.record(frame2);
+                        }
+                    } else {
+                        recorder.record(yuvImage);
+                    }
+                } catch (FFmpegFrameRecorder.Exception | FrameFilter.Exception e) {
                     Log.v(LOG_TAG,e.getMessage());
                     e.printStackTrace();
                 }
