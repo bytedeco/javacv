@@ -61,7 +61,7 @@ To use JavaCV, you will first need to download and install the following softwar
 
  * An implementation of Java SE 7 or newer:
    * OpenJDK  http://openjdk.java.net/install/  or
-   * Sun JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
+   * Oracle JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
    * IBM JDK  http://www.ibm.com/developerworks/java/jdk/
 
 Further, although not always required, some functionality of JavaCV also relies on:
