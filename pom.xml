@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.2.5-SNAPSHOT</version>
+  <version>1.3-SNAPSHOT</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV and more</description>
@@ -86,47 +86,47 @@
 
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>opencv-platform</artifactId>
+      <artifactId>opencv</artifactId>
       <version>3.1.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>ffmpeg-platform</artifactId>
-      <version>3.1.4-${javacpp.version}</version>
+      <artifactId>ffmpeg</artifactId>
+      <version>3.2.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>librealsense-platform</artifactId>
-      <version>1.9.6-${javacpp.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>flycapture-platform</artifactId>
+      <artifactId>flycapture</artifactId>
       <version>2.9.3.43-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>libdc1394-platform</artifactId>
+      <artifactId>libdc1394</artifactId>
       <version>2.2.4-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>libfreenect-platform</artifactId>
+      <artifactId>libfreenect</artifactId>
       <version>0.5.3-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>videoinput-platform</artifactId>
+      <artifactId>librealsense</artifactId>
+      <version>1.9.6-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>videoinput</artifactId>
       <version>0.200-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>artoolkitplus-platform</artifactId>
+      <artifactId>artoolkitplus</artifactId>
       <version>2.3.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>flandmark-platform</artifactId>
+      <artifactId>flandmark</artifactId>
       <version>1.07-${javacpp.version}</version>
     </dependency>
 
@@ -161,13 +161,6 @@
       <version>2.3.1</version>
       <optional>true</optional>
     </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-      <optional>true</optional>
-    </dependency>
   </dependencies>
 
   <build>
@@ -193,28 +186,6 @@
             <exclude>${exclude.opencl}</exclude>
           </excludes>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.10</version>
-        <executions>
-          <execution>
-            <id>properties</id>
-            <goals>
-              <goal>properties</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>copy-dependencies</id>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}</outputDirectory>
-              <stripVersion>true</stripVersion>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
@@ -245,24 +216,6 @@
         <configuration>
           <createChecksum>true</createChecksum>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.0.0</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/bin.xml</descriptor>
-            <descriptor>src/main/assembly/src.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>

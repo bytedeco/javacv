@@ -4,10 +4,10 @@
   <formats>
     <format>zip</format>
   </formats>
-  <baseDirectory>${project.artifactId}-bin</baseDirectory>
+  <baseDirectory>javacv-bin</baseDirectory>
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}</directory>
+      <directory>${project.basedir}/..</directory>
       <outputDirectory>/</outputDirectory>
       <includes>
         <include>samples/*</include>
