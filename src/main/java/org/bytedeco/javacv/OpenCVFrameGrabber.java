@@ -78,7 +78,8 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     private String filename = null;
     private VideoCapture capture = null;
     private Mat returnMatrix = null;
-    private OpenCVFrameConverter converter = new OpenCVFrameConverter.ToMat();
+    private final OpenCVFrameConverter converter = new OpenCVFrameConverter.ToMat();
+    private final Mat mat = new Mat();
 
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
@@ -236,7 +237,6 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     }
 
     public Frame grab() throws Exception {
-        Mat mat = new Mat();
         if (!capture.retrieve(mat)) {
             throw new Exception("retrieve() Error: Could not retrieve frame. (Has start() been called?)");
         }
