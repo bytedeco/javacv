@@ -50,17 +50,18 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     public static int DEFAULT_DEPTH_WIDTH = 640;
     public static int DEFAULT_DEPTH_HEIGHT = 480;
-    public static int DEFAULT_COLOR_WIDTH = 640;
-    public static int DEFAULT_COLOR_HEIGHT = 480;
+    public static int DEFAULT_COLOR_WIDTH = 1280;
+    public static int DEFAULT_COLOR_HEIGHT = 720;
+    public static int DEFAULT_COLOR_FRAMERATE = 30;
 
     private ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
     private int depthImageWidth = DEFAULT_DEPTH_WIDTH;
     private int depthImageHeight = DEFAULT_DEPTH_HEIGHT;
-    private int depthFrameRate = 60;
+    private int depthFrameRate = 30;
 
     private int IRImageWidth = DEFAULT_DEPTH_WIDTH;
     private int IRImageHeight = DEFAULT_DEPTH_HEIGHT;
-    private int IRFrameRate = 60;
+    private int IRFrameRate = 30;
 
     public ByteOrder getByteOrder() {
         return byteOrder;
@@ -136,6 +137,9 @@ public class RealSenseFrameGrabber extends FrameGrabber {
             if (imageHeight == 0) {
                 imageHeight = DEFAULT_COLOR_HEIGHT;
             }
+            if (frameRate == 0) {
+                frameRate = DEFAULT_COLOR_FRAMERATE;
+            }
             device.enable_stream(RealSense.color, imageWidth, imageHeight, RealSense.rgb8, (int) frameRate);
             colorEnabled = true;
         }
@@ -203,8 +207,22 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         return super.getFrameRate();
     }
 
+    private boolean startedOnce = false;
+    private boolean behaveAsColorFrameGrabber = false;
+
     @Override
     public void start() throws FrameGrabber.Exception {
+        // if no stream is select, just get the color.
+        if (!colorEnabled && !IREnabled && !depthEnabled) {
+
+            if (!startedOnce) {
+                enableColorStream();
+                behaveAsColorFrameGrabber = true;
+                this.setImageMode(ImageMode.GRAY);
+            }
+        }
+
+        startedOnce = true;
         device.start();
     }
 
@@ -215,6 +233,9 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     @Override
     public void stop() throws FrameGrabber.Exception {
         device.stop();
+        colorEnabled = false;
+        IREnabled = false;
+        depthEnabled = false;
         frameNumber = 0;
     }
     private Pointer rawDepthImageData = new Pointer((Pointer) null),
@@ -222,7 +243,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
             rawIRImageData = new Pointer((Pointer) null);
     private IplImage rawDepthImage = null, rawVideoImage = null, rawIRImage = null, returnImage = null;
 
-    public IplImage grabDepth() throws Exception {
+    public IplImage grabDepth() {
 
         if (!depthEnabled) {
             System.out.println("Depth stream not enabled, impossible to get the image.");
@@ -241,7 +262,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         if (rawDepthImage == null || rawDepthImage.width() != deviceWidth || rawDepthImage.height() != deviceHeight) {
             rawDepthImage = IplImage.createHeader(deviceWidth, deviceHeight, iplDepth, channels);
         }
-        
+
         cvSetData(rawDepthImage, rawDepthImageData, deviceWidth * channels * iplDepth / 8);
 
         if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
@@ -268,24 +289,23 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         rawVideoImageData = device.get_frame_data(RealSense.color);
         int deviceWidth = device.get_stream_width(RealSense.color);
         int deviceHeight = device.get_stream_height(RealSense.color);
-        
+
         if (rawVideoImage == null || rawVideoImage.width() != deviceWidth || rawVideoImage.height() != deviceHeight) {
             rawVideoImage = IplImage.createHeader(deviceWidth, deviceHeight, iplDepth, channels);
         }
-        
+
         cvSetData(rawVideoImage, rawVideoImageData, deviceWidth * channels * iplDepth / 8);
 
-        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
-            // ack, the camera's endianness doesn't correspond to our machine ...
-            // swap bytes of 16-bit images
-            ByteBuffer bb = rawVideoImage.getByteBuffer();
-            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
-            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
-            out.put(in);
-        }
-
+//        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
+//            // ack, the camera's endianness doesn't correspond to our machine ...
+//            // swap bytes of 16-bit images
+//            ByteBuffer bb = rawVideoImage.getByteBuffer();
+//            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+//            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+//            out.put(in);
+//        }
 //        if (channels == 3) {
-//            cvCvtColor(rawVideoImage, rawVideoImage, CV_RGB2BGR);
+//            cvCvtColor(rawVideoImage, rawVideoImage, CV_BGR2RGB);
 //        }
         return rawVideoImage;
     }
@@ -304,21 +324,19 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         int deviceWidth = device.get_stream_width(RealSense.infrared);
         int deviceHeight = device.get_stream_height(RealSense.infrared);
 
-        
         if (rawIRImage == null || rawIRImage.width() != deviceWidth || rawIRImage.height() != deviceHeight) {
             rawIRImage = IplImage.createHeader(deviceWidth, deviceHeight, iplDepth, channels);
         }
         cvSetData(rawIRImage, rawIRImageData, deviceWidth * channels * iplDepth / 8);
-        
-        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
-            // ack, the camera's endianness doesn't correspond to our machine ...
-            // swap bytes of 16-bit images
-            ByteBuffer bb = rawIRImage.getByteBuffer();
-            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
-            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
-            out.put(in);
-        }
 
+//        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
+//            // ack, the camera's endianness doesn't correspond to our machine ...
+//            // swap bytes of 16-bit images
+//            ByteBuffer bb = rawIRImage.getByteBuffer();
+//            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+//            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+//            out.put(in);
+//        }
         return rawIRImage;
     }
 
@@ -331,10 +349,20 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     public Frame grab() throws Exception {
         device.wait_for_frames();
 
-//        if (colorEnabled) {
-//            IplImage image = grabVideo();
-//            return converter.convert(image);
-//        }
+//        frameNumber++; 
+        // For Framegrabber
+        if (colorEnabled &&  behaveAsColorFrameGrabber) {
+            IplImage image = grabVideo();
+
+            if (returnImage == null) {
+                int deviceWidth = device.get_stream_width(RealSense.color);
+                int deviceHeight = device.get_stream_height(RealSense.color);
+//                returnImage = IplImage.create(deviceWidth, deviceHeight, IPL_DEPTH_8U, 3);
+                returnImage = IplImage.create(deviceWidth, deviceHeight, IPL_DEPTH_8U, 1);
+            }
+            cvCvtColor(image, returnImage, CV_BGR2GRAY);
+            return converter.convert(returnImage);
+        }
         return null;
     }
 
@@ -382,6 +410,32 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     public void setDepthFrameRate(int frameRate) {
         this.depthFrameRate = frameRate;
     }
+
+    public int getIRFrameRate() {
+        return IRFrameRate;
+    }
+
+    public void setIRFrameRate(int IRFrameRate) {
+        this.IRFrameRate = IRFrameRate;
+    }
+
+    @Override
+    public double getGamma() {
+        // I guess a default gamma of 2.2 is reasonable...
+        if (gamma == 0.0) {
+            return 2.2;
+        } else {
+            return gamma;
+        }
+    }
+
+    // Gamma from the device is not good.
+//    @Override
+//    public double getGamma(){
+//        double gamma = device.get_option(RealSense.RS_OPTION_COLOR_GAMMA);
+//        System.out.println("Getting cameraGamma " + gamma);
+//        return gamma;
+//    }
 
 // --- Presets --- 
     public void setPreset(int preset) {
@@ -472,6 +526,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     public void setColorGamma(int value) {
         setOption(RealSense.RS_OPTION_COLOR_GAMMA, value);
     }
+
 
     /**
      * Color image hue

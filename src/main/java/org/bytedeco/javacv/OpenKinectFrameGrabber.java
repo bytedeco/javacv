@@ -96,8 +96,9 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
     private int deviceNumber = 0;
     private boolean depth = false; // default to "video"
     private BytePointer rawDepthImageData = new BytePointer((Pointer)null),
-                        rawVideoImageData = new BytePointer((Pointer)null);
-    private IplImage rawDepthImage = null, rawVideoImage = null, returnImage = null;
+                        rawVideoImageData = new BytePointer((Pointer)null),
+                        rawIRImageData = new BytePointer((Pointer)null);
+    private IplImage rawDepthImage = null, rawVideoImage = null, rawIRImage = null, returnImage = null;
     private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
     private int[] timestamp = { 0 };
     private ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
@@ -243,6 +244,24 @@ public class OpenKinectFrameGrabber extends FrameGrabber {
         }
         super.timestamp = timestamp[0];
         return rawVideoImage;
+    }
+    
+    public IplImage grabIR() throws Exception {
+        int iplDepth = IPL_DEPTH_8U, channels = 1;
+
+        int err = freenect_sync_get_video(rawIRImageData, timestamp, deviceNumber, FREENECT_VIDEO_IR_8BIT);
+        if (err != 0) {
+            throw new Exception("freenect_sync_get_video() Error " + err + ": Failed to get video synchronously.");
+        }
+
+        int w = 640, h = 480; // how to get the resolution ??
+        if (rawIRImage == null || rawIRImage.width() != w || rawIRImage.height() != h) {
+            rawIRImage = IplImage.createHeader(w, h, iplDepth, channels);
+        }
+        cvSetData(rawIRImage, rawIRImageData, w*channels*iplDepth/8);
+
+        super.timestamp = timestamp[0];
+        return rawIRImage;
     }
 
     public Frame grab() throws Exception {
