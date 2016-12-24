@@ -1,4 +1,6 @@
 
+ * Add `OpenKinectFrameGrabber.grabIR()` and stabilize `RealSenseFrameGrabber` ([pull #585](https://github.com/bytedeco/javacv/pull/585))
+
 ### December 7, 2016 version 1.3
  * Fix unnecessary memory allocation in `OpenCVFrameGrabber` ([pull #575](https://github.com/bytedeco/javacv/pull/575))
  * Add `FFmpegFrameFilter` to `RecordActivity` sample for Android ([pull #550](https://github.com/bytedeco/javacv/pull/550))

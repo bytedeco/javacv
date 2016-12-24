@@ -273,7 +273,7 @@ Furthermore, after creating a `pom.xml` file with the following content:
 
 And by placing the source code above in `src/main/java/Demo.java`, we can use the following command to have everything first installed automatically and then executed by Maven:
 ```bash
- $ mvn package exec:java -Dexec.mainClass=Demo
+ $ mvn compile exec:java -Dexec.mainClass=Demo
 ```
 
 
