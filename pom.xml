@@ -70,7 +70,8 @@
     <exclude.realsense>**/RealSense*.java</exclude.realsense>
     <exclude.dc1394>**/DC1394*.java</exclude.dc1394>
     <exclude.flycapture>**/FlyCapture*.java</exclude.flycapture>
-    <exclude.openkinect>**/OpenKinect*.java</exclude.openkinect>
+    <exclude.openkinect>**/OpenKinectFrameGrabber</exclude.openkinect>
+    <exclude.openkinect2>**/OpenKinect2*.java</exclude.openkinect2>
     <exclude.ps3eye>**/PS3Eye*.java</exclude.ps3eye>
     <exclude.videoinput>**/VideoInput*.java</exclude.videoinput>
     <exclude.opengl>**/GL*.java</exclude.opengl>
@@ -108,6 +109,11 @@
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect</artifactId>
       <version>0.5.3-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>libfreenect2</artifactId>
+      <version>0.2.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -347,6 +353,7 @@
         <exclude.dc1394>none</exclude.dc1394>
         <exclude.flycapture>none</exclude.flycapture>
         <exclude.openkinect>none</exclude.openkinect>
+        <exclude.openkinect2>none</exclude.openkinect2>
         <exclude.ps3eye>none</exclude.ps3eye>
         <exclude.videoinput>none</exclude.videoinput>
         <exclude.opengl>none</exclude.opengl>
@@ -388,6 +395,12 @@
       <id>openkinect</id>
       <properties>
         <exclude.openkinect>none</exclude.openkinect>
+      </properties>
+    </profile>
+    <profile>
+      <id>openkinect2</id>
+      <properties>
+        <exclude.openkinect2>none</exclude.openkinect2>
       </properties>
     </profile>
     <profile>
