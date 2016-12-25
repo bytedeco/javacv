@@ -97,11 +97,6 @@
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
-      <artifactId>librealsense</artifactId>
-      <version>1.9.6-${javacpp.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
       <version>2.9.3.43-${javacpp.version}</version>
     </dependency>
@@ -116,10 +111,10 @@
       <version>0.5.3-${javacpp.version}</version>
     </dependency>
     <dependency>
-        <groupId>org.bytedeco.javacpp-presets</groupId>
-        <artifactId>libfreenect2</artifactId>
-        <version>0.2.0-${javacpp.version}</version>
-        </dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>libfreenect2</artifactId>
+      <version>0.2.0-${javacpp.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>librealsense</artifactId>
