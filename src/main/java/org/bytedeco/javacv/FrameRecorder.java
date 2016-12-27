@@ -22,7 +22,9 @@
 
 package org.bytedeco.javacv;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,7 +35,7 @@ import java.util.List;
  *
  * @author Samuel Audet
  */
-public abstract class FrameRecorder {
+public abstract class FrameRecorder implements Closeable {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] { "FFmpeg", "OpenCV" }));
     public static void init() {
@@ -306,7 +308,7 @@ public abstract class FrameRecorder {
         this.timestamp = timestamp;
     }
 
-    public static class Exception extends java.lang.Exception {
+    public static class Exception extends IOException {
         public Exception(String message) { super(message); }
         public Exception(String message, Throwable cause) { super(message, cause); }
     }
@@ -315,4 +317,9 @@ public abstract class FrameRecorder {
     public abstract void stop() throws Exception;
     public abstract void record(Frame frame) throws Exception;
     public abstract void release() throws Exception;
+
+    @Override public void close() throws Exception {
+        stop();
+        release();
+    }
 }

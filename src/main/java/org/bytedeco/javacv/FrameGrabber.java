@@ -23,7 +23,9 @@
 package org.bytedeco.javacv;
 
 import java.beans.PropertyEditorSupport;
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,7 +41,7 @@ import java.util.concurrent.Future;
  *
  * @author Samuel Audet
  */
-public abstract class FrameGrabber {
+public abstract class FrameGrabber implements Closeable {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
 		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera", "RealSense"  }));
@@ -413,7 +415,7 @@ public abstract class FrameGrabber {
         return 0;
     }
 
-    public static class Exception extends java.lang.Exception {
+    public static class Exception extends IOException {
         public Exception(String message) { super(message); }
         public Exception(String message, Throwable cause) { super(message, cause); }
     }
@@ -421,6 +423,11 @@ public abstract class FrameGrabber {
     public abstract void start() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void trigger() throws Exception;
+
+    @Override public void close() throws Exception {
+        stop();
+        release();
+    }
 
     /**
      * Each call to grab stores the new image in the memory address for the previously returned frame. <br/>

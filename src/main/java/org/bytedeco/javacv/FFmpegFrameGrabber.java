@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 Samuel Audet
+ * Copyright (C) 2009-2016 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -50,13 +50,17 @@
 package org.bytedeco.javacv;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map.Entry;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 
 import static org.bytedeco.javacpp.avcodec.*;
@@ -120,6 +124,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public FFmpegFrameGrabber(String filename) {
         this.filename = filename;
     }
+    public FFmpegFrameGrabber(InputStream inputStream) {
+        this.inputStream = inputStream;
+    }
     public void release() throws Exception {
         synchronized (org.bytedeco.javacpp.avcodec.class) {
             releaseUnsafe();
@@ -170,7 +177,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         // Close the video file
-        if (oc != null && !oc.isNull()) {
+        if (inputStream == null && oc != null && !oc.isNull()) {
             avformat_close_input(oc);
             oc = null;
         }
@@ -185,12 +192,62 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame         = null;
         timestamp     = 0;
         frameNumber   = 0;
+        filename      = null;
+
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException ex) {
+                throw new Exception("Error on InputStream.close(): ", ex);
+            } finally {
+                inputStream = null;
+                inputStreams.remove(oc);
+                if (avio != null) {
+                    if (avio.buffer() != null) {
+                        av_free(avio.buffer());
+                        avio.buffer(null);
+                    }
+                    av_free(avio);
+                    avio = null;
+                }
+                if (oc != null) {
+                    avformat_free_context(oc);
+                    oc = null;
+                }
+            }
+        }
     }
     @Override protected void finalize() throws Throwable {
         super.finalize();
         release();
     }
 
+    static HashMap<Pointer,InputStream> inputStreams = new HashMap<Pointer,InputStream>();
+
+    static class ReadCallback extends Read_packet_Pointer_BytePointer_int {
+        @Override public int call(Pointer opaque, BytePointer buf, int buf_size) {
+            try {
+                byte[] b = new byte[buf_size];
+                InputStream is = inputStreams.get(opaque);
+                int size = is.read(b, 0, buf_size);
+                if (size < 0) {
+                    return 0;
+                } else {
+                    buf.put(b, 0, size);
+                    return size;
+                }
+            }
+            catch (Throwable t) {
+                System.err.println("Error on InputStream.read(): " + t);
+                return -1;
+            }
+        }
+    }
+
+    static ReadCallback readCallback;
+
+    private InputStream     inputStream;
+    private AVIOContext     avio;
     private String          filename;
     private AVFormatContext oc;
     private AVStream        video_st, audio_st;
@@ -430,6 +487,17 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
         for (Entry<String, String> e : this.options.entrySet()) {
             av_dict_set(options, e.getKey(), e.getValue(), 0);
+        }
+        if (inputStream != null) {
+            if (readCallback == null) {
+                readCallback = new ReadCallback();
+            }
+            oc = avformat_alloc_context();
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, null);
+            oc.pb(avio);
+
+            filename = inputStream.toString();
+            inputStreams.put(oc, inputStream);
         }
         if ((ret = avformat_open_input(oc, filename, f, options)) < 0) {
             av_dict_set(options, "pixel_format", null, 0);

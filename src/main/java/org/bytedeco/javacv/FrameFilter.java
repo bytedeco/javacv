@@ -21,6 +21,9 @@
  */
 package org.bytedeco.javacv;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * A frame processor that may filter video and audio frames, or both.
  * After calling {@link #start()}, we can add frames to the graph with
@@ -28,7 +31,7 @@ package org.bytedeco.javacv;
  *
  * @author Samuel Audet
  */
-public abstract class FrameFilter {
+public abstract class FrameFilter implements Closeable {
     public static FrameFilter createDefault(String filtersDescr, int imageWidth, int imageHeight) throws Exception {
         return new FFmpegFrameFilter(filtersDescr, imageWidth, imageHeight);
     }
@@ -82,7 +85,7 @@ public abstract class FrameFilter {
         this.aspectRatio = aspectRatio;
     }
 
-    public static class Exception extends java.lang.Exception {
+    public static class Exception extends IOException {
         public Exception(String message) { super(message); }
         public Exception(String message, Throwable cause) { super(message, cause); }
     }
@@ -92,6 +95,11 @@ public abstract class FrameFilter {
     public abstract void push(Frame frame) throws Exception;
     public abstract Frame pull() throws Exception;
     public abstract void release() throws Exception;
+
+    @Override public void close() throws Exception {
+        stop();
+        release();
+    }
 
     public void restart() throws Exception {
         stop();

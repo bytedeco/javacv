@@ -51,6 +51,8 @@
 package org.bytedeco.javacv;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -58,6 +60,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.HashMap;
 import java.util.Map.Entry;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
@@ -149,6 +152,18 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.video_pkt = new AVPacket();
         this.audio_pkt = new AVPacket();
     }
+    public FFmpegFrameRecorder(OutputStream outputStream, int audioChannels) {
+        this(outputStream.toString(), audioChannels);
+        this.outputStream = outputStream;
+    }
+    public FFmpegFrameRecorder(OutputStream outputStream, int imageWidth, int imageHeight) {
+        this(outputStream.toString(), imageWidth, imageHeight);
+        this.outputStream = outputStream;
+    }
+    public FFmpegFrameRecorder(OutputStream outputStream, int imageWidth, int imageHeight, int audioChannels) {
+        this(outputStream.toString(), imageWidth, imageHeight, audioChannels);
+        this.outputStream = outputStream;
+    }
     public void release() throws Exception {
         synchronized (org.bytedeco.javacpp.avcodec.class) {
             releaseUnsafe();
@@ -204,9 +219,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
         video_st = null;
         audio_st = null;
+        filename = null;
 
         if (oc != null && !oc.isNull()) {
-            if ((oformat.flags() & AVFMT_NOFILE) == 0) {
+            if (outputStream == null && (oformat.flags() & AVFMT_NOFILE) == 0) {
                 /* close the output file */
                 avio_close(oc.pb());
             }
@@ -238,12 +254,53 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             swr_free(samples_convert_ctx);
             samples_convert_ctx = null;
         }
+
+        if (outputStream != null) {
+            try {
+                outputStream.close();
+            } catch (IOException ex) {
+                throw new Exception("Error on OutputStream.close(): ", ex);
+            } finally {
+                outputStream = null;
+                outputStreams.remove(oc);
+                if (avio != null) {
+                    if (avio.buffer() != null) {
+                        av_free(avio.buffer());
+                        avio.buffer(null);
+                    }
+                    av_free(avio);
+                    avio = null;
+                }
+            }
+        }
     }
     @Override protected void finalize() throws Throwable {
         super.finalize();
         release();
     }
 
+    static HashMap<Pointer,OutputStream> outputStreams = new HashMap<Pointer,OutputStream>();
+
+    static class WriteCallback extends Write_packet_Pointer_BytePointer_int {
+        @Override public int call(Pointer opaque, BytePointer buf, int buf_size) {
+            try {
+                byte[] b = new byte[buf_size];
+                OutputStream os = outputStreams.get(opaque);
+                buf.get(b, 0, buf_size);
+                os.write(b, 0, buf_size);
+                return buf_size;
+            }
+            catch (Throwable t) {
+                System.err.println("Error on OutputStream.write(): " + t);
+                return -1;
+            }
+        }
+    }
+
+    static WriteCallback writeCallback;
+
+    private OutputStream outputStream;
+    private AVIOContext avio;
     private String filename;
     private AVFrame picture, tmp_picture;
     private BytePointer picture_buf;
@@ -329,6 +386,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("avformat_alloc_context2() error:\tCould not allocate format context");
         }
 
+        if (outputStream != null) {
+            if (writeCallback == null) {
+                writeCallback = new WriteCallback();
+            }
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, null);
+            oc.pb(avio);
+
+            filename = outputStream.toString();
+            outputStreams.put(oc, outputStream);
+        }
         oc.oformat(oformat);
         oc.filename().putString(filename);
 
@@ -702,7 +769,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         /* open the output file, if needed */
-        if ((oformat.flags() & AVFMT_NOFILE) == 0) {
+        if (outputStream == null && (oformat.flags() & AVFMT_NOFILE) == 0) {
             AVIOContext pb = new AVIOContext(null);
             if ((ret = avio_open(pb, filename, AVIO_FLAG_WRITE)) < 0) {
                 release();
