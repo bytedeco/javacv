@@ -1,4 +1,6 @@
 
+ * Fix potential crash when recording audio with `FFmpegFrameRecorder`
+ * Add `OpenKinect2FrameGrabber` to capture images with libfreenect2 ([pull #584](https://github.com/bytedeco/javacv/pull/584))
  * Add `OpenKinectFrameGrabber.grabIR()` and stabilize `RealSenseFrameGrabber` ([pull #585](https://github.com/bytedeco/javacv/pull/585))
 
 ### December 7, 2016 version 1.3
