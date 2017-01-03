@@ -43,8 +43,10 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     public static String[] getDeviceDescriptions() throws FrameGrabber.Exception {
         tryLoad();
-        String[] desc = new String[1];
-        desc[0] = "No description yet.";
+        String[] desc = new String[context.get_device_count()];
+        for (int i = 0; i < desc.length; i++) {
+            desc[i] = context.get_device(i).get_name().getString();
+        }
         return desc;
     }
 
@@ -105,8 +107,9 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         }
     }
 
-    private static context context;
-    private final device device;
+    private static context context = null;
+    private int deviceNumber = 0;
+    private device device = null;
     private boolean depth = false; // default to "video"
     private boolean colorEnabled = false;
     private boolean depthEnabled = false;
@@ -114,11 +117,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
     public RealSenseFrameGrabber(int deviceNumber) {
-        if (context == null || context.get_device_count() <= deviceNumber) {
-            System.out.println("FATAL error: Realsense camera: " + deviceNumber + " not connected/found");
-            System.exit(-1);
-        }
-        device = context.get_device(deviceNumber);
+        this.deviceNumber = deviceNumber;
     }
 
     public static void main(String[] args) {
@@ -212,6 +211,11 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     @Override
     public void start() throws FrameGrabber.Exception {
+        if (context == null || context.get_device_count() <= deviceNumber) {
+            throw new Exception("FATAL error: Realsense camera: " + deviceNumber + " not connected/found");
+        }
+        device = context.get_device(deviceNumber);
+
         // if no stream is select, just get the color.
         if (!colorEnabled && !IREnabled && !depthEnabled) {
 

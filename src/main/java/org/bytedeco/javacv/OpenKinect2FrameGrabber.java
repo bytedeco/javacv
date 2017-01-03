@@ -45,8 +45,10 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
 
     public static String[] getDeviceDescriptions() throws FrameGrabber.Exception {
         tryLoad();
-        String[] desc = new String[1];
-        desc[0] = "No description yet.";
+        String[] desc = new String[freenect2Context.enumerateDevices()];
+        for (int i = 0; i < desc.length; i++) {
+            desc[i] = freenect2Context.getDeviceSerialNumber(i).getString();
+        }
         return desc;
     }
 
@@ -87,7 +89,7 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
     }
 
     private static FrameGrabber.Exception loadingException = null;
-    private static Freenect2 freenect2Context;
+    private static Freenect2 freenect2Context = null;
 
     public static void tryLoad() throws FrameGrabber.Exception {
         if (loadingException != null) {
@@ -112,37 +114,14 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
     private boolean depthEnabled = false;
     private boolean IREnabled = false;
 
-    private String serial;
+    private int deviceNumber = 0;
+    private String serial = null;
     private Freenect2Device device = null;
 
     private int frameTypes = 0;
 
     public OpenKinect2FrameGrabber(int deviceNumber) {
-        if (freenect2Context == null) {
-            try {
-                OpenKinect2FrameGrabber.tryLoad();
-            } catch (Exception e) {
-                System.out.println("Exception in the TryLoad !" + e);
-                e.printStackTrace();
-            }
-        }
-        if (freenect2Context == null) {
-            System.out.println("FATAL error: OpenKinect2 camera: driver could not load.");
-            System.exit(-1);
-        }
-        if (freenect2Context.enumerateDevices() == 0) {
-            System.out.println("FATAL error: OpenKinect2: no device connected!");
-            return;
-        }
-        device = null;
-        PacketPipeline pipeline = null;
-
-        pipeline = new CpuPacketPipeline();
-//        pipeline = new libfreenect2::OpenGLPacketPipeline();
-//        pipeline = new libfreenect2::OpenCLPacketPipeline(deviceId);
-//        pipeline = new libfreenect2::CudaPacketPipeline(deviceId);
-        serial = freenect2Context.getDefaultDeviceSerialNumber().getString();
-        device = freenect2Context.openDevice(serial, pipeline);
+        this.deviceNumber = deviceNumber;
     }
 
     public void enableColorStream() {
@@ -177,6 +156,30 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
 
     @Override
     public void start() throws FrameGrabber.Exception {
+        if (freenect2Context == null) {
+            try {
+                OpenKinect2FrameGrabber.tryLoad();
+            } catch (Exception e) {
+                System.out.println("Exception in the TryLoad !" + e);
+                e.printStackTrace();
+            }
+        }
+        if (freenect2Context == null) {
+            throw new Exception("FATAL error: OpenKinect2 camera: driver could not load.");
+        }
+        if (freenect2Context.enumerateDevices() == 0) {
+            throw new Exception("FATAL error: OpenKinect2: no device connected!");
+        }
+        device = null;
+        PacketPipeline pipeline = null;
+
+        pipeline = new CpuPacketPipeline();
+//        pipeline = new libfreenect2::OpenGLPacketPipeline();
+//        pipeline = new libfreenect2::OpenCLPacketPipeline(deviceId);
+//        pipeline = new libfreenect2::CudaPacketPipeline(deviceId);
+        serial = freenect2Context.getDeviceSerialNumber(deviceNumber).getString();
+        device = freenect2Context.openDevice(serial, pipeline);
+
         frameListener = new freenect2.SyncMultiFrameListener(frameTypes);
 
         if (colorEnabled) {

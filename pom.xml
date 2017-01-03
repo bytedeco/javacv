@@ -62,20 +62,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
     <javacpp.version>${project.version}</javacpp.version>
-    <!-- Reinclude the following with profiles, either all: -Pall
-         or selectively: -Pmarkers,ffmpeg,dc1394,flycapture,openkinect,ps3eye,videoinput,jogamp -->
-    <exclude.markers>**/Mark*.java</exclude.markers>
-    <exclude.calibration>**/*Calibrator.java</exclude.calibration>
-    <exclude.ffmpeg>**/FFmpeg*.java</exclude.ffmpeg>
-    <exclude.realsense>**/RealSense*.java</exclude.realsense>
-    <exclude.dc1394>**/DC1394*.java</exclude.dc1394>
-    <exclude.flycapture>**/FlyCapture*.java</exclude.flycapture>
-    <exclude.openkinect>**/OpenKinectFrameGrabber</exclude.openkinect>
-    <exclude.openkinect2>**/OpenKinect2*.java</exclude.openkinect2>
-    <exclude.ps3eye>**/PS3Eye*.java</exclude.ps3eye>
-    <exclude.videoinput>**/VideoInput*.java</exclude.videoinput>
-    <exclude.opengl>**/GL*.java</exclude.opengl>
-    <exclude.opencl>**/*CL.java</exclude.opencl>
   </properties>
 
   <dependencies>
@@ -178,19 +164,6 @@
         <configuration>
           <source>1.7</source>
           <target>1.7</target>
-          <excludes>
-            <exclude>${exclude.markers}</exclude>
-            <exclude>${exclude.calibration}</exclude>
-            <exclude>${exclude.ffmpeg}</exclude>
-            <exclude>${exclude.realsense}</exclude>
-            <exclude>${exclude.dc1394}</exclude>
-            <exclude>${exclude.flycapture}</exclude>
-            <exclude>${exclude.openkinect}</exclude>
-            <exclude>${exclude.ps3eye}</exclude>
-            <exclude>${exclude.videoinput}</exclude>
-            <exclude>${exclude.opengl}</exclude>
-            <exclude>${exclude.opencl}</exclude>
-          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -204,7 +177,7 @@
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
-              <Class-Path>. javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar librealsense.jar libfreenect.jar videoinput.jar artoolkitplus.jar</Class-Path>
+              <Class-Path>. javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar libfreenect2.jar librealsense.jar videoinput.jar artoolkitplus.jar flandmark.jar</Class-Path>
               <Name>org/bytedeco/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Bytedeco</Implementation-Vendor>
@@ -341,86 +314,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-
-    <profile>
-      <id>all</id>
-      <properties>
-        <exclude.markers>none</exclude.markers>
-        <exclude.calibration>none</exclude.calibration>
-        <exclude.ffmpeg>none</exclude.ffmpeg>
-        <exclude.realsense>none</exclude.realsense>
-        <exclude.dc1394>none</exclude.dc1394>
-        <exclude.flycapture>none</exclude.flycapture>
-        <exclude.openkinect>none</exclude.openkinect>
-        <exclude.openkinect2>none</exclude.openkinect2>
-        <exclude.ps3eye>none</exclude.ps3eye>
-        <exclude.videoinput>none</exclude.videoinput>
-        <exclude.opengl>none</exclude.opengl>
-        <exclude.opencl>none</exclude.opencl>
-      </properties>
-    </profile>
-    <profile>
-      <id>markers</id>
-      <properties>
-        <exclude.markers>none</exclude.markers>
-        <exclude.calibration>none</exclude.calibration>
-      </properties>
-    </profile>
-    <profile>
-      <id>ffmpeg</id>
-      <properties>
-        <exclude.ffmpeg>none</exclude.ffmpeg>
-      </properties>
-    </profile>
-    <profile>
-      <id>realsense</id>
-      <properties>
-        <exclude.realsense>none</exclude.realsense>
-      </properties>
-    </profile>
-    <profile>
-      <id>dc1394</id>
-      <properties>
-        <exclude.dc1394>none</exclude.dc1394>
-      </properties>
-    </profile>
-    <profile>
-      <id>flycapture</id>
-      <properties>
-        <exclude.flycapture>none</exclude.flycapture>
-      </properties>
-    </profile>
-    <profile>
-      <id>openkinect</id>
-      <properties>
-        <exclude.openkinect>none</exclude.openkinect>
-      </properties>
-    </profile>
-    <profile>
-      <id>openkinect2</id>
-      <properties>
-        <exclude.openkinect2>none</exclude.openkinect2>
-      </properties>
-    </profile>
-    <profile>
-      <id>ps3eye</id>
-      <properties>
-        <exclude.ps3eye>none</exclude.ps3eye>
-      </properties>
-    </profile>
-    <profile>
-      <id>videoinput</id>
-      <properties>
-        <exclude.videoinput>none</exclude.videoinput>
-      </properties>
-    </profile>
-    <profile>
-      <id>jogamp</id>
-      <properties>
-        <exclude.opengl>none</exclude.opengl>
-        <exclude.opencl>none</exclude.opencl>
-      </properties>
     </profile>
   </profiles>
 

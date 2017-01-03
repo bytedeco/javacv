@@ -44,13 +44,15 @@ import java.util.concurrent.Future;
 public abstract class FrameGrabber implements Closeable {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
-		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera", "RealSense"  }));
+		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "OpenKinect2", "RealSense", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera" }));
     public static void init() {
         for (String name : list) {
             try {
                 Class<? extends FrameGrabber> c = get(name);
                 c.getMethod("tryLoad").invoke(null);
-            } catch (Throwable t) { }
+            } catch (Throwable t) {
+                continue;
+            }
         }
     }
     public static Class<? extends FrameGrabber> getDefault() {
@@ -73,7 +75,9 @@ public abstract class FrameGrabber implements Closeable {
                 if (mayContainCameras) {
                     return c;
                 }
-            } catch (Throwable t) { }
+            } catch (Throwable t) {
+                continue;
+            }
         }
         return null;
     }

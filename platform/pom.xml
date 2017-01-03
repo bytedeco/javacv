@@ -13,6 +13,10 @@
   <artifactId>javacv-platform</artifactId>
   <name>JavaCV Platform</name>
 
+  <properties>
+    <javacpp.version>${project.version}</javacpp.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -23,47 +27,52 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv-platform</artifactId>
-      <version>3.1.0-${project.version}</version>
+      <version>3.1.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>3.2.1-${project.version}</version>
+      <version>3.2.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture-platform</artifactId>
-      <version>2.9.3.43-${project.version}</version>
+      <version>2.9.3.43-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394-platform</artifactId>
-      <version>2.2.4-${project.version}</version>
+      <version>2.2.4-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect-platform</artifactId>
-      <version>0.5.3-${project.version}</version>
+      <version>0.5.3-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>libfreenect2-platform</artifactId>
+      <version>0.2.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>librealsense-platform</artifactId>
-      <version>1.9.6-${project.version}</version>
+      <version>1.9.6-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>videoinput-platform</artifactId>
-      <version>0.200-${project.version}</version>
+      <version>0.200-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>artoolkitplus-platform</artifactId>
-      <version>2.3.1-${project.version}</version>
+      <version>2.3.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flandmark-platform</artifactId>
-      <version>1.07-${project.version}</version>
+      <version>1.07-${javacpp.version}</version>
     </dependency>
 
     <dependency>
@@ -85,7 +94,7 @@
             <configuration>
               <archive>
                 <manifestEntries>
-                  <Class-Path>javacv.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar librealsense-platform.jar libfreenect-platform.jar videoinput-platform.jar artoolkitplus-platform.jar</Class-Path>
+                  <Class-Path>javacv.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar libfreenect-platform.jar libfreenect2-platform.jar librealsense-platform.jar videoinput-platform.jar artoolkitplus-platform.jar flandmark-platform.jar</Class-Path>
                   <Name>org/bytedeco/javacv/</Name>
                 </manifestEntries>
               </archive>
