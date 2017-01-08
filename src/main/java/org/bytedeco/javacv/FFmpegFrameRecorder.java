@@ -663,6 +663,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* open the codec */
             if ((ret = avcodec_open2(video_c, video_codec, options)) < 0) {
                 release();
+                av_dict_free(options);
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open video codec.");
             }
             av_dict_free(options);
@@ -717,6 +718,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* open the codec */
             if ((ret = avcodec_open2(audio_c, audio_codec, options)) < 0) {
                 release();
+                av_dict_free(options);
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open audio codec.");
             }
             av_dict_free(options);
@@ -768,20 +770,22 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             audio_st.metadata(metadata);
         }
 
-        /* open the output file, if needed */
-        if (outputStream == null && (oformat.flags() & AVFMT_NOFILE) == 0) {
-            AVIOContext pb = new AVIOContext(null);
-            if ((ret = avio_open(pb, filename, AVIO_FLAG_WRITE)) < 0) {
-                release();
-                throw new Exception("avio_open error() error " + ret + ": Could not open '" + filename + "'");
-            }
-            oc.pb(pb);
-        }
-
         AVDictionary options = new AVDictionary(null);
         for (Entry<String, String> e : this.options.entrySet()) {
             av_dict_set(options, e.getKey(), e.getValue(), 0);
         }
+
+        /* open the output file, if needed */
+        if (outputStream == null && (oformat.flags() & AVFMT_NOFILE) == 0) {
+            AVIOContext pb = new AVIOContext(null);
+            if ((ret = avio_open2(pb, filename, AVIO_FLAG_WRITE, null, options)) < 0) {
+                release();
+                av_dict_free(options);
+                throw new Exception("avio_open2 error() error " + ret + ": Could not open '" + filename + "'");
+            }
+            oc.pb(pb);
+        }
+
         AVDictionary metadata = new AVDictionary(null);
         for (Entry<String, String> e : this.metadata.entrySet()) {
             av_dict_set(metadata, e.getKey(), e.getValue(), 0);

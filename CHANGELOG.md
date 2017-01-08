@@ -1,4 +1,5 @@
 
+ * Let `FFmpegFrameRecorder` pass options to the protocol as well ([issue #598](https://github.com/bytedeco/javacv/issues/598))
  * Add `RealSenseFrameGrabber` and `OpenKinect2FrameGrabber` to `FrameGrabber.list` to have them loaded by default
  * Remove confusing and no longer useful profiles from the `pom.xml` file
  * Provide new `FFmpegFrameGrabber(InputStream)` and `FFmpegFrameRecorder(OutputStream)` constructors ([issue #95](https://github.com/bytedeco/javacv/issues/95))
