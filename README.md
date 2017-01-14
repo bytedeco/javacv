@@ -18,8 +18,8 @@ Downloads
 ---------
 To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation) section below.
 
- * JavaCV 1.3 binary archive  [javacv-platform-1.3-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.3/javacv-platform-1.3-bin.zip) (189 MB)
- * JavaCV 1.3 source archive  [javacv-platform-1.3-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.3/javacv-platform-1.3-src.zip) (437 KB)
+ * JavaCV 1.3.1 binary archive  [javacv-platform-1.3.1-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.3.1/javacv-platform-1.3.1-bin.zip) (189 MB)
+ * JavaCV 1.3.1 source archive  [javacv-platform-1.3.1-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.3.1/javacv-platform-1.3.1-src.zip) (442 KB)
 
 The binary archive contains builds for Android, Linux, Mac OS X, and Windows. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
 
@@ -31,20 +31,20 @@ We can also have everything downloaded and installed automatically with:
   <dependency>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacv-platform</artifactId>
-    <version>1.3</version>
+    <version>1.3.1</version>
   </dependency>
 ```
 
  * Gradle (inside the `build.gradle` file)
 ```groovy
   dependencies {
-    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.3'
+    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.3.1'
   }
 ```
 
  * sbt (inside the `build.sbt` file)
 ```scala
-  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.3"
+  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.3.1"
 ```
 
 This downloads binaries for all platforms, but to get binaries for only one platform we can set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, `linux-x86_64`, `macosx-x86_64`, `windows-x86_64`, etc. Please refer to the [README.md file of the JavaCPP Presets](https://github.com/bytedeco/javacpp-presets#downloads) for details. Another option available for Scala users is [sbt-javacv](https://github.com/bytedeco/sbt-javacv).
@@ -260,12 +260,12 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>1.3</version>
+    <version>1.3.1</version>
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.3</version>
+            <version>1.3.1</version>
         </dependency>
     </dependencies>
 </project>
