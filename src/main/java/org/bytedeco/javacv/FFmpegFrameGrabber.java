@@ -49,6 +49,7 @@
 
 package org.bytedeco.javacv;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -244,7 +245,26 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
+    static class SeekCallback extends Seek_Pointer_long_int {
+        @Override public long call(Pointer opaque, long offset, int whence) {
+            try {
+                InputStream is = inputStreams.get(opaque);
+                switch (whence) {
+                    case 0: is.reset(); break;
+                    case 1: break;
+                    default: return -1;
+                }
+                is.skip(offset);
+                return 0;
+            } catch (Throwable t) {
+                System.err.println("Error on InputStream.reset() or skip(): " + t);
+                return -1;
+            }
+        }
+    }
+
     static ReadCallback readCallback;
+    static SeekCallback seekCallback;
 
     private InputStream     inputStream;
     private AVIOContext     avio;
@@ -492,8 +512,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (readCallback == null) {
                 readCallback = new ReadCallback();
             }
+            if (seekCallback == null) {
+                seekCallback = new SeekCallback();
+            }
+            if (!inputStream.markSupported()) {
+                inputStream = new BufferedInputStream(inputStream, 1024 * 1024);
+            }
+            inputStream.mark(1024 * 1024);
             oc = avformat_alloc_context();
-            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, null);
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, seekCallback);
             oc.pb(avio);
 
             filename = inputStream.toString();
