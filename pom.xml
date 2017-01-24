@@ -89,7 +89,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.4-${javacpp.version}</version>
+      <version>2.2.5-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
