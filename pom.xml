@@ -74,7 +74,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>opencv</artifactId>
-      <version>3.1.0-${javacpp.version}</version>
+      <version>3.2.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -89,7 +89,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.4-${javacpp.version}</version>
+      <version>2.2.5-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -225,6 +225,8 @@
                 <link>http://bytedeco.org/javacpp-presets/flycapture/apidocs/</link>
                 <link>http://bytedeco.org/javacpp-presets/libdc1394/apidocs/</link>
                 <link>http://bytedeco.org/javacpp-presets/libfreenect/apidocs/</link>
+                <link>http://bytedeco.org/javacpp-presets/libfreenect2/apidocs/</link>
+                <link>http://bytedeco.org/javacpp-presets/librealsense/apidocs/</link>
                 <link>http://bytedeco.org/javacpp-presets/videoinput/apidocs/</link>
                 <link>http://bytedeco.org/javacpp-presets/artoolkitplus/apidocs/</link>
                 <link>http://bytedeco.org/javacpp-presets/flandmark/apidocs/</link>

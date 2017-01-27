@@ -1,4 +1,6 @@
 
+ * Upgrade dependencies for OpenCV 3.2.0, libdc1394 2.2.5
+
 ### January 14, 2017 version 1.3.1
  * Let `FFmpegFrameRecorder` pass options to the protocol as well ([issue #598](https://github.com/bytedeco/javacv/issues/598))
  * Add `RealSenseFrameGrabber` and `OpenKinect2FrameGrabber` to `FrameGrabber.list` to have them loaded by default
