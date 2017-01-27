@@ -90,6 +90,7 @@ public class FrameGrabberTest {
                 }
             }
             assertEquals(grabber.grab(), null);
+            grabber.restart();
             grabber.stop();
             grabber.release();
         } catch (Exception e) {

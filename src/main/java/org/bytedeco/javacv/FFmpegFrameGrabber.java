@@ -193,15 +193,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame         = null;
         timestamp     = 0;
         frameNumber   = 0;
-        filename      = null;
 
         if (inputStream != null) {
             try {
-                inputStream.close();
+                if (oc == null) {
+                    // when called a second time
+                    inputStream.close();
+                } else {
+                    inputStream.reset();
+                }
             } catch (IOException ex) {
                 throw new Exception("Error on InputStream.close(): ", ex);
             } finally {
-                inputStream = null;
                 inputStreams.remove(oc);
                 if (avio != null) {
                     if (avio.buffer() != null) {
