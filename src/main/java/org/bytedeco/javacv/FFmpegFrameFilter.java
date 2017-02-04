@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Samuel Audet
+ * Copyright (C) 2015-2017 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ import java.nio.ByteOrder;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.PointerPointer;
 
 import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avfilter.*;
@@ -283,7 +284,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             }
         }
 
-        avpicture_fill(new AVPicture(image_frame), data, pixelFormat, width, height);
+        av_image_fill_arrays(new PointerPointer(image_frame), image_frame.linesize(), data, pixelFormat, width, height, 1);
         image_frame.linesize(0, step);
         image_frame.format(pixelFormat);
         image_frame.width(width);
@@ -321,7 +322,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             frame.imageChannels = frame.imageStride / frame.imageWidth;
         } else {
             frame.imageStride = frame.imageWidth;
-            int size = avpicture_get_size(filt_frame.format(), frame.imageWidth, frame.imageHeight);
+            int size = av_image_get_buffer_size(filt_frame.format(), frame.imageWidth, frame.imageHeight, 1);
             // Fix bug on Android4.0，check out https://github.com/bytedeco/javacpp/issues/39
             if (image_buf[0] == null || image_buf[0].capacity() < size) {
                 image_buf[0] = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
@@ -329,8 +330,8 @@ public class FFmpegFrameFilter extends FrameFilter {
             frame.image = image_buf;
             frame.image[0].position(0).limit(size);
             frame.imageChannels = (size + frame.imageWidth * frame.imageHeight - 1) / (frame.imageWidth * frame.imageHeight);
-            ret = avpicture_layout(new AVPicture(filt_frame), filt_frame.format(),
-                    frame.imageWidth, frame.imageHeight, (ByteBuffer) frame.image[0].position(0), frame.image[0].capacity());
+            ret = av_image_copy_to_buffer(new BytePointer((ByteBuffer) frame.image[0].position(0)), frame.image[0].capacity(),
+                    new PointerPointer(filt_frame), filt_frame.linesize(), filt_frame.format(), frame.imageWidth, frame.imageHeight, 1);
         }
         return frame;
     }

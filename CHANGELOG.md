@@ -1,4 +1,5 @@
 
+ * Get rid of deprecated calls in `FFmpegFrameFilter`, `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #607](https://github.com/bytedeco/javacv/issues/607))
  * Fix crash in `FFmpegFrameGrabber.restart()` ([issue #605](https://github.com/bytedeco/javacv/issues/605))
  * Upgrade dependencies for OpenCV 3.2.0, libdc1394 2.2.5
 

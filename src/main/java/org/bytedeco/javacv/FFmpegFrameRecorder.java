@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 Samuel Audet
+ * Copyright (C) 2009-2017 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -172,11 +172,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     void releaseUnsafe() throws Exception {
         /* close each codec */
         if (video_c != null) {
-            avcodec_close(video_c);
+            avcodec_free_context(video_c);
             video_c = null;
         }
         if (audio_c != null) {
-            avcodec_close(audio_c);
+            avcodec_free_context(audio_c);
             audio_c = null;
         }
         if (picture_buf != null) {
@@ -449,12 +449,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             /* add a video output stream */
-            if ((video_st = avformat_new_stream(oc, video_codec)) == null) {
+            if ((video_st = avformat_new_stream(oc, null)) == null) {
                 release();
                 throw new Exception("avformat_new_stream() error: Could not allocate video stream.");
             }
 
-            video_c = video_st.codec();
+            if ((video_c = avcodec_alloc_context3(video_codec)) == null) {
+                release();
+                throw new Exception("avcodec_alloc_context3() error: Could not allocate video encoding context.");
+            }
 
             if (inpVideoStream != null) {
                 if ((ret = avcodec_copy_context(video_st.codec(), inpVideoStream.codec())) < 0) {
@@ -572,12 +575,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             oformat.audio_codec(audio_codec.id());
 
-            if ((audio_st = avformat_new_stream(oc, audio_codec)) == null) {
+            if ((audio_st = avformat_new_stream(oc, null)) == null) {
                 release();
                 throw new Exception("avformat_new_stream() error: Could not allocate audio stream.");
             }
 
-            audio_c = audio_st.codec();
+            if ((audio_c = avcodec_alloc_context3(audio_codec)) == null) {
+                release();
+                throw new Exception("avcodec_alloc_context3() error: Could not allocate audio encoding context.");
+            }
 
             if(inpAudioStream != null && audioChannels > 0){
                 if ((ret = avcodec_copy_context(audio_st.codec(), inpAudioStream.codec()))  < 0) {
@@ -687,7 +693,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             picture.pts(0); // magic required by libx264
 
-            int size = avpicture_get_size(video_c.pix_fmt(), video_c.width(), video_c.height());
+            int size = av_image_get_buffer_size(video_c.pix_fmt(), video_c.width(), video_c.height(), 1);
             if ((picture_buf = new BytePointer(av_malloc(size))).isNull()) {
                 release();
                 throw new Exception("av_malloc() error: Could not allocate picture buffer.");
@@ -698,6 +704,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if ((tmp_picture = av_frame_alloc()) == null) {
                 release();
                 throw new Exception("av_frame_alloc() error: Could not allocate temporary picture.");
+            }
+
+            /* copy the stream parameters to the muxer */
+            if ((ret = avcodec_parameters_from_context(video_st.codecpar(), video_c)) < 0) {
+                release();
+                throw new Exception("avcodec_parameters_from_context() error: Could not copy the video stream parameters.");
             }
 
             AVDictionary metadata = new AVDictionary(null);
@@ -729,7 +741,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* ugly hack for PCM codecs (will be removed ASAP with new PCM
                support to compute the input frame size in samples */
             if (audio_c.frame_size() <= 1) {
-                audio_outbuf_size = FF_MIN_BUFFER_SIZE;
+                audio_outbuf_size = AV_INPUT_BUFFER_MIN_SIZE;
                 audio_input_frame_size = audio_outbuf_size / audio_c.channels();
                 switch (audio_c.codec_id()) {
                     case AV_CODEC_ID_PCM_S16LE:
@@ -762,6 +774,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 throw new Exception("av_frame_alloc() error: Could not allocate audio frame.");
             }
             frame.pts(0); // magic required by libvorbis and webm
+
+            /* copy the stream parameters to the muxer */
+            if ((ret = avcodec_parameters_from_context(audio_st.codecpar(), audio_c)) < 0) {
+                release();
+                throw new Exception("avcodec_parameters_from_context() error: Could not copy the audio stream parameters.");
+            }
 
             AVDictionary metadata = new AVDictionary(null);
             for (Entry<String, String> e : audioMetadata.entrySet()) {
@@ -875,8 +893,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 if (img_convert_ctx == null) {
                     throw new Exception("sws_getCachedContext() error: Cannot initialize the conversion context.");
                 }
-                avpicture_fill(new AVPicture(tmp_picture), data, pixelFormat, width, height);
-                avpicture_fill(new AVPicture(picture), picture_buf, video_c.pix_fmt(), video_c.width(), video_c.height());
+                av_image_fill_arrays(new PointerPointer(tmp_picture), tmp_picture.linesize(), data, pixelFormat, width, height, 1);
+                av_image_fill_arrays(new PointerPointer(picture), picture.linesize(), picture_buf, video_c.pix_fmt(), video_c.width(), video_c.height(), 1);
                 tmp_picture.linesize(0, step);
                 tmp_picture.format(pixelFormat);
                 tmp_picture.width(width);
@@ -887,7 +905,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 sws_scale(img_convert_ctx, new PointerPointer(tmp_picture), tmp_picture.linesize(),
                           0, height, new PointerPointer(picture), picture.linesize());
             } else {
-                avpicture_fill(new AVPicture(picture), data, pixelFormat, width, height);
+                av_image_fill_arrays(new PointerPointer(picture), picture.linesize(), data, pixelFormat, width, height, 1);
                 picture.linesize(0, step);
                 picture.format(pixelFormat);
                 picture.width(width);
@@ -904,7 +922,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_pkt.flags(video_pkt.flags() | AV_PKT_FLAG_KEY);
             video_pkt.stream_index(video_st.index());
             video_pkt.data(new BytePointer(picture));
-            video_pkt.size(Loader.sizeof(AVPicture.class));
+            video_pkt.size(Loader.sizeof(AVFrame.class));
         } else {
             /* encode the image */
             av_init_packet(video_pkt);

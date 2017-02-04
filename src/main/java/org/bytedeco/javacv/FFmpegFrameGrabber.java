@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 Samuel Audet
+ * Copyright (C) 2009-2017 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -136,7 +136,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     void releaseUnsafe() throws Exception {
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
-                av_free_packet(pkt);
+                av_packet_unref(pkt);
             }
             pkt = pkt2 = null;
         }
@@ -161,7 +161,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         // Close the video codec
         if (video_c != null) {
-            avcodec_close(video_c);
+            avcodec_free_context(video_c);
             video_c = null;
         }
 
@@ -173,7 +173,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         // Close the audio codec
         if (audio_c != null) {
-            avcodec_close(audio_c);
+            avcodec_free_context(audio_c);
             audio_c = null;
         }
 
@@ -427,7 +427,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             if (pkt2.size() > 0) {
                 pkt2.size(0);
-                av_free_packet(pkt);
+                av_packet_unref(pkt);
             }
             /* comparing to timestamp +/- 1 avoids rouding issues for framerates
                which are no proper divisors of 1000000, e.g. where
@@ -547,17 +547,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         // Find the first video and audio stream, unless the user specified otherwise
         video_st = audio_st = null;
+        AVCodecParameters video_par = null, audio_par = null;
         int nb_streams = oc.nb_streams();
         for (int i = 0; i < nb_streams; i++) {
             AVStream st = oc.streams(i);
             // Get a pointer to the codec context for the video or audio stream
-            AVCodecContext c = st.codec();
-            if (video_st == null && c.codec_type() == AVMEDIA_TYPE_VIDEO && (videoStream < 0 || videoStream == i)) {
+            AVCodecParameters par = st.codecpar();
+            if (video_st == null && par.codec_type() == AVMEDIA_TYPE_VIDEO && (videoStream < 0 || videoStream == i)) {
                 video_st = st;
-                video_c = c;
-            } else if (audio_st == null && c.codec_type() == AVMEDIA_TYPE_AUDIO && (audioStream < 0 || audioStream == i)) {
+                video_par = par;
+            } else if (audio_st == null && par.codec_type() == AVMEDIA_TYPE_AUDIO && (audioStream < 0 || audioStream == i)) {
                 audio_st = st;
-                audio_c = c;
+                audio_par = par;
             }
         }
         if (video_st == null && audio_st == null) {
@@ -567,9 +568,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (video_st != null) {
             // Find the decoder for the video stream
-            AVCodec codec = avcodec_find_decoder(video_c.codec_id());
+            AVCodec codec = avcodec_find_decoder(video_par.codec_id());
             if (codec == null) {
-                throw new Exception("avcodec_find_decoder() error: Unsupported video format or codec not found: " + video_c.codec_id() + ".");
+                throw new Exception("avcodec_find_decoder() error: Unsupported video format or codec not found: " + video_par.codec_id() + ".");
+            }
+
+            /* Allocate a codec context for the decoder */
+            if ((video_c = avcodec_alloc_context3(codec)) == null) {
+                throw new Exception("avcodec_alloc_context3() error: Could not allocate video decoding context.");
+            }
+
+            /* copy the stream parameters from the muxer */
+            if ((ret = avcodec_parameters_to_context(video_c, video_st.codecpar())) < 0) {
+                release();
+                throw new Exception("avcodec_parameters_to_context() error: Could not copy the video stream parameters.");
             }
 
             options = new AVDictionary(null);
@@ -604,13 +616,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     int fmt = getPixelFormat();
 
                     // Determine required buffer size and allocate buffer
-                    int size = avpicture_get_size(fmt, width, height);
+                    int size = av_image_get_buffer_size(fmt, width, height, 1);
                     image_ptr = new BytePointer[] { new BytePointer(av_malloc(size)).capacity(size) };
                     image_buf = new Buffer[] { image_ptr[0].asBuffer() };
 
                     // Assign appropriate parts of buffer to image planes in picture_rgb
                     // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
-                    avpicture_fill(new AVPicture(picture_rgb), image_ptr[0], fmt, width, height);
+                    av_image_fill_arrays(new PointerPointer(picture_rgb), picture_rgb.linesize(), image_ptr[0], fmt, width, height, 1);
                     picture_rgb.format(fmt);
                     picture_rgb.width(width);
                     picture_rgb.height(height);
@@ -628,9 +640,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (audio_st != null) {
             // Find the decoder for the audio stream
-            AVCodec codec = avcodec_find_decoder(audio_c.codec_id());
+            AVCodec codec = avcodec_find_decoder(audio_par.codec_id());
             if (codec == null) {
-                throw new Exception("avcodec_find_decoder() error: Unsupported audio format or codec not found: " + audio_c.codec_id() + ".");
+                throw new Exception("avcodec_find_decoder() error: Unsupported audio format or codec not found: " + audio_par.codec_id() + ".");
+            }
+
+            /* Allocate a codec context for the decoder */
+            if ((audio_c = avcodec_alloc_context3(codec)) == null) {
+                throw new Exception("avcodec_alloc_context3() error: Could not allocate audio decoding context.");
+            }
+
+            /* copy the stream parameters from the muxer */
+            if ((ret = avcodec_parameters_to_context(audio_c, audio_st.codecpar())) < 0) {
+                release();
+                throw new Exception("avcodec_parameters_to_context() error: Could not copy the audio stream parameters.");
             }
 
             options = new AVDictionary(null);
@@ -660,13 +683,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
         if (pkt2.size() > 0) {
             pkt2.size(0);
-            av_free_packet(pkt);
+            av_packet_unref(pkt);
         }
         for (int i = 0; i < numBuffers+1; i++) {
             if (av_read_frame(oc, pkt) < 0) {
                 return;
             }
-            av_free_packet(pkt);
+            av_packet_unref(pkt);
         }
     }
 
@@ -856,7 +879,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             if (pkt2.size() <= 0) {
                 // Free the packet that was allocated by av_read_frame
-                av_free_packet(pkt);
+                av_packet_unref(pkt);
             }
         }
         return frame;
