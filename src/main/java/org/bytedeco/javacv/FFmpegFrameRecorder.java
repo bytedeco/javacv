@@ -654,8 +654,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
         }
 
-        av_dump_format(oc, 0, filename, 1);
-
         /* now that all the parameters are set, we can open the audio and
            video codecs and allocate the necessary encode buffers */
         if (video_st != null && inpVideoStream == null) {
@@ -811,6 +809,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         /* write the stream header, if any */
         avformat_write_header(oc.metadata(metadata), options);
         av_dict_free(options);
+
+        av_dump_format(oc, 0, filename, 1);
     }
 
     public void stop() throws Exception {
