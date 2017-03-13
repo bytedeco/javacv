@@ -1,4 +1,5 @@
 
+### March 13, 2017 version 1.3.2
  * Add `Java2DFrameUtils` to facilitate conversion between `Frame`, `BufferedImage`, `IplImage`, and `Mat`
  * Add new `JavaFxPlayVideoAndAudio` sample ([pull #618](https://github.com/bytedeco/javacv/pull/618))
  * Get rid of deprecated calls in `FFmpegFrameFilter`, `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #607](https://github.com/bytedeco/javacv/issues/607))
