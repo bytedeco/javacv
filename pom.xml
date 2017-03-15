@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.3.2</version>
+  <version>1.3.3-SNAPSHOT</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV and more</description>
@@ -61,14 +61,14 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
-    <javacpp.version>1.3</javacpp.version>
+    <javacpp.version>${project.version}</javacpp.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>javacpp</artifactId>
-      <version>1.3.2</version>
+      <version>${javacpp.version}</version>
     </dependency>
 
     <dependency>
@@ -89,7 +89,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.4-${javacpp.version}</version>
+      <version>2.2.5-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
