@@ -1,4 +1,6 @@
 
+ * Fix call to `FaceRecognizer.predict()` in samples ([issue #642](https://github.com/bytedeco/javacv/issues/642))
+
 ### March 13, 2017 version 1.3.2
  * Add `Java2DFrameUtils` to facilitate conversion between `Frame`, `BufferedImage`, `IplImage`, and `Mat`
  * Add new `JavaFxPlayVideoAndAudio` sample ([pull #618](https://github.com/bytedeco/javacv/pull/618))

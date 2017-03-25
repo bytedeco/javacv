@@ -1,6 +1,9 @@
 
 import java.io.File;
 
+import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.javacpp.DoublePointer;
+
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber.Exception;
 import org.bytedeco.javacv.OpenCVFrameConverter;
@@ -73,7 +76,10 @@ public class FaceRecognizerInVideo {
                 // 1.0, 1.0, INTER_CUBIC);
 
                 // Now perform the prediction, see how easy that is:
-                int prediction = lbphFaceRecognizer.predict(face);
+                IntPointer label = new IntPointer(1);
+                DoublePointer confidence = new DoublePointer(1);
+                lbphFaceRecognizer.predict(face, label, confidence);
+                int prediction = label.get(0);
 
                 // And finally write all we've found out to the original image!
                 // First of all draw a green rectangle around the detected face:
