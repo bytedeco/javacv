@@ -176,8 +176,13 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             capture = new VideoCapture(deviceNumber);
         }
 
-        if (format != null && format.equals("MJPEG")) {
-            capture.set(CV_CAP_PROP_FOURCC, CV_FOURCC((byte)'M', (byte)'J', (byte)'P', (byte)'G'));
+        if (format != null && format.length() >= 4) {
+            format = format.toUpperCase();
+            byte cc0 = (byte)format.charAt(0);
+            byte cc1 = (byte)format.charAt(1);
+            byte cc2 = (byte)format.charAt(2);
+            byte cc3 = (byte)format.charAt(3);
+            capture.set(CV_CAP_PROP_FOURCC, CV_FOURCC(cc0, cc1, cc2, cc3));
         }
 
         if (imageWidth > 0) {
