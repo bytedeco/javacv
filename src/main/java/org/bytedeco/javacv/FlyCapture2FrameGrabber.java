@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Jeremy Laviole, Samuel Audet
+ * Copyright (C) 2014,2017 Jeremy Laviole, Samuel Audet, Jarek Sacha
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.FlyCapture2;
+import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -38,6 +40,7 @@ import static org.bytedeco.javacpp.FlyCapture2.*;
 /**
  *
  * @author Jeremy Laviole
+ * @author Jarek Sacha
  */
 public class FlyCapture2FrameGrabber extends FrameGrabber {
 
@@ -198,13 +201,15 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public double getFrameRate() {  // TODO: check this. 
-//        if (context == null || context.isNull()) {
-        return super.getFrameRate();
-//        } else {
-//            flycaptureGetCameraAbsProperty(context, FRAME_RATE, outFloat);
-//            return outFloat[0];
-//        }
+    public double getFrameRate() {
+        if (camera == null || camera.isNull()) {
+            return super.getFrameRate();
+        } else {
+            IntPointer videoMode = new IntPointer(1L);
+            IntPointer frameRate = new IntPointer(1L);
+            camera.GetVideoModeAndFrameRate(videoMode, frameRate);
+            return frameRate.get(0);
+        }
     }
 
     @Override
@@ -270,16 +275,124 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
             }
         }
 
-        Error error = camera.StartCapture();
+        // set or reset trigger mode
+        TriggerMode tm = new TriggerMode();
+        Error error = camera.GetTriggerMode(tm);
         if (error.notEquals(PGRERROR_OK)) {
             PrintError(error);
+            throw new FrameGrabber.Exception("GetTriggerMode() Error " + error.GetDescription());
+        }
+        tm.onOff(triggerMode);
+        tm.source(7);
+        tm.mode(14);
+        tm.parameter(0);
+        error = camera.SetTriggerMode(tm);
+        if (error.notEquals(PGRERROR_OK)) {
+            // try with trigger mode 0 instead
+            tm.onOff(true);
+            tm.source(7);
+            tm.mode(0);
+            tm.parameter(0);
+            error = camera.SetTriggerMode(tm);
+            if (error.notEquals(PGRERROR_OK)) {
+                PrintError(error);
+                throw new FrameGrabber.Exception("SetTriggerMode() Error " + error.GetDescription());
+            }
+        }
+        if (triggerMode) {
+            waitForTriggerReady();
         }
 
+        // try to match the endianness to our platform
+        error = camera.ReadRegister(IMAGE_DATA_FORMAT, regOut);
+        if (error.notEquals(PGRERROR_OK)) {
+            PrintError(error);
+            throw new FrameGrabber.Exception("ReadRegister(IMAGE_DATA_FORMAT, regOut) Error " + error.GetDescription());
+        }
+        int reg;
+        if (ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)) {
+            reg = regOut[0] | 0x1;
+        } else {
+            reg = regOut[0] & ~0x1;
+        }
+        error = camera.WriteRegister(IMAGE_DATA_FORMAT, reg);
+        if (error.notEquals(PGRERROR_OK)) {
+            PrintError(error);
+            throw new FrameGrabber.Exception("WriteRegister(IMAGE_DATA_FORMAT, reg) Error " + error.GetDescription());
+        }
+
+        // TODO: set fastest bus speed ? This may lead to system instability. Use default.
+
+        // set `gamma`
+        Property gammaProp = new Property(FlyCapture2.GAMMA);
+        if (gamma != 0.0) {
+            error = camera.GetProperty(gammaProp);
+            if (error.notEquals(PGRERROR_OK)) {
+                throw new FrameGrabber.Exception("GetProperty(gammaProp) Error " + error.GetDescription());
+            }
+            gammaProp.onOff(true);
+            gammaProp.absControl(true);
+            gammaProp.absValue((float)gamma);
+            camera.SetProperty(gammaProp);
+            error = camera.SetProperty(gammaProp);
+            if (error.notEquals(PGRERROR_OK)) {
+                PrintError(error);
+                throw new FrameGrabber.Exception("SetProperty(gammaProp) Error " + error.GetDescription());
+            }
+        }
+        error = camera.GetProperty(gammaProp);
+        if (error.notEquals(PGRERROR_OK)) {
+            gammaOut[0] = 2.2f;
+        } else {
+            gammaOut[0] = gammaProp.absValue();
+        }
+
+        // set `timeout`
+        error = camera.StartCapture();
+        if (error.notEquals(PGRERROR_OK)) {
+            PrintError(error);
+            throw new FrameGrabber.Exception("StartCapture() Error " + error.GetDescription());
+        }
+
+        // Get the camera configuration
+        FC2Config config = new FC2Config();
+        error = camera.GetConfiguration(config);
+        if (error.notEquals(PGRERROR_OK)) {
+            PrintError(error);
+            throw new FrameGrabber.Exception("GetConfiguration() Error " + error.GetDescription());
+        }
+
+        // Set the grab timeout to 5 seconds
+        config.grabTimeout(timeout);
+
+        // Set the camera configuration
+        error = camera.SetConfiguration(config);
+        if (error.notEquals(PGRERROR_OK)) {
+            PrintError(error);
+            throw new FrameGrabber.Exception("SetConfiguration() Error " + error.GetDescription());
+        }
+    }
+
+    private void waitForTriggerReady() throws Exception {
+        // wait for trigger to be ready...
+        long time = System.currentTimeMillis();
+        do {
+            Error error = camera.ReadRegister(SOFTWARE_TRIGGER, regOut);
+            if (error.notEquals(PGRERROR_OK)) {
+                PrintError(error);
+                throw new FrameGrabber.Exception("GetTriggerMode() Error " + error.GetDescription());
+            }
+            if (System.currentTimeMillis() - time > timeout) {
+                break;
+                //throw new Exception("waitForTriggerReady() Error: Timeout occured.");
+            }
+        } while((regOut[0] >>> 31) != 0);
     }
 
     public void stop() throws FrameGrabber.Exception {
         Error error = camera.StopCapture();
         if (error.notEquals(PGRERROR_OK)) {
+            PrintError(error);
             throw new FrameGrabber.Exception("flycapture camera StopCapture() Error " + error);
         }
         temp_image = null;
@@ -289,12 +402,10 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
     }
 
     /**
-     * Not tested.
-     *
      * @throws org.bytedeco.javacv.FrameGrabber.Exception
      */
     public void trigger() throws FrameGrabber.Exception {
-        // waitForTriggerReady();
+        waitForTriggerReady();
         Error error = camera.FireSoftwareTrigger();
         if (error.notEquals(PGRERROR_OK)) {
             throw new FrameGrabber.Exception("flycaptureSetCameraRegister() Error " + error);
@@ -390,9 +501,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
                 ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
         boolean alreadySwapped = false;
 
-// TODO: check bayer 
-//        boolean colorbayer = raw_image.bStippled();
-        boolean colorbayer = false;
+        boolean colorbayer = raw_image.GetBayerTileFormat() != NONE;
 
         boolean colorrgb = format == PIXEL_FORMAT_RGB8 || format == PIXEL_FORMAT_RGB16
                 || format == PIXEL_FORMAT_BGR || format == PIXEL_FORMAT_BGRU;
@@ -455,7 +564,8 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
                 error = raw_image.Convert(conv_image);
 //                error = flycaptureConvertImage(context, raw_image, conv_image);
                 if (error.notEquals(PGRERROR_OK)) {
-                    throw new FrameGrabber.Exception("flycaptureConvertImage() Error " + error);
+                    PrintError(error);
+                    throw new FrameGrabber.Exception("raw_image.Convert Error " + error);
                 }
             }
             if (!alreadySwapped && depth != IPL_DEPTH_8U
