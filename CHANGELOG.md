@@ -1,4 +1,5 @@
 
+ * Add new `ImageSegmentation` sample ([pull #460](https://github.com/bytedeco/javacv/pull/460))
  * Fix up and add missing functionality to `FlyCapture2FrameGrabber` ([pull #655](https://github.com/bytedeco/javacv/pull/655))
  * Take `OpenCVFrameGrabber.setFormat()` value to set FOURCC of `VideoCapture` ([pull #651](https://github.com/bytedeco/javacv/pull/651))
  * Fix call to `FaceRecognizer.predict()` in samples ([issue #642](https://github.com/bytedeco/javacv/issues/642))
