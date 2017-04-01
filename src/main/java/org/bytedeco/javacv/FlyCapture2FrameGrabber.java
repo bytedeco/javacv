@@ -507,7 +507,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
                 || format == PIXEL_FORMAT_BGR || format == PIXEL_FORMAT_BGRU;
         boolean coloryuv = format == PIXEL_FORMAT_411YUV8 || format == PIXEL_FORMAT_422YUV8
                 || format == PIXEL_FORMAT_444YUV8;
-        BytePointer imageData = raw_image.GetData();
+        BytePointer imageData = raw_image.GetData().capacity(raw_image.GetDataSize());
 
         if ((depth == IPL_DEPTH_8U || frameEndian.equals(ByteOrder.nativeOrder()))
                 && (imageMode == FrameGrabber.ImageMode.RAW || (imageMode == FrameGrabber.ImageMode.COLOR && numChannels == 3)
@@ -550,7 +550,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
             }
             if (depth != IPL_DEPTH_8U && conv_image.GetPixelFormat() == format && conv_image.GetStride() == stride) {
                 // we just need a copy to swap bytes..
-                ShortBuffer in = raw_image.GetData().asByteBuffer().order(frameEndian).asShortBuffer();
+                ShortBuffer in = imageData.asByteBuffer().order(frameEndian).asShortBuffer();
                 ShortBuffer out = temp_image.getByteBuffer().order(ByteOrder.nativeOrder()).asShortBuffer();
                 out.put(in);
                 alreadySwapped = true;
