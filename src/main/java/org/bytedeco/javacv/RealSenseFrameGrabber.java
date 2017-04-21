@@ -139,7 +139,6 @@ public class RealSenseFrameGrabber extends FrameGrabber {
             if (frameRate == 0) {
                 frameRate = DEFAULT_COLOR_FRAMERATE;
             }
-            device.enable_stream(RealSense.color, imageWidth, imageHeight, RealSense.rgb8, (int) frameRate);
             colorEnabled = true;
         }
     }
@@ -153,7 +152,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     public void enableDepthStream() {
         if (!depthEnabled) {
-            device.enable_stream(RealSense.depth, depthImageWidth, depthImageHeight, RealSense.z16, depthFrameRate);
+
             depthEnabled = true;
         }
     }
@@ -167,7 +166,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     public void enableIRStream() {
         if (!IREnabled) {
-            device.enable_stream(RealSense.infrared, IRImageWidth, IRImageHeight, RealSense.y8, IRFrameRate);
+
             IREnabled = true;
         }
     }
@@ -216,6 +215,15 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         }
         device = context.get_device(deviceNumber);
 
+        if (colorEnabled) {
+            device.enable_stream(RealSense.color, imageWidth, imageHeight, RealSense.rgb8, (int) frameRate);
+        }
+        if (IREnabled) {
+            device.enable_stream(RealSense.infrared, IRImageWidth, IRImageHeight, RealSense.y8, IRFrameRate);
+        }
+        if (depthEnabled) {
+            device.enable_stream(RealSense.depth, depthImageWidth, depthImageHeight, RealSense.z16, depthFrameRate);
+        }
         // if no stream is select, just get the color.
         if (!colorEnabled && !IREnabled && !depthEnabled) {
 
@@ -225,7 +233,6 @@ public class RealSenseFrameGrabber extends FrameGrabber {
                 this.setImageMode(ImageMode.GRAY);
             }
         }
-
         startedOnce = true;
         device.start();
     }
@@ -355,7 +362,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
 //        frameNumber++; 
         // For Framegrabber
-        if (colorEnabled &&  behaveAsColorFrameGrabber) {
+        if (colorEnabled && behaveAsColorFrameGrabber) {
             IplImage image = grabVideo();
 
             if (returnImage == null) {
@@ -440,7 +447,6 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 //        System.out.println("Getting cameraGamma " + gamma);
 //        return gamma;
 //    }
-
 // --- Presets --- 
     public void setPreset(int preset) {
         /* Provide access to several recommend sets of option presets for ivcam */
@@ -530,7 +536,6 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     public void setColorGamma(int value) {
         setOption(RealSense.RS_OPTION_COLOR_GAMMA, value);
     }
-
 
     /**
      * Color image hue
