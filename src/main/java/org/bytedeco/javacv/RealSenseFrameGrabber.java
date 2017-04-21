@@ -263,7 +263,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         rawDepthImageData = device.get_frame_data(RealSense.depth);
 //        ShortBuffer bb = data.position(0).limit(640 * 480 * 2).asByteBuffer().asShortBuffer();
 
-        int iplDepth = IPL_DEPTH_16S, channels = 1;
+        int iplDepth = IPL_DEPTH_16U, channels = 1;
         int deviceWidth = device.get_stream_width(RealSense.depth);
         int deviceHeight = device.get_stream_height(RealSense.depth);
 
