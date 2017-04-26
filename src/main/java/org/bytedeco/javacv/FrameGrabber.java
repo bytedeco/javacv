@@ -166,6 +166,10 @@ public abstract class FrameGrabber implements Closeable {
         COLOR, GRAY, RAW
     }
 
+    public static enum SampleMode {
+        SHORT, FLOAT, RAW
+    }
+
     public static final long
             SENSOR_PATTERN_RGGB = 0,
             SENSOR_PATTERN_GBRG = (1L << 32),
@@ -179,7 +183,8 @@ public abstract class FrameGrabber implements Closeable {
     protected long sensorPattern = -1L;
     protected int pixelFormat = -1, videoCodec, videoBitrate = 0;
     protected double aspectRatio = 0, frameRate = 0;
-    protected int sampleFormat = 0, audioCodec, audioBitrate = 0, sampleRate = 0;
+    protected SampleMode sampleMode = SampleMode.SHORT;
+    protected int sampleFormat = -1, audioCodec, audioBitrate = 0, sampleRate = 0;
     protected boolean triggerMode = false;
     protected int bpp = 0;
     protected int timeout = 10000;
@@ -298,6 +303,13 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setAudioBitrate(int audioBitrate) {
         this.audioBitrate = audioBitrate;
+    }
+
+    public SampleMode getSampleMode() {
+        return sampleMode;
+    }
+    public void setSampleMode(SampleMode samplesMode) {
+        this.sampleMode = samplesMode;
     }
 
     public int getSampleFormat() {

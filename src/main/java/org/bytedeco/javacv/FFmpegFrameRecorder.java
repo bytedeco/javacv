@@ -810,7 +810,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         avformat_write_header(oc.metadata(metadata), options);
         av_dict_free(options);
 
-        av_dump_format(oc, 0, filename, 1);
+        if (av_log_get_level() >= AV_LOG_INFO) {
+            av_dump_format(oc, 0, filename, 1);
+        }
     }
 
     public void stop() throws Exception {
