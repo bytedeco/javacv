@@ -208,12 +208,23 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     private boolean startedOnce = false;
     private boolean behaveAsColorFrameGrabber = false;
 
+    public device loadDevice() throws FrameGrabber.Exception{
+        if (context == null || context.get_device_count() <= deviceNumber) {
+            throw new Exception("FATAL error: Realsense camera: " + deviceNumber + " not connected/found");
+        }
+        device = context.get_device(deviceNumber);
+        return device;
+    }
+
     @Override
     public void start() throws FrameGrabber.Exception {
         if (context == null || context.get_device_count() <= deviceNumber) {
             throw new Exception("FATAL error: Realsense camera: " + deviceNumber + " not connected/found");
         }
-        device = context.get_device(deviceNumber);
+
+        if (device == null) {
+            device = context.get_device(deviceNumber);
+        }
 
         if (colorEnabled) {
             device.enable_stream(RealSense.color, imageWidth, imageHeight, RealSense.rgb8, (int) frameRate);
