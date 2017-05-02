@@ -287,14 +287,14 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
         cvSetData(rawDepthImage, rawDepthImageData, deviceWidth * channels * iplDepth / 8);
 
-        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
-            // ack, the camera's endianness doesn't correspond to our machine ...
-            // swap bytes of 16-bit images
-            ByteBuffer bb = rawDepthImage.getByteBuffer();
-            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
-            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
-            out.put(in);
-        }
+//        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
+//            // ack, the camera's endianness doesn't correspond to our machine ...
+//            // swap bytes of 16-bit images
+//            ByteBuffer bb = rawDepthImage.getByteBuffer();
+//            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+//            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+//            out.put(in);
+//        }
 
         return rawDepthImage;
     }
