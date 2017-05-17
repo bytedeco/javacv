@@ -79,12 +79,12 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>3.2.1-${javacpp.version}</version>
+      <version>3.2.4-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>flycapture</artifactId>
-      <version>2.9.3.43-${javacpp.version}</version>
+      <version>2.10.3.266-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -164,6 +164,9 @@
         <configuration>
           <source>1.7</source>
           <target>1.7</target>
+          <excludes>
+            <exclude>org/bytedeco/javacv/FlyCaptureFrameGrabber.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>

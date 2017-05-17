@@ -96,16 +96,16 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
                 + "Firmware build time - " + pCamInfo.firmwareBuildTime().getString() + "\n";
     }
 
-    public static FlyCaptureFrameGrabber createDefault(File deviceFile) throws FrameGrabber.Exception {
+    public static FlyCapture2FrameGrabber createDefault(File deviceFile) throws FrameGrabber.Exception {
         return null;
     }
 
-    public static FlyCaptureFrameGrabber createDefault(String devicePath) throws FrameGrabber.Exception {
+    public static FlyCapture2FrameGrabber createDefault(String devicePath) throws FrameGrabber.Exception {
         return null;
     }
 
-    public static FlyCaptureFrameGrabber createDefault(int deviceNumber) throws FrameGrabber.Exception {
-        return new FlyCaptureFrameGrabber(deviceNumber);
+    public static FlyCapture2FrameGrabber createDefault(int deviceNumber) throws FrameGrabber.Exception {
+        return new FlyCapture2FrameGrabber(deviceNumber);
     }
 
     private static FrameGrabber.Exception loadingException = null;

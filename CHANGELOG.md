@@ -1,4 +1,6 @@
 
+ * Upgrade dependencies for FFmpeg 3.2.4, FlyCapture 2.10.3.266
+ * Initialize the `avdevice` module for `FFmpegFrameRecorder` in the same way as with `FFmpegFrameGrabber`
  * Add `FrameGrabber.sampleMode` property and have `FFmpegFrameGrabber` convert audio samples to user-specified format ([issue #18](https://github.com/bytedeco/javacv/issues/18))
  * Add new `ImageSegmentation` sample ([pull #460](https://github.com/bytedeco/javacv/pull/460))
  * Fix up and add missing functionality to `FlyCapture2FrameGrabber` ([pull #655](https://github.com/bytedeco/javacv/pull/655))
@@ -10,7 +12,7 @@
  * Add new `JavaFxPlayVideoAndAudio` sample ([pull #618](https://github.com/bytedeco/javacv/pull/618))
  * Get rid of deprecated calls in `FFmpegFrameFilter`, `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #607](https://github.com/bytedeco/javacv/issues/607))
  * Fix crash in `FFmpegFrameGrabber.restart()` ([issue #605](https://github.com/bytedeco/javacv/issues/605))
- * Upgrade dependencies for OpenCV 3.2.0, libdc1394 2.2.5
+ * Upgrade dependencies for OpenCV 3.2.0, FFmpeg 3.2.1, libdc1394 2.2.5
 
 ### January 14, 2017 version 1.3.1
  * Let `FFmpegFrameRecorder` pass options to the protocol as well ([issue #598](https://github.com/bytedeco/javacv/issues/598))
