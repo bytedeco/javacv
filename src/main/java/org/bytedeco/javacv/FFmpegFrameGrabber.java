@@ -524,7 +524,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 seekCallback = new SeekCallback();
             }
             if (!inputStream.markSupported()) {
-                inputStream = new BufferedInputStream(inputStream, Integer.MAX_VALUE - 8);
+                inputStream = new BufferedInputStream(inputStream);
             }
             inputStream.mark(Integer.MAX_VALUE - 8); // so that the whole input stream is seekable
             oc = avformat_alloc_context();
