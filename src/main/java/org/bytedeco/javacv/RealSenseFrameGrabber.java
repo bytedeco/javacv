@@ -41,7 +41,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
  */
 public class RealSenseFrameGrabber extends FrameGrabber {
 
-    public static String[] getDeviceDescriptions() throws FrameGrabber.Exception {
+    public String[] getDeviceDescriptions() throws FrameGrabber.Exception {
         tryLoad();
         String[] desc = new String[context.get_device_count()];
         for (int i = 0; i < desc.length; i++) {
@@ -87,7 +87,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     private static FrameGrabber.Exception loadingException = null;
 
-    public static void tryLoad() throws FrameGrabber.Exception {
+    public void tryLoad() throws FrameGrabber.Exception {
         if (loadingException != null) {
             loadingException.printStackTrace();
             throw loadingException;
@@ -101,6 +101,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
                 // Context is shared accross cameras. 
                 context = new context();
                 System.out.println("RealSense devices found: " + context.get_device_count());
+                device = context.get_device(deviceNumber);
             } catch (Throwable t) {
                 throw loadingException = new FrameGrabber.Exception("Failed to load " + RealSenseFrameGrabber.class, t);
             }
@@ -256,7 +257,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         rawDepthImageData = device.get_frame_data(RealSense.depth);
 //        ShortBuffer bb = data.position(0).limit(640 * 480 * 2).asByteBuffer().asShortBuffer();
 
-        int iplDepth = IPL_DEPTH_16S, channels = 1;
+        int iplDepth = IPL_DEPTH_16U, channels = 1;
         int deviceWidth = device.get_stream_width(RealSense.depth);
         int deviceHeight = device.get_stream_height(RealSense.depth);
 
@@ -269,14 +270,17 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
         cvSetData(rawDepthImage, rawDepthImageData, deviceWidth * channels * iplDepth / 8);
 
-        if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
-            // ack, the camera's endianness doesn't correspond to our machine ...
-            // swap bytes of 16-bit images
-            ByteBuffer bb = rawDepthImage.getByteBuffer();
-            ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
-            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
-            out.put(in);
-        }
+        // I don't know what the original intention of this part was but it brakes
+        // the depth stream data.
+
+        // if (iplDepth > 8 && !ByteOrder.nativeOrder().equals(byteOrder)) {
+        //     // ack, the camera's endianness doesn't correspond to our machine ...
+        //     // swap bytes of 16-bit images
+        //     ByteBuffer bb = rawDepthImage.getByteBuffer();
+        //     ShortBuffer in = bb.order(ByteOrder.BIG_ENDIAN).asShortBuffer();
+        //     ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+        //     out.put(in);
+        // }
 
         return rawDepthImage;
     }
@@ -308,10 +312,14 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 //            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
 //            out.put(in);
 //        }
-//        if (channels == 3) {
-//            cvCvtColor(rawVideoImage, rawVideoImage, CV_BGR2RGB);
-//        }
-        return rawVideoImage;
+
+        IplImage returnImage = IplImage.create(deviceWidth, deviceHeight, IPL_DEPTH_8U, 3);;
+
+        if (channels == 3) {
+            cvCvtColor(rawVideoImage, returnImage, CV_BGR2RGB);
+        }
+
+        return returnImage;
     }
 
     public IplImage grabIR() {
