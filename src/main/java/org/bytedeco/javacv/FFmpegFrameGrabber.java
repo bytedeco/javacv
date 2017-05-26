@@ -257,7 +257,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     case 1: break;
                     default: return -1;
                 }
-                is.skip(offset);
+                long remaining = offset;
+                while (remaining > 0) {
+                    long skipped = is.skip(remaining);
+                    if (skipped == 0) break; // end of the stream
+                    remaining -= skipped;
+                }
                 return 0;
             } catch (Throwable t) {
                 System.err.println("Error on InputStream.reset() or skip(): " + t);
@@ -519,9 +524,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 seekCallback = new SeekCallback();
             }
             if (!inputStream.markSupported()) {
-                inputStream = new BufferedInputStream(inputStream, 1024 * 1024);
+                inputStream = new BufferedInputStream(inputStream, Integer.MAX_VALUE - 8);
             }
-            inputStream.mark(1024 * 1024);
+            inputStream.mark(Integer.MAX_VALUE - 8); // so that the whole input stream is seekable
             oc = avformat_alloc_context();
             avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, seekCallback);
             oc.pb(avio);
