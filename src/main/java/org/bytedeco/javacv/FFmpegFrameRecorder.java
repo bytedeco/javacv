@@ -823,18 +823,20 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public void stop() throws Exception {
         if (oc != null) {
             try {
-                /* flush all the buffers */
-                while (video_st != null  && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
-                while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
+                synchronized (oc) {
+                    /* flush all the buffers */
+                    while (video_st != null  && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
+                    while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
 
-                if (interleaved && video_st != null && audio_st != null) {
-                    av_interleaved_write_frame(oc, null);
-                } else {
-                    av_write_frame(oc, null);
+                    if (interleaved && video_st != null && audio_st != null) {
+                        av_interleaved_write_frame(oc, null);
+                    } else {
+                        av_write_frame(oc, null);
+                    }
+
+                    /* write the trailer, if any */
+                    av_write_trailer(oc);
                 }
-
-                /* write the trailer, if any */
-                av_write_trailer(oc);
             } finally {
                 release();
             }

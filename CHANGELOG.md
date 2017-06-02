@@ -1,4 +1,5 @@
 
+ * Synchronize on `FFmpegFrameRecorder.stop()` to avoid potential race conditions ([issue #700](https://github.com/bytedeco/javacv/issues/700))
  * Add `src/main/java/cl/eye/CLCamera.java` to remove build dependency on external module
  * Fix seeking issues with `FFmpegFrameGrabber(InputStream)` ([pull #703](https://github.com/bytedeco/javacv/pull/703))
  * Upgrade dependencies for FFmpeg 3.2.4, FlyCapture 2.11.3.121 ([pull #424](https://github.com/bytedeco/javacpp-presets/pull/424))
