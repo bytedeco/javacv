@@ -72,6 +72,7 @@ import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
 
 import static org.bytedeco.javacpp.avcodec.*;
+import static org.bytedeco.javacpp.avdevice.*;
 import static org.bytedeco.javacpp.avformat.*;
 import static org.bytedeco.javacpp.avutil.*;
 import static org.bytedeco.javacpp.swresample.*;
@@ -98,8 +99,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 Loader.load(org.bytedeco.javacpp.swscale.class);
 
                 /* initialize libavcodec, and register all codecs and formats */
+                avcodec_register_all();
                 av_register_all();
                 avformat_network_init();
+
+                Loader.load(org.bytedeco.javacpp.avdevice.class);
+                avdevice_register_all();
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -654,8 +659,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
         }
 
-        av_dump_format(oc, 0, filename, 1);
-
         /* now that all the parameters are set, we can open the audio and
            video codecs and allocate the necessary encode buffers */
         if (video_st != null && inpVideoStream == null) {
@@ -811,23 +814,29 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         /* write the stream header, if any */
         avformat_write_header(oc.metadata(metadata), options);
         av_dict_free(options);
+
+        if (av_log_get_level() >= AV_LOG_INFO) {
+            av_dump_format(oc, 0, filename, 1);
+        }
     }
 
     public void stop() throws Exception {
         if (oc != null) {
             try {
-                /* flush all the buffers */
-                while (video_st != null  && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
-                while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
+                synchronized (oc) {
+                    /* flush all the buffers */
+                    while (video_st != null  && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
+                    while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
 
-                if (interleaved && video_st != null && audio_st != null) {
-                    av_interleaved_write_frame(oc, null);
-                } else {
-                    av_write_frame(oc, null);
+                    if (interleaved && video_st != null && audio_st != null) {
+                        av_interleaved_write_frame(oc, null);
+                    } else {
+                        av_write_frame(oc, null);
+                    }
+
+                    /* write the trailer, if any */
+                    av_write_trailer(oc);
                 }
-
-                /* write the trailer, if any */
-                av_write_trailer(oc);
             } finally {
                 release();
             }

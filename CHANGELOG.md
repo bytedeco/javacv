@@ -1,7 +1,21 @@
 
+ * Synchronize on `FFmpegFrameRecorder.stop()` to avoid potential race conditions ([issue #700](https://github.com/bytedeco/javacv/issues/700))
+ * Add `src/main/java/cl/eye/CLCamera.java` to remove build dependency on external module
+ * Fix seeking issues with `FFmpegFrameGrabber(InputStream)` ([pull #703](https://github.com/bytedeco/javacv/pull/703))
+ * Upgrade dependencies for FFmpeg 3.2.4, FlyCapture 2.11.3.121 ([pull #424](https://github.com/bytedeco/javacpp-presets/pull/424))
+ * Initialize the `avdevice` module for `FFmpegFrameRecorder` in the same way as with `FFmpegFrameGrabber`
+ * Add `FrameGrabber.sampleMode` property and have `FFmpegFrameGrabber` convert audio samples to user-specified format ([issue #18](https://github.com/bytedeco/javacv/issues/18))
+ * Add new `ImageSegmentation` sample ([pull #460](https://github.com/bytedeco/javacv/pull/460))
+ * Fix up and add missing functionality to `FlyCapture2FrameGrabber` ([pull #655](https://github.com/bytedeco/javacv/pull/655))
+ * Take `OpenCVFrameGrabber.setFormat()` value to set FOURCC of `VideoCapture` ([pull #651](https://github.com/bytedeco/javacv/pull/651))
+ * Fix call to `FaceRecognizer.predict()` in samples ([issue #642](https://github.com/bytedeco/javacv/issues/642))
+
+### March 13, 2017 version 1.3.2
+ * Add `Java2DFrameUtils` to facilitate conversion between `Frame`, `BufferedImage`, `IplImage`, and `Mat`
+ * Add new `JavaFxPlayVideoAndAudio` sample ([pull #618](https://github.com/bytedeco/javacv/pull/618))
  * Get rid of deprecated calls in `FFmpegFrameFilter`, `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #607](https://github.com/bytedeco/javacv/issues/607))
  * Fix crash in `FFmpegFrameGrabber.restart()` ([issue #605](https://github.com/bytedeco/javacv/issues/605))
- * Upgrade dependencies for OpenCV 3.2.0, libdc1394 2.2.5
+ * Upgrade dependencies for OpenCV 3.2.0, FFmpeg 3.2.1, libdc1394 2.2.5
 
 ### January 14, 2017 version 1.3.1
  * Let `FFmpegFrameRecorder` pass options to the protocol as well ([issue #598](https://github.com/bytedeco/javacv/issues/598))

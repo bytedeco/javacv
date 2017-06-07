@@ -24,8 +24,6 @@ package org.bytedeco.javacv;
 
 import cl.eye.CLCamera;
 import java.io.File;
-import java.lang.reflect.Field;
-import sun.misc.Unsafe;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -144,25 +142,7 @@ public class PS3EyeFrameGrabber extends FrameGrabber {
             throw new Exception("CLEye multicam dll not loaded");
         }
 
-        try {
-            try {
-                // maybe some new version of CLCamera works without a PApplet...
-                camera = CLCamera.class.newInstance();
-            } catch (Throwable t) {
-                if (applet == null) {
-                    // do some really hacky stuff to create an instance
-                    // without calling the constructor
-                    Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-                    unsafeField.setAccessible(true);
-                    Unsafe unsafe = (Unsafe)unsafeField.get(null);
-                    camera = (CLCamera)unsafe.allocateInstance(CLCamera.class);
-                } else {
-                    camera = (CLCamera)CLCamera.class.getConstructors()[0].newInstance(applet);
-                }
-            }
-        } catch (Throwable t) {
-            throw new Exception("Failed to construct " + PS3EyeFrameGrabber.class, t);
-        }
+        this.camera = new CLCamera();
         this.cameraIndex = cameraIndex;
 
         stat = "created";

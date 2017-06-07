@@ -68,6 +68,7 @@ import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avdevice.*;
 import static org.bytedeco.javacpp.avformat.*;
 import static org.bytedeco.javacpp.avutil.*;
+import static org.bytedeco.javacpp.swresample.*;
 import static org.bytedeco.javacpp.swscale.*;
 
 /**
@@ -124,9 +125,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
     public FFmpegFrameGrabber(String filename) {
         this.filename = filename;
+        this.pixelFormat = AV_PIX_FMT_NONE;
+        this.sampleFormat = AV_SAMPLE_FMT_NONE;
     }
     public FFmpegFrameGrabber(InputStream inputStream) {
         this.inputStream = inputStream;
+        this.pixelFormat = AV_PIX_FMT_NONE;
+        this.sampleFormat = AV_SAMPLE_FMT_NONE;
     }
     public void release() throws Exception {
         synchronized (org.bytedeco.javacpp.avcodec.class) {
@@ -186,6 +191,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         if (img_convert_ctx != null) {
             sws_freeContext(img_convert_ctx);
             img_convert_ctx = null;
+        }
+
+        if (samples_ptr_out != null) {
+            for (int i = 0; i < samples_ptr_out.length; i++) {
+                av_free(samples_ptr_out[i].position(0));
+            }
+            samples_ptr_out = null;
+            samples_buf_out = null;
+        }
+
+        if (samples_convert_ctx != null) {
+            swr_free(samples_convert_ctx);
+            samples_convert_ctx = null;
         }
 
         got_frame     = null;
@@ -257,7 +275,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     case 1: break;
                     default: return -1;
                 }
-                is.skip(offset);
+                long remaining = offset;
+                while (remaining > 0) {
+                    long skipped = is.skip(remaining);
+                    if (skipped == 0) break; // end of the stream
+                    remaining -= skipped;
+                }
                 return 0;
             } catch (Throwable t) {
                 System.err.println("Error on InputStream.reset() or skip(): " + t);
@@ -281,10 +304,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVFrame         samples_frame;
     private BytePointer[]   samples_ptr;
     private Buffer[]        samples_buf;
+    private BytePointer[]   samples_ptr_out;
+    private Buffer[]        samples_buf_out;
     private AVPacket        pkt, pkt2;
     private int             sizeof_pkt;
     private int[]           got_frame;
     private SwsContext      img_convert_ctx;
+    private SwrContext      samples_convert_ctx;
+    private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
 
@@ -314,7 +341,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getAudioChannels() {
-        return audio_c == null ? super.getAudioChannels() : audio_c.channels();
+        return audioChannels > 0 || audio_c == null ? super.getAudioChannels() : audio_c.channels();
     }
 
     @Override public int getPixelFormat() {
@@ -370,11 +397,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getSampleFormat() {
-        return audio_c == null ? super.getSampleFormat() : audio_c.sample_fmt();
+        if (sampleMode == SampleMode.SHORT || sampleMode == SampleMode.FLOAT) {
+            if (sampleFormat == AV_SAMPLE_FMT_NONE) {
+                return sampleMode == SampleMode.SHORT ? AV_SAMPLE_FMT_S16 : AV_SAMPLE_FMT_FLT;
+            } else {
+                return sampleFormat;
+            }
+        } else if (audio_c != null) { // RAW
+            return audio_c.sample_fmt();
+        } else {
+            return super.getSampleFormat();
+        }
     }
 
     @Override public int getSampleRate() {
-        return audio_c == null ? super.getSampleRate() : audio_c.sample_rate();
+        return sampleRate > 0 || audio_c == null ? super.getSampleRate() : audio_c.sample_rate();
     }
 
     @Override public String getMetadata(String key) {
@@ -519,9 +556,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 seekCallback = new SeekCallback();
             }
             if (!inputStream.markSupported()) {
-                inputStream = new BufferedInputStream(inputStream, 1024 * 1024);
+                inputStream = new BufferedInputStream(inputStream);
             }
-            inputStream.mark(1024 * 1024);
+            inputStream.mark(Integer.MAX_VALUE - 8); // so that the whole input stream is seekable
             oc = avformat_alloc_context();
             avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, seekCallback);
             oc.pb(avio);
@@ -542,8 +579,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             throw new Exception("avformat_find_stream_info() error " + ret + ": Could not find stream information.");
         }
 
-        // Dump information about file onto standard error
-        av_dump_format(oc, 0, filename, 0);
+        if (av_log_get_level() >= AV_LOG_INFO) {
+            // Dump information about file onto standard error
+            av_dump_format(oc, 0, filename, 0);
+        }
 
         // Find the first video and audio stream, unless the user specified otherwise
         video_st = audio_st = null;
@@ -738,6 +777,101 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.imageChannels = frame.imageStride / frame.imageWidth;
     }
 
+    private void processSamples() throws Exception {
+        int ret;
+
+        int sample_format = samples_frame.format();
+        int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)samples_frame.channels() : 1;
+        int data_size = av_samples_get_buffer_size((IntPointer)null, audio_c.channels(),
+                samples_frame.nb_samples(), audio_c.sample_fmt(), 1) / planes;
+        if (samples_buf == null || samples_buf.length != planes) {
+            samples_ptr = new BytePointer[planes];
+            samples_buf = new Buffer[planes];
+        }
+        frame.sampleRate = audio_c.sample_rate();
+        frame.audioChannels = audio_c.channels();
+        frame.samples = samples_buf;
+        int sample_size = data_size / av_get_bytes_per_sample(sample_format);
+        for (int i = 0; i < planes; i++) {
+            BytePointer p = samples_frame.data(i);
+            if (!p.equals(samples_ptr[i]) || samples_ptr[i].capacity() < data_size) {
+                samples_ptr[i] = p.capacity(data_size);
+                ByteBuffer b   = p.asBuffer();
+                switch (sample_format) {
+                    case AV_SAMPLE_FMT_U8:
+                    case AV_SAMPLE_FMT_U8P:  samples_buf[i] = b; break;
+                    case AV_SAMPLE_FMT_S16:
+                    case AV_SAMPLE_FMT_S16P: samples_buf[i] = b.asShortBuffer();  break;
+                    case AV_SAMPLE_FMT_S32:
+                    case AV_SAMPLE_FMT_S32P: samples_buf[i] = b.asIntBuffer();    break;
+                    case AV_SAMPLE_FMT_FLT:
+                    case AV_SAMPLE_FMT_FLTP: samples_buf[i] = b.asFloatBuffer();  break;
+                    case AV_SAMPLE_FMT_DBL:
+                    case AV_SAMPLE_FMT_DBLP: samples_buf[i] = b.asDoubleBuffer(); break;
+                    default: assert false;
+                }
+            }
+            samples_buf[i].position(0).limit(sample_size);
+        }
+
+        if (audio_c.channels() != getAudioChannels() || audio_c.sample_fmt() != getSampleFormat() || audio_c.sample_rate() != getSampleRate()) {
+            if (samples_convert_ctx == null || samples_channels != getAudioChannels() || samples_format != getSampleFormat() || samples_rate != getSampleRate()) {
+                samples_convert_ctx = swr_alloc_set_opts(samples_convert_ctx, av_get_default_channel_layout(getAudioChannels()), getSampleFormat(), getSampleRate(),
+                        av_get_default_channel_layout(audio_c.channels()), audio_c.sample_fmt(), audio_c.sample_rate(), 0, null);
+                if (samples_convert_ctx == null) {
+                    throw new Exception("swr_alloc_set_opts() error: Cannot allocate the conversion context.");
+                } else if ((ret = swr_init(samples_convert_ctx)) < 0) {
+                    throw new Exception("swr_init() error " + ret + ": Cannot initialize the conversion context.");
+                }
+                samples_channels = getAudioChannels();
+                samples_format = getSampleFormat();
+                samples_rate = getSampleRate();
+            }
+
+            int sample_size_in = samples_frame.nb_samples();
+            int planes_out = av_sample_fmt_is_planar(samples_format) != 0 ? (int)samples_frame.channels() : 1;
+            int sample_size_out = swr_get_out_samples(samples_convert_ctx, sample_size_in);
+            int sample_bytes_out = av_get_bytes_per_sample(samples_format);
+            int buffer_size_out = sample_size_out * sample_bytes_out * (planes_out > 1 ? 1 : samples_channels);
+            if (samples_buf_out == null || samples_buf.length != planes_out || samples_ptr_out[0].capacity() < buffer_size_out) {
+                for (int i = 0; samples_ptr_out != null && i < samples_ptr_out.length; i++) {
+                    av_free(samples_ptr_out[i].position(0));
+                }
+                samples_ptr_out = new BytePointer[planes_out];
+                samples_buf_out = new Buffer[planes_out];
+
+                for (int i = 0; i < planes_out; i++) {
+                    samples_ptr_out[i] = new BytePointer(av_malloc(buffer_size_out)).capacity(buffer_size_out);
+                    ByteBuffer b = samples_ptr_out[i].asBuffer();
+                    switch (samples_format) {
+                        case AV_SAMPLE_FMT_U8:
+                        case AV_SAMPLE_FMT_U8P:  samples_buf_out[i] = b; break;
+                        case AV_SAMPLE_FMT_S16:
+                        case AV_SAMPLE_FMT_S16P: samples_buf_out[i] = b.asShortBuffer();  break;
+                        case AV_SAMPLE_FMT_S32:
+                        case AV_SAMPLE_FMT_S32P: samples_buf_out[i] = b.asIntBuffer();    break;
+                        case AV_SAMPLE_FMT_FLT:
+                        case AV_SAMPLE_FMT_FLTP: samples_buf_out[i] = b.asFloatBuffer();  break;
+                        case AV_SAMPLE_FMT_DBL:
+                        case AV_SAMPLE_FMT_DBLP: samples_buf_out[i] = b.asDoubleBuffer(); break;
+                        default: assert false;
+                    }
+                }
+            }
+            frame.sampleRate = samples_rate;
+            frame.audioChannels = samples_channels;
+            frame.samples = samples_buf_out;
+
+            if ((ret = swr_convert(samples_convert_ctx, new PointerPointer(samples_ptr_out), sample_size_out, new PointerPointer(samples_ptr), sample_size_in)) < 0) {
+                throw new Exception("swr_convert() error " + ret + ": Cannot convert audio samples.");
+            }
+            for (int i = 0; i < planes_out; i++) {
+                samples_ptr_out[i].position(0).limit(ret * (planes_out > 1 ? 1 : samples_channels));
+                samples_buf_out[i].position(0).limit(ret * (planes_out > 1 ? 1 : samples_channels));
+            }
+        }
+    }
+
     public Frame grab() throws Exception {
         return grabFrame(true, true, true, false);
     }
@@ -837,42 +971,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         AVRational time_base = audio_st.time_base();
                         timestamp = 1000000L * pts * time_base.num() / time_base.den();
                         /* if a frame has been decoded, output it */
+                        processSamples();
                         done = true;
-                        int sample_format = samples_frame.format();
-                        int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)samples_frame.channels() : 1;
-                        int data_size = av_samples_get_buffer_size((IntPointer)null, audio_c.channels(),
-                                samples_frame.nb_samples(), audio_c.sample_fmt(), 1) / planes;
-                        if (samples_buf == null || samples_buf.length != planes) {
-                            samples_ptr = new BytePointer[planes];
-                            samples_buf = new Buffer[planes];
-                        }
                         frame.keyFrame = samples_frame.key_frame() != 0;
-                        frame.sampleRate = audio_c.sample_rate();
-                        frame.audioChannels = audio_c.channels();
-                        frame.samples = samples_buf;
                         frame.opaque = samples_frame;
-                        int sample_size = data_size / av_get_bytes_per_sample(sample_format);
-                        for (int i = 0; i < planes; i++) {
-                            BytePointer p = samples_frame.data(i);
-                            if (!p.equals(samples_ptr[i]) || samples_ptr[i].capacity() < data_size) {
-                                samples_ptr[i] = p.capacity(data_size);
-                                ByteBuffer b   = p.asBuffer();
-                                switch (sample_format) {
-                                    case AV_SAMPLE_FMT_U8:
-                                    case AV_SAMPLE_FMT_U8P:  samples_buf[i] = b; break;
-                                    case AV_SAMPLE_FMT_S16:
-                                    case AV_SAMPLE_FMT_S16P: samples_buf[i] = b.asShortBuffer();  break;
-                                    case AV_SAMPLE_FMT_S32:
-                                    case AV_SAMPLE_FMT_S32P: samples_buf[i] = b.asIntBuffer();    break;
-                                    case AV_SAMPLE_FMT_FLT:
-                                    case AV_SAMPLE_FMT_FLTP: samples_buf[i] = b.asFloatBuffer();  break;
-                                    case AV_SAMPLE_FMT_DBL:
-                                    case AV_SAMPLE_FMT_DBLP: samples_buf[i] = b.asDoubleBuffer(); break;
-                                    default: assert false;
-                                }
-                            }
-                            samples_buf[i].position(0).limit(sample_size);
-                        }
                     }
                 }
             }

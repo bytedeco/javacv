@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Samuel Audet
+ * Copyright (C) 2016-2017 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@ package org.bytedeco.javacv;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
@@ -44,11 +46,14 @@ public class FrameGrabberTest {
 
         File tempFile = new File(Loader.getTempDir(), "test.mkv");
         try {
-            FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480);
+            FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480, 2);
             recorder.setFormat("matroska"); // mp4 doesn't support streaming
             recorder.setPixelFormat(AV_PIX_FMT_BGR24);
             recorder.setVideoCodecName("libx264rgb");
             recorder.setVideoQuality(0); // lossless
+            recorder.setSampleFormat(AV_SAMPLE_FMT_S16);
+            recorder.setSampleRate(44100);
+            recorder.setAudioCodecName("pcm_s16le");
             recorder.start();
 
             Frame[] frames = new Frame[1000];
@@ -65,31 +70,50 @@ public class FrameGrabberTest {
                 recorder.record(frame);
                 frames[n] = frame;
             }
+            Frame audioFrame = new Frame();
+            ShortBuffer audioBuffer = ShortBuffer.allocate(64 * 1024);
+            audioFrame.sampleRate = 44100;
+            audioFrame.audioChannels = 2;
+            audioFrame.samples = new ShortBuffer[] {audioBuffer};
+            for (int i = 0; i < audioBuffer.capacity(); i++) {
+                audioBuffer.put(i, (short)i);
+            }
+            recorder.record(audioFrame);
             recorder.stop();
             recorder.release();
 
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(new FileInputStream(tempFile));
+            grabber.setSampleMode(FrameGrabber.SampleMode.FLOAT);
             grabber.start();
 
-            for (int n = 0; n < frames.length; n++) {
-                Frame frame = frames[n];
-                Frame frame2 = grabber.grab();
-                assertEquals(frame.imageWidth, frame2.imageWidth);
-                assertEquals(frame.imageHeight, frame2.imageHeight);
-                assertEquals(frame.imageChannels, frame2.imageChannels);
+            int n = 0, m = 0;
+            Frame frame2;
+            while ((frame2 = grabber.grab()) != null) {
+                if (frame2.image != null) {
+                    Frame frame = frames[n++];
+                    assertEquals(frame.imageWidth, frame2.imageWidth);
+                    assertEquals(frame.imageHeight, frame2.imageHeight);
+                    assertEquals(frame.imageChannels, frame2.imageChannels);
 
-                UByteIndexer frameIdx = frame.createIndexer();
-                UByteIndexer frame2Idx = frame2.createIndexer();
-                for (int i = 0; i < frameIdx.rows(); i++) {
-                    for (int j = 0; j < frameIdx.cols(); j++) {
-                        for (int k = 0; k < frameIdx.channels(); k++) {
-                            int b = frameIdx.get(i, j, k);
-                            assertEquals(b, frame2Idx.get(i, j, k));
+                    UByteIndexer frameIdx = frame.createIndexer();
+                    UByteIndexer frame2Idx = frame2.createIndexer();
+                    for (int i = 0; i < frameIdx.rows(); i++) {
+                        for (int j = 0; j < frameIdx.cols(); j++) {
+                            for (int k = 0; k < frameIdx.channels(); k++) {
+                                int b = frameIdx.get(i, j, k);
+                                assertEquals(b, frame2Idx.get(i, j, k));
+                            }
                         }
+                    }
+                } else {
+                    FloatBuffer audioBuffer2 = (FloatBuffer)frame2.samples[0];
+                    while (audioBuffer2.hasRemaining()) {
+                        assertEquals((float)audioBuffer.get(m++) / (Short.MAX_VALUE + 1), audioBuffer2.get(), 0);
                     }
                 }
             }
-            assertEquals(grabber.grab(), null);
+            assertEquals(frames.length, n);
+            assertEquals(null, grabber.grab());
             grabber.restart();
             grabber.stop();
             grabber.release();
