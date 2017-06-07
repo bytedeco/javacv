@@ -10,7 +10,7 @@ import org.bytedeco.javacv.FrameGrabber;
  *
  * @author Dmitriy Gerashenko <d.a.gerashenko@gmail.com>
  */
-public class ConnectionIsLostDealing {
+public class RtspStreamingTimeout {
 
     private static final String SOURCE = "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov";
     private static final int TIMEOUT = 10; // In seconds.
