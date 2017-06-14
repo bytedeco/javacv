@@ -1,3 +1,4 @@
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bytedeco.javacpp.Pointer;
@@ -24,6 +25,18 @@ public class RtspStreamingTimeout {
         System.out.println("testWithStimeoutOption called");
         try {
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(SOURCE);
+            /**
+             * "timeout" - IS IGNORED when a network cable have been unplugged
+             * before a connection and sometimes when connection is lost.
+             *
+             * "rw_timeout" (http://ffmpeg.org/ffmpeg-all.html#Protocols) - IS
+             * IGNORED when a network cable have been unplugged before a
+             * connection but the option takes effect after a connection was
+             * established.
+             *
+             * "stimeout" (http://ffmpeg.org/ffmpeg-all.html#rtsp) - socket TCP
+             * I/O timeout in microseconds for Real-Time Streaming Protocol.
+             */
             grabber.setOption("stimeout", String.valueOf(TIMEOUT * 1000000)); // In microseconds.
             grabber.start();
 
