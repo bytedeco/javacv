@@ -11,7 +11,7 @@ import org.bytedeco.javacv.FrameGrabber;
  *
  * @author Dmitriy Gerashenko <d.a.gerashenko@gmail.com>
  */
-public class FfmpegStreamingTimeout {
+public class FFmpegStreamingTimeout {
 
     /**
      * There is no universal option for streaming timeout. Each of protocols has
@@ -19,7 +19,7 @@ public class FfmpegStreamingTimeout {
      */
     private static enum TimeoutOption {
         /**
-         * Depends on protocol.
+         * Depends on protocol (FTP, HTTP, RTMP, SMB, SSH, TCP, UDP, or UNIX).
          *
          * http://ffmpeg.org/ffmpeg-all.html
          */
