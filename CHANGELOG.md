@@ -5,7 +5,7 @@
  * Upgrade dependencies for FFmpeg 3.2.4, FlyCapture 2.11.3.121 ([pull #424](https://github.com/bytedeco/javacpp-presets/pull/424))
  * Initialize the `avdevice` module for `FFmpegFrameRecorder` in the same way as with `FFmpegFrameGrabber`
  * Add `FrameGrabber.sampleMode` property and have `FFmpegFrameGrabber` convert audio samples to user-specified format ([issue #18](https://github.com/bytedeco/javacv/issues/18))
- * Add new `ImageSegmentation` sample ([pull #460](https://github.com/bytedeco/javacv/pull/460))
+ * Add new `ImageSegmentation` ([pull #460](https://github.com/bytedeco/javacv/pull/460)) and `FFmpegStreamingTimeout` ([pull #712](https://github.com/bytedeco/javacv/pull/712)) samples
  * Fix up and add missing functionality to `FlyCapture2FrameGrabber` ([pull #655](https://github.com/bytedeco/javacv/pull/655))
  * Take `OpenCVFrameGrabber.setFormat()` value to set FOURCC of `VideoCapture` ([pull #651](https://github.com/bytedeco/javacv/pull/651))
  * Fix call to `FaceRecognizer.predict()` in samples ([issue #642](https://github.com/bytedeco/javacv/issues/642))
