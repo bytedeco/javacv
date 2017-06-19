@@ -245,6 +245,25 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 oc.metadata(null);
             }
 
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException ex) {
+                    throw new Exception("Error on OutputStream.close(): ", ex);
+                } finally {
+                    outputStream = null;
+                    outputStreams.remove(oc);
+                    if (avio != null) {
+                        if (avio.buffer() != null) {
+                            av_free(avio.buffer());
+                            avio.buffer(null);
+                        }
+                        av_free(avio);
+                        avio = null;
+                    }
+                }
+            }
+
             /* free the stream */
             av_free(oc);
             oc = null;
@@ -258,25 +277,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (samples_convert_ctx != null) {
             swr_free(samples_convert_ctx);
             samples_convert_ctx = null;
-        }
-
-        if (outputStream != null) {
-            try {
-                outputStream.close();
-            } catch (IOException ex) {
-                throw new Exception("Error on OutputStream.close(): ", ex);
-            } finally {
-                outputStream = null;
-                outputStreams.remove(oc);
-                if (avio != null) {
-                    if (avio.buffer() != null) {
-                        av_free(avio.buffer());
-                        avio.buffer(null);
-                    }
-                    av_free(avio);
-                    avio = null;
-                }
-            }
         }
     }
     @Override protected void finalize() throws Throwable {
