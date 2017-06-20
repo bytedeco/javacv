@@ -226,6 +226,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         audio_st = null;
         filename = null;
 
+        AVFormatContext outputStreamKey = oc;
         if (oc != null && !oc.isNull()) {
             if (outputStream == null && (oformat.flags() & AVFMT_NOFILE) == 0) {
                 /* close the output file */
@@ -267,7 +268,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 throw new Exception("Error on OutputStream.close(): ", ex);
             } finally {
                 outputStream = null;
-                outputStreams.remove(oc);
+                outputStreams.remove(outputStreamKey);
                 if (avio != null) {
                     if (avio.buffer() != null) {
                         av_free(avio.buffer());
