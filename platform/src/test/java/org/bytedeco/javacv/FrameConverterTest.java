@@ -234,6 +234,13 @@ public class FrameConverterTest {
         converter2.frame = null;
         Frame frame1 = converter1.convert(image);
         Frame frame2 = converter2.convert(mat);
+        assertEquals(frame2.opaque, mat);
+
+        Mat mat2 = new Mat(mat.rows(), mat.cols(), mat.type(), mat.data(), mat.step());
+        assertNotEquals(mat, mat2);
+
+        frame2 = converter2.convert(mat2);
+        assertEquals(frame2.opaque, mat2);
 
         UByteIndexer frame1Idx = frame1.createIndexer();
         UByteIndexer frame2Idx = frame2.createIndexer();
