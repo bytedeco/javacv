@@ -74,11 +74,21 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
         if (source == null) {
             return null;
         }
-        SignedBufferedImage copy = new SignedBufferedImage(source.getWidth(), source.getHeight(), source.getType());
-        Graphics g = copy.getGraphics();
-        g.drawImage(source, 0, 0, null);
-        g.dispose();
-        return copy;
+        int type = source.getType();
+        if (type == BufferedImage.TYPE_CUSTOM) {
+            return new BufferedImage(
+                    source.getColorModel(),
+                    source.copyData(null),
+                    source.isAlphaPremultiplied(),
+                    null
+            );
+        } else {
+            BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), source.getType());
+            Graphics g = copy.getGraphics();
+            g.drawImage(source, 0, 0, null);
+            g.dispose();
+            return copy;
+        }
     }
 
     public static final byte[]
