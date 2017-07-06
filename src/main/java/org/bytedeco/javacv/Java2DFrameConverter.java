@@ -83,7 +83,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                     null
             );
         } else {
-            BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), source.getType());
+            BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), type);
             Graphics g = copy.getGraphics();
             g.drawImage(source, 0, 0, null);
             g.dispose();
