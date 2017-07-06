@@ -66,18 +66,19 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
         return getBufferedImage(frame);
     }
 
-    public static BufferedImage cloneBufferedImage(BufferedImage bufferedImage) {
-        if (bufferedImage == null) {
+    /**
+     * @param source
+     * @return null if source is null
+     */
+    public static BufferedImage cloneBufferedImage(BufferedImage source) {
+        if (source == null) {
             return null;
         }
-        BufferedImage bi = bufferedImage;
-        int type = bi.getType();
-        if (type == BufferedImage.TYPE_CUSTOM) {
-            return new BufferedImage(bi.getColorModel(),
-                    bi.copyData(null), bi.isAlphaPremultiplied(), null);
-        } else {
-            return new BufferedImage(bi.getWidth(), bi.getHeight(), type);
-        }
+        SignedBufferedImage copy = new SignedBufferedImage(source.getWidth(), source.getHeight(), source.getType());
+        Graphics g = copy.getGraphics();
+        g.drawImage(source, 0, 0, null);
+        g.dispose();
+        return copy;
     }
 
     public static final byte[]

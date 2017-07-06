@@ -37,18 +37,15 @@ public class Java2DFrameUtils {
     private static Java2DFrameConverter             biConv  = new Java2DFrameConverter();
 
     /**
-    * Clones (deep copies the data) of a {@link BufferedImage}. Necessary when
-    * converting to BufferedImages from JavaCV types to avoid re-using the same
-    * memory locations.
-    *
-    * @param image1
-    * @return
-    */
-    public static BufferedImage deepCopy(BufferedImage image1){
-        ColorModel cm = image1.getColorModel();
-        WritableRaster raster = image1.copyData(image1.getRaster().createCompatibleWritableRaster());
-        BufferedImage copied = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
-        return copied;
+     * Clones (deep copies the data) of a {@link BufferedImage}. Necessary when
+     * converting to BufferedImages from JavaCV types to avoid re-using the same
+     * memory locations.
+     *
+     * @param source
+     * @return
+     */
+    public static BufferedImage deepCopy(BufferedImage source) {
+        return Java2DFrameConverter.cloneBufferedImage(source);
     }
 
     public synchronized static BufferedImage toBufferedImage(IplImage src) {
