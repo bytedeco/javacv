@@ -22,6 +22,7 @@
 
 package org.bytedeco.javacv;
 
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
