@@ -22,6 +22,7 @@
 
 package org.bytedeco.javacv;
 
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -66,17 +67,28 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
         return getBufferedImage(frame);
     }
 
-    public static BufferedImage cloneBufferedImage(BufferedImage bufferedImage) {
-        if (bufferedImage == null) {
+    /**
+     * @param source
+     * @return null if source is null
+     */
+    public static BufferedImage cloneBufferedImage(BufferedImage source) {
+        if (source == null) {
             return null;
         }
-        BufferedImage bi = bufferedImage;
-        int type = bi.getType();
+        int type = source.getType();
         if (type == BufferedImage.TYPE_CUSTOM) {
-            return new BufferedImage(bi.getColorModel(),
-                    bi.copyData(null), bi.isAlphaPremultiplied(), null);
+            return new BufferedImage(
+                    source.getColorModel(),
+                    source.copyData(null),
+                    source.isAlphaPremultiplied(),
+                    null
+            );
         } else {
-            return new BufferedImage(bi.getWidth(), bi.getHeight(), type);
+            BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), type);
+            Graphics g = copy.getGraphics();
+            g.drawImage(source, 0, 0, null);
+            g.dispose();
+            return copy;
         }
     }
 
