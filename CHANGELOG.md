@@ -1,10 +1,11 @@
 
+ * Fix `Java2DFrameConverter.cloneBufferedImage()` not copying the data ([pull #739](https://github.com/bytedeco/javacv/pull/739))
  * Make sure `OpenCVFrameConverter` always resets `Frame.opaque` even when `Pointer` is equal ([issue deeplearning4j/DataVec#316](https://github.com/deeplearning4j/DataVec/issues/316))
  * Fix `OutputStream` leak in `FFmpegFrameRecorder` ([pull #727](https://github.com/bytedeco/javacv/pull/727))
  * Synchronize on `FFmpegFrameRecorder.stop()` to avoid potential race conditions ([issue #700](https://github.com/bytedeco/javacv/issues/700))
  * Add `src/main/java/cl/eye/CLCamera.java` to remove build dependency on external module
  * Fix seeking issues with `FFmpegFrameGrabber(InputStream)` ([pull #703](https://github.com/bytedeco/javacv/pull/703))
- * Upgrade dependencies for FFmpeg 3.2.4, FlyCapture 2.11.3.121 ([pull bytedeco/javacpp-presets#424](https://github.com/bytedeco/javacpp-presets/pull/424))
+ * Upgrade dependencies for FFmpeg 3.3.2, FlyCapture 2.11.3.121 ([pull bytedeco/javacpp-presets#424](https://github.com/bytedeco/javacpp-presets/pull/424))
  * Initialize the `avdevice` module for `FFmpegFrameRecorder` in the same way as with `FFmpegFrameGrabber`
  * Add `FrameGrabber.sampleMode` property and have `FFmpegFrameGrabber` convert audio samples to user-specified format ([issue #18](https://github.com/bytedeco/javacv/issues/18))
  * Add new `ImageSegmentation` ([pull #460](https://github.com/bytedeco/javacv/pull/460)) and `FFmpegStreamingTimeout` ([pull #712](https://github.com/bytedeco/javacv/pull/712)) samples
