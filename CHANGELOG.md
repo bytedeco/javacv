@@ -1,4 +1,5 @@
 
+### July 25, 2017 version 1.3.3
  * Fix `Java2DFrameConverter.cloneBufferedImage()` not copying the data ([pull #739](https://github.com/bytedeco/javacv/pull/739))
  * Make sure `OpenCVFrameConverter` always resets `Frame.opaque` even when `Pointer` is equal ([issue deeplearning4j/DataVec#316](https://github.com/deeplearning4j/DataVec/issues/316))
  * Fix `OutputStream` leak in `FFmpegFrameRecorder` ([pull #727](https://github.com/bytedeco/javacv/pull/727))

@@ -484,6 +484,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
+    /** Returns {@code getLengthInTime() * getFrameRate() / 1000000L)}, which is an approximation in general. */
     @Override public int getLengthInFrames() {
         // best guess...
         return (int)(getLengthInTime() * getFrameRate() / 1000000L);
