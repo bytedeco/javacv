@@ -1,4 +1,3 @@
-
 import static org.bytedeco.javacpp.opencv_core.cvClearMemStorage;
 
 import org.bytedeco.javacpp.Loader;
@@ -22,12 +21,12 @@ public class DeinterlacedVideoPlayer {
 	
 	private String ffmpegString = "yadif=mode=0:parity=-1:deint=0,format=bgr24";
 	private FrameGrabber grabber;
-	private FrameFilter filter;
 	
 	public DeinterlacedVideoPlayer() {}
 	
 	public void start() {
 		Loader.load(opencv_objdetect.class);
+		FrameFilter filter = null;
 		try {
 			startFrameGrabber();
 			CvMemStorage storage = CvMemStorage.create();
@@ -43,12 +42,14 @@ public class DeinterlacedVideoPlayer {
 				
 				filter.push(frame);
 				frame = filter.pull();
+				
 				// do something with the filtered frame
+				
 			}
 		} catch (Exception | org.bytedeco.javacv.FrameFilter.Exception e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} finally {
-			releaseResources();
+			releaseGrabberAndFilter(this.grabber, filter);
 		}
 	}
 
@@ -61,21 +62,19 @@ public class DeinterlacedVideoPlayer {
 		grabber.start();
 	}
 	
-	private void releaseResources() {
-		if (grabber == null) {
-			return;
-		}
-		
+	private void releaseGrabberAndFilter(FrameGrabber grabber, FrameFilter filter) {
 		try {
-			grabber.release();
+			if (grabber != null) {
+				grabber.release();
+			}
 		} catch (Exception e) {
 			throw new RuntimeException("Cannot release frame grabber!", e);
 		} finally {
-			releaseFilter();
+			releaseFilter(filter);
 		}
 	}
 	
-	private void releaseFilter() {
+	private void releaseFilter(FrameFilter filter) {
 		if (filter == null) {
 			return;
 		}
@@ -83,7 +82,7 @@ public class DeinterlacedVideoPlayer {
 		try {
 			filter.close();
 		} catch (org.bytedeco.javacv.FrameFilter.Exception e) {
-			throw new RuntimeException("Cannot stop frame filter!", e);
+			throw new RuntimeException("Cannot close frame filter!", e);
 		}
 	}
 	
