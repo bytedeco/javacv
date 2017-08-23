@@ -48,7 +48,7 @@ public class FrameGrabberTestMulti {
 
 		Runnable[] runables = new Runnable[numberOfInstances];
 		Thread[] threads = new Thread[numberOfInstances];
-		boolean[] finish = new boolean[numberOfInstances];
+		final boolean[] finish = new boolean[numberOfInstances];
 		for (int instance = 0; instance < numberOfInstances; instance++) {
 			final int instance_final = instance;
 			Runnable r = new Runnable() {
