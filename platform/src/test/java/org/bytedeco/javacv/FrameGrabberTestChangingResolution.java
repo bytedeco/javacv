@@ -22,20 +22,19 @@
 
 package org.bytedeco.javacv;
 
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_BGR24;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
-
-import de.zft.maintelrob.ffmpegPacket.test.Test2ChangingResolutionDuringRuntime;
-
-import static org.bytedeco.javacpp.avutil.*;
-import static org.junit.Assert.*;
 
 /**
  * Test cases for FrameGrabber classes. Also uses other classes from JavaCV.
@@ -74,11 +73,11 @@ public class FrameGrabberTestChangingResolution {
 		recorder.release();
 	}
 
-	final public void setupUDPSender(int x, int y, int bandwidth, int count) throws IOException {
-		FrameGrabber fg = new FFmpegFrameGrabber(tempFile);
+	final public void setupUDPSender(int x, int y, int bandwidth, final int count) throws IOException {
+		final FrameGrabber fg = new FFmpegFrameGrabber(tempFile);
 		fg.setFrameRate(30);
 
-		FrameRecorder fr = new FFmpegFrameRecorder("udp://127.0.0.1:2345", 0);
+		final FrameRecorder fr = new FFmpegFrameRecorder("udp://127.0.0.1:2345", 0);
 		fr.setVideoCodecName("mpeg2video");
 		fr.setFormat("mpegts");
 
@@ -176,9 +175,12 @@ public class FrameGrabberTestChangingResolution {
 							assertTrue(m <= 60);
 							m = 0;
 						}
+
 						fr.record(source);
 					}
 					assertEquals(q, qualities.length - 1);
+					assertTrue(n > 300);
+					assertTrue(n <= 480);
 					fr.close();
 				} catch (Exception e) {
 					fail("Exception should not have been thrown: " + e);
