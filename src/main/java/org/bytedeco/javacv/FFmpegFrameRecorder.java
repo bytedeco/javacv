@@ -118,6 +118,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     static {
         try {
             tryLoad();
+            FFmpegFrameLock.init();
         } catch (Exception ex) { }
     }
 
@@ -170,9 +171,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.outputStream = outputStream;
     }
     public void release() throws Exception {
-        synchronized (org.bytedeco.javacpp.avcodec.class) {
+        // synchronized (org.bytedeco.javacpp.avcodec.class) {
             releaseUnsafe();
-        }
+        // }
     }
     void releaseUnsafe() throws Exception {
         /* close each codec */
@@ -353,9 +354,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public void start() throws Exception {
-        synchronized (org.bytedeco.javacpp.avcodec.class) {
+        // synchronized (org.bytedeco.javacpp.avcodec.class) {
             startUnsafe();
-        }
+        // }
     }
 
     void startUnsafe() throws Exception {
