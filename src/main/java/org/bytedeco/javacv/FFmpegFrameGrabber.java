@@ -117,6 +117,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     static {
         try {
             tryLoad();
+            FFmpegFrameLock.init();
         } catch (Exception ex) { }
     }
 
@@ -134,9 +135,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
     }
     public void release() throws Exception {
-        synchronized (org.bytedeco.javacpp.avcodec.class) {
+        // synchronized (org.bytedeco.javacpp.avcodec.class) {
             releaseUnsafe();
-        }
+        // }
     }
     void releaseUnsafe() throws Exception {
         if (pkt != null && pkt2 != null) {
@@ -499,9 +500,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
-        synchronized (org.bytedeco.javacpp.avcodec.class) {
+        // synchronized (org.bytedeco.javacpp.avcodec.class) {
             startUnsafe();
-        }
+        // }
     }
     void startUnsafe() throws Exception {
         int ret;
@@ -647,35 +648,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 throw new Exception("av_frame_alloc() error: Could not allocate RGB picture frame.");
             }
 
-            int width  = imageWidth  > 0 ? imageWidth  : video_c.width();
-            int height = imageHeight > 0 ? imageHeight : video_c.height();
-
-            switch (imageMode) {
-                case COLOR:
-                case GRAY:
-                    int fmt = getPixelFormat();
-
-                    // Determine required buffer size and allocate buffer
-                    int size = av_image_get_buffer_size(fmt, width, height, 1);
-                    image_ptr = new BytePointer[] { new BytePointer(av_malloc(size)).capacity(size) };
-                    image_buf = new Buffer[] { image_ptr[0].asBuffer() };
-
-                    // Assign appropriate parts of buffer to image planes in picture_rgb
-                    // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
-                    av_image_fill_arrays(new PointerPointer(picture_rgb), picture_rgb.linesize(), image_ptr[0], fmt, width, height, 1);
-                    picture_rgb.format(fmt);
-                    picture_rgb.width(width);
-                    picture_rgb.height(height);
-                    break;
-
-                case RAW:
-                    image_ptr = new BytePointer[] { null };
-                    image_buf = new Buffer[] { null };
-                    break;
-
-                default:
-                    assert false;
-            }
+            initPictureRGB();
         }
 
         if (audio_st != null) {
@@ -713,6 +686,46 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
+    private void initPictureRGB() {
+        int width  = imageWidth  > 0 ? imageWidth  : video_c.width();
+        int height = imageHeight > 0 ? imageHeight : video_c.height();
+
+        switch (imageMode) {
+            case COLOR:
+            case GRAY:
+                // If size changes I new allocation is needed -> free the old one.
+                if (image_ptr != null) {
+                    // First kill all references, then free it.
+                    image_buf = null;
+                    BytePointer[] temp = image_ptr;
+                    image_ptr = null;
+                    av_free(temp[0]);
+                }
+                int fmt = getPixelFormat();
+
+                // Determine required buffer size and allocate buffer
+                int size = av_image_get_buffer_size(fmt, width, height, 1);
+                image_ptr = new BytePointer[] { new BytePointer(av_malloc(size)).capacity(size) };
+                image_buf = new Buffer[] { image_ptr[0].asBuffer() };
+
+                // Assign appropriate parts of buffer to image planes in picture_rgb
+                // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
+                av_image_fill_arrays(new PointerPointer(picture_rgb), picture_rgb.linesize(), image_ptr[0], fmt, width, height, 1);
+                picture_rgb.format(fmt);
+                picture_rgb.width(width);
+                picture_rgb.height(height);
+                break;
+
+            case RAW:
+                image_ptr = new BytePointer[] { null };
+                image_buf = new Buffer[] { null };
+                break;
+
+            default:
+                assert false;
+        }
+    }
+    
     public void stop() throws Exception {
         release();
     }
@@ -743,6 +756,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 // Deinterlace Picture
                 if (deinterlace) {
                     throw new Exception("Cannot deinterlace: Functionality moved to FFmpegFrameFilter.");
+                }
+
+                // Has the size changed?
+                if (frame.imageWidth != picture_rgb.width() || frame.imageHeight != picture_rgb.height()) {
+                    initPictureRGB();
                 }
 
                 // Convert the image into BGR or GRAY format that OpenCV uses
