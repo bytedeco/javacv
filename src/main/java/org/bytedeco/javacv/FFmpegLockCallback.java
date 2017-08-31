@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.avcodec;
 import org.bytedeco.javacpp.avcodec.Cb_PointerPointer_int;
@@ -27,11 +28,11 @@ public class FFmpegLockCallback {
 			case avcodec.AV_LOCK_CREATE:
 				number = lockCounter.incrementAndGet();
 				// System.out.println("Command: " + op + " number: " + number);
-				mutex.asByteBuffer().putInt(0, number);
+				new IntPointer(mutex).put(0, number);
 				lockArray.put(number, new ReentrantLock());
 				return 0;
 			case avcodec.AV_LOCK_OBTAIN:
-				number = mutex.asByteBuffer().getInt(0);
+				number = new IntPointer(mutex).get(0);
 				// System.out.println("Command: " + op + " number: " + number);
 				l = lockArray.get(number);
 				if (l == null) {
@@ -41,7 +42,7 @@ public class FFmpegLockCallback {
 				l.lock();
 				return 0;
 			case avcodec.AV_LOCK_RELEASE:
-				number = mutex.asByteBuffer().getInt(0);
+				number = new IntPointer(mutex).get(0);
 				// System.out.println("Command: " + op + " number: " + number);
 				l = lockArray.get(number);
 				if (l == null) {
@@ -51,7 +52,7 @@ public class FFmpegLockCallback {
 				l.unlock();
 				return 0;
 			case avcodec.AV_LOCK_DESTROY:
-				number = mutex.asByteBuffer().getInt(0);
+				number = new IntPointer(mutex).get(0);
 				// System.out.println("Command: " + op + " number: " + number);
 				lockArray.remove(number);
 				mutex.put(0, null);
