@@ -118,7 +118,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     static {
         try {
             tryLoad();
-            FFmpegFrameLock.init();
+            FFmpegLockCallback.init();
         } catch (Exception ex) { }
     }
 
