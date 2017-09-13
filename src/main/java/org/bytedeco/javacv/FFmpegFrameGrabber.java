@@ -117,6 +117,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     static {
         try {
             tryLoad();
+            FFmpegLockCallback.init();
         } catch (Exception ex) { }
     }
 
@@ -134,9 +135,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
     }
     public void release() throws Exception {
-        synchronized (org.bytedeco.javacpp.avcodec.class) {
+        // synchronized (org.bytedeco.javacpp.avcodec.class) {
             releaseUnsafe();
-        }
+        // }
     }
     void releaseUnsafe() throws Exception {
         if (pkt != null && pkt2 != null) {
@@ -499,9 +500,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
-        synchronized (org.bytedeco.javacpp.avcodec.class) {
+        // synchronized (org.bytedeco.javacpp.avcodec.class) {
             startUnsafe();
-        }
+        // }
     }
     void startUnsafe() throws Exception {
         int ret;
