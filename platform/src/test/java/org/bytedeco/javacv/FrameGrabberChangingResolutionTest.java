@@ -36,11 +36,12 @@ import static org.bytedeco.javacpp.avutil.*;
 import static org.junit.Assert.*;
 
 /**
- * Test cases for FrameGrabber classes. Also uses other classes from JavaCV.
+ * Complex Test case for FrameGrabber classes - change the resolution during runtime.
+ * Also uses other classes from JavaCV.
  *
- * @author Samuel Audet
+ * @author Samuel Audet, Michael Fritscher
  */
-public class FrameGrabberTestChangingResolution {
+public class FrameGrabberChangingResolutionTest {
     private File tempFile = new File(Loader.getTempDir(), "test.mkv");
     private File tempTargetFile = new File(Loader.getTempDir(), "target.mkv");
     private boolean endRequested;
@@ -237,7 +238,6 @@ public class FrameGrabberTestChangingResolution {
         }
 
         try {
-
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(new FileInputStream(tempTargetFile));
             grabber.setSampleMode(FrameGrabber.SampleMode.FLOAT);
             grabber.start();
@@ -263,8 +263,8 @@ public class FrameGrabberTestChangingResolution {
         } catch (Exception e) {
             fail("Exception should not have been thrown: " + e);
         } finally {
-            // tempFile.delete();
-            // tempTargetFile.delete();
+            tempFile.delete();
+            tempTargetFile.delete();
         }
     }
 }
