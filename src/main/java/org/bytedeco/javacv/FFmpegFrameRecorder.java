@@ -118,7 +118,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     static {
         try {
             tryLoad();
-            FFmpegFrameLock.init();
+            FFmpegLockCallback.init();
         } catch (Exception ex) { }
     }
 
@@ -890,10 +890,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     pixelFormat = AV_PIX_FMT_RGBA;
                 } else if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 2) {
                     pixelFormat = AV_PIX_FMT_NV21; // Android's camera capture format
-                    step = width;
                 } else {
                     throw new Exception("Could not guess pixel format of image: depth=" + depth + ", channels=" + channels);
                 }
+            }
+
+            if (pixelFormat == AV_PIX_FMT_NV21) {
+                step = width;
             }
 
             if (video_c.pix_fmt() != pixelFormat || video_c.width() != width || video_c.height() != height) {

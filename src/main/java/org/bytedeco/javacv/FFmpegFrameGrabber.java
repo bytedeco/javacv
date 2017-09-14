@@ -117,7 +117,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     static {
         try {
             tryLoad();
-            FFmpegFrameLock.init();
+            FFmpegLockCallback.init();
         } catch (Exception ex) { }
     }
 
