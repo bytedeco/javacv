@@ -1,4 +1,10 @@
 
+ * Prevent `FFmpegFrameGrabber.setTimestamp()` from going into an infinite loop ([issue #731](https://github.com/bytedeco/javacv/issues/731))
+ * Fix `FFmpegFrameRecorder.record()` when called with `AV_PIX_FMT_NV21` ([pull #787](https://github.com/bytedeco/javacv/pull/787))
+ * Add `FFmpegLockCallback` to use more efficient thread-safe mechanisms ([pull #770](https://github.com/bytedeco/javacv/pull/770))
+ * Make `FFmpegFrameGrabber` support streams with changing resolution ([pull #769](https://github.com/bytedeco/javacv/pull/769))
+ * Add new `DeinterlacedVideoPlayer` sample ([pull #757](https://github.com/bytedeco/javacv/pull/757))
+
 ### July 25, 2017 version 1.3.3
  * Fix `Java2DFrameConverter.cloneBufferedImage()` not copying the data ([pull #739](https://github.com/bytedeco/javacv/pull/739))
  * Make sure `OpenCVFrameConverter` always resets `Frame.opaque` even when `Pointer` is equal ([issue deeplearning4j/DataVec#316](https://github.com/deeplearning4j/DataVec/issues/316))
