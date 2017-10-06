@@ -87,7 +87,7 @@ public class CaffeGooglenet {
         }
 
         resize(img, img, new Size(224, 224)); //GoogLeNet accepts only 224x224 RGB-images
-        Blob inputBlob = Blob.fromImages(img);//Convert Mat to 4-dimensional dnn:Blob from image
+        Blob inputBlob = Blob.fromImages(img);//Convert Mat to 4-dimensional dnn::Blob from image
         //! [Prepare blob]
 
         //! [Set input blob]
