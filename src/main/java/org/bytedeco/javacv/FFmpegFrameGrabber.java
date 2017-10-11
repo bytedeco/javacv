@@ -966,6 +966,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         processImage();
                     }
                     done = true;
+                    frame.timestamp = timestamp;
                     frame.keyFrame = picture.key_frame() != 0;
                     frame.image = image_buf;
                     frame.opaque = picture;
@@ -994,6 +995,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         /* if a frame has been decoded, output it */
                         processSamples();
                         done = true;
+                        frame.timestamp = timestamp;
                         frame.keyFrame = samples_frame.key_frame() != 0;
                         frame.opaque = samples_frame;
                     }
