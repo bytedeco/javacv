@@ -1,4 +1,7 @@
 
+ * Update `JavaFxPlayVideoAndAudio` sample to support `FrameGrabber.sampleMode` property ([issue #820](https://github.com/bytedeco/javacv/issues/820))
+ * Set the `Frame.timestamp` field on `FFmpegFrameGrabber.grab()` ([pull #810](https://github.com/bytedeco/javacv/pull/810))
+ * Fix image loading issue with the `CaffeGooglenet.java` sample ([pull #805](https://github.com/bytedeco/javacv/pull/805))
  * Prevent `FFmpegFrameGrabber.setTimestamp()` from going into an infinite loop ([issue #731](https://github.com/bytedeco/javacv/issues/731))
  * Fix `FFmpegFrameRecorder.record()` when called with `AV_PIX_FMT_NV21` ([pull #787](https://github.com/bytedeco/javacv/pull/787))
  * Add `FFmpegLockCallback` to use more efficient thread-safe mechanisms ([pull #770](https://github.com/bytedeco/javacv/pull/770))
