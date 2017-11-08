@@ -152,7 +152,10 @@ public class WebcamAndMicrophoneCapture
                             try
                             {
                                 // Read from the line... non-blocking
-                                int nBytesRead = line.read(audioBytes, 0, line.available());
+                                int nBytesRead = 0;
+                                while (nBytesRead == 0) {
+                                    nBytesRead = line.read(audioBytes, 0, line.available());
+                                }
 
                                 // Since we specified 16 bits in the AudioFormat,
                                 // we need to convert our read byte[] to short[]
