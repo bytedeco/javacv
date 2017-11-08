@@ -139,10 +139,8 @@ public class FrameGrabberTest {
 
                     File tempFile = new File(Loader.getTempDir(), "test" + instance_final + ".mkv");
                     try {
-                        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480,
-                                2);
-                        recorder.setFormat("matroska"); // mp4 doesn't support
-                                                        // streaming
+                        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 640, 480, 2);
+                        recorder.setFormat("matroska"); // mp4 doesn't support streaming
                         recorder.setPixelFormat(AV_PIX_FMT_BGR24);
                         recorder.setVideoCodecName("libx264rgb");
                         recorder.setVideoQuality(0); // lossless
@@ -179,7 +177,7 @@ public class FrameGrabberTest {
 
                         Thread.sleep(1000);
 
-                        FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(new FileInputStream(tempFile));
+                        FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
                         grabber.setSampleMode(FrameGrabber.SampleMode.FLOAT);
                         grabber.start();
 

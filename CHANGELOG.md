@@ -1,4 +1,6 @@
 
+ * Upgrade dependencies for OpenCV 3.3.0, FFmpeg 3.4
+ * Fix potential audio read issue in `WebcamAndMicrophoneCapture` sample ([issue #826](https://github.com/bytedeco/javacv/issues/826))
  * Update `JavaFxPlayVideoAndAudio` sample to support `FrameGrabber.sampleMode` property ([issue #820](https://github.com/bytedeco/javacv/issues/820))
  * Set the `Frame.timestamp` field on `FFmpegFrameGrabber.grab()` ([pull #810](https://github.com/bytedeco/javacv/pull/810))
  * Fix image loading issue with the `CaffeGooglenet.java` sample ([pull #805](https://github.com/bytedeco/javacv/pull/805))
