@@ -47,16 +47,15 @@ public class SerializeDeserializeOpenCVDataStructures {
             System.out.println("Descriptor size: " + objectDescriptorsSerialize.cols());
             write(fileStorage, "keyPoints", keyPointVectorSerialize);
             write(fileStorage, "descriptors", objectDescriptorsSerialize);
-
         }
     }
 
     private static void deserializeFile(String file) {
         try (KeyPointVector keyPointVectorDeserialize = new KeyPointVector(); Mat objectDescriptorsDeserialize = new Mat();
              FileStorage fileStorage = new FileStorage(file, opencv_core.FileStorage.READ, StandardCharsets.UTF_8.name());
-             FileNode keypointsFileNode = fileStorage.get("keyPoints"); FileNode descriptorsFileNode = fileStorage.get("descriptors")
+             FileNode keyPointsFileNode = fileStorage.get("keyPoints"); FileNode descriptorsFileNode = fileStorage.get("descriptors")
         ) {
-            read(keypointsFileNode, keyPointVectorDeserialize);
+            read(keyPointsFileNode, keyPointVectorDeserialize);
             read(descriptorsFileNode, objectDescriptorsDeserialize);
             System.out.println("Vector size: " + keyPointVectorDeserialize.size());
             System.out.println("Descriptor size: " + objectDescriptorsDeserialize.cols());
@@ -81,9 +80,9 @@ public class SerializeDeserializeOpenCVDataStructures {
     private static void deserializeMemory(String serialized) {
         try (KeyPointVector keyPointVectorDeserialize = new KeyPointVector(); Mat objectDescriptorsDeserialize = new Mat();
              FileStorage fileStorage = new FileStorage(serialized, opencv_core.FileStorage.READ | opencv_core.FileStorage.MEMORY, StandardCharsets.UTF_8.name());
-             FileNode keypointsFileNode = fileStorage.get("keyPoints"); FileNode descriptorsFileNode = fileStorage.get("descriptors")
+             FileNode keyPointsFileNode = fileStorage.get("keyPoints"); FileNode descriptorsFileNode = fileStorage.get("descriptors")
         ) {
-            read(keypointsFileNode, keyPointVectorDeserialize);
+            read(keyPointsFileNode, keyPointVectorDeserialize);
             read(descriptorsFileNode, objectDescriptorsDeserialize);
             System.out.println("Vector size: " + keyPointVectorDeserialize.size());
             System.out.println("Descriptor size: " + objectDescriptorsDeserialize.cols());
