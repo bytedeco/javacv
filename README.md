@@ -276,6 +276,7 @@ And by placing the source code above in `src/main/java/Demo.java`, we can use th
  $ mvn compile exec:java -Dexec.mainClass=Demo
 ```
 
+**Note**: In case of errors, please make sure that the `artifactId` in the `pom.xml` file reads `javacv-platform`, not `javacv` only, for example. The artifact `javacv-platform` adds all the necessary binary dependencies.
 
 Build Instructions
 ------------------
