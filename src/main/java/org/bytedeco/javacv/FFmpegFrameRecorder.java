@@ -60,7 +60,9 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
@@ -286,7 +288,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         release();
     }
 
-    static HashMap<Pointer,OutputStream> outputStreams = new HashMap<Pointer,OutputStream>();
+    static Map<Pointer,OutputStream> outputStreams = Collections.synchronizedMap(new HashMap<Pointer,OutputStream>());
 
     static class WriteCallback extends Write_packet_Pointer_BytePointer_int {
         @Override public int call(Pointer opaque, BytePointer buf, int buf_size) {
@@ -304,7 +306,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
-    static WriteCallback writeCallback;
+    static WriteCallback writeCallback = new WriteCallback();
 
     private OutputStream outputStream;
     private AVIOContext avio;
@@ -394,9 +396,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if (outputStream != null) {
-            if (writeCallback == null) {
-                writeCallback = new WriteCallback();
-            }
             avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, null);
             oc.pb(avio);
 

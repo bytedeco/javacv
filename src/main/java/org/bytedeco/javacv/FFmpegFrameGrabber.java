@@ -55,7 +55,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
@@ -245,7 +247,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         release();
     }
 
-    static HashMap<Pointer,InputStream> inputStreams = new HashMap<Pointer,InputStream>();
+    static Map<Pointer,InputStream> inputStreams = Collections.synchronizedMap(new HashMap<Pointer,InputStream>());
 
     static class ReadCallback extends Read_packet_Pointer_BytePointer_int {
         @Override public int call(Pointer opaque, BytePointer buf, int buf_size) {
@@ -290,8 +292,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    static ReadCallback readCallback;
-    static SeekCallback seekCallback;
+    static ReadCallback readCallback = new ReadCallback();
+    static SeekCallback seekCallback = new SeekCallback();
 
     private InputStream     inputStream;
     private AVIOContext     avio;
@@ -553,12 +555,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_dict_set(options, e.getKey(), e.getValue(), 0);
         }
         if (inputStream != null) {
-            if (readCallback == null) {
-                readCallback = new ReadCallback();
-            }
-            if (seekCallback == null) {
-                seekCallback = new SeekCallback();
-            }
             if (!inputStream.markSupported()) {
                 inputStream = new BufferedInputStream(inputStream);
             }

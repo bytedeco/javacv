@@ -278,10 +278,13 @@ public class FFmpegFrameFilter extends FrameFilter {
                 pixelFormat = AV_PIX_FMT_RGBA;
             } else if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 2) {
                 pixelFormat = AV_PIX_FMT_NV21; // Android's camera capture format
-                step = width;
             } else {
                 throw new Exception("Could not guess pixel format of image: depth=" + depth + ", channels=" + channels);
             }
+        }
+
+        if (pixelFormat == AV_PIX_FMT_NV21) {
+            step = width;
         }
 
         av_image_fill_arrays(new PointerPointer(image_frame), image_frame.linesize(), data, pixelFormat, width, height, 1);

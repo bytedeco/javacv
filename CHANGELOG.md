@@ -1,4 +1,6 @@
 
+ * Make `FFmpegFrameGrabber(InputStream)` and `FFmpegFrameRecorder(OutputStream)` thread-safe
+ * Add new `OpenCVFeatures2dSerialization` sample ([pull #842](https://github.com/bytedeco/javacv/pull/842))
  * Upgrade dependencies for OpenCV 3.3.0, FFmpeg 3.4
  * Fix potential audio read issue in `WebcamAndMicrophoneCapture` sample ([issue #826](https://github.com/bytedeco/javacv/issues/826))
  * Update `JavaFxPlayVideoAndAudio` sample to support `FrameGrabber.sampleMode` property ([issue #820](https://github.com/bytedeco/javacv/issues/820))
