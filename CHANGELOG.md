@@ -1,4 +1,5 @@
 
+ * Give access to options and metadata `Map` from `FrameGrabber` and `FrameRecorder` ([issue #858](https://github.com/bytedeco/javacv/issues/858))
  * Make `FFmpegFrameGrabber(InputStream)` and `FFmpegFrameRecorder(OutputStream)` thread-safe
  * Add new `OpenCVFeatures2dSerialization` sample ([pull #842](https://github.com/bytedeco/javacv/pull/842))
  * Upgrade dependencies for OpenCV 3.3.0, FFmpeg 3.4

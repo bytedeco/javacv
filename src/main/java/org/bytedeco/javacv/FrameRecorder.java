@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -110,12 +111,12 @@ public abstract class FrameRecorder implements Closeable {
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
     protected double audioQuality = -1;
     protected boolean interleaved;
-    protected HashMap<String, String> options = new HashMap<String, String>();
-    protected HashMap<String, String> videoOptions = new HashMap<String, String>();
-    protected HashMap<String, String> audioOptions = new HashMap<String, String>();
-    protected HashMap<String, String> metadata = new HashMap<String, String>();
-    protected HashMap<String, String> videoMetadata = new HashMap<String, String>();
-    protected HashMap<String, String> audioMetadata = new HashMap<String, String>();
+    protected Map<String, String> options = new HashMap<String, String>();
+    protected Map<String, String> videoOptions = new HashMap<String, String>();
+    protected Map<String, String> audioOptions = new HashMap<String, String>();
+    protected Map<String, String> metadata = new HashMap<String, String>();
+    protected Map<String, String> videoMetadata = new HashMap<String, String>();
+    protected Map<String, String> audioMetadata = new HashMap<String, String>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
 
@@ -250,6 +251,48 @@ public abstract class FrameRecorder implements Closeable {
     }
     public void setInterleaved(boolean interleaved) {
         this.interleaved = interleaved;
+    }
+
+    public Map<String, String> getOptions() {
+        return options;
+    }
+    public void setOptions(Map<String, String> options) {
+        this.options = options;
+    }
+
+    public Map<String, String> getVideoOptions() {
+        return videoOptions;
+    }
+    public void setVideoOptions(Map<String, String> options) {
+        this.videoOptions = options;
+    }
+
+    public Map<String, String> getAudioOptions() {
+        return audioOptions;
+    }
+    public void setAudioOptions(Map<String, String> options) {
+        this.audioOptions = options;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
+    }
+
+    public Map<String, String> getVideoMetadata() {
+        return videoMetadata;
+    }
+    public void setVideoMetadata(Map<String, String> metadata) {
+        this.videoMetadata = metadata;
+    }
+
+    public Map<String, String> getAudioMetadata() {
+        return audioMetadata;
+    }
+    public void setAudioMetadata(Map<String, String> metadata) {
+        this.audioMetadata = metadata;
     }
 
     public String getOption(String key) {
