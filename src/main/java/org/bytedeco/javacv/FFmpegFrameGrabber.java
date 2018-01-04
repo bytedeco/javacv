@@ -476,11 +476,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                (or vice versa)
             */
             int count = 0; // prevent infinite loops with corrupted files
-            while (this.timestamp > timestamp + 1 && grabFrame(false, true, false, false) != null && count++ < 1000) {
+            while (this.timestamp > timestamp + 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
                 // flush frames if seeking backwards
             }
             count = 0;
-            while (this.timestamp < timestamp - 1 && grabFrame(false, true, false, false) != null && count++ < 1000) {
+            while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
                 // decode up to the desired frame
             }
             if (video_c != null) {
