@@ -1,8 +1,9 @@
 
+ * Decode audio frames on `FFmpegFrameGrabber.setTimestamp()` to avoid sync issues ([pull #871](https://github.com/bytedeco/javacv/pull/871))
  * Give access to options and metadata `Map` from `FrameGrabber` and `FrameRecorder` ([issue #858](https://github.com/bytedeco/javacv/issues/858))
  * Make `FFmpegFrameGrabber(InputStream)` and `FFmpegFrameRecorder(OutputStream)` thread-safe
  * Add new `OpenCVFeatures2dSerialization` sample ([pull #842](https://github.com/bytedeco/javacv/pull/842))
- * Upgrade dependencies for OpenCV 3.3.1, FFmpeg 3.4.1, librealsense 1.12.1
+ * Upgrade dependencies for OpenCV 3.4.0, FFmpeg 3.4.1, librealsense 1.12.1
  * Fix potential audio read issue in `WebcamAndMicrophoneCapture` sample ([issue #826](https://github.com/bytedeco/javacv/issues/826))
  * Update `JavaFxPlayVideoAndAudio` sample to support `FrameGrabber.sampleMode` property ([issue #820](https://github.com/bytedeco/javacv/issues/820))
  * Set the `Frame.timestamp` field on `FFmpegFrameGrabber.grab()` ([pull #810](https://github.com/bytedeco/javacv/pull/810))
