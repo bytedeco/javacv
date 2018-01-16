@@ -1,4 +1,5 @@
 
+### January 16, 2018 version 1.4
  * Decode audio frames on `FFmpegFrameGrabber.setTimestamp()` to avoid sync issues ([pull #871](https://github.com/bytedeco/javacv/pull/871))
  * Give access to options and metadata `Map` from `FrameGrabber` and `FrameRecorder` ([issue #858](https://github.com/bytedeco/javacv/issues/858))
  * Make `FFmpegFrameGrabber(InputStream)` and `FFmpegFrameRecorder(OutputStream)` thread-safe
