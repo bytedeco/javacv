@@ -825,6 +825,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (oc != null) {
             try {
                 synchronized (oc) {
+                    // Record missing samples that were not recorded (if any)
+                    recordMissingSamples();
+				    
                     /* flush all the buffers */
                     while (video_st != null  && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
                     while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
@@ -1097,6 +1100,27 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
         }
         return samples != null ? frame.key_frame() != 0 : record((AVFrame)null);
+    }
+
+    private void recordMissingSamples() throws Exception {
+    	if (samples_out == null || samples_out.length == 0) {
+    		return;
+    	}
+    	
+    	if (samples_out[0].position() > 0 && samples_out[0].position() < samples_out[0].limit()) {
+            // Tipically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
+            int sampleDivisor = Math.floorDiv((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE), audio_input_frame_size);
+            frame.nb_samples(Math.floorDiv((int)samples_out[0].position(), sampleDivisor));
+            avcodec_fill_audio_frame(frame, audio_c.channels(), audio_c.sample_fmt(), samples_out[0], (int)samples_out[0].position(), 0);
+            for (int i = 0; i < samples_out.length; i++) {
+                frame.data(i, samples_out[i].position(0));
+                frame.linesize(i, (int)samples_out[i].position());
+            }
+            frame.quality(audio_c.global_quality());
+            record(frame);
+            
+        }
+       
     }
 
     boolean record(AVFrame frame) throws Exception {
