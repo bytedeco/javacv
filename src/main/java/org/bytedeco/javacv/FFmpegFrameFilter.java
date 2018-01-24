@@ -150,6 +150,41 @@ public class FFmpegFrameFilter extends FrameFilter {
     Buffer[] image_buf;
     Frame frame;
 
+    @Override public int getImageWidth() {
+        return buffersink_ctx != null ? av_buffersink_get_w(buffersink_ctx) : super.getImageWidth();
+    }
+
+    @Override public int getImageHeight() {
+        return buffersink_ctx != null ? av_buffersink_get_h(buffersink_ctx) : super.getImageHeight();
+    }
+
+    @Override public int getPixelFormat() {
+        return buffersink_ctx != null ? av_buffersink_get_format(buffersink_ctx) : super.getPixelFormat();
+    }
+
+    @Override public double getFrameRate() {
+        if (buffersink_ctx != null) {
+            AVRational r = av_buffersink_get_frame_rate(buffersink_ctx);
+            if (r.num() == 0 && r.den() == 0) {
+                r = av_buffersink_get_time_base(buffersink_ctx);
+                return (double)r.den() / r.num();
+            }
+            return (double)r.num() / r.den();
+        } else {
+            return super.getFrameRate();
+        }
+    }
+
+    @Override public double getAspectRatio() {
+        if (buffersink_ctx != null) {
+            AVRational r = av_buffersink_get_sample_aspect_ratio(buffersink_ctx);
+            double a = (double)r.num() / r.den();
+            return a == 0.0 ? 1.0 : a;
+        } else {
+            return super.getAspectRatio();
+        }
+    }
+
     public void start() throws Exception {
         synchronized (org.bytedeco.javacpp.avfilter.class) {
             startUnsafe();
