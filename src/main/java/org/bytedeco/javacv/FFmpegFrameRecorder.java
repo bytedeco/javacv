@@ -825,7 +825,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (oc != null) {
             try {
                 synchronized (oc) {
-                   /* flush all the buffers */
+                    /* flush all the buffers */
                     while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
                     while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
 
@@ -972,15 +972,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
-        
+
         if (samples == null) {
-        	// Tipically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
-        	double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
-        	recordFrameSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));
-        	
-        	return record((AVFrame)null);
+            // Typically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
+            double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
+            writeSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));
+            return record((AVFrame)null);
         }
-        
+
         int ret;
 
         if (sampleRate <= 0) {
@@ -1095,34 +1094,32 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             if (samples == null || samples_out[0].position() >= samples_out[0].limit()) {
-            	recordFrameSamples(audio_input_frame_size);
-
+                writeSamples(audio_input_frame_size);
             }
         }
         return samples != null ? frame.key_frame() != 0 : record((AVFrame)null);
     }
-    
-    private void recordFrameSamples(int nb_samples) throws Exception {
-    	if (samples_out == null || samples_out.length == 0) {
-    		return;
-    	}
-    	
-    	frame.nb_samples(nb_samples);
+
+    private void writeSamples(int nb_samples) throws Exception {
+        if (samples_out == null || samples_out.length == 0) {
+            return;
+        }
+
+        frame.nb_samples(nb_samples);
         avcodec_fill_audio_frame(frame, audio_c.channels(), audio_c.sample_fmt(), samples_out[0], (int)samples_out[0].position(), 0);
         for (int i = 0; i < samples_out.length; i++) {
-        	int linesize = 0;
-        	if (samples_out[0].position() > 0 && samples_out[0].position() < samples_out[0].limit()) {
-        		linesize = (int)samples_out[i].position();
-        	} else {
-        		linesize = (int)Math.min(samples_out[i].limit(), Integer.MAX_VALUE);
-        	}
-        	
+            int linesize = 0;
+            if (samples_out[0].position() > 0 && samples_out[0].position() < samples_out[0].limit()) {
+                linesize = (int)samples_out[i].position();
+            } else {
+                linesize = (int)Math.min(samples_out[i].limit(), Integer.MAX_VALUE);
+            }
+
             frame.data(i, samples_out[i].position(0));
             frame.linesize(i, linesize);
         }
         frame.quality(audio_c.global_quality());
         record(frame);
-            
     }
 
     boolean record(AVFrame frame) throws Exception {
