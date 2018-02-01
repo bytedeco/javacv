@@ -1,4 +1,5 @@
 
+ * Fix `FFmpegFrameRecorder` not flushing all audio samples properly ([pull #886](https://github.com/bytedeco/javacv/pull/886))
  * Give access to pixel format, etc for images returned by `FFmpegFrameFilter.pull()` ([issue #887](https://github.com/bytedeco/javacv/issues/887))
 
 ### January 16, 2018 version 1.4

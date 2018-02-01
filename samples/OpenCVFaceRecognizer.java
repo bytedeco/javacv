@@ -4,9 +4,6 @@ import java.nio.IntBuffer;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
 import static org.bytedeco.javacpp.opencv_core.CV_8UC1;
-import static org.bytedeco.javacpp.opencv_face.createFisherFaceRecognizer;
-// import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
-// import static org.bytedeco.javacpp.opencv_face.createLBPHFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 
@@ -14,6 +11,9 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+import org.bytedeco.javacpp.opencv_face.FisherFaceRecognizer;
+import org.bytedeco.javacpp.opencv_face.EigenFaceRecognizer;
+import org.bytedeco.javacpp.opencv_face.LBPHFaceRecognizer;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
 
@@ -77,9 +77,9 @@ public class OpenCVFaceRecognizer {
             counter++;
         }
 
-        FaceRecognizer faceRecognizer = createFisherFaceRecognizer();
-        // FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
-        // FaceRecognizer faceRecognizer = createLBPHFaceRecognizer()
+        FaceRecognizer faceRecognizer = FisherFaceRecognizer.create();
+        // FaceRecognizer faceRecognizer = EigenFaceRecognizer.create();
+        // FaceRecognizer faceRecognizer = LBPHFaceRecognizer.create();
 
         faceRecognizer.train(images, labels);
 
