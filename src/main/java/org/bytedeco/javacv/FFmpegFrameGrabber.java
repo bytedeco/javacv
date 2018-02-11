@@ -475,11 +475,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                to ...666 and the given timestamp has been rounded to ...667
                (or vice versa)
             */
-            int count = 0; // prevent infinite loops with corrupted files
-            while (this.timestamp > timestamp + 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
-                // flush frames if seeking backwards
-            }
-            count = 0;
+            
+            // grab a frame if seeking backwards
+            if (this.timestamp > timestamp + 1) grabFrame(true, true, false, false);
+            
+            int count = 0;
             while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
                 // decode up to the desired frame
             }
@@ -957,7 +957,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     AVRational time_base = video_st.time_base();
                     timestamp = 1000000L * pts * time_base.num() / time_base.den();
                     // best guess, AVCodecContext.frame_number = number of decoded frames...
-                    frameNumber = (int)(timestamp * getFrameRate() / 1000000L);
+                    frameNumber = (int) Math.round(timestamp * getFrameRate() / 1000000L);
                     if (processImage) {
                         processImage();
                     }
