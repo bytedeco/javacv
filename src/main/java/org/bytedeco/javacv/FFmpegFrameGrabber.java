@@ -483,9 +483,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
                 // decode up to the desired frame
             }
-            if (video_c != null) {
-                frameGrabbed = true;
-            }
+            frameGrabbed = true;
         }
     }
     
@@ -681,6 +679,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if ((samples_frame = av_frame_alloc()) == null) {
                 throw new Exception("av_frame_alloc() error: Could not allocate audio frame.");
             }
+
+            samples_ptr = new BytePointer[] { null };
+            samples_buf = new Buffer[] { null };
         }
     }
 
@@ -901,12 +902,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public Frame grabKeyFrame() throws Exception {
         return grabFrame(false, true, true, true);
     }
-    public Frame grabFrame(boolean doAudio, boolean doVideo, boolean processImage, boolean keyFrames) throws Exception {
+    public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames) throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
             return null;
         }
+        boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
+        boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
         frame.keyFrame = false;
         frame.imageWidth = 0;
         frame.imageHeight = 0;
@@ -918,16 +921,22 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.audioChannels = 0;
         frame.samples = null;
         frame.opaque = null;
-        if (doVideo && frameGrabbed) {
-            frameGrabbed = false;
-            if (processImage) {
+        if (doVideo && videoFrameGrabbed) {
+            if (doProcessing) {
                 processImage();
             }
             frame.keyFrame = picture.key_frame() != 0;
-            frame.image = image_buf;
             frame.opaque = picture;
             return frame;
+        } else if (doAudio && audioFrameGrabbed) {
+            if (doProcessing) {
+                processSamples();
+            }
+            frame.keyFrame = samples_frame.key_frame() != 0;
+            frame.opaque = samples_frame;
+            return frame;
         }
+        frameGrabbed = false;
         boolean done = false;
         while (!done) {
             if (pkt2.size() <= 0) {
@@ -958,13 +967,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     timestamp = 1000000L * pts * time_base.num() / time_base.den();
                     // best guess, AVCodecContext.frame_number = number of decoded frames...
                     frameNumber = (int) Math.round(timestamp * getFrameRate() / 1000000L);
-                    if (processImage) {
+                    frame.image = image_buf;
+                    if (doProcessing) {
                         processImage();
                     }
                     done = true;
                     frame.timestamp = timestamp;
                     frame.keyFrame = picture.key_frame() != 0;
-                    frame.image = image_buf;
                     frame.opaque = picture;
                 } else if (pkt.data() == null && pkt.size() == 0) {
                     return null;
@@ -988,8 +997,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         long pts = av_frame_get_best_effort_timestamp(samples_frame);
                         AVRational time_base = audio_st.time_base();
                         timestamp = 1000000L * pts * time_base.num() / time_base.den();
+                        frame.samples = samples_buf;
                         /* if a frame has been decoded, output it */
-                        processSamples();
+                        if (doProcessing) {
+                            processSamples();
+                        }
                         done = true;
                         frame.timestamp = timestamp;
                         frame.keyFrame = samples_frame.key_frame() != 0;
