@@ -25,12 +25,15 @@ package org.bytedeco.javacv;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Random;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
 
+import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avutil.*;
 import static org.junit.Assert.*;
 
@@ -258,5 +261,64 @@ public class FrameGrabberTest {
             }
         }
         assertFalse(failed[0]);
+    }
+
+    @Test public void testFFmpegFrameGrabberSeeking() throws IOException {
+        System.out.println("FFmpegFrameGrabberSeeking");
+
+        File tempFile = new File(Loader.getTempDir(), "test.mp4");
+        tempFile.deleteOnExit();
+
+        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 1024, 768, 2);
+        recorder.setFormat("mp4");
+        recorder.setFrameRate(30);
+        recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
+        recorder.setVideoCodec(AV_CODEC_ID_H264);
+        recorder.setVideoQuality(10);
+        recorder.setSampleRate(48000);
+        recorder.setSampleFormat(AV_SAMPLE_FMT_FLTP);
+        recorder.setAudioCodec(AV_CODEC_ID_AAC);
+        recorder.setAudioQuality(0);
+        recorder.start();
+
+        for (int n = 0; n < 10000; n++) {
+            Frame frame = new Frame(1024, 768, Frame.DEPTH_UBYTE, 3);
+            UByteIndexer frameIdx = frame.createIndexer();
+            for (int i = 0; i < frameIdx.rows(); i++) {
+                for (int j = 0; j < frameIdx.cols(); j++) {
+                    for (int k = 0; k < frameIdx.channels(); k++) {
+                        frameIdx.put(i, j, k, n + i + j + k);
+                    }
+                }
+            }
+            recorder.record(frame);
+        }
+        Frame audioFrame = new Frame();
+        ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
+        audioFrame.sampleRate = 48000;
+        audioFrame.audioChannels = 2;
+        audioFrame.samples = new ShortBuffer[] {audioBuffer};
+        for (int i = 0; i < audioBuffer.capacity(); i++) {
+            audioBuffer.put(i, (short)i);
+        }
+        recorder.record(audioFrame);
+        recorder.stop();
+        recorder.release();
+
+        FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
+        grabber.start();
+        int length = (int)grabber.getLengthInTime() - 1000000;
+
+        Random random = new Random(42);
+        for (int i = 0; i < 1000; i++) {
+            long timestamp = random.nextInt(length);
+            grabber.setTimestamp(timestamp);
+            Frame frame = grabber.grab();
+            long timestamp2 = grabber.getTimestamp();
+            assertTrue(frame.image != null ^ frame.samples != null);
+            System.out.println(timestamp2 + " - " + timestamp + " = " + (timestamp2 - timestamp));
+            assertTrue(timestamp2 >= timestamp && timestamp2 < timestamp + 1000000);
+        }
+        grabber.stop();
     }
 }
