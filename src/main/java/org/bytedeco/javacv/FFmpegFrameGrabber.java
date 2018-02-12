@@ -488,11 +488,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
         }
     }
-
-    /** Returns {@code getLengthInTime() * getFrameRate() / 1000000L)}, which is an approximation in general. */
+    
+    /** Returns {@code (int) Math.round(getLengthInTime() * getFrameRate() / 1000000L)}, which is an approximation in general. */
     @Override public int getLengthInFrames() {
         // best guess...
-        return (int)(getLengthInTime() * getFrameRate() / 1000000L);
+        return (int) Math.round(getLengthInTime() * getFrameRate() / 1000000L);
     }
     @Override public long getLengthInTime() {
         return oc.duration() * 1000000L / AV_TIME_BASE;
