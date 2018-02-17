@@ -318,6 +318,30 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private boolean         frameGrabbed;
     private Frame           frame;
 
+    /**
+     * Print detailed information about the file format onto standard error 
+     * (is_output = 0) or standard output (is_output = 1)
+     */
+    public void printFormatInfo(int is_output) {
+    	av_dump_format(oc, 0, filename, is_output);
+    }
+    
+    /**
+     * Is there a video stream?
+     * @return  {@code video_st!=null;}
+     */
+    public boolean hasVideo() {
+    	return video_st!=null;
+    }
+    
+    /**
+     * Is there an audio stream?
+     * @return  {@code audio_st!=null;}
+     */
+    public boolean hasAudio() {
+    	return audio_st!=null;
+    }
+    
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
         if (gamma == 0.0) {
@@ -469,21 +493,61 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 pkt2.size(0);
                 av_packet_unref(pkt);
             }
-            /* comparing to timestamp +/- 1 avoids rouding issues for framerates
-               which are no proper divisors of 1000000, e.g. where
-               av_frame_get_best_effort_timestamp in grabFrame sets this.timestamp
-               to ...666 and the given timestamp has been rounded to ...667
-               (or vice versa)
+            /* 	After the call of ffmpeg's avformat_seek_file(...) with the flag set to AVSEEK_FLAG_BACKWARD
+             * the decoding position should be located before the requested timestamp in a closest position 
+             * from which all the active streams can be decoded successfully.
+             * The following seeking consists of two stages:
+             * 1. Grab frames till the frame corresponding to that "closest" position 
+             * (the first frame containing decoded data). If there is a video stream - only video frames 
+             * will be checked, otherwise audio frames will be used to seek
+             * 2. Grab frames till the desired timestamp is reached. The number of steps is restricted 
+             * by doubled estimation of frames between that "closest" position and the desired position.
+             * Again, only video frames are checked in steps if there is a video stream, otherwise audio
+             * is used. 
+             * 
+             * TODO
+             *  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
+             *  the desired but few frames after.... What can be a the solution in this case if we realy need 
+             *  a frame-precision seek? Probably we may try to request even earlier timestamp and look if this 
+             *  will bring us before the desired position.
+             * 
             */
             
-            // grab a frame if seeking backwards
-            if (this.timestamp > timestamp + 1) grabFrame(true, true, false, false);
+            boolean has_video = hasVideo();
+            boolean has_audio = hasAudio();
             
-            int count = 0;
-            while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
-                // decode up to the desired frame
+            if (has_video || has_audio) {
+            	long initialSeekPosition = Long.MIN_VALUE;
+            	Frame seekFrame = null;
+            	int count = 0;
+            	while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)  
+            		seekFrame = grabFrame(true, true, false, false);
+            		if (seekFrame == null) return; //may be better to throw new Exception?
+            		if ((has_video && seekFrame.image!=null) || //seek by audio frames if and only there is no video stream
+            				(!has_video && seekFrame.samples!=null)) { 
+            			initialSeekPosition = seekFrame.timestamp;  
+            			//the position closest to the requested timestamp from which it can be reached by sequential grabFrame calls
+            			break;
+            		}
+            	}
+            	//estimation of frame duration
+            	int deltaTimeStamp = (int) (1000000/this.getFrameRate()); 
+            	//restriction for the number of grabFrame calls to reach the requested timestamp 
+            	int maxSeekSteps = initialSeekPosition > timestamp - deltaTimeStamp/2? 0: 
+            		(int)(2*(timestamp - initialSeekPosition)/deltaTimeStamp);
+            	
+            	count = 0;
+                while(count < maxSeekSteps) {
+                	seekFrame = grabFrame(true, true, false, false);
+            		if (seekFrame == null) return; //may be better to throw new Exception?
+            		if ((has_video && seekFrame.image!=null) || //seek by audio frames if and only there is no video stream
+            				(!has_video && seekFrame.samples!=null)) { 
+            			count++;
+            			if (this.timestamp >= timestamp - 1) break;
+            		}
+            	}
+                frameGrabbed = true;
             }
-            frameGrabbed = true;
         }
     }
     
@@ -593,9 +657,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (video_st == null && par.codec_type() == AVMEDIA_TYPE_VIDEO && (videoStream < 0 || videoStream == i)) {
                 video_st = st;
                 video_par = par;
+                videoStream = i;
             } else if (audio_st == null && par.codec_type() == AVMEDIA_TYPE_AUDIO && (audioStream < 0 || audioStream == i)) {
                 audio_st = st;
                 audio_par = par;
+                audioStream = i;
             }
         }
         if (video_st == null && audio_st == null) {
@@ -927,6 +993,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = picture.key_frame() != 0;
             frame.opaque = picture;
+            frameGrabbed = false;
             return frame;
         } else if (doAudio && audioFrameGrabbed) {
             if (doProcessing) {
@@ -934,9 +1001,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
             frame.opaque = samples_frame;
+            frameGrabbed = false;
             return frame;
         }
-        frameGrabbed = false;
+        
         boolean done = false;
         while (!done) {
             if (pkt2.size() <= 0) {

@@ -44,7 +44,8 @@ import static org.junit.Assert.*;
  */
 public class FrameGrabberTest {
 
-    @Test public void testFFmpegFrameGrabber() {
+    @Test 
+    public void testFFmpegFrameGrabber() {
         System.out.println("FFmpegFrameGrabber");
 
         File tempFile = new File(Loader.getTempDir(), "test.mkv");
@@ -263,13 +264,14 @@ public class FrameGrabberTest {
         assertFalse(failed[0]);
     }
 
-    @Test public void testFFmpegFrameGrabberSeeking() throws IOException {
+    @Test 
+    public void testFFmpegFrameGrabberSeeking() throws IOException {
         System.out.println("FFmpegFrameGrabberSeeking");
 
         File tempFile = new File(Loader.getTempDir(), "test.mp4");
         tempFile.deleteOnExit();
 
-        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 1024, 768, 2);
+        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 640, 480, 2);
         recorder.setFormat("mp4");
         recorder.setFrameRate(30);
         recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
@@ -307,17 +309,19 @@ public class FrameGrabberTest {
 
         FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
         grabber.start();
-        int length = (int)grabber.getLengthInTime() - 1000000;
-
-        Random random = new Random(42);
-        for (int i = 0; i < 1000; i++) {
-            long timestamp = random.nextInt(length);
+        long length = grabber.getLengthInTime() - 1000000L;
+        int maxframe = (int) (length*grabber.getFrameRate()/1000000L);
+        
+        Random random = new Random();
+        for (int i = 0; i < 100; i++) {
+        	int framenum = random.nextInt(maxframe);
+            long timestamp = Math.round(framenum*1000000.0/grabber.getFrameRate());
             grabber.setTimestamp(timestamp);
             Frame frame = grabber.grab();
             long timestamp2 = grabber.getTimestamp();
             assertTrue(frame.image != null ^ frame.samples != null);
-            System.out.println(timestamp2 + " - " + timestamp + " = " + (timestamp2 - timestamp));
-            assertTrue(timestamp2 >= timestamp && timestamp2 < timestamp + 1000000);
+            System.out.println(timestamp2 + " - " + timestamp + " = " + (timestamp2 - timestamp) + " ("+(long)((timestamp2 - timestamp)*grabber.getFrameRate()/1000000L)+" frames)");
+            assertTrue(Math.abs(timestamp2-timestamp) < 1000000);
         }
         grabber.stop();
     }
