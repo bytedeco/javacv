@@ -37,7 +37,6 @@ import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avutil.*;
 import static org.junit.Assert.*;
 
-import java.nio.file.Files;
 
 /**
  * Test cases for FrameGrabber classes. Also uses other classes from JavaCV.
@@ -46,7 +45,7 @@ import java.nio.file.Files;
  */
 public class FrameGrabberTest {
 
-	//@Test 
+	@Test 
 	public void testFFmpegFrameGrabber() {
 		System.out.println("FFmpegFrameGrabber");
 
@@ -130,7 +129,7 @@ public class FrameGrabberTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testFFmpegFrameGrabberLockingTest() {
 		final boolean[] failed = {false};
 		final int numberOfInstances = 20;
