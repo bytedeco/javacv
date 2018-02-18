@@ -993,6 +993,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = picture.key_frame() != 0;
             frame.opaque = picture;
+            frameGrabbed = false;
             return frame;
         } else if (doAudio && audioFrameGrabbed) {
             if (doProcessing) {
@@ -1000,9 +1001,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
             frame.opaque = samples_frame;
+            frameGrabbed = false;
             return frame;
         }
-        frameGrabbed = false;
+        
         boolean done = false;
         while (!done) {
             if (pkt2.size() <= 0) {
