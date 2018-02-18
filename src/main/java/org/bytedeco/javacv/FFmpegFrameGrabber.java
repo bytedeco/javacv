@@ -318,13 +318,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private boolean         frameGrabbed;
     private Frame           frame;
 
-    /**
-     * Print detailed information about the file format onto standard error 
-     * (is_output = 0) or standard output (is_output = 1)
-     */
-    public void printFormatInfo(int is_output) {
-    	av_dump_format(oc, 0, filename, is_output);
-    }
     
     /**
      * Is there a video stream?
@@ -518,8 +511,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             
             if (has_video || has_audio) {
             	long initialSeekPosition = Long.MIN_VALUE;
+            	long maxSeekSteps = 0;
+            	long count = 0;
             	Frame seekFrame = null;
-            	int count = 0;
+            	
             	while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)  
             		seekFrame = grabFrame(true, true, false, false);
             		if (seekFrame == null) return; //may be better to throw new Exception?
@@ -530,15 +525,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             			break;
             		}
             	}
-            	//estimation of frame duration
-            	int deltaTimeStamp = (int) (1000000/this.getFrameRate()); 
-            	//restriction for the number of grabFrame calls to reach the requested timestamp 
-            	int maxSeekSteps = initialSeekPosition > timestamp - deltaTimeStamp/2? 0: 
-            		(int)(2*(timestamp - initialSeekPosition)/deltaTimeStamp);
-            	
+            	if (has_video && this.getFrameRate() > 0) {
+            		//estimation of video frame duration
+            		double deltaTimeStamp = 1000000.0/this.getFrameRate(); 
+            		if (initialSeekPosition < timestamp - deltaTimeStamp/2)
+            			maxSeekSteps = (long)(2*(timestamp - initialSeekPosition)/deltaTimeStamp);
+            	} else {
+            		//zero frameRate or audio only
+            		if (initialSeekPosition < timestamp - 1L) maxSeekSteps = 1000;
+            	}
             	count = 0;
                 while(count < maxSeekSteps) {
-                	seekFrame = grabFrame(true, true, false, false);
+            		seekFrame = grabFrame(true, true, false, false);
+            		
             		if (seekFrame == null) return; //may be better to throw new Exception?
             		if ((has_video && seekFrame.image!=null) || //seek by audio frames if and only there is no video stream
             				(!has_video && seekFrame.samples!=null)) { 
@@ -546,6 +545,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             			if (this.timestamp >= timestamp - 1) break;
             		}
             	}
+                
                 frameGrabbed = true;
             }
         }
@@ -993,7 +993,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = picture.key_frame() != 0;
             frame.opaque = picture;
-            frameGrabbed = false;
             return frame;
         } else if (doAudio && audioFrameGrabbed) {
             if (doProcessing) {
@@ -1001,10 +1000,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
             frame.opaque = samples_frame;
-            frameGrabbed = false;
             return frame;
         }
-        
+        frameGrabbed = false;
         boolean done = false;
         while (!done) {
             if (pkt2.size() <= 0) {
