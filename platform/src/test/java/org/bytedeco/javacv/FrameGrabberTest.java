@@ -339,11 +339,15 @@ public class FrameGrabberTest {
 				System.out.println(timestamp2 + " - " + timestamp + " = " + delta );
 				assertTrue(Math.abs(delta)<1000000);
         if (seektestnum==0) {
+            boolean wasVideo = frame.image != null;
+            boolean wasAudio = frame.samples != null;
             Frame frame2 = grabber.grab();
-            while ((frame.image == null && frame2.samples == null)
-                    || (frame.samples == null && frame2.image == null)) {
+            while ((wasVideo && frame2.image != null)
+                    || (wasAudio && frame2.samples != null)) {
                 frame2 = grabber.grab();
             }
+            assertTrue(wasVideo ^ frame2.image != null);
+            assertTrue(wasAudio ^ frame2.samples != null);
             long timestamp3 = grabber.getTimestamp();
             System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
             assertTrue(timestamp3 >= timestamp - 10000000 && timestamp3 < timestamp + 1000000);
