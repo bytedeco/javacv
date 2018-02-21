@@ -139,6 +139,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
             if (frameRate == 0) {
                 frameRate = DEFAULT_COLOR_FRAMERATE;
             }
+            device.enable_stream(RealSense.color, imageWidth, imageHeight, RealSense.rgb8, (int) frameRate);
             colorEnabled = true;
         }
     }
@@ -152,7 +153,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     public void enableDepthStream() {
         if (!depthEnabled) {
-
+            device.enable_stream(RealSense.depth, depthImageWidth, depthImageHeight, RealSense.z16, depthFrameRate);
             depthEnabled = true;
         }
     }
@@ -166,7 +167,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     public void enableIRStream() {
         if (!IREnabled) {
-
+            device.enable_stream(RealSense.infrared, IRImageWidth, IRImageHeight, RealSense.y8, IRFrameRate);
             IREnabled = true;
         }
     }
