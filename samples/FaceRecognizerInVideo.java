@@ -35,8 +35,8 @@ public class FaceRecognizerInVideo {
 
         CascadeClassifier face_cascade = new CascadeClassifier(
                 "data\\haarcascade_frontalface_default.xml");
-        FaceRecognizer lbphFaceRecognizer = createLBPHFaceRecognizer();
-        lbphFaceRecognizer.load(trainedResult);
+        FaceRecognizer lbphFaceRecognizer = LBPHFaceRecognizer.create();
+        lbphFaceRecognizer.read(trainedResult);
 
         File f = new File(videoFileName);
 

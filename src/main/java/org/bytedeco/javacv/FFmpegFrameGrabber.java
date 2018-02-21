@@ -976,6 +976,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
         boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
         boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
+        frameGrabbed = false;
         frame.keyFrame = false;
         frame.imageWidth = 0;
         frame.imageHeight = 0;
@@ -993,7 +994,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = picture.key_frame() != 0;
             frame.opaque = picture;
-            frameGrabbed = false;
             return frame;
         } else if (doAudio && audioFrameGrabbed) {
             if (doProcessing) {
@@ -1001,10 +1001,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
             frame.opaque = samples_frame;
-            frameGrabbed = false;
             return frame;
         }
-        
         boolean done = false;
         while (!done) {
             if (pkt2.size() <= 0) {
