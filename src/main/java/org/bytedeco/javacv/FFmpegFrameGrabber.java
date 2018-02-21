@@ -910,6 +910,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
         boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
         boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
+        frameGrabbed = false;
         frame.keyFrame = false;
         frame.imageWidth = 0;
         frame.imageHeight = 0;
@@ -936,7 +937,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             frame.opaque = samples_frame;
             return frame;
         }
-        frameGrabbed = false;
         boolean done = false;
         while (!done) {
             if (pkt2.size() <= 0) {

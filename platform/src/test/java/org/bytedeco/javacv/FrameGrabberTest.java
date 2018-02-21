@@ -269,7 +269,7 @@ public class FrameGrabberTest {
         File tempFile = new File(Loader.getTempDir(), "test.mp4");
         tempFile.deleteOnExit();
 
-        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 1024, 768, 2);
+        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 640, 480, 2);
         recorder.setFormat("mp4");
         recorder.setFrameRate(30);
         recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
@@ -282,7 +282,7 @@ public class FrameGrabberTest {
         recorder.start();
 
         for (int n = 0; n < 10000; n++) {
-            Frame frame = new Frame(1024, 768, Frame.DEPTH_UBYTE, 3);
+            Frame frame = new Frame(640, 480, Frame.DEPTH_UBYTE, 3);
             UByteIndexer frameIdx = frame.createIndexer();
             for (int i = 0; i < frameIdx.rows(); i++) {
                 for (int j = 0; j < frameIdx.cols(); j++) {
@@ -292,16 +292,18 @@ public class FrameGrabberTest {
                 }
             }
             recorder.record(frame);
+            if (n == 5000) {
+                Frame audioFrame = new Frame();
+                ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
+                audioFrame.sampleRate = 48000;
+                audioFrame.audioChannels = 2;
+                audioFrame.samples = new ShortBuffer[] {audioBuffer};
+                for (int i = 0; i < audioBuffer.capacity(); i++) {
+                    audioBuffer.put(i, (short)i);
+                }
+                recorder.record(audioFrame);
+            }
         }
-        Frame audioFrame = new Frame();
-        ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
-        audioFrame.sampleRate = 48000;
-        audioFrame.audioChannels = 2;
-        audioFrame.samples = new ShortBuffer[] {audioBuffer};
-        for (int i = 0; i < audioBuffer.capacity(); i++) {
-            audioBuffer.put(i, (short)i);
-        }
-        recorder.record(audioFrame);
         recorder.stop();
         recorder.release();
 
@@ -318,6 +320,15 @@ public class FrameGrabberTest {
             assertTrue(frame.image != null ^ frame.samples != null);
             System.out.println(timestamp2 + " - " + timestamp + " = " + (timestamp2 - timestamp));
             assertTrue(timestamp2 >= timestamp && timestamp2 < timestamp + 1000000);
+
+            Frame frame2 = grabber.grab();
+            while ((frame.image == null && frame2.samples == null)
+                    || (frame.samples == null && frame2.image == null)) {
+                frame2 = grabber.grab();
+            }
+            long timestamp3 = grabber.getTimestamp();
+            System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
+            assertTrue(timestamp3 >= timestamp - 10000000 && timestamp3 < timestamp + 1000000);
         }
         grabber.stop();
     }
