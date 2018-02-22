@@ -110,6 +110,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     private static context context = null;
     private int deviceNumber = 0;
     private device device = null;
+    private static device globalDevice = null;
     private boolean depth = false; // default to "video"
     private boolean colorEnabled = false;
     private boolean depthEnabled = false;
@@ -208,7 +209,10 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     private boolean startedOnce = false;
     private boolean behaveAsColorFrameGrabber = false;
 
-    public device loadDevice() throws FrameGrabber.Exception{
+    public device loadDevice() throws FrameGrabber.Exception {
+        if (context == null) {
+            context = new context();
+        }
         if (context == null || context.get_device_count() <= deviceNumber) {
             throw new Exception("FATAL error: Realsense camera: " + deviceNumber + " not connected/found");
         }
@@ -218,12 +222,40 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 
     @Override
     public void start() throws FrameGrabber.Exception {
+
+        // There is already a device, we reboot everything (for Procamcalib).
+        if (globalDevice != null) {
+            globalDevice.close();
+            context.close();
+            globalDevice = null;
+            context = null;
+        }
+
+        if (context == null) {
+            context = new context();
+        }
         if (context == null || context.get_device_count() <= deviceNumber) {
             throw new Exception("FATAL error: Realsense camera: " + deviceNumber + " not connected/found");
         }
 
         if (device == null) {
             device = context.get_device(deviceNumber);
+        }
+        globalDevice = device;
+
+        // Choose the camera to enable by format.
+        if (format != null) {
+            switch (format) {
+                case "rgb":
+                    this.enableColorStream();
+                    break;
+                case "ir":
+                    this.enableIRStream();
+                    break;
+                case "depth":
+                    this.enableDepthStream();
+                    break;
+            }
         }
 
         if (colorEnabled) {
@@ -237,14 +269,10 @@ public class RealSenseFrameGrabber extends FrameGrabber {
         }
         // if no stream is select, just get the color.
         if (!colorEnabled && !IREnabled && !depthEnabled) {
-
-            if (!startedOnce) {
-                enableColorStream();
-                behaveAsColorFrameGrabber = true;
-                this.setImageMode(ImageMode.GRAY);
-            }
+            enableColorStream();
+            device.enable_stream(RealSense.color, imageWidth, imageHeight, RealSense.rgb8, (int) frameRate);
+            behaveAsColorFrameGrabber = true;
         }
-        startedOnce = true;
         device.start();
     }
 
@@ -255,9 +283,9 @@ public class RealSenseFrameGrabber extends FrameGrabber {
     @Override
     public void stop() throws FrameGrabber.Exception {
         device.stop();
-        colorEnabled = false;
-        IREnabled = false;
-        depthEnabled = false;
+//        colorEnabled = false;
+//        IREnabled = false;
+//        depthEnabled = false;
         frameNumber = 0;
     }
     private Pointer rawDepthImageData = new Pointer((Pointer) null),
@@ -295,7 +323,6 @@ public class RealSenseFrameGrabber extends FrameGrabber {
 //            ShortBuffer out = bb.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
 //            out.put(in);
 //        }
-
         return rawDepthImage;
     }
 
@@ -384,7 +411,25 @@ public class RealSenseFrameGrabber extends FrameGrabber {
             }
             cvCvtColor(image, returnImage, CV_BGR2GRAY);
             return converter.convert(returnImage);
+        } else {
+            if (IREnabled) {
+                return converter.convert(grabIR());
+            } else {
+                if (depthEnabled) {
+                    
+                    // Fake colors
+                    IplImage image = grabDepth();
+                    if (returnImage == null) {
+                        int deviceWidth = device.get_stream_width(RealSense.depth);
+                        int deviceHeight = device.get_stream_height(RealSense.depth);
+//                returnImage = IplImage.create(deviceWidth, deviceHeight, IPL_DEPTH_8U, 3);
+                        returnImage = IplImage.create(deviceWidth, deviceHeight, IPL_DEPTH_8U, 1);
+                    } 
+                    return converter.convert(returnImage);
+                }
+            }
         }
+
         return null;
     }
 
