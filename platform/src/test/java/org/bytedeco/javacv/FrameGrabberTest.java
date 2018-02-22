@@ -308,6 +308,16 @@ public class FrameGrabberTest {
 				    recorder.record(audioFrame);
 			    }
 				}
+			} else {
+				Frame audioFrame = new Frame();
+			    ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
+			    audioFrame.sampleRate = 48000;
+			    audioFrame.audioChannels = 2;
+			    audioFrame.samples = new ShortBuffer[] {audioBuffer};
+			    for (int i = 0; i < audioBuffer.capacity(); i++) {
+				    audioBuffer.put(i, (short)i);
+			    }
+			    recorder.record(audioFrame);
 			}
 			recorder.stop();
 			recorder.release();
@@ -326,6 +336,7 @@ public class FrameGrabberTest {
 			System.out.println("Framerate = "+grabber.getFrameRate());
 			System.out.println();
 			System.out.println("has video stream = "+(grabber.hasVideo()?"YES":"NO")+", has audio stream = "+(grabber.hasAudio()?"YES":"NO"));
+			long tolerance = 1000000L + (grabber.getFrameRate() > 0.0? (long) (2000000/grabber.getFrameRate()):500000L);
 			Random random = new Random();
 			for (int i = 0; i < 200; i++) {
 				long timestamp = random.nextInt(length);
@@ -338,20 +349,20 @@ public class FrameGrabberTest {
 				assertTrue(frame.image != null ^ frame.samples != null);
 				System.out.println(timestamp2 + " - " + timestamp + " = " + delta );
 				assertTrue(Math.abs(delta)<1000000);
-        if (seektestnum==0) {
-            boolean wasVideo = frame.image != null;
-            boolean wasAudio = frame.samples != null;
-            Frame frame2 = grabber.grab();
-            while ((wasVideo && frame2.image != null)
-                    || (wasAudio && frame2.samples != null)) {
-                frame2 = grabber.grab();
-            }
-            assertTrue(wasVideo ^ frame2.image != null);
-            assertTrue(wasAudio ^ frame2.samples != null);
-            long timestamp3 = grabber.getTimestamp();
-            System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
-            assertTrue(timestamp3 >= timestamp - 10000000 && timestamp3 < timestamp + 1000000);
-          }
+				if (seektestnum==0) {
+					boolean wasVideo = frame.image != null;
+					boolean wasAudio = frame.samples != null;
+					Frame frame2 = grabber.grab();
+					while ((wasVideo && frame2.image != null)
+							|| (wasAudio && frame2.samples != null)) {
+						frame2 = grabber.grab();
+					}
+					assertTrue(wasVideo ^ frame2.image != null);
+					assertTrue(wasAudio ^ frame2.samples != null);
+					long timestamp3 = grabber.getTimestamp();
+					System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
+					assertTrue(timestamp3 >= timestamp - tolerance && timestamp3 < timestamp + tolerance);
+				}
 			}
 			grabber.stop();
 			System.out.println();
