@@ -31,6 +31,7 @@ import java.nio.ShortBuffer;
 import java.util.Random;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
+import org.bytedeco.javacv.FFmpegFrameGrabber.FrameTypeToSeek;
 import org.junit.Test;
 
 import static org.bytedeco.javacpp.avcodec.*;
@@ -265,6 +266,27 @@ public class FrameGrabberTest {
 		assertFalse(failed[0]);
 	}
 
+	
+	public static final int FRAME_TYPE_NULL = -1;
+	public static final int FRAME_TYPE_VIDEO = 0;
+	public static final int FRAME_TYPE_AUDIO = 1;
+	public static final int FRAME_TYPE_NONE = 2;
+		
+	public int getFrameType(Frame frame) {
+		return frame == null? FRAME_TYPE_NULL 
+					: frame.image != null? FRAME_TYPE_VIDEO 
+					: frame.samples != null? FRAME_TYPE_AUDIO 
+					: FRAME_TYPE_NONE;
+	}
+		
+	public String frameTypeName(int frameType) {
+		return frameType == FRAME_TYPE_NULL?"null"
+		    		: frameType == FRAME_TYPE_NONE?"none"
+		    		: frameType == FRAME_TYPE_VIDEO?"video"
+		    		: frameType == FRAME_TYPE_AUDIO?"audio"
+		    		: "unknown";
+	}
+	
 	@Test 
 	public void testFFmpegFrameGrabberSeeking() throws IOException {
 		System.out.println("FFmpegFrameGrabberSeeking");
@@ -273,7 +295,9 @@ public class FrameGrabberTest {
 			String fileName = seektestnum==0?"testAV.mp4":seektestnum==1?"testV.mp4":"testA.mp4";
 			File tempFile = new File(Loader.getTempDir(), fileName);
 			tempFile.deleteOnExit();
-			FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 640, 490, 2);
+			FFmpegFrameRecorder recorder = seektestnum == 0? new FFmpegFrameRecorder(tempFile, 640, 480, 2) 
+										 : seektestnum == 1? new FFmpegFrameRecorder(tempFile, 640, 480, 0)
+										 : new FFmpegFrameRecorder(tempFile, 0, 0, 2);
 			recorder.setFormat("mp4");
 			recorder.setFrameRate(30);
 			recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
@@ -286,7 +310,7 @@ public class FrameGrabberTest {
 			recorder.start();
 			if (seektestnum!=2) {
 				for (int n = 0; n < 10000; n++) {
-					Frame frame = new Frame(1024, 768, Frame.DEPTH_UBYTE, 3);
+					Frame frame = new Frame(640, 480, Frame.DEPTH_UBYTE, 3);
 					UByteIndexer frameIdx = frame.createIndexer();
 					for (int i = 0; i < frameIdx.rows(); i++) {
 						for (int j = 0; j < frameIdx.cols(); j++) {
@@ -296,17 +320,17 @@ public class FrameGrabberTest {
 						}
 					}
 					recorder.record(frame);
-			    if (n == 5000 && seektestnum!=1){
-				    Frame audioFrame = new Frame();
-				    ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
-				    audioFrame.sampleRate = 48000;
-				    audioFrame.audioChannels = 2;
-				    audioFrame.samples = new ShortBuffer[] {audioBuffer};
-				    for (int i = 0; i < audioBuffer.capacity(); i++) {
-					    audioBuffer.put(i, (short)i);
-				    }
-				    recorder.record(audioFrame);
-			    }
+					if (n == 5000 && seektestnum!=1){
+						Frame audioFrame = new Frame();
+						ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
+						audioFrame.sampleRate = 48000;
+						audioFrame.audioChannels = 2;
+						audioFrame.samples = new ShortBuffer[] {audioBuffer};
+						for (int i = 0; i < audioBuffer.capacity(); i++) {
+							audioBuffer.put(i, (short)i);
+						}
+						recorder.record(audioFrame);
+					}
 				}
 			} else {
 				Frame audioFrame = new Frame();
@@ -325,8 +349,7 @@ public class FrameGrabberTest {
 			FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
 			grabber.start();
 			int length = (int) ( grabber.getLengthInTime() - 1000000L);
-			long mindelta = Long.MAX_VALUE;
-			long maxdelta = Long.MIN_VALUE;
+			
 			
 			System.out.println();
 			System.out.println("Seek in file containing "+(seektestnum==0?"video and audio":seektestnum==1?"video only":"audio only"));
@@ -338,37 +361,119 @@ public class FrameGrabberTest {
 			System.out.println("has video stream = "+(grabber.hasVideo()?"YES":"NO")+", has audio stream = "+(grabber.hasAudio()?"YES":"NO"));
 			long tolerance = 1000000L + (grabber.getFrameRate() > 0.0? (long) (2000000/grabber.getFrameRate()):500000L);
 			Random random = new Random();
-			for (int i = 0; i < 200; i++) {
-				long timestamp = random.nextInt(length);
-				grabber.setTimestamp(timestamp);
-				Frame frame = grabber.grab();
-				long timestamp2 = grabber.getTimestamp();
-				long delta = timestamp2 - timestamp;
-				if (delta > maxdelta) maxdelta = delta;
-				if (delta < mindelta) mindelta = delta;
-				assertTrue(frame.image != null ^ frame.samples != null);
-				System.out.println(timestamp2 + " - " + timestamp + " = " + delta );
-				assertTrue(Math.abs(delta)<1000000);
-				if (seektestnum==0) {
-					boolean wasVideo = frame.image != null;
-					boolean wasAudio = frame.samples != null;
-					Frame frame2 = grabber.grab();
-					while ((wasVideo && frame2.image != null)
-							|| (wasAudio && frame2.samples != null)) {
-						frame2 = grabber.grab();
+			
+			for (FrameTypeToSeek frameTypeToSeek : FrameTypeToSeek.values()) {
+
+				long mindelta = Long.MAX_VALUE;
+				long maxdelta = Long.MIN_VALUE;
+				System.out.println();
+				System.out.println("Seek by " +frameTypeToSeek+ " frames");
+				System.out.println("--------------------");
+				for (int i = 0; i < 200; i++) {
+					long timestamp = random.nextInt(length);
+					switch (frameTypeToSeek) {
+					case ANY:
+						grabber.setTimestamp(timestamp);
+						break;
+					case VIDEO:
+						grabber.setVideoTimestamp(timestamp);
+						break;
+					case AUDIO:
+						grabber.setAudioTimestamp(timestamp);
+						break;
 					}
-					assertTrue(wasVideo ^ frame2.image != null);
-					assertTrue(wasAudio ^ frame2.samples != null);
-					long timestamp3 = grabber.getTimestamp();
-					System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
-					assertTrue(timestamp3 >= timestamp - tolerance && timestamp3 < timestamp + tolerance);
+
+					Frame frame = grabber.grab();
+					long timestamp2 = grabber.getTimestamp();
+					long delta = timestamp2 - timestamp;
+					if (delta > maxdelta) maxdelta = delta;
+					if (delta < mindelta) mindelta = delta;
+					assertTrue(frame.image != null ^ frame.samples != null);
+					System.out.println(timestamp2 + " - " + timestamp + " = " + delta + " type: "+frameTypeName(getFrameType(frame)));
+					assertTrue(Math.abs(delta) < tolerance);
+					if (seektestnum==0) {
+						boolean wasVideo = frame.image != null;
+						boolean wasAudio = frame.samples != null;
+						Frame frame2 = grabber.grab();
+						while ((wasVideo && frame2.image != null)
+								|| (wasAudio && frame2.samples != null)) {
+							frame2 = grabber.grab();
+						}
+						assertTrue(wasVideo ^ frame2.image != null);
+						assertTrue(wasAudio ^ frame2.samples != null);
+						long timestamp3 = grabber.getTimestamp();
+						System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
+						assertTrue(timestamp3 >= timestamp - tolerance && timestamp3 < timestamp + tolerance);
+					}
+				}
+				System.out.println();
+				System.out.println("------------------------------------");
+				System.out.println("delta from " + mindelta + " to " + maxdelta);
+				System.out.println();
+			}
+			if (seektestnum==2) {
+				
+				long count1 = 0;
+				
+				long duration = grabber.getLengthInTime();
+				
+				System.out.println();
+				System.out.println("======== Check seeking in audio ========");
+				System.out.println("FrameRate = "+grabber.getFrameRate()+" AudioFrameRate = "+grabber.getAudioFrameRate()+", duration = "+duration+" audio frames = "+grabber.getLengthInAudioFrames());
+				
+				
+
+				double deltaTimeStamp=0.0;
+				if (grabber.hasAudio() && grabber.getAudioFrameRate() > 0) {
+            		deltaTimeStamp = 1000000.0/grabber.getAudioFrameRate(); 
+            		
+				}
+				System.out.println("AudioFrameDuration = "+deltaTimeStamp);
+//				boolean printed = false;
+//				long ts;
+//				long count2 = 0;
+//				long count3 = 0;
+//				grabber.restart();
+//				do {
+//					Frame frame=grabber.grab();
+//					if (frame!=null) {
+//						count1++;
+//						if (frame.samples!=null) count2++;
+//					}
+//					else count3++;
+//					ts = grabber.getTimestamp();
+//					
+//					if ((20L*ts/duration)%2==0) {
+//						if (!printed){
+//							System.out.println("ts = "+ts+" not null frames = "+count1+" containing samples = "+count2+" null frames = "+count3);
+//							printed=true;
+//						} else printed = false;
+//						
+//					}
+//				} while (count1<grabber.getLengthInAudioFrames()-1);
+//				
+//				System.out.println("not null frames = "+count1+" containing samples = "+count2+" null frames = "+count3);
+				
+				System.out.println();
+				System.out.println("======== Check setAudioFrameNumber ========");
+				count1=0;
+				
+				while (count1++<1000) {
+					int audioFrameToSeek = random.nextInt(grabber.getLengthInAudioFrames()-100);
+					grabber.setAudioFrameNumber(audioFrameToSeek);
+					Frame setFrame = grabber.grabSamples();
+					if (setFrame == null) {
+						System.out.println("null farame after seek to audio frame");
+					} else {
+						long audioTs = grabber.getTimestamp();
+						System.out.println("audioFrame # "+audioFrameToSeek+", timeStamp = "+audioTs+", difference = "+(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek));
+						assertTrue(Math.abs(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek)<10);
+					}
 				}
 			}
 			grabber.stop();
 			System.out.println();
 			System.out.println("======= seek in " +fileName+" is finished ===========" );
-			System.out.println("delta from " + mindelta + " to " + maxdelta);
-			System.out.println();
 		}
 
 	}
