@@ -494,16 +494,23 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        setVideoTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        // default override of super.setFrameNumber implies setting 
+    	// of a video frame having that number
+    	setVideoFrameNumber(frameNumber);
+    }
+    
+    public void setVideoFrameNumber(int frameNumber) throws Exception {
+    	//if there is audio stream tries to seek to audio frame with corresponding timestamp
+    	//otherwise sets super.frameNumber only because frameRate=0 without video stream
+    	if (hasVideo()) setVideoTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+    	else super.frameNumber = frameNumber;
     }
     
     public void setAudioFrameNumber(int frameNumber) throws Exception {
     	//if there is audio stream tries to seek to audio frame with corresponding timestamp
-    	//otherwise seek to the beginning of video
-    	this.getLengthInFrames();
+    	//ignoring otherwise
         if (hasAudio()) setAudioTimestamp(Math.round(1000000L * frameNumber / getAudioFrameRate()));
-        else setFrameNumber(0);
+        
     }
 
     @Override public void setTimestamp(long timestamp) throws Exception {
@@ -522,9 +529,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
     
     /* setTimestamp with a priority the resulting frame should be:
-     *  video (frameType=1), 
-     *  audio (frameType=2), 
-     *  or it does not matter (frameType=0)   
+     *  video (frameType=FrameTypeToSeek.VIDEO), 
+     *  audio (frameType=FrameTypeToSeek.AUDIO), 
+     *  or any (frameType=FrameTypeToSeek.ANY)   
      */
     private void setTimestamp(long timestamp, FrameTypeToSeek frameTypeToSeek) throws Exception {
         int ret;
