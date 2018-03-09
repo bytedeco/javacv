@@ -359,7 +359,7 @@ public class FrameGrabberTest {
 			System.out.println("Framerate = "+grabber.getFrameRate());
 			System.out.println();
 			System.out.println("has video stream = "+(grabber.hasVideo()?"YES":"NO")+", has audio stream = "+(grabber.hasAudio()?"YES":"NO"));
-			long tolerance = 1000000L + (grabber.getFrameRate() > 0.0? (long) (2000000/grabber.getFrameRate()):500000L);
+			long tolerance = 1000000L + (grabber.getFrameRate() > 0.0? (long) (5000000/grabber.getFrameRate()):500000L);
 			Random random = new Random();
 			
 			for (FrameTypeToSeek frameTypeToSeek : FrameTypeToSeek.values()) {
