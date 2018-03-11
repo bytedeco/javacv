@@ -318,34 +318,34 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private boolean         frameGrabbed;
     private Frame           frame;
     public static enum FrameTypeToSeek {
-    	ANY((byte)255),
-    	VIDEO((byte)1),
-    	AUDIO((byte)(1<<1));
-    	private FrameTypeToSeek(byte b) {
-    		mask = b;
-    	}
-    	public final boolean includes(FrameTypeToSeek f) {
-    		return (this.mask & f.mask) == f.mask;
-    	}
-    	private final byte mask;
+        ANY((byte)255),
+        VIDEO((byte)1),
+        AUDIO((byte)(1<<1));
+        private FrameTypeToSeek(byte b) {
+            mask = b;
+        }
+        public final boolean includes(FrameTypeToSeek f) {
+            return (this.mask & f.mask) == f.mask;
+        }
+        private final byte mask;
     }
-    
+
     /**
      * Is there a video stream?
      * @return  {@code video_st!=null;}
      */
     public boolean hasVideo() {
-    	return video_st!=null;
+        return video_st!=null;
     }
-    
+
     /**
      * Is there an audio stream?
      * @return  {@code audio_st!=null;}
      */
     public boolean hasAudio() {
-    	return audio_st!=null;
+        return audio_st!=null;
     }
-    
+
     @Override public double getGamma() {
         // default to a gamma of 2.2 for cheap Webcams, DV cameras, etc.
         if (gamma == 0.0) {
@@ -408,7 +408,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     /**Estimation of audio frames per second
-     * 
+     *
      * @return (double) getSampleRate()) / samples_frame.nb_samples()
      * if samples_frame.nb_samples() is not zero, otherwise return 0
      */
@@ -416,21 +416,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         if (audio_st == null) {
             return 0.0;
         } else {
-        	if (samples_frame == null || samples_frame.nb_samples() == 0) {
-        		try {
-					grabFrame(true, false, false, false);
-					frameGrabbed = true;
-				} catch (Exception e) {
-					return 0.0;
-				}
-        	}
-        	if (samples_frame != null || samples_frame.nb_samples() != 0)	
-        		return ((double) getSampleRate()) / samples_frame.nb_samples(); 
-        	else return 0.0;
-            
+            if (samples_frame == null || samples_frame.nb_samples() == 0) {
+                try {
+                    grabFrame(true, false, false, false);
+                    frameGrabbed = true;
+                } catch (Exception e) {
+                    return 0.0;
+                }
+            }
+            if (samples_frame != null || samples_frame.nb_samples() != 0)
+                return ((double) getSampleRate()) / samples_frame.nb_samples();
+            else return 0.0;
+
         }
     }
-    
+
     @Override public double getFrameRate() {
         if (video_st == null) {
             return super.getFrameRate();
@@ -494,44 +494,44 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        // default override of super.setFrameNumber implies setting 
-    	// of a video frame having that number
-    	setVideoFrameNumber(frameNumber);
+        // default override of super.setFrameNumber implies setting
+        // of a video frame having that number
+        setVideoFrameNumber(frameNumber);
     }
-    
+
     public void setVideoFrameNumber(int frameNumber) throws Exception {
-    	//if there is audio stream tries to seek to audio frame with corresponding timestamp
-    	//otherwise sets super.frameNumber only because frameRate=0 without video stream
-    	if (hasVideo()) setVideoTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
-    	else super.frameNumber = frameNumber;
+        //if there is audio stream tries to seek to audio frame with corresponding timestamp
+        //otherwise sets super.frameNumber only because frameRate=0 without video stream
+        if (hasVideo()) setVideoTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        else super.frameNumber = frameNumber;
     }
-    
+
     public void setAudioFrameNumber(int frameNumber) throws Exception {
-    	//if there is audio stream tries to seek to audio frame with corresponding timestamp
-    	//ignoring otherwise
+        //if there is audio stream tries to seek to audio frame with corresponding timestamp
+        //ignoring otherwise
         if (hasAudio()) setAudioTimestamp(Math.round(1000000L * frameNumber / getAudioFrameRate()));
-        
+
     }
 
     @Override public void setTimestamp(long timestamp) throws Exception {
-    	// setTimestamp with disregard of the resulting frame type, video or audio 
-    	setTimestamp(timestamp, FrameTypeToSeek.ANY);
+        // setTimestamp with disregard of the resulting frame type, video or audio
+        setTimestamp(timestamp, FrameTypeToSeek.ANY);
     }
-    
+
     public void setVideoTimestamp(long timestamp) throws Exception {
-    	// setTimestamp with disregard of the resulting frame type, video or audio 
-    	setTimestamp(timestamp, FrameTypeToSeek.VIDEO);
+        // setTimestamp with disregard of the resulting frame type, video or audio
+        setTimestamp(timestamp, FrameTypeToSeek.VIDEO);
     }
-    
+
     public void setAudioTimestamp(long timestamp) throws Exception {
-    	// setTimestamp with disregard of the resulting frame type, video or audio 
-    	setTimestamp(timestamp, FrameTypeToSeek.AUDIO);
+        // setTimestamp with disregard of the resulting frame type, video or audio
+        setTimestamp(timestamp, FrameTypeToSeek.AUDIO);
     }
-    
+
     /* setTimestamp with a priority the resulting frame should be:
-     *  video (frameType=FrameTypeToSeek.VIDEO), 
-     *  audio (frameType=FrameTypeToSeek.AUDIO), 
-     *  or any (frameType=FrameTypeToSeek.ANY)   
+     *  video (frameType=FrameTypeToSeek.VIDEO),
+     *  audio (frameType=FrameTypeToSeek.AUDIO),
+     *  or any (frameType=FrameTypeToSeek.ANY)
      */
     private void setTimestamp(long timestamp, FrameTypeToSeek frameTypeToSeek) throws Exception {
         int ret;
@@ -556,98 +556,98 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 pkt2.size(0);
                 av_packet_unref(pkt);
             }
-            /* 	After the call of ffmpeg's avformat_seek_file(...) with the flag set to AVSEEK_FLAG_BACKWARD
-             * the decoding position should be located before the requested timestamp in a closest position 
+            /*     After the call of ffmpeg's avformat_seek_file(...) with the flag set to AVSEEK_FLAG_BACKWARD
+             * the decoding position should be located before the requested timestamp in a closest position
              * from which all the active streams can be decoded successfully.
              * The following seeking consists of two stages:
-             * 1. Grab frames till the frame corresponding to that "closest" position 
-             * (the first frame containing decoded data). 
-             * 
-             * 2. Grab frames till the desired timestamp is reached. The number of steps is restricted 
+             * 1. Grab frames till the frame corresponding to that "closest" position
+             * (the first frame containing decoded data).
+             *
+             * 2. Grab frames till the desired timestamp is reached. The number of steps is restricted
              * by doubled estimation of frames between that "closest" position and the desired position.
-             * 
+             *
              * frameTypeToSeek parameter sets the preferred type of frames to seek.
              * It can be chosen from three possible types: VIDEO, AUDIO or ANY.
              * The setting means only a preference in the type. That is, if VIDEO or AUDIO is
              * specified but the file does not have video or audio stream - ANY type will be used instead.
-             *  
-             * 
+             *
+             *
              * TODO
              *  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
-             *  the desired but few frames after.... What can be a the solution in this case if we really need 
-             *  a frame-precision seek? Probably we may try to request even earlier timestamp and look if this 
+             *  the desired but few frames after.... What can be a the solution in this case if we really need
+             *  a frame-precision seek? Probably we may try to request even earlier timestamp and look if this
              *  will bring us before the desired position.
-             * 
+             *
             */
-            
+
             boolean has_video = hasVideo();
             boolean has_audio = hasAudio();
-            
+
             if (has_video || has_audio) {
-            	if ((frameTypeToSeek == FrameTypeToSeek.VIDEO && !has_video ) || 
-            			(frameTypeToSeek == FrameTypeToSeek.AUDIO && !has_audio ))
-            		frameTypeToSeek = FrameTypeToSeek.ANY;
-            	
-            	long initialSeekPosition = Long.MIN_VALUE;
-            	long maxSeekSteps = 0;
-            	long count = 0;
-            	Frame seekFrame = null;
-            	
-            	while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)  
-            		seekFrame = grabFrame(true, true, false, false);
-            		if (seekFrame == null) return; //may be better to throw new Exception?
-            		if ((frameTypeToSeek.includes(FrameTypeToSeek.VIDEO) && seekFrame.image != null) || 
-            				(frameTypeToSeek.includes(FrameTypeToSeek.AUDIO) && seekFrame.samples != null)) { 
-            			initialSeekPosition = seekFrame.timestamp;  
-            			//the position closest to the requested timestamp from which it can be reached by sequential grabFrame calls
-            			break;
-            		}
-            	}
-            	if (has_video && this.getFrameRate() > 0) {
-            		//estimation of video frame duration
-            		double deltaTimeStamp = 1000000.0/this.getFrameRate(); 
-            		if (initialSeekPosition < timestamp - deltaTimeStamp/2)
-            			maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
-            	} else if (has_audio && this.getAudioFrameRate() > 0) {
-            		//estimation of audio frame duration
-            		double deltaTimeStamp = 1000000.0/this.getAudioFrameRate(); 
-                	if (initialSeekPosition < timestamp - deltaTimeStamp/2)
-                		maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
-            	} else
-            		//zero frameRate 
-            		if (initialSeekPosition < timestamp - 1L) maxSeekSteps = 1000;
-            	
-            	count = 0;
+                if ((frameTypeToSeek == FrameTypeToSeek.VIDEO && !has_video ) ||
+                        (frameTypeToSeek == FrameTypeToSeek.AUDIO && !has_audio ))
+                frameTypeToSeek = FrameTypeToSeek.ANY;
+
+                long initialSeekPosition = Long.MIN_VALUE;
+                long maxSeekSteps = 0;
+                long count = 0;
+                Frame seekFrame = null;
+
+                while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)
+                    seekFrame = grabFrame(true, true, false, false);
+                    if (seekFrame == null) return; //may be better to throw new Exception?
+                    if ((frameTypeToSeek.includes(FrameTypeToSeek.VIDEO) && seekFrame.image != null) ||
+                            (frameTypeToSeek.includes(FrameTypeToSeek.AUDIO) && seekFrame.samples != null)) {
+                        initialSeekPosition = seekFrame.timestamp;
+                        //the position closest to the requested timestamp from which it can be reached by sequential grabFrame calls
+                        break;
+                    }
+                }
+                if (has_video && this.getFrameRate() > 0) {
+                    //estimation of video frame duration
+                    double deltaTimeStamp = 1000000.0/this.getFrameRate();
+                    if (initialSeekPosition < timestamp - deltaTimeStamp/2)
+                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
+                } else if (has_audio && this.getAudioFrameRate() > 0) {
+                    //estimation of audio frame duration
+                    double deltaTimeStamp = 1000000.0/this.getAudioFrameRate();
+                    if (initialSeekPosition < timestamp - deltaTimeStamp/2)
+                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
+                } else
+                    //zero frameRate
+                    if (initialSeekPosition < timestamp - 1L) maxSeekSteps = 1000;
+
+                count = 0;
                 while(count < maxSeekSteps) {
-            		seekFrame = grabFrame(true, true, false, false);
-            		
-            		if (seekFrame == null) return; //may be better to throw new Exception?
-            		if ((frameTypeToSeek.includes(FrameTypeToSeek.VIDEO) && seekFrame.image != null) || 
-            				(frameTypeToSeek.includes(FrameTypeToSeek.AUDIO) && seekFrame.samples != null)) { 
-            			count++;
-            			if (this.timestamp >= timestamp - 1) break;
-            		}
-            	}
-                
+                    seekFrame = grabFrame(true, true, false, false);
+
+                    if (seekFrame == null) return; //may be better to throw new Exception?
+                    if ((frameTypeToSeek.includes(FrameTypeToSeek.VIDEO) && seekFrame.image != null) ||
+                            (frameTypeToSeek.includes(FrameTypeToSeek.AUDIO) && seekFrame.samples != null)) {
+                        count++;
+                        if (this.timestamp >= timestamp - 1) break;
+                    }
+                }
+
                 frameGrabbed = true;
             }
         }
     }
-    
+
     /** Returns {@code (int) Math.round(getLengthInTime() * getFrameRate() / 1000000L)}, which is an approximation in general. */
     @Override public int getLengthInFrames() {
         // best guess...
-        return (int) Math.round(getLengthInTime() * getFrameRate() / 1000000L);
+        return (int)Math.round(getLengthInTime() * getFrameRate() / 1000000L);
     }
     @Override public long getLengthInTime() {
         return oc.duration() * 1000000L / AV_TIME_BASE;
     }
-    
+
     public int getLengthInAudioFrames() {
         // best guess...
-    	double afr = getAudioFrameRate();
-    	if (afr > 0) return (int) (getLengthInTime() * afr / 1000000L);
-    	else return 0;
+        double afr = getAudioFrameRate();
+        if (afr > 0) return (int) (getLengthInTime() * afr / 1000000L);
+        else return 0;
     }
 
     public AVFormatContext getFormatContext() {
@@ -880,7 +880,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 assert false;
         }
     }
-    
+
     public void stop() throws Exception {
         release();
     }
@@ -1122,7 +1122,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     AVRational time_base = video_st.time_base();
                     timestamp = 1000000L * pts * time_base.num() / time_base.den();
                     // best guess, AVCodecContext.frame_number = number of decoded frames...
-                    frameNumber = (int) Math.round(timestamp * getFrameRate() / 1000000L);
+                    frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
                     frame.image = image_buf;
                     if (doProcessing) {
                         processImage();
@@ -1176,9 +1176,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     public AVPacket grabPacket() throws Exception {
 
-	if (oc == null || oc.isNull()) {
-	    throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
-	}
+        if (oc == null || oc.isNull()) {
+            throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
+        }
 
 
         // Return the next frame of a stream.
@@ -1186,7 +1186,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return null;
         }
 
-	return pkt;
+        return pkt;
 
     }
 }
