@@ -31,7 +31,6 @@ import java.nio.ShortBuffer;
 import java.util.Random;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
-import org.bytedeco.javacv.FFmpegFrameGrabber.FrameTypeToSeek;
 import org.junit.Test;
 
 import static org.bytedeco.javacpp.avcodec.*;
@@ -267,25 +266,11 @@ public class FrameGrabberTest {
     }
 
 
-    public static final int FRAME_TYPE_NULL = -1;
-    public static final int FRAME_TYPE_VIDEO = 0;
-    public static final int FRAME_TYPE_AUDIO = 1;
-    public static final int FRAME_TYPE_NONE = 2;
-
-    public int getFrameType(Frame frame) {
-        return frame == null? FRAME_TYPE_NULL
-                    : frame.image != null? FRAME_TYPE_VIDEO
-                    : frame.samples != null? FRAME_TYPE_AUDIO
-                    : FRAME_TYPE_NONE;
-    }
-
-    public String frameTypeName(int frameType) {
-        return frameType == FRAME_TYPE_NULL?"null"
-                    : frameType == FRAME_TYPE_NONE?"none"
-                    : frameType == FRAME_TYPE_VIDEO?"video"
-                    : frameType == FRAME_TYPE_AUDIO?"audio"
-                    : "unknown";
-    }
+	public static enum FrameTypeToSeek {
+		VIDEO,
+		AUDIO,
+		ANY;
+	}
 
     @Test
     public void testFFmpegFrameGrabberSeeking() throws IOException {
@@ -389,7 +374,7 @@ public class FrameGrabberTest {
                     if (delta > maxdelta) maxdelta = delta;
                     if (delta < mindelta) mindelta = delta;
                     assertTrue(frame.image != null ^ frame.samples != null);
-                    System.out.println(timestamp2 + " - " + timestamp + " = " + delta + " type: "+frameTypeName(getFrameType(frame)));
+                    System.out.println(timestamp2 + " - " + timestamp + " = " + delta + " type: "+frame.getType());
                     assertTrue(Math.abs(delta) < tolerance);
                     if (seektestnum==0) {
                         boolean wasVideo = frame.image != null;
@@ -429,31 +414,6 @@ public class FrameGrabberTest {
 
                 }
                 System.out.println("AudioFrameDuration = "+deltaTimeStamp);
-//                boolean printed = false;
-//                long ts;
-//                long count2 = 0;
-//                long count3 = 0;
-//                grabber.restart();
-//                do {
-//                    Frame frame=grabber.grab();
-//                    if (frame!=null) {
-//                        count1++;
-//                        if (frame.samples!=null) count2++;
-//                    }
-//                    else count3++;
-//                    ts = grabber.getTimestamp();
-//
-//                    if ((20L*ts/duration)%2==0) {
-//                        if (!printed){
-//                            System.out.println("ts = "+ts+" not null frames = "+count1+" containing samples = "+count2+" null frames = "+count3);
-//                            printed=true;
-//                        } else printed = false;
-//
-//                    }
-//                } while (count1<grabber.getLengthInAudioFrames()-1);
-//
-//                System.out.println("not null frames = "+count1+" containing samples = "+count2+" null frames = "+count3);
-
                 System.out.println();
                 System.out.println("======== Check setAudioFrameNumber ========");
                 count1=0;
@@ -466,7 +426,7 @@ public class FrameGrabberTest {
                         System.out.println("null farame after seek to audio frame");
                     } else {
                         long audioTs = grabber.getTimestamp();
-                        System.out.println("audioFrame # "+audioFrameToSeek+", timeStamp = "+audioTs+", difference = "+(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek));
+                        System.out.println("audioFrame # "+audioFrameToSeek+", timeStamp = "+audioTs+", difference = "+Math.round(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek));
                         assertTrue(Math.abs(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek)<10);
                     }
                 }

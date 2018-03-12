@@ -30,6 +30,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.EnumSet;
+
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
@@ -69,6 +71,13 @@ public class Frame implements Indexable {
             DEPTH_LONG   = -64,
             DEPTH_FLOAT  =  32,
             DEPTH_DOUBLE =  64;
+    
+    /** Constants defining data type in the frame*/
+    public static enum Type {
+    	AUDIO,
+    	VIDEO,
+    	NONE;
+    }
 
     /** Information associated with the {@link #image} field. */
     public int imageWidth, imageHeight, imageDepth, imageChannels, imageStride;
@@ -285,6 +294,15 @@ public class Frame implements Indexable {
 
         return clonedBuffers;
 
+    }
+    
+    /** Returns types of data containing in the frame */
+    public EnumSet<Type> getType() {
+    	EnumSet<Type> type = EnumSet.noneOf(Type.class);
+    	if (image != null) type.add(Type.VIDEO);
+    	if (samples != null) type.add(Type.AUDIO);
+    	if (type.isEmpty()) type.add(Type.NONE);
+    	return type;
     }
 
 }
