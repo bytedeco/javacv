@@ -119,7 +119,10 @@ public abstract class FrameRecorder implements Closeable {
     protected Map<String, String> audioMetadata = new HashMap<String, String>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
-
+    protected int maxBFrames = -1;
+    protected int trellis = -1;
+    protected int maxDelay = -1;
+    
     public String getFormat() {
         return format;
     }
@@ -349,6 +352,29 @@ public abstract class FrameRecorder implements Closeable {
     }
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public int getMaxBFrames() {
+    return maxBFrames;
+    }
+    public void setMaxBFrames(int maxBFrames) {
+    this.maxBFrames = maxBFrames;
+    }
+
+    public int getTrellis() {
+        return trellis;
+    }
+
+    public void setTrellis(int trellis) {
+        this.trellis = trellis;
+    }
+
+    public int getMaxDelay() {
+        return maxDelay;
+    }
+
+    public void setMaxDelay(int maxDelay) {
+        this.maxDelay = maxDelay;
     }
 
     public static class Exception extends IOException {

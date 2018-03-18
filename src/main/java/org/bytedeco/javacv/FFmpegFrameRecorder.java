@@ -404,6 +404,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
         oc.oformat(oformat);
         oc.filename().putString(filename);
+        oc.max_delay(maxDelay);
 
         /* add the audio and video streams using the format codecs
            and initialize the codecs */
@@ -558,6 +559,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             if ((video_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
                 video_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
+            }
+
+            if (maxBFrames >= 0) {
+                video_c.max_b_frames(maxBFrames);
+                video_c.has_b_frames(maxBFrames == 0 ? 0 : 1);
+            }
+
+            if (trellis >= 0) {
+                video_c.trellis(trellis);
             }
         }
 
