@@ -316,9 +316,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		release();
-	}
-
-	// static Map<Pointer, OutputStream> outputStreams = Collections.synchronizedMap(new HashMap<Pointer, OutputStream>());
+	}	
 
 	private class WriteCallback extends Write_packet_Pointer_BytePointer_int {
 		private FFmpegFrameRecorder recorder;
@@ -1231,8 +1229,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 				pkt.pts(av_rescale_q_rnd(pkt.pts(), in_stream.time_base(), video_st.time_base(), AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 				pkt.dts(av_rescale_q_rnd(pkt.dts(), in_stream.time_base(), video_st.time_base(), AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 				pkt.duration((int) av_rescale_q(pkt.duration(), in_stream.time_base(), video_st.time_base()));
-				if (video_st.cur_dts() >= pkt.dts())
-					pkt.dts(video_st.cur_dts() + pkt.duration());
+				if (video_st.cur_dts() >= pkt.dts())				
+					return true;				
 				if (pkt.pts() < pkt.dts())
 					pkt.pts(pkt.dts());
 				writePacket(AVMEDIA_TYPE_VIDEO, pkt);
@@ -1242,7 +1240,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 				pkt.dts(av_rescale_q_rnd(pkt.dts(), in_stream.time_base(), audio_st.time_base(), AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 				pkt.duration((int) av_rescale_q(pkt.duration(), in_stream.time_base(), audio_st.time_base()));
 				if (audio_st.cur_dts() >= pkt.dts())
-					pkt.dts(audio_st.cur_dts() + pkt.duration());
+					return true;					
 				if (pkt.pts() < pkt.dts())
 					pkt.pts(pkt.dts());
 				writePacket(AVMEDIA_TYPE_AUDIO, pkt);
