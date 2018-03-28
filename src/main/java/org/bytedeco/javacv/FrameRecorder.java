@@ -38,357 +38,414 @@ import java.util.Map;
  */
 public abstract class FrameRecorder implements Closeable {
 
-    public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] { "FFmpeg", "OpenCV" }));
-    public static void init() {
-        for (String name : list) {
-            try {
-                Class<? extends FrameRecorder> c = get(name);
-                c.getMethod("tryLoad").invoke(null);
-            } catch (Throwable t) { }
-        }
-    }
-    public static Class<? extends FrameRecorder> getDefault() {
-        // select first frame recorder that can load..
-        for (String name : list) {
-            try {
-                Class<? extends FrameRecorder> c = get(name);
-                c.getMethod("tryLoad").invoke(null);
-                return c;
-            } catch (Throwable t) { }
-        }
-        return null;
-    }
-    public static Class<? extends FrameRecorder> get(String className) throws Exception {
-        className = FrameRecorder.class.getPackage().getName() + "." + className;
-        try {
-            return Class.forName(className).asSubclass(FrameRecorder.class);
-        } catch (ClassNotFoundException e) {
-            String className2 = className + "FrameRecorder";
-            try {
-                return Class.forName(className2).asSubclass(FrameRecorder.class);
-            } catch (ClassNotFoundException ex) {
-                throw new Exception("Could not get FrameRecorder class for " + className + " or " + className2, e);
-            }
-        }
-    }
+	public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] { "FFmpeg", "OpenCV" }));
 
-    public static FrameRecorder create(Class<? extends FrameRecorder> c, Class p, Object o, int w, int h) throws Exception {
-        Throwable cause = null;
-        try {
-            return (FrameRecorder)c.getConstructor(p, int.class, int.class).newInstance(o, w, h);
-        } catch (InstantiationException ex) {
-            cause = ex;
-        } catch (IllegalAccessException ex) {
-            cause = ex;
-        } catch (IllegalArgumentException ex) {
-            cause = ex;
-        } catch (NoSuchMethodException ex) {
-            cause = ex;
-        } catch (InvocationTargetException ex) {
-            cause = ex.getCause();
-        }
-        throw new Exception("Could not create new " + c.getSimpleName() + "(" + o + ", " + w + ", " + h + ")", cause);
-    }
+	public static void init() {
+		for (String name : list) {
+			try {
+				Class<? extends FrameRecorder> c = get(name);
+				c.getMethod("tryLoad").invoke(null);
+			} catch (Throwable t) {
+			}
+		}
+	}
 
-    public static FrameRecorder createDefault(File file, int width, int height) throws Exception {
-        return create(getDefault(), File.class, file, width, height);
-    }
-    public static FrameRecorder createDefault(String filename, int width, int height) throws Exception {
-        return create(getDefault(), String.class, filename, width, height);
-    }
+	public static Class<? extends FrameRecorder> getDefault() {
+		// select first frame recorder that can load..
+		for (String name : list) {
+			try {
+				Class<? extends FrameRecorder> c = get(name);
+				c.getMethod("tryLoad").invoke(null);
+				return c;
+			} catch (Throwable t) {
+			}
+		}
+		return null;
+	}
 
-    public static FrameRecorder create(String className, File file, int width, int height) throws Exception {
-        return create(get(className), File.class, file, width, height);
-    }
-    public static FrameRecorder create(String className, String filename, int width, int height) throws Exception {
-        return create(get(className), String.class, filename, width, height);
-    }
+	public static Class<? extends FrameRecorder> get(String className) throws Exception {
+		className = FrameRecorder.class.getPackage().getName() + "." + className;
+		try {
+			return Class.forName(className).asSubclass(FrameRecorder.class);
+		} catch (ClassNotFoundException e) {
+			String className2 = className + "FrameRecorder";
+			try {
+				return Class.forName(className2).asSubclass(FrameRecorder.class);
+			} catch (ClassNotFoundException ex) {
+				throw new Exception("Could not get FrameRecorder class for " + className + " or " + className2, e);
+			}
+		}
+	}
 
-    protected String format, videoCodecName, audioCodecName;
-    protected int imageWidth, imageHeight, audioChannels;
-    protected int pixelFormat, videoCodec, videoBitrate, gopSize = -1;
-    protected double aspectRatio, frameRate, videoQuality = -1;
-    protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
-    protected double audioQuality = -1;
-    protected boolean interleaved;
-    protected Map<String, String> options = new HashMap<String, String>();
-    protected Map<String, String> videoOptions = new HashMap<String, String>();
-    protected Map<String, String> audioOptions = new HashMap<String, String>();
-    protected Map<String, String> metadata = new HashMap<String, String>();
-    protected Map<String, String> videoMetadata = new HashMap<String, String>();
-    protected Map<String, String> audioMetadata = new HashMap<String, String>();
-    protected int frameNumber = 0;
-    protected long timestamp = 0;
-    protected int maxBFrames = -1;
-    protected int trellis = -1;
-    protected int maxDelay = -1;
-    
-    public String getFormat() {
-        return format;
-    }
-    public void setFormat(String format) {
-        this.format = format;
-    }
+	public static FrameRecorder create(Class<? extends FrameRecorder> c, Class p, Object o, int w, int h) throws Exception {
+		Throwable cause = null;
+		try {
+			return (FrameRecorder) c.getConstructor(p, int.class, int.class).newInstance(o, w, h);
+		} catch (InstantiationException ex) {
+			cause = ex;
+		} catch (IllegalAccessException ex) {
+			cause = ex;
+		} catch (IllegalArgumentException ex) {
+			cause = ex;
+		} catch (NoSuchMethodException ex) {
+			cause = ex;
+		} catch (InvocationTargetException ex) {
+			cause = ex.getCause();
+		}
+		throw new Exception("Could not create new " + c.getSimpleName() + "(" + o + ", " + w + ", " + h + ")", cause);
+	}
 
-    public String getVideoCodecName() {
-        return videoCodecName;
-    }
-    public void setVideoCodecName(String videoCodecName) {
-        this.videoCodecName = videoCodecName;
-    }
+	public static FrameRecorder createDefault(File file, int width, int height) throws Exception {
+		return create(getDefault(), File.class, file, width, height);
+	}
 
-    public String getAudioCodecName() {
-        return audioCodecName;
-    }
-    public void setAudioCodecName(String audioCodecName) {
-        this.audioCodecName = audioCodecName;
-    }
+	public static FrameRecorder createDefault(String filename, int width, int height) throws Exception {
+		return create(getDefault(), String.class, filename, width, height);
+	}
 
-    public int getImageWidth() {
-        return imageWidth;
-    }
-    public void setImageWidth(int imageWidth) {
-        this.imageWidth = imageWidth;
-    }
+	public static FrameRecorder create(String className, File file, int width, int height) throws Exception {
+		return create(get(className), File.class, file, width, height);
+	}
 
-    public int getImageHeight() {
-        return imageHeight;
-    }
-    public void setImageHeight(int imageHeight) {
-        this.imageHeight = imageHeight;
-    }
+	public static FrameRecorder create(String className, String filename, int width, int height) throws Exception {
+		return create(get(className), String.class, filename, width, height);
+	}
 
-    public int getAudioChannels() {
-        return audioChannels;
-    }
-    public void setAudioChannels(int audioChannels) {
-        this.audioChannels = audioChannels;
-    }
+	protected String format, videoCodecName, audioCodecName;
+	protected int imageWidth, imageHeight, audioChannels;
+	protected int pixelFormat, videoCodec, videoBitrate, gopSize = -1;
+	protected double aspectRatio, frameRate, videoQuality = -1;
+	protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
+	protected double audioQuality = -1;
+	protected boolean interleaved;
+	protected Map<String, String> options = new HashMap<String, String>();
+	protected Map<String, String> videoOptions = new HashMap<String, String>();
+	protected Map<String, String> audioOptions = new HashMap<String, String>();
+	protected Map<String, String> metadata = new HashMap<String, String>();
+	protected Map<String, String> videoMetadata = new HashMap<String, String>();
+	protected Map<String, String> audioMetadata = new HashMap<String, String>();
+	protected Map<String, String> encContextOptions = new HashMap<>();
+	protected int frameNumber = 0;
+	protected long timestamp = 0;
 
-    public int getPixelFormat() {
-        return pixelFormat;
-    }
-    public void setPixelFormat(int pixelFormat) {
-        this.pixelFormat = pixelFormat;
-    }
+	public String getFormat() {
+		return format;
+	}
 
-    public int getVideoCodec() {
-        return videoCodec;
-    }
-    public void setVideoCodec(int videoCodec) {
-        this.videoCodec = videoCodec;
-    }
+	public void setFormat(String format) {
+		this.format = format;
+	}
 
-    public int getVideoBitrate() {
-        return videoBitrate;
-    }
-    public void setVideoBitrate(int videoBitrate) {
-        this.videoBitrate = videoBitrate;
-    }
+	public String getVideoCodecName() {
+		return videoCodecName;
+	}
 
-    public int getGopSize() {
-        return gopSize;
-    }
-    public void setGopSize(int gopSize) {
-        this.gopSize = gopSize;
-    }
+	public void setVideoCodecName(String videoCodecName) {
+		this.videoCodecName = videoCodecName;
+	}
 
-    public double getAspectRatio() {
-        return aspectRatio;
-    }
-    public void setAspectRatio(double aspectRatio) {
-        this.aspectRatio = aspectRatio;
-    }
+	public String getAudioCodecName() {
+		return audioCodecName;
+	}
 
-    public double getFrameRate() {
-        return frameRate;
-    }
-    public void setFrameRate(double frameRate) {
-        this.frameRate = frameRate;
-    }
+	public void setAudioCodecName(String audioCodecName) {
+		this.audioCodecName = audioCodecName;
+	}
 
-    public double getVideoQuality() {
-        return videoQuality;
-    }
-    public void setVideoQuality(double videoQuality) {
-        this.videoQuality = videoQuality;
-    }
+	public int getImageWidth() {
+		return imageWidth;
+	}
 
-    public int getSampleFormat() {
-        return sampleFormat;
-    }
-    public void setSampleFormat(int sampleFormat) {
-        this.sampleFormat = sampleFormat;
-    }
+	public void setImageWidth(int imageWidth) {
+		this.imageWidth = imageWidth;
+	}
 
-    public int getAudioCodec() {
-        return audioCodec;
-    }
-    public void setAudioCodec(int audioCodec) {
-        this.audioCodec = audioCodec;
-    }
+	public int getImageHeight() {
+		return imageHeight;
+	}
 
-    public int getAudioBitrate() {
-        return audioBitrate;
-    }
-    public void setAudioBitrate(int audioBitrate) {
-        this.audioBitrate = audioBitrate;
-    }
+	public void setImageHeight(int imageHeight) {
+		this.imageHeight = imageHeight;
+	}
 
-    public int getSampleRate() {
-        return sampleRate;
-    }
-    public void setSampleRate(int sampleRate) {
-        this.sampleRate = sampleRate;
-    }
+	public int getAudioChannels() {
+		return audioChannels;
+	}
 
-    public double getAudioQuality() {
-        return audioQuality;
-    }
-    public void setAudioQuality(double audioQuality) {
-        this.audioQuality = audioQuality;
-    }
+	public void setAudioChannels(int audioChannels) {
+		this.audioChannels = audioChannels;
+	}
 
-    public boolean isInterleaved() {
-        return interleaved;
-    }
-    public void setInterleaved(boolean interleaved) {
-        this.interleaved = interleaved;
-    }
+	public int getPixelFormat() {
+		return pixelFormat;
+	}
 
-    public Map<String, String> getOptions() {
-        return options;
-    }
-    public void setOptions(Map<String, String> options) {
-        this.options = options;
-    }
+	public void setPixelFormat(int pixelFormat) {
+		this.pixelFormat = pixelFormat;
+	}
 
-    public Map<String, String> getVideoOptions() {
-        return videoOptions;
-    }
-    public void setVideoOptions(Map<String, String> options) {
-        this.videoOptions = options;
-    }
+	public int getVideoCodec() {
+		return videoCodec;
+	}
 
-    public Map<String, String> getAudioOptions() {
-        return audioOptions;
-    }
-    public void setAudioOptions(Map<String, String> options) {
-        this.audioOptions = options;
-    }
+	public void setVideoCodec(int videoCodec) {
+		this.videoCodec = videoCodec;
+	}
 
-    public Map<String, String> getMetadata() {
-        return metadata;
-    }
-    public void setMetadata(Map<String, String> metadata) {
-        this.metadata = metadata;
-    }
+	public int getVideoBitrate() {
+		return videoBitrate;
+	}
 
-    public Map<String, String> getVideoMetadata() {
-        return videoMetadata;
-    }
-    public void setVideoMetadata(Map<String, String> metadata) {
-        this.videoMetadata = metadata;
-    }
+	public void setVideoBitrate(int videoBitrate) {
+		this.videoBitrate = videoBitrate;
+	}
 
-    public Map<String, String> getAudioMetadata() {
-        return audioMetadata;
-    }
-    public void setAudioMetadata(Map<String, String> metadata) {
-        this.audioMetadata = metadata;
-    }
+	public int getGopSize() {
+		return gopSize;
+	}
 
-    public String getOption(String key) {
-        return options.get(key);
-    }
-    public void setOption(String key, String value) {
-        options.put(key, value);
-    }
+	public void setGopSize(int gopSize) {
+		this.gopSize = gopSize;
+	}
 
-    public String getVideoOption(String key) {
-        return videoOptions.get(key);
-    }
-    public void setVideoOption(String key, String value) {
-        videoOptions.put(key, value);
-    }
+	public double getAspectRatio() {
+		return aspectRatio;
+	}
 
-    public String getAudioOption(String key) {
-        return audioOptions.get(key);
-    }
-    public void setAudioOption(String key, String value) {
-        audioOptions.put(key, value);
-    }
+	public void setAspectRatio(double aspectRatio) {
+		this.aspectRatio = aspectRatio;
+	}
 
-    public String getMetadata(String key) {
-        return metadata.get(key);
-    }
-    public void setMetadata(String key, String value) {
-        metadata.put(key, value);
-    }
+	public double getFrameRate() {
+		return frameRate;
+	}
 
-    public String getVideoMetadata(String key) {
-        return videoMetadata.get(key);
-    }
-    public void setVideoMetadata(String key, String value) {
-        videoMetadata.put(key, value);
-    }
+	public void setFrameRate(double frameRate) {
+		this.frameRate = frameRate;
+	}
 
-    public String getAudioMetadata(String key) {
-        return audioMetadata.get(key);
-    }
-    public void setAudioMetadata(String key, String value) {
-        audioMetadata.put(key, value);
-    }
+	public double getVideoQuality() {
+		return videoQuality;
+	}
 
-    public int getFrameNumber() {
-        return frameNumber;
-    }
-    public void setFrameNumber(int frameNumber) {
-        this.frameNumber = frameNumber;
-    }
+	public void setVideoQuality(double videoQuality) {
+		this.videoQuality = videoQuality;
+	}
 
-    public long getTimestamp() {
-        return timestamp;
-    }
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
+	public int getSampleFormat() {
+		return sampleFormat;
+	}
 
-    public int getMaxBFrames() {
-    return maxBFrames;
-    }
-    public void setMaxBFrames(int maxBFrames) {
-    this.maxBFrames = maxBFrames;
-    }
+	public void setSampleFormat(int sampleFormat) {
+		this.sampleFormat = sampleFormat;
+	}
 
-    public int getTrellis() {
-        return trellis;
-    }
+	public int getAudioCodec() {
+		return audioCodec;
+	}
 
-    public void setTrellis(int trellis) {
-        this.trellis = trellis;
-    }
+	public void setAudioCodec(int audioCodec) {
+		this.audioCodec = audioCodec;
+	}
 
-    public int getMaxDelay() {
-        return maxDelay;
-    }
+	public int getAudioBitrate() {
+		return audioBitrate;
+	}
 
-    public void setMaxDelay(int maxDelay) {
-        this.maxDelay = maxDelay;
-    }
+	public void setAudioBitrate(int audioBitrate) {
+		this.audioBitrate = audioBitrate;
+	}
 
-    public static class Exception extends IOException {
-        public Exception(String message) { super(message); }
-        public Exception(String message, Throwable cause) { super(message, cause); }
-    }
+	public int getSampleRate() {
+		return sampleRate;
+	}
 
-    public abstract void start() throws Exception;
-    public abstract void stop() throws Exception;
-    public abstract void record(Frame frame) throws Exception;
-    public abstract void release() throws Exception;
+	public void setSampleRate(int sampleRate) {
+		this.sampleRate = sampleRate;
+	}
 
-    @Override public void close() throws Exception {
-        stop();
-        release();
-    }
+	public double getAudioQuality() {
+		return audioQuality;
+	}
+
+	public void setAudioQuality(double audioQuality) {
+		this.audioQuality = audioQuality;
+	}
+
+	public boolean isInterleaved() {
+		return interleaved;
+	}
+
+	public void setInterleaved(boolean interleaved) {
+		this.interleaved = interleaved;
+	}
+
+	public Map<String, String> getOptions() {
+		return options;
+	}
+
+	public void setOptions(Map<String, String> options) {
+		this.options = options;
+	}
+
+	public Map<String, String> getVideoOptions() {
+		return videoOptions;
+	}
+
+	public void setVideoOptions(Map<String, String> options) {
+		this.videoOptions = options;
+	}
+
+	public Map<String, String> getAudioOptions() {
+		return audioOptions;
+	}
+
+	public void setAudioOptions(Map<String, String> options) {
+		this.audioOptions = options;
+	}
+
+	public Map<String, String> getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(Map<String, String> metadata) {
+		this.metadata = metadata;
+	}
+
+	public Map<String, String> getVideoMetadata() {
+		return videoMetadata;
+	}
+
+	public void setVideoMetadata(Map<String, String> metadata) {
+		this.videoMetadata = metadata;
+	}
+
+	public Map<String, String> getAudioMetadata() {
+		return audioMetadata;
+	}
+
+	public void setAudioMetadata(Map<String, String> metadata) {
+		this.audioMetadata = metadata;
+	}
+
+	public void setEncContextOption(String key, String value) {
+		encContextOptions.put(key, value);
+	}
+
+	public String getEncContextOption(String key) {
+		return encContextOptions.get(key);
+	}
+
+	public String getOption(String key) {
+		return options.get(key);
+	}
+
+	public void setOption(String key, String value) {
+		options.put(key, value);
+	}
+
+	public String getVideoOption(String key) {
+		return videoOptions.get(key);
+	}
+
+	public void setVideoOption(String key, String value) {
+		videoOptions.put(key, value);
+	}
+
+	public String getAudioOption(String key) {
+		return audioOptions.get(key);
+	}
+
+	public void setAudioOption(String key, String value) {
+		audioOptions.put(key, value);
+	}
+
+	public String getMetadata(String key) {
+		return metadata.get(key);
+	}
+
+	public void setMetadata(String key, String value) {
+		metadata.put(key, value);
+	}
+
+	public String getVideoMetadata(String key) {
+		return videoMetadata.get(key);
+	}
+
+	public void setVideoMetadata(String key, String value) {
+		videoMetadata.put(key, value);
+	}
+
+	public String getAudioMetadata(String key) {
+		return audioMetadata.get(key);
+	}
+
+	public void setAudioMetadata(String key, String value) {
+		audioMetadata.put(key, value);
+	}
+
+	public int getFrameNumber() {
+		return frameNumber;
+	}
+
+	public void setFrameNumber(int frameNumber) {
+		this.frameNumber = frameNumber;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public static class Exception extends IOException {		 
+		private static final long serialVersionUID = 1L;
+		private int errorCode = 0;// unknown
+
+		public Exception(String message) {
+			super(message);
+		}
+
+		public Exception(int errorCode, String message) {
+			super(message);
+			this.errorCode = errorCode;
+		}
+
+		public Exception(String message, Throwable cause) {
+			super(message, cause);
+		}
+
+		public Exception(int errorCode, String message, Throwable cause) {
+			super(message, cause);
+			this.errorCode = errorCode;
+		}
+
+		public int getErrorCode() {
+			return errorCode;
+		}
+
+		@Override
+		public String toString() {
+			if (errorCode != -1)
+				return String.format("%d:%s", errorCode, super.toString());
+			else
+				return super.toString();
+		}
+	}
+
+	public abstract void start() throws Exception;
+
+	public abstract void stop() throws Exception;
+
+	public abstract void record(Frame frame) throws Exception;
+
+	public abstract void release() throws Exception;
+
+	@Override
+	public void close() throws Exception {
+		stop();
+		release();
+	}
 }
