@@ -44,7 +44,8 @@ import static org.junit.Assert.*;
  */
 public class FrameGrabberTest {
 
-    @Test public void testFFmpegFrameGrabber() {
+    @Test
+    public void testFFmpegFrameGrabber() {
         System.out.println("FFmpegFrameGrabber");
 
         File tempFile = new File(Loader.getTempDir(), "test.mkv");
@@ -234,11 +235,11 @@ public class FrameGrabberTest {
             threads[instance] = new Thread(runables[instance]);
             threads[instance].setName("Testthread-" + instance);
         }
-        
+
         for (int instance = 0; instance < numberOfInstances; instance++) {
             threads[instance].start();
         }
-        
+
         while (true) {
             boolean finished = true;
             for (int instance = 0; instance < numberOfInstances; instance++) {
@@ -247,7 +248,7 @@ public class FrameGrabberTest {
                     break;
                 }
             }
-            
+
             if (!finished) {
                 System.out.println("Still waiting...");
                 try {
@@ -263,36 +264,52 @@ public class FrameGrabberTest {
         assertFalse(failed[0]);
     }
 
-    @Test public void testFFmpegFrameGrabberSeeking() throws IOException {
+    @Test
+    public void testFFmpegFrameGrabberSeeking() throws IOException {
         System.out.println("FFmpegFrameGrabberSeeking");
 
-        File tempFile = new File(Loader.getTempDir(), "test.mp4");
-        tempFile.deleteOnExit();
-
-        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 640, 480, 2);
-        recorder.setFormat("mp4");
-        recorder.setFrameRate(30);
-        recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
-        recorder.setVideoCodec(AV_CODEC_ID_H264);
-        recorder.setVideoQuality(10);
-        recorder.setSampleRate(48000);
-        recorder.setSampleFormat(AV_SAMPLE_FMT_FLTP);
-        recorder.setAudioCodec(AV_CODEC_ID_AAC);
-        recorder.setAudioQuality(0);
-        recorder.start();
-
-        for (int n = 0; n < 10000; n++) {
-            Frame frame = new Frame(640, 480, Frame.DEPTH_UBYTE, 3);
-            UByteIndexer frameIdx = frame.createIndexer();
-            for (int i = 0; i < frameIdx.rows(); i++) {
-                for (int j = 0; j < frameIdx.cols(); j++) {
-                    for (int k = 0; k < frameIdx.channels(); k++) {
-                        frameIdx.put(i, j, k, n + i + j + k);
+        for(int seektestnum = 0; seektestnum < 3; seektestnum++) {
+            String fileName = seektestnum==0?"testAV.mp4":seektestnum==1?"testV.mp4":"testA.mp4";
+            File tempFile = new File(Loader.getTempDir(), fileName);
+            tempFile.deleteOnExit();
+            FFmpegFrameRecorder recorder = seektestnum == 0? new FFmpegFrameRecorder(tempFile, 640, 480, 2)
+                                         : seektestnum == 1? new FFmpegFrameRecorder(tempFile, 640, 480, 0)
+                                         : new FFmpegFrameRecorder(tempFile, 0, 0, 2);
+            recorder.setFormat("mp4");
+            recorder.setFrameRate(30);
+            recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
+            recorder.setVideoCodec(AV_CODEC_ID_H264);
+            recorder.setVideoQuality(10);
+            recorder.setSampleRate(48000);
+            recorder.setSampleFormat(AV_SAMPLE_FMT_FLTP);
+            recorder.setAudioCodec(AV_CODEC_ID_AAC);
+            recorder.setAudioQuality(0);
+            recorder.start();
+            if (seektestnum!=2) {
+                for (int n = 0; n < 10000; n++) {
+                    Frame frame = new Frame(640, 480, Frame.DEPTH_UBYTE, 3);
+                    UByteIndexer frameIdx = frame.createIndexer();
+                    for (int i = 0; i < frameIdx.rows(); i++) {
+                        for (int j = 0; j < frameIdx.cols(); j++) {
+                            for (int k = 0; k < frameIdx.channels(); k++) {
+                                frameIdx.put(i, j, k, n + i + j + k);
+                            }
+                        }
+                    }
+                    recorder.record(frame);
+                    if (n == 5000 && seektestnum!=1){
+                        Frame audioFrame = new Frame();
+                        ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
+                        audioFrame.sampleRate = 48000;
+                        audioFrame.audioChannels = 2;
+                        audioFrame.samples = new ShortBuffer[] {audioBuffer};
+                        for (int i = 0; i < audioBuffer.capacity(); i++) {
+                            audioBuffer.put(i, (short)i);
+                        }
+                        recorder.record(audioFrame);
                     }
                 }
-            }
-            recorder.record(frame);
-            if (n == 5000) {
+            } else {
                 Frame audioFrame = new Frame();
                 ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);
                 audioFrame.sampleRate = 48000;
@@ -303,37 +320,112 @@ public class FrameGrabberTest {
                 }
                 recorder.record(audioFrame);
             }
-        }
-        recorder.stop();
-        recorder.release();
+            recorder.stop();
+            recorder.release();
 
-        FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
-        grabber.start();
-        int length = (int)grabber.getLengthInTime() - 1000000;
+            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
+            grabber.start();
+            int length = (int) ( grabber.getLengthInTime() - 1000000L);
 
-        Random random = new Random(42);
-        for (int i = 0; i < 1000; i++) {
-            long timestamp = random.nextInt(length);
-            grabber.setTimestamp(timestamp);
-            Frame frame = grabber.grab();
-            long timestamp2 = grabber.getTimestamp();
-            assertTrue(frame.image != null ^ frame.samples != null);
-            System.out.println(timestamp2 + " - " + timestamp + " = " + (timestamp2 - timestamp));
-            assertTrue(timestamp2 >= timestamp && timestamp2 < timestamp + 1000000);
 
-            boolean wasVideo = frame.image != null;
-            boolean wasAudio = frame.samples != null;
-            Frame frame2 = grabber.grab();
-            while ((wasVideo && frame2.image != null)
-                    || (wasAudio && frame2.samples != null)) {
-                frame2 = grabber.grab();
+            System.out.println();
+            System.out.println("Seek in file containing "+(seektestnum==0?"video and audio":seektestnum==1?"video only":"audio only"));
+            System.out.println("============================================");
+            System.out.println("Testing file "+tempFile.getName());
+            System.out.println("Length = "+grabber.getLengthInTime());
+            System.out.println("Framerate = "+grabber.getFrameRate());
+            System.out.println();
+            System.out.println("has video stream = "+(grabber.hasVideo()?"YES":"NO")+", has audio stream = "+(grabber.hasAudio()?"YES":"NO"));
+            long tolerance = 1000000L + (grabber.getFrameRate() > 0.0? (long) (5000000/grabber.getFrameRate()):500000L);
+            Random random = new Random();
+
+            for (int frametypenum = 0; frametypenum < 3; frametypenum++) {
+                long mindelta = Long.MAX_VALUE;
+                long maxdelta = Long.MIN_VALUE;
+                System.out.println();
+                System.out.println("Seek by " + (frametypenum == 0 ? "any" : frametypenum == 1 ? "video" : "audio") + " frames");
+                System.out.println("--------------------");
+                for (int i = 0; i < 200; i++) {
+                    long timestamp = random.nextInt(length);
+                    switch (frametypenum) {
+                        case 0:
+                            grabber.setTimestamp(timestamp);
+                            break;
+                        case 1:
+                            grabber.setVideoTimestamp(timestamp);
+                            break;
+                        case 2:
+                            grabber.setAudioTimestamp(timestamp);
+                            break;
+                    }
+
+                    Frame frame = grabber.grab();
+                    long timestamp2 = grabber.getTimestamp();
+                    long delta = timestamp2 - timestamp;
+                    if (delta > maxdelta) maxdelta = delta;
+                    if (delta < mindelta) mindelta = delta;
+                    assertTrue(frame.image != null ^ frame.samples != null);
+                    System.out.println(timestamp2 + " - " + timestamp + " = " + delta + " type: " + frame.getTypes());
+                    assertTrue(Math.abs(delta) < tolerance);
+                    if (seektestnum==0) {
+                        boolean wasVideo = frame.image != null;
+                        boolean wasAudio = frame.samples != null;
+                        Frame frame2 = grabber.grab();
+                        while ((wasVideo && frame2.image != null)
+                                || (wasAudio && frame2.samples != null)) {
+                            frame2 = grabber.grab();
+                        }
+                        assertTrue(wasVideo ^ frame2.image != null);
+                        assertTrue(wasAudio ^ frame2.samples != null);
+                        long timestamp3 = grabber.getTimestamp();
+                        System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
+                        assertTrue(timestamp3 >= timestamp - tolerance && timestamp3 < timestamp + tolerance);
+                    }
+                }
+                System.out.println();
+                System.out.println("------------------------------------");
+                System.out.println("delta from " + mindelta + " to " + maxdelta);
+                System.out.println();
             }
-            assertTrue(wasVideo ^ frame2.image != null);
-            assertTrue(wasAudio ^ frame2.samples != null);
-            long timestamp3 = grabber.getTimestamp();
-            System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
-            assertTrue(timestamp3 >= timestamp - 10000000 && timestamp3 < timestamp + 1000000);
+            if (seektestnum==2) {
+
+                long count1 = 0;
+
+                long duration = grabber.getLengthInTime();
+
+                System.out.println();
+                System.out.println("======== Check seeking in audio ========");
+                System.out.println("FrameRate = "+grabber.getFrameRate()+" AudioFrameRate = "+grabber.getAudioFrameRate()+", duration = "+duration+" audio frames = "+grabber.getLengthInAudioFrames());
+
+
+
+                double deltaTimeStamp=0.0;
+                if (grabber.hasAudio() && grabber.getAudioFrameRate() > 0) {
+                    deltaTimeStamp = 1000000.0/grabber.getAudioFrameRate();
+
+                }
+                System.out.println("AudioFrameDuration = "+deltaTimeStamp);
+                System.out.println();
+                System.out.println("======== Check setAudioFrameNumber ========");
+                count1=0;
+
+                while (count1++<1000) {
+                    int audioFrameToSeek = random.nextInt(grabber.getLengthInAudioFrames()-100);
+                    grabber.setAudioFrameNumber(audioFrameToSeek);
+                    Frame setFrame = grabber.grabSamples();
+                    if (setFrame == null) {
+                        System.out.println("null frame after seek to audio frame");
+                    } else {
+                        long audioTs = grabber.getTimestamp();
+                        System.out.println("audioFrame # "+audioFrameToSeek+", timeStamp = "+audioTs+", difference = "+Math.round(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek));
+                        assertTrue(Math.abs(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek)<10);
+                    }
+                }
+            }
+            grabber.stop();
+            System.out.println();
+            System.out.println("======= seek in " +fileName+" is finished ===========" );
         }
-        grabber.stop();
+
     }
 }
