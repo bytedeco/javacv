@@ -37,7 +37,6 @@ import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avutil.*;
 import static org.junit.Assert.*;
 
-
 /**
  * Test cases for FrameGrabber classes. Also uses other classes from JavaCV.
  *
@@ -265,13 +264,6 @@ public class FrameGrabberTest {
         assertFalse(failed[0]);
     }
 
-
-	public static enum FrameTypeToSeek {
-		VIDEO,
-		AUDIO,
-		ANY;
-	}
-
     @Test
     public void testFFmpegFrameGrabberSeeking() throws IOException {
         System.out.println("FFmpegFrameGrabberSeeking");
@@ -347,25 +339,24 @@ public class FrameGrabberTest {
             long tolerance = 1000000L + (grabber.getFrameRate() > 0.0? (long) (5000000/grabber.getFrameRate()):500000L);
             Random random = new Random();
 
-            for (FrameTypeToSeek frameTypeToSeek : FrameTypeToSeek.values()) {
-
+            for (int frametypenum = 0; frametypenum < 3; frametypenum++) {
                 long mindelta = Long.MAX_VALUE;
                 long maxdelta = Long.MIN_VALUE;
                 System.out.println();
-                System.out.println("Seek by " +frameTypeToSeek+ " frames");
+                System.out.println("Seek by " + (frametypenum == 0 ? "any" : frametypenum == 1 ? "video" : "audio") + " frames");
                 System.out.println("--------------------");
                 for (int i = 0; i < 200; i++) {
                     long timestamp = random.nextInt(length);
-                    switch (frameTypeToSeek) {
-                    case ANY:
-                        grabber.setTimestamp(timestamp);
-                        break;
-                    case VIDEO:
-                        grabber.setVideoTimestamp(timestamp);
-                        break;
-                    case AUDIO:
-                        grabber.setAudioTimestamp(timestamp);
-                        break;
+                    switch (frametypenum) {
+                        case 0:
+                            grabber.setTimestamp(timestamp);
+                            break;
+                        case 1:
+                            grabber.setVideoTimestamp(timestamp);
+                            break;
+                        case 2:
+                            grabber.setAudioTimestamp(timestamp);
+                            break;
                     }
 
                     Frame frame = grabber.grab();
@@ -374,7 +365,7 @@ public class FrameGrabberTest {
                     if (delta > maxdelta) maxdelta = delta;
                     if (delta < mindelta) mindelta = delta;
                     assertTrue(frame.image != null ^ frame.samples != null);
-                    System.out.println(timestamp2 + " - " + timestamp + " = " + delta + " type: "+frame.getType());
+                    System.out.println(timestamp2 + " - " + timestamp + " = " + delta + " type: " + frame.getTypes());
                     assertTrue(Math.abs(delta) < tolerance);
                     if (seektestnum==0) {
                         boolean wasVideo = frame.image != null;
@@ -423,7 +414,7 @@ public class FrameGrabberTest {
                     grabber.setAudioFrameNumber(audioFrameToSeek);
                     Frame setFrame = grabber.grabSamples();
                     if (setFrame == null) {
-                        System.out.println("null farame after seek to audio frame");
+                        System.out.println("null frame after seek to audio frame");
                     } else {
                         long audioTs = grabber.getTimestamp();
                         System.out.println("audioFrame # "+audioFrameToSeek+", timeStamp = "+audioTs+", difference = "+Math.round(audioTs*grabber.getAudioFrameRate()/1000000 - audioFrameToSeek));

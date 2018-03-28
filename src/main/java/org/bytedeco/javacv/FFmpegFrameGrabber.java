@@ -22,7 +22,7 @@
  *
  * Based on the avcodec_sample.0.5.0.c file available at
  * http://web.me.com/dhoerl/Home/Tech_Blog/Entries/2009/1/22_Revised_avcodec_sample.c_files/avcodec_sample.0.5.0.c
- * by Martin BГ¶hme, Stephen Dranger, and David Hoerl
+ * by Martin Böhme, Stephen Dranger, and David Hoerl
  * as well as on the decoding_encoding.c file included in FFmpeg 0.11.1,
  * which is covered by the following copyright notice:
  *
@@ -396,6 +396,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
+    /** Returns {@link #getVideoFrameRate()} */
+    @Override public double getFrameRate() {
+        return getVideoFrameRate();
+    }
+
     /**Estimation of audio frames per second
      *
      * @return (double) getSampleRate()) / samples_frame.nb_samples()
@@ -420,7 +425,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    @Override public double getFrameRate() {
+    public double getVideoFrameRate() {
         if (video_st == null) {
             return super.getFrameRate();
         } else {
@@ -482,47 +487,49 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return entry == null || entry.value() == null ? null : entry.value().getString();
     }
 
+    /** default override of super.setFrameNumber implies setting
+     *  of a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        // default override of super.setFrameNumber implies setting
-        // of a video frame having that number
         setVideoFrameNumber(frameNumber);
     }
 
+    /** if there is video stream tries to seek to video frame with corresponding timestamp
+     *  otherwise sets super.frameNumber only because frameRate==0 if there is no video stream */
     public void setVideoFrameNumber(int frameNumber) throws Exception {
-        //if there is video stream tries to seek to video frame with corresponding timestamp
-        //otherwise sets super.frameNumber only because frameRate==0 if there is no video stream
+        // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
         if (hasVideo()) setVideoTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
+    /** if there is audio stream tries to seek to audio frame with corresponding timestamp
+     *  ignoring otherwise */
     public void setAudioFrameNumber(int frameNumber) throws Exception {
-        //if there is audio stream tries to seek to audio frame with corresponding timestamp
-        //ignoring otherwise
+        // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
         if (hasAudio()) setAudioTimestamp(Math.round(1000000L * frameNumber / getAudioFrameRate()));
 
     }
 
+    /** setTimestamp with disregard of the resulting frame type, video or audio */
     @Override public void setTimestamp(long timestamp) throws Exception {
-        // setTimestamp with disregard of the resulting frame type, video or audio
-    	setTimestamp(timestamp, EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO));
+        setTimestamp(timestamp, EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO));
     }
 
+    /** setTimestamp with resulting video frame type */
     public void setVideoTimestamp(long timestamp) throws Exception {
-        // setTimestamp with disregard of the resulting frame type, video or audio
-    	setTimestamp(timestamp, EnumSet.of(Frame.Type.VIDEO));
+        setTimestamp(timestamp, EnumSet.of(Frame.Type.VIDEO));
     }
 
+    /** setTimestamp with resulting audio frame type */
     public void setAudioTimestamp(long timestamp) throws Exception {
-        // setTimestamp with disregard of the resulting frame type, video or audio
-    	setTimestamp(timestamp, EnumSet.of(Frame.Type.AUDIO));
+        setTimestamp(timestamp, EnumSet.of(Frame.Type.AUDIO));
     }
 
     /** setTimestamp with a priority the resulting frame should be:
-     *  video (frameTypeToSeek contains only Frame.Type.VIDEO), 
-     *  audio (frameTypeToSeek contains only Frame.Type.AUDIO), 
-     *  or any (frameTypeToSeek contains both)
+     *  video (frameTypesToSeek contains only Frame.Type.VIDEO),
+     *  audio (frameTypesToSeek contains only Frame.Type.AUDIO),
+     *  or any (frameTypesToSeek contains both)
      */
-    private void setTimestamp(long timestamp, EnumSet<Frame.Type> frameTypeToSeek) throws Exception {
+    private void setTimestamp(long timestamp, EnumSet<Frame.Type> frameTypesToSeek) throws Exception {
         int ret;
         if (oc == null) {
             super.setTimestamp(timestamp);
@@ -555,7 +562,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
              * 2. Grab frames till the desired timestamp is reached. The number of steps is restricted
              * by doubled estimation of frames between that "closest" position and the desired position.
              *
-             * frameTypeToSeek parameter sets the preferred type of frames to seek.
+             * frameTypesToSeek parameter sets the preferred type of frames to seek.
              * It can be chosen from three possible types: VIDEO, AUDIO or ANY.
              * The setting means only a preference in the type. That is, if VIDEO or AUDIO is
              * specified but the file does not have video or audio stream - ANY type will be used instead.
@@ -573,9 +580,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             boolean has_audio = hasAudio();
 
             if (has_video || has_audio) {
-                if ((frameTypeToSeek.contains(Frame.Type.VIDEO) && !has_video ) ||
-                        (frameTypeToSeek.contains(Frame.Type.AUDIO) && !has_audio ))
-                frameTypeToSeek = EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO);
+                if ((frameTypesToSeek.contains(Frame.Type.VIDEO) && !has_video ) ||
+                        (frameTypesToSeek.contains(Frame.Type.AUDIO) && !has_audio ))
+                frameTypesToSeek = EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO);
 
                 long initialSeekPosition = Long.MIN_VALUE;
                 long maxSeekSteps = 0;
@@ -585,9 +592,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)
                     seekFrame = grabFrame(true, true, false, false);
                     if (seekFrame == null) return; //is it better to throw NullPointerException?
-                    EnumSet<Frame.Type> frameType = seekFrame.getType();
-                    frameType.retainAll(frameTypeToSeek);
-                    if (!frameType.isEmpty()) {
+                    EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
+                    frameTypes.retainAll(frameTypesToSeek);
+                    if (!frameTypes.isEmpty()) {
                         initialSeekPosition = seekFrame.timestamp;
                         //the position closest to the requested timestamp from which it can be reached by sequential grabFrame calls
                         break;
@@ -611,9 +618,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 while(count < maxSeekSteps) {
                     seekFrame = grabFrame(true, true, false, false);
                     if (seekFrame == null) return; //is it better to throw NullPointerException?
-                    EnumSet<Frame.Type> frameType = seekFrame.getType();
-                    frameType.retainAll(frameTypeToSeek);
-                    if (!frameType.isEmpty()) {
+                    EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
+                    frameTypes.retainAll(frameTypesToSeek);
+                    if (!frameTypes.isEmpty()) {
                         count++;
                         if (this.timestamp >= timestamp - 1) break;
                     }
@@ -629,7 +636,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         // best guess...
         return getLengthInVideoFrames();
     }
-    
+
     @Override public long getLengthInTime() {
         return oc.duration() * 1000000L / AV_TIME_BASE;
     }
@@ -648,7 +655,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public AVFormatContext getFormatContext() {
-
         return oc;
     }
 
@@ -1172,11 +1178,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public AVPacket grabPacket() throws Exception {
-
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
         }
-
 
         // Return the next frame of a stream.
         if (av_read_frame(oc, pkt) < 0) {
@@ -1184,6 +1188,5 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         return pkt;
-
     }
 }

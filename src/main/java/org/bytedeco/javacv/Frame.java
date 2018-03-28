@@ -74,9 +74,8 @@ public class Frame implements Indexable {
     
     /** Constants defining data type in the frame*/
     public static enum Type {
-    	AUDIO,
-    	VIDEO,
-    	NONE;
+        VIDEO,
+        AUDIO,
     }
 
     /** Information associated with the {@link #image} field. */
@@ -295,14 +294,12 @@ public class Frame implements Indexable {
         return clonedBuffers;
 
     }
-    
-    /** Returns types of data containing in the frame */
-    public EnumSet<Type> getType() {
-    	EnumSet<Type> type = EnumSet.noneOf(Type.class);
-    	if (image != null) type.add(Type.VIDEO);
-    	if (samples != null) type.add(Type.AUDIO);
-    	if (type.isEmpty()) type.add(Type.NONE);
-    	return type;
-    }
 
+    /** Returns types of data containing in the frame */
+    public EnumSet<Type> getTypes() {
+        EnumSet<Type> type = EnumSet.noneOf(Type.class);
+        if (image != null) type.add(Type.VIDEO);
+        if (samples != null) type.add(Type.AUDIO);
+        return type;
+    }
 }
