@@ -50,6 +50,117 @@
 
 package org.bytedeco.javacv;
 
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_AAC;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_FFV1;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_FLV1;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H263;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_HUFFYUV;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_JPEGLS;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MJPEG;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MJPEGB;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MPEG1VIDEO;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MPEG2VIDEO;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MPEG4;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_NONE;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_PCM_S16BE;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_PCM_S16LE;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_PCM_U16BE;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_PCM_U16LE;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_PNG;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_RAWVIDEO;
+import static org.bytedeco.javacpp.avcodec.AV_INPUT_BUFFER_MIN_SIZE;
+import static org.bytedeco.javacpp.avcodec.AV_PKT_FLAG_KEY;
+import static org.bytedeco.javacpp.avcodec.CODEC_CAP_EXPERIMENTAL;
+import static org.bytedeco.javacpp.avcodec.CODEC_FLAG_GLOBAL_HEADER;
+import static org.bytedeco.javacpp.avcodec.CODEC_FLAG_QSCALE;
+import static org.bytedeco.javacpp.avcodec.av_init_packet;
+import static org.bytedeco.javacpp.avcodec.av_packet_unref;
+import static org.bytedeco.javacpp.avcodec.avcodec_alloc_context3;
+import static org.bytedeco.javacpp.avcodec.avcodec_encode_audio2;
+import static org.bytedeco.javacpp.avcodec.avcodec_encode_video2;
+import static org.bytedeco.javacpp.avcodec.avcodec_fill_audio_frame;
+import static org.bytedeco.javacpp.avcodec.avcodec_find_encoder;
+import static org.bytedeco.javacpp.avcodec.avcodec_find_encoder_by_name;
+import static org.bytedeco.javacpp.avcodec.avcodec_free_context;
+import static org.bytedeco.javacpp.avcodec.avcodec_open2;
+import static org.bytedeco.javacpp.avcodec.avcodec_parameters_copy;
+import static org.bytedeco.javacpp.avcodec.avcodec_parameters_from_context;
+import static org.bytedeco.javacpp.avcodec.avcodec_register_all;
+import static org.bytedeco.javacpp.avdevice.avdevice_register_all;
+import static org.bytedeco.javacpp.avformat.AVFMT_GLOBALHEADER;
+import static org.bytedeco.javacpp.avformat.AVFMT_NOFILE;
+import static org.bytedeco.javacpp.avformat.AVFMT_RAWPICTURE;
+import static org.bytedeco.javacpp.avformat.AVIO_FLAG_WRITE;
+import static org.bytedeco.javacpp.avformat.av_dump_format;
+import static org.bytedeco.javacpp.avformat.av_guess_format;
+import static org.bytedeco.javacpp.avformat.av_interleaved_write_frame;
+import static org.bytedeco.javacpp.avformat.av_register_all;
+import static org.bytedeco.javacpp.avformat.av_write_frame;
+import static org.bytedeco.javacpp.avformat.av_write_trailer;
+import static org.bytedeco.javacpp.avformat.avformat_alloc_output_context2;
+import static org.bytedeco.javacpp.avformat.avformat_network_init;
+import static org.bytedeco.javacpp.avformat.avformat_new_stream;
+import static org.bytedeco.javacpp.avformat.avformat_write_header;
+import static org.bytedeco.javacpp.avformat.avio_alloc_context;
+import static org.bytedeco.javacpp.avformat.avio_close;
+import static org.bytedeco.javacpp.avformat.avio_open2;
+import static org.bytedeco.javacpp.avutil.AVMEDIA_TYPE_AUDIO;
+import static org.bytedeco.javacpp.avutil.AVMEDIA_TYPE_VIDEO;
+import static org.bytedeco.javacpp.avutil.AV_LOG_INFO;
+import static org.bytedeco.javacpp.avutil.AV_NOPTS_VALUE;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_BGR24;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_GRAY16BE;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_GRAY16LE;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_GRAY8;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_NONE;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_NV21;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_RGB32;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_RGBA;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_YUV420P;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_YUVJ420P;
+import static org.bytedeco.javacpp.avutil.AV_ROUND_NEAR_INF;
+import static org.bytedeco.javacpp.avutil.AV_ROUND_PASS_MINMAX;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_DBL;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_DBLP;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_FLT;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_FLTP;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_NONE;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_S16;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_S16P;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_S32;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_S32P;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_U8;
+import static org.bytedeco.javacpp.avutil.AV_SAMPLE_FMT_U8P;
+import static org.bytedeco.javacpp.avutil.FF_QP2LAMBDA;
+import static org.bytedeco.javacpp.avutil.av_d2q;
+import static org.bytedeco.javacpp.avutil.av_dict_free;
+import static org.bytedeco.javacpp.avutil.av_dict_set;
+import static org.bytedeco.javacpp.avutil.av_find_nearest_q_idx;
+import static org.bytedeco.javacpp.avutil.av_frame_alloc;
+import static org.bytedeco.javacpp.avutil.av_frame_free;
+import static org.bytedeco.javacpp.avutil.av_free;
+import static org.bytedeco.javacpp.avutil.av_get_bytes_per_sample;
+import static org.bytedeco.javacpp.avutil.av_get_default_channel_layout;
+import static org.bytedeco.javacpp.avutil.av_image_fill_arrays;
+import static org.bytedeco.javacpp.avutil.av_image_get_buffer_size;
+import static org.bytedeco.javacpp.avutil.av_inv_q;
+import static org.bytedeco.javacpp.avutil.av_log_get_level;
+import static org.bytedeco.javacpp.avutil.av_malloc;
+import static org.bytedeco.javacpp.avutil.av_opt_set;
+import static org.bytedeco.javacpp.avutil.av_rescale_q;
+import static org.bytedeco.javacpp.avutil.av_rescale_q_rnd;
+import static org.bytedeco.javacpp.avutil.av_sample_fmt_is_planar;
+import static org.bytedeco.javacpp.avutil.av_samples_get_buffer_size;
+import static org.bytedeco.javacpp.swresample.swr_alloc_set_opts;
+import static org.bytedeco.javacpp.swresample.swr_convert;
+import static org.bytedeco.javacpp.swresample.swr_free;
+import static org.bytedeco.javacpp.swresample.swr_init;
+import static org.bytedeco.javacpp.swscale.SWS_BILINEAR;
+import static org.bytedeco.javacpp.swscale.sws_freeContext;
+import static org.bytedeco.javacpp.swscale.sws_getCachedContext;
+import static org.bytedeco.javacpp.swscale.sws_scale;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,10 +171,9 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
@@ -72,17 +182,21 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
-import org.bytedeco.javacpp.avcodec;
-import org.bytedeco.javacpp.avformat;
+import org.bytedeco.javacpp.avcodec.AVCodec;
+import org.bytedeco.javacpp.avcodec.AVCodecContext;
+import org.bytedeco.javacpp.avcodec.AVPacket;
+import org.bytedeco.javacpp.avformat.AVFormatContext;
+import org.bytedeco.javacpp.avformat.AVIOContext;
+import org.bytedeco.javacpp.avformat.AVOutputFormat;
+import org.bytedeco.javacpp.avformat.AVStream;
+import org.bytedeco.javacpp.avformat.Write_packet_Pointer_BytePointer_int;
+import org.bytedeco.javacpp.avutil.AVDictionary;
+import org.bytedeco.javacpp.avutil.AVFrame;
+import org.bytedeco.javacpp.avutil.AVRational;
+import org.bytedeco.javacpp.swresample.SwrContext;
+import org.bytedeco.javacpp.swscale.SwsContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.bytedeco.javacpp.avcodec.*;
-import static org.bytedeco.javacpp.avdevice.*;
-import static org.bytedeco.javacpp.avformat.*;
-import static org.bytedeco.javacpp.avutil.*;
-import static org.bytedeco.javacpp.swresample.*;
-import static org.bytedeco.javacpp.swscale.*;
 
 /**
  *
@@ -189,9 +303,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 		this.outputStream = outputStream;
 	}
 
-	public FFmpegFrameRecorder(OutputStream outputStream, int imageWidth, int imageHeight, int audioChannels) {
+	public FFmpegFrameRecorder(String name, OutputStream outputStream, int imageWidth, int imageHeight, int audioChannels) {
 		this(outputStream.toString(), imageWidth, imageHeight, audioChannels);
+		this.name = name;
 		this.outputStream = outputStream;
+	}
+
+	private String name = "noname";
+	public String getName() {
+		return this.name;
 	}
 
 	public void release() throws Exception {
@@ -201,6 +321,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 	}
 
 	void releaseUnsafe() throws Exception {
+		this.releaseing = true;
 		/* close each codec */
 		if (video_c != null) {
 			avcodec_free_context(video_c);
@@ -252,7 +373,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 		audio_st = null;
 		filename = null;
 
-		AVFormatContext outputStreamKey = oc;
 		if (oc != null && !oc.isNull()) {
 			if (outputStream == null && (oformat.flags() & AVFMT_NOFILE) == 0) {
 				/* close the output file */
@@ -304,54 +424,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 					avio = null;
 				}
 			}
-		}
-		
-		if (writeCallback != null) {
-			writeCallback.close();
-			writeCallback = null;
-		}
+		}		
 	}
 
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
 		release();
-	}	
-
-	private class WriteCallback extends Write_packet_Pointer_BytePointer_int {
-		private FFmpegFrameRecorder recorder;
-
-		public WriteCallback(FFmpegFrameRecorder recorder) {
-			this.recorder = recorder;
-		}
-
-		@Override
-		public int call(Pointer opaque, BytePointer buf, int buf_size) {
-			try {
-				byte[] b = new byte[buf_size];
-				OutputStream os = recorder.outputStream;
-				if (os == null) {
-					logger.error("OutputStream is null at WriteCallback");
-					return -1;
-				}
-				buf.get(b, 0, buf_size);
-				os.write(b, 0, buf_size);
-				return buf_size;
-			} catch (Throwable t) {
-				System.err.println("Error on OutputStream.write(): " + t);
-				logger.error("Error on OutputStream.write(): " + t);
-				return -1;
-			}
-		}
-		
-		@Override
-		public void close(){
-			super.close();
-			this.recorder = null;
-		}
 	}
-
-	private WriteCallback writeCallback = new WriteCallback(this);
 
 	private OutputStream outputStream;
 	private AVIOContext avio;
@@ -379,10 +459,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 	private AVPacket video_pkt, audio_pkt;
 	private int[] got_video_packet, got_audio_packet;
 	private AVFormatContext ifmt_ctx;
+	private boolean releaseing = false;
 
 	@Override
 	public int getFrameNumber() {
 		return picture == null ? super.getFrameNumber() : (int) picture.pts();
+	}
+
+	public boolean isReleaseing() {
+		return this.releaseing;
 	}
 
 	@Override
@@ -444,8 +529,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 			}
 		}
 		format_name = oformat.name().getString();
-		if ((oformat.flags() & avformat.AVFMT_TS_NONSTRICT) != 0)
-			oformat.flags(oformat.flags() - avformat.AVFMT_TS_NONSTRICT);
 
 		/* allocate the output media context */
 		if (avformat_alloc_output_context2(oc, null, format_name, filename) < 0) {
@@ -453,11 +536,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 		}
 
 		if (outputStream != null) {
-			avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, null);//
+			avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, new WriteCallback(this), null);//
 			oc.pb(avio);
 
 			filename = outputStream.toString();
-			// outputStreams.put(oc, outputStream);
 		}
 		oc.oformat(oformat);
 		oc.filename().putString(filename);
@@ -536,7 +618,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 			}
 
 			video_c.codec_id(oformat.video_codec());
-			video_c.codec_type(AVMEDIA_TYPE_VIDEO);
+			video_c.codec_type(AVMEDIA_TYPE_VIDEO);			
 			for (Entry<String, String> item : encContextOptions.entrySet())
 				av_opt_set(video_c.priv_data(), item.getKey(), item.getValue(), 0);
 
@@ -1229,8 +1311,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 				pkt.pts(av_rescale_q_rnd(pkt.pts(), in_stream.time_base(), video_st.time_base(), AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 				pkt.dts(av_rescale_q_rnd(pkt.dts(), in_stream.time_base(), video_st.time_base(), AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 				pkt.duration((int) av_rescale_q(pkt.duration(), in_stream.time_base(), video_st.time_base()));
-				if (video_st.cur_dts() >= pkt.dts())				
-					return true;				
+				if (video_st.cur_dts() >= pkt.dts())
+				{
+					pkt.dts(video_st.cur_dts()+pkt.duration());
+					//return true;
+				}
 				if (pkt.pts() < pkt.dts())
 					pkt.pts(pkt.dts());
 				writePacket(AVMEDIA_TYPE_VIDEO, pkt);
@@ -1240,7 +1325,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 				pkt.dts(av_rescale_q_rnd(pkt.dts(), in_stream.time_base(), audio_st.time_base(), AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 				pkt.duration((int) av_rescale_q(pkt.duration(), in_stream.time_base(), audio_st.time_base()));
 				if (audio_st.cur_dts() >= pkt.dts())
-					return true;					
+					//return true;
+					pkt.dts(audio_st.cur_dts()+pkt.duration());
 				if (pkt.pts() < pkt.dts())
 					pkt.pts(pkt.dts());
 				writePacket(AVMEDIA_TYPE_AUDIO, pkt);
@@ -1257,5 +1343,45 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
 	public void setInputAVFormatContext(AVFormatContext ctx) {
 		this.ifmt_ctx = ctx;
+	}
+}
+
+class WriteCallback extends Write_packet_Pointer_BytePointer_int {
+	private static final Logger logger = LoggerFactory.getLogger(WriteCallback.class);
+	private FFmpegFrameRecorder recorder;
+
+	public WriteCallback(FFmpegFrameRecorder recorder) {
+		this.recorder = recorder;
+	}
+
+	@Override
+	public int call(Pointer opaque, BytePointer buf, int buf_size) {
+		if (recorder.isReleaseing()) {
+			logger.error("recorder has stopped!");
+			return 0;
+		}
+		try {
+			byte[] b = new byte[buf_size];
+			while (recorder.getOutputStream() == null) {
+				logger.info(recorder.getName() + ":OutputStream is null ");
+				TimeUnit.MICROSECONDS.sleep(100);
+			}
+			if (recorder.getOutputStream() == null) {
+				logger.error(Thread.currentThread().getName() + ":OutputStream is null at WriteCallback!buffer size:" + buf_size + ", why?");
+				return -1;
+			}
+			buf.get(b, 0, buf_size);
+			recorder.getOutputStream().write(b, 0, buf_size);
+			return buf_size;
+		} catch (Throwable t) {
+			logger.error("Error on OutputStream.write(): " + t);
+			return -1;
+		}
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		this.recorder = null;
 	}
 }
