@@ -406,6 +406,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 			swr_free(samples_convert_ctx);
 			samples_convert_ctx = null;
 		}
+		
+		if (writeCallback != null) {
+			writeCallback.close();
+			writeCallback = null;
+		}
 
 		if (outputStream != null) {
 			try {
@@ -459,6 +464,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 	private AVPacket video_pkt, audio_pkt;
 	private int[] got_video_packet, got_audio_packet;
 	private AVFormatContext ifmt_ctx;
+	private WriteCallback writeCallback;
 	private boolean releaseing = false;
 
 	@Override
@@ -536,7 +542,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 		}
 
 		if (outputStream != null) {
-			avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, new WriteCallback(this), null);//
+			this.writeCallback = new WriteCallback(this);
+			avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, this.writeCallback, null);//
 			oc.pb(avio);
 
 			filename = outputStream.toString();
