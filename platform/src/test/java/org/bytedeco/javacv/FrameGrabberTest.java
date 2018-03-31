@@ -339,23 +339,28 @@ public class FrameGrabberTest {
             long tolerance = 1000000L + (grabber.getFrameRate() > 0.0? (long) (5000000/grabber.getFrameRate()):500000L);
             Random random = new Random();
 
-            for (int frametypenum = 0; frametypenum < 3; frametypenum++) {
+            for (int frametypenum = 0; frametypenum < 4; frametypenum++) {
                 long mindelta = Long.MAX_VALUE;
                 long maxdelta = Long.MIN_VALUE;
                 System.out.println();
-                System.out.println("Seek by " + (frametypenum == 0 ? "any" : frametypenum == 1 ? "video" : "audio") + " frames");
+                System.out.println("Seek by " 
+                					+ (frametypenum == 0 ? "any" : frametypenum == 1 ? "video" : frametypenum == 2  ? "audio" : "old method") 
+                					+ (frametypenum == 0 ? " frames" : ""));
                 System.out.println("--------------------");
                 for (int i = 0; i < 200; i++) {
                     long timestamp = random.nextInt(length);
                     switch (frametypenum) {
                         case 0:
-                            grabber.setTimestamp(timestamp);
+                            grabber.setTimestamp(timestamp, true);
                             break;
                         case 1:
                             grabber.setVideoTimestamp(timestamp);
                             break;
                         case 2:
                             grabber.setAudioTimestamp(timestamp);
+                            break;
+                        case 3:
+                            grabber.setTimestamp(timestamp);
                             break;
                     }
 
