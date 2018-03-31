@@ -1,4 +1,7 @@
 
+ * Add `setpts=N` to input of `FFmpegFrameFilter` to make `fade` and `overlay` filters behave as expected ([issue #667](https://github.com/bytedeco/javacv/issues/667))
+ * Fix crash on `FFmpegFrameRecorder.stop()` when no audio samples are left to write
+
 ### March 29, 2018 version 1.4.1
  * Improve seeking and frame number estimates in `FFmpegFrameGrabber` ([pull #908](https://github.com/bytedeco/javacv/pull/908))
  * Add `maxBFrames`, `trellis`, and `maxDelay` properties to `FFmpegFrameRecorder` ([pull #939](https://github.com/bytedeco/javacv/pull/939))

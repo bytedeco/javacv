@@ -983,7 +983,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
 
-        if (samples == null) {
+        if (samples == null && samples_out[0].position() > 0) {
             // Typically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
             double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
             writeSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));
