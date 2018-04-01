@@ -488,9 +488,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     /** default override of super.setFrameNumber implies setting
-     *  of a video frame having that number */
+     *  of a frame close to a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        setVideoFrameNumber(frameNumber);
+    	if (hasVideo()) setTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        else super.frameNumber = frameNumber;
     }
 
     /** if there is video stream tries to seek to video frame with corresponding timestamp
