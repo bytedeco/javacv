@@ -404,6 +404,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
         oc.oformat(oformat);
         oc.filename().putString(filename);
+        oc.max_delay(maxDelay);
 
         /* add the audio and video streams using the format codecs
            and initialize the codecs */
@@ -558,6 +559,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             if ((video_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
                 video_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
+            }
+
+            if (maxBFrames >= 0) {
+                video_c.max_b_frames(maxBFrames);
+                video_c.has_b_frames(maxBFrames == 0 ? 0 : 1);
+            }
+
+            if (trellis >= 0) {
+                video_c.trellis(trellis);
             }
         }
 
@@ -973,7 +983,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
 
-        if (samples == null) {
+        if (samples == null && samples_out[0].position() > 0) {
             // Typically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
             double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
             writeSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));

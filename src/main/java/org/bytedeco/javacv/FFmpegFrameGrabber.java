@@ -758,6 +758,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
         av_dict_free(options);
 
+        oc.max_delay(maxDelay);
+
         // Retrieve stream information
         if ((ret = avformat_find_stream_info(oc, (PointerPointer)null)) < 0) {
             throw new Exception("avformat_find_stream_info() error " + ret + ": Could not find stream information.");

@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.4.1-SNAPSHOT</version>
+  <version>1.4.2-SNAPSHOT</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV and more</description>
@@ -328,6 +328,7 @@
               </execution>
             </executions>
             <configuration>
+              <passphrase>${env.GPG_PASSPHRASE}</passphrase>
               <useAgent>false</useAgent>
             </configuration>
           </plugin>

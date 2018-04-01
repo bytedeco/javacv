@@ -121,6 +121,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             avfilter_graph_free(filter_graph);
             buffersink_ctx = null;
             buffersrc_ctx = null;
+            setpts_ctx = null;
             filter_graph = null;
         }
         if (image_frame != null) {
@@ -140,6 +141,7 @@ public class FFmpegFrameFilter extends FrameFilter {
 
     AVFilterContext buffersink_ctx;
     AVFilterContext buffersrc_ctx;
+    AVFilterContext setpts_ctx;
     AVFilterGraph filter_graph;
 
     AVPacket packet;
@@ -204,6 +206,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         int ret;
         AVFilter buffersrc  = avfilter_get_by_name("buffer");
         AVFilter buffersink = avfilter_get_by_name("buffersink");
+        AVFilter setpts = avfilter_get_by_name("setpts");
         AVFilterInOut outputs = avfilter_inout_alloc();
         AVFilterInOut inputs  = avfilter_inout_alloc();
         AVRational time_base = av_inv_q(av_d2q(frameRate, 1001000));
@@ -224,6 +227,18 @@ public class FFmpegFrameFilter extends FrameFilter {
                                                args, null, filter_graph);
             if (ret < 0) {
                 throw new Exception("avfilter_graph_create_filter(): Cannot create buffer source.");
+            }
+
+            ret = avfilter_graph_create_filter(setpts_ctx = new AVFilterContext(), setpts, "setpts",
+                                               "N", null, filter_graph);
+            if (ret < 0) {
+                throw new Exception("avfilter_graph_create_filter(): Cannot create setpts filter.");
+            }
+
+            ret = avfilter_link(buffersrc_ctx, 0, setpts_ctx, 0);
+
+            if (ret < 0) {
+                throw new Exception("avfilter_graph_create_filter(): Cannot link setpts filter.");
             }
 
             /* buffer video sink: to terminate the filter chain. */
@@ -249,7 +264,7 @@ public class FFmpegFrameFilter extends FrameFilter {
              * default.
              */
             outputs.name(av_strdup(new BytePointer("in")));
-            outputs.filter_ctx(buffersrc_ctx);
+            outputs.filter_ctx(setpts_ctx);
             outputs.pad_idx(0);
             outputs.next(null);
 
