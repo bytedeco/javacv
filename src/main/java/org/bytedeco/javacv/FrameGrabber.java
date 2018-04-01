@@ -200,6 +200,7 @@ public abstract class FrameGrabber implements Closeable {
     protected Map<String, String> audioMetadata = new HashMap<String, String>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
+    protected int maxDelay = -1;
 
     public int getVideoStream() {
         return videoStream;
@@ -465,6 +466,13 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setTimestamp(long timestamp) throws Exception {
         this.timestamp = timestamp;
+    }
+
+    public int getMaxDelay() {
+        return maxDelay;
+    }
+    public void setMaxDelay(int maxDelay) {
+        this.maxDelay = maxDelay;
     }
 
     public int getLengthInFrames() {
