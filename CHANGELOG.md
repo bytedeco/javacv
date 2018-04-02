@@ -1,4 +1,5 @@
 
+ * Add support for audio frames to `FFmpegFrameFilter` ([issue #492](https://github.com/bytedeco/javacv/issues/492))
  * Add `setpts=N` to input of `FFmpegFrameFilter` to make `fade` and `overlay` filters behave as expected ([issue #667](https://github.com/bytedeco/javacv/issues/667))
  * Fix crash on `FFmpegFrameRecorder.stop()` when no audio samples are left to write
 
