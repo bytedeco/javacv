@@ -83,6 +83,9 @@ public class FrameFilterTest {
             filter.setSampleFormat(grabber.getSampleFormat());
             filter.start();
 
+            FFmpegFrameFilter nullFilter = new FFmpegFrameFilter(null, null, 0, 0, 0);
+            nullFilter.start();
+
             int a = 0, b = 0, c = 0, d = 0;
             Frame frame2;
             while ((frame2 = grabber.grab()) != null) {
@@ -110,6 +113,8 @@ public class FrameFilterTest {
                         assertEquals(frame2.samples[0].limit() / 2, frame3.samples[0].limit());
                     }
                 }
+                nullFilter.push(frame2);
+                assertEquals(frame2, nullFilter.pull());
             }
             assertEquals(a, c);
             assertEquals(b, d);

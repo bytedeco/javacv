@@ -188,7 +188,7 @@ public class FFmpegFrameFilter extends FrameFilter {
     BytePointer[] samples_ptr;
     Buffer[] image_buf;
     Buffer[] samples_buf;
-    Frame frame;
+    Frame frame, inframe;
 
     @Override public int getImageWidth() {
         return buffersink_ctx != null ? av_buffersink_get_w(buffersink_ctx) : super.getImageWidth();
@@ -430,11 +430,12 @@ public class FFmpegFrameFilter extends FrameFilter {
         push(frame, AV_PIX_FMT_NONE);
     }
     public void push(Frame frame, int pixelFormat) throws Exception {
-        if (frame != null && frame.image != null) {
+        inframe = frame;
+        if (frame != null && frame.image != null && buffersrc_ctx != null) {
             pushImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
                     frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
         }
-        if (frame != null && frame.samples != null) {
+        if (frame != null && frame.samples != null && abuffersrc_ctx != null) {
             pushSamples(frame.audioChannels, sampleRate, sampleFormat, frame.samples);
         }
         if (frame == null || (frame.image == null && frame.samples == null)) {
@@ -546,11 +547,18 @@ public class FFmpegFrameFilter extends FrameFilter {
         frame.audioChannels = 0;
         frame.samples = null;
         frame.opaque = null;
-        Frame frame = pullImage();
-        if (frame == null) {
-            frame = pullSamples();
+
+        Frame f = null;
+        if (f == null && buffersrc_ctx != null) {
+            f = pullImage();
         }
-        return frame;
+        if (f == null && abuffersrc_ctx != null) {
+            f = pullSamples();
+        }
+        if (f == null && buffersrc_ctx == null && abuffersrc_ctx == null) {
+            f = inframe;
+        }
+        return f;
     }
 
     public Frame pullImage() throws Exception {
