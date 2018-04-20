@@ -83,7 +83,6 @@ public class JavaFXFrameConverter extends FrameConverter<Image> {
             }
             if (buffer instanceof ByteBuffer) {
                 ByteBuffer bb = (ByteBuffer) buffer;
-                int tot = 0;
                 ByteBuffer b = (ByteBuffer) frame.image[0];
                 for (int i = y; i < y + h; i++) {
                     for (int j = x; j < x + w; j++) {
@@ -92,7 +91,6 @@ public class JavaFXFrameConverter extends FrameConverter<Image> {
                         bb.put(b.get(fss * i + base + 1));
                         bb.put(b.get(fss * i + base + 2));
                         bb.put((byte) 255);
-                        tot = tot + 4;
                     }
                 }
 
