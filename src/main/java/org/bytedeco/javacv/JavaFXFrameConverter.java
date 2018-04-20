@@ -62,24 +62,26 @@ public class JavaFXFrameConverter extends FrameConverter<Image> {
 
         @Override
         public PixelFormat getPixelFormat() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("getPixelFormat not supported yet.");
         }
 
         @Override
         public int getArgb(int x, int y) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("getArgb not supported yet.");
         }
 
         @Override
         public Color getColor(int x, int y) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("getColor not supported yet.");
         }
 
         @Override
         public <T extends Buffer> void getPixels(int x, int y, int w, int h, WritablePixelFormat<T> pixelformat, T buffer, int scanlineStride) {
             int fss = frame.imageStride;
+            if (frame.imageChannels != 3) {
+                throw new UnsupportedOperationException("We only support frames with imageChannels = 3 (BGR)");
+            }
             if (buffer instanceof ByteBuffer) {
-
                 ByteBuffer bb = (ByteBuffer) buffer;
                 int tot = 0;
                 ByteBuffer b = (ByteBuffer) frame.image[0];
@@ -99,12 +101,12 @@ public class JavaFXFrameConverter extends FrameConverter<Image> {
 
         @Override
         public void getPixels(int x, int y, int w, int h, WritablePixelFormat<ByteBuffer> pixelformat, byte[] buffer, int offset, int scanlineStride) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("getPixels<ByteBuffer> Not supported yet.");
         }
 
         @Override
         public void getPixels(int x, int y, int w, int h, WritablePixelFormat<IntBuffer> pixelformat, int[] buffer, int offset, int scanlineStride) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("getPixels<IntBuffer>Not supported yet.");
         }
 
     }
