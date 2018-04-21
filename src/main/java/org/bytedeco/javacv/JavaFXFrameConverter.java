@@ -40,7 +40,7 @@ public class JavaFXFrameConverter extends FrameConverter<Image> {
 
     @Override
     public Frame convert(Image f) {
-        return null;
+        throw new UnsupportedOperationException("conversion from Image to Frame not supported yet.");
     }
 
     @Override
