@@ -490,7 +490,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     /** default override of super.setFrameNumber implies setting
      *  of a frame close to a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-    	if (hasVideo()) setTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        if (hasVideo()) setTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -514,9 +514,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     @Override public void setTimestamp(long timestamp) throws Exception {
         setTimestamp(timestamp, false);
     }
-    
+
     /** setTimestamp with possibility to select between old quick seek code or new code
-     * doing check of frame content. The frame check can be useful with corrupted files, when seeking may 
+     * doing check of frame content. The frame check can be useful with corrupted files, when seeking may
      * end up with an empty frame not containing video nor audio */
     public void setTimestamp(long timestamp, boolean checkFrame) throws Exception {
         setTimestamp(timestamp, checkFrame ? EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO) : null);
@@ -584,78 +584,75 @@ public class FFmpegFrameGrabber extends FrameGrabber {
              *
             */
 
-            if (frameTypesToSeek != null) { //new code providing check of frame content while seeking to the timestamp  
-            	boolean has_video = hasVideo();
-            	boolean has_audio = hasAudio();
+            if (frameTypesToSeek != null) { //new code providing check of frame content while seeking to the timestamp
+                boolean has_video = hasVideo();
+                boolean has_audio = hasAudio();
 
-            	if (has_video || has_audio) {
-            		if ((frameTypesToSeek.contains(Frame.Type.VIDEO) && !has_video ) ||
-            				(frameTypesToSeek.contains(Frame.Type.AUDIO) && !has_audio ))
-            			frameTypesToSeek = EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO);
+                if (has_video || has_audio) {
+                    if ((frameTypesToSeek.contains(Frame.Type.VIDEO) && !has_video ) ||
+                            (frameTypesToSeek.contains(Frame.Type.AUDIO) && !has_audio ))
+                        frameTypesToSeek = EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO);
 
-            		long initialSeekPosition = Long.MIN_VALUE;
-            		long maxSeekSteps = 0;
-            		long count = 0;
-            		Frame seekFrame = null;
+                    long initialSeekPosition = Long.MIN_VALUE;
+                    long maxSeekSteps = 0;
+                    long count = 0;
+                    Frame seekFrame = null;
 
-            		while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)
-            			seekFrame = grabFrame(true, true, false, false);
-            			if (seekFrame == null) return; //is it better to throw NullPointerException?
-            			EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
-            			frameTypes.retainAll(frameTypesToSeek);
-            			if (!frameTypes.isEmpty()) {
-            				initialSeekPosition = seekFrame.timestamp;
-            				//the position closest to the requested timestamp from which it can be reached by sequential grabFrame calls
-            				break;
-            			}
-            		}
-            		if (has_video && this.getFrameRate() > 0) {
-            			//estimation of video frame duration
-            			double deltaTimeStamp = 1000000.0/this.getFrameRate();
-            			if (initialSeekPosition < timestamp - deltaTimeStamp/2)
-            				maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
-            		} else if (has_audio && this.getAudioFrameRate() > 0) {
-            			//estimation of audio frame duration
-            			double deltaTimeStamp = 1000000.0/this.getAudioFrameRate();
-            			if (initialSeekPosition < timestamp - deltaTimeStamp/2)
-            				maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
-            		} else
-            			//zero frameRate
-            			if (initialSeekPosition < timestamp - 1L) maxSeekSteps = 1000;
+                    while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)
+                        seekFrame = grabFrame(true, true, false, false);
+                        if (seekFrame == null) return; //is it better to throw NullPointerException?
+                        EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
+                        frameTypes.retainAll(frameTypesToSeek);
+                        if (!frameTypes.isEmpty()) {
+                            initialSeekPosition = seekFrame.timestamp;
+                            //the position closest to the requested timestamp from which it can be reached by sequential grabFrame calls
+                            break;
+                        }
+                    }
+                    if (has_video && this.getFrameRate() > 0) {
+                        //estimation of video frame duration
+                        double deltaTimeStamp = 1000000.0/this.getFrameRate();
+                        if (initialSeekPosition < timestamp - deltaTimeStamp/2)
+                            maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
+                    } else if (has_audio && this.getAudioFrameRate() > 0) {
+                        //estimation of audio frame duration
+                        double deltaTimeStamp = 1000000.0/this.getAudioFrameRate();
+                        if (initialSeekPosition < timestamp - deltaTimeStamp/2)
+                            maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
+                    } else
+                        //zero frameRate
+                        if (initialSeekPosition < timestamp - 1L) maxSeekSteps = 1000;
 
-            		count = 0;
-            		while(count < maxSeekSteps) {
-            			seekFrame = grabFrame(true, true, false, false);
-            			if (seekFrame == null) return; //is it better to throw NullPointerException?
-            			EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
-            			frameTypes.retainAll(frameTypesToSeek);
-            			if (!frameTypes.isEmpty()) {
-            				count++;
-            				if (this.timestamp >= timestamp - 1) break;
-            			}
-            		}
+                    count = 0;
+                    while(count < maxSeekSteps) {
+                        seekFrame = grabFrame(true, true, false, false);
+                        if (seekFrame == null) return; //is it better to throw NullPointerException?
+                        EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
+                        frameTypes.retainAll(frameTypesToSeek);
+                        if (!frameTypes.isEmpty()) {
+                            count++;
+                            if (this.timestamp >= timestamp - 1) break;
+                        }
+                    }
 
-            		frameGrabbed = true;
-            	}
+                    frameGrabbed = true;
+                }
             } else { //old quick seeking code used in JavaCV versions prior to 1.4.1
-            	/* comparing to timestamp +/- 1 avoids rouding issues for framerates
+                /* comparing to timestamp +/- 1 avoids rouding issues for framerates
                 which are no proper divisors of 1000000, e.g. where
                 av_frame_get_best_effort_timestamp in grabFrame sets this.timestamp
                 to ...666 and the given timestamp has been rounded to ...667
                 (or vice versa)
-            	 */
-            	int count = 0; // prevent infinite loops with corrupted files
-            	while (this.timestamp > timestamp + 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
-            		// flush frames if seeking backwards
-            		if (frame.image != null || frame.samples != null) break; // stop flushing if a frame containing data was grabbed
-            	}
-            	count = 0;
-            	while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
-            		// decode up to the desired frame
-            	}
-            	if (video_c != null) {
-            		frameGrabbed = true;
-            	}
+                 */
+                int count = 0; // prevent infinite loops with corrupted files
+                while (this.timestamp > timestamp + 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
+                    // flush frames if seeking backwards
+                }
+                count = 0;
+                while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
+                    // decode up to the desired frame
+                }
+                frameGrabbed = true;
             }
         }
     }
@@ -675,7 +672,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         // best guess...
         return (int) Math.round(getLengthInTime() * getFrameRate() / 1000000L);
     }
-    
+
     public int getLengthInAudioFrames() {
         // best guess...
         double afr = getAudioFrameRate();
