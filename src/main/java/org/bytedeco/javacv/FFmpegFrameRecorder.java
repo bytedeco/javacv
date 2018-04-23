@@ -508,7 +508,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 video_c.gop_size(gopSize); /* emit one intra frame every gopSize frames at most */
             }
             if (videoQuality >= 0) {
-                video_c.flags(video_c.flags() | CODEC_FLAG_QSCALE);
+                video_c.flags(video_c.flags() | AV_CODEC_FLAG_QSCALE);
                 video_c.global_quality((int)Math.round(FF_QP2LAMBDA * videoQuality));
             }
 
@@ -554,10 +554,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             // some formats want stream headers to be separate
             if ((oformat.flags() & AVFMT_GLOBALHEADER) != 0) {
-                video_c.flags(video_c.flags() | CODEC_FLAG_GLOBAL_HEADER);
+                video_c.flags(video_c.flags() | AV_CODEC_FLAG_GLOBAL_HEADER);
             }
 
-            if ((video_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
+            if ((video_codec.capabilities() & AV_CODEC_CAP_EXPERIMENTAL) != 0) {
                 video_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
             }
 
@@ -612,7 +612,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 sampleFormat = inpAudioStream.codec().sample_fmt();
                 audioQuality = inpAudioStream.codec().global_quality();
                 audio_c.codec_tag(0);
-                audio_st.pts(inpAudioStream.pts());
+//                audio_st.pts(inpAudioStream.pts());
                 audio_st.duration(inpAudioStream.duration());
                 audio_st.time_base().num(inpAudioStream.time_base().num());
                 audio_st.time_base().den(inpAudioStream.time_base().den());
@@ -656,16 +656,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 default: assert false;
             }
             if (audioQuality >= 0) {
-                audio_c.flags(audio_c.flags() | CODEC_FLAG_QSCALE);
+                audio_c.flags(audio_c.flags() | AV_CODEC_FLAG_QSCALE);
                 audio_c.global_quality((int)Math.round(FF_QP2LAMBDA * audioQuality));
             }
 
             // some formats want stream headers to be separate
             if ((oformat.flags() & AVFMT_GLOBALHEADER) != 0) {
-                audio_c.flags(audio_c.flags() | CODEC_FLAG_GLOBAL_HEADER);
+                audio_c.flags(audio_c.flags() | AV_CODEC_FLAG_GLOBAL_HEADER);
             }
 
-            if ((audio_codec.capabilities() & CODEC_CAP_EXPERIMENTAL) != 0) {
+            if ((audio_codec.capabilities() & AV_CODEC_CAP_EXPERIMENTAL) != 0) {
                 audio_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
             }
         }
@@ -689,16 +689,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_dict_free(options);
 
             video_outbuf = null;
-            if ((oformat.flags() & AVFMT_RAWPICTURE) == 0) {
-                /* allocate output buffer */
-                /* XXX: API change will be done */
-                /* buffers passed into lav* can be allocated any way you prefer,
-                   as long as they're aligned enough for the architecture, and
-                   they're freed appropriately (such as using av_free for buffers
-                   allocated with av_malloc) */
-                video_outbuf_size = Math.max(256 * 1024, 8 * video_c.width() * video_c.height()); // a la ffmpeg.c
-                video_outbuf = new BytePointer(av_malloc(video_outbuf_size));
-            }
+//            if ((oformat.flags() & AVFMT_RAWPICTURE) == 0) {
+//                /* allocate output buffer */
+//                /* XXX: API change will be done */
+//                /* buffers passed into lav* can be allocated any way you prefer,
+//                   as long as they're aligned enough for the architecture, and
+//                   they're freed appropriately (such as using av_free for buffers
+//                   allocated with av_malloc) */
+//                video_outbuf_size = Math.max(256 * 1024, 8 * video_c.width() * video_c.height()); // a la ffmpeg.c
+//                video_outbuf = new BytePointer(av_malloc(video_outbuf_size));
+//            }
 
             /* allocate the encoded raw picture */
             if ((picture = av_frame_alloc()) == null) {
@@ -936,17 +936,17 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
         }
 
-        if ((oformat.flags() & AVFMT_RAWPICTURE) != 0) {
-            if (image == null || image.length == 0) {
-                return false;
-            }
-            /* raw video case. The API may change slightly in the future for that? */
-            av_init_packet(video_pkt);
-            video_pkt.flags(video_pkt.flags() | AV_PKT_FLAG_KEY);
-            video_pkt.stream_index(video_st.index());
-            video_pkt.data(new BytePointer(picture));
-            video_pkt.size(Loader.sizeof(AVFrame.class));
-        } else {
+//        if ((oformat.flags() & AVFMT_RAWPICTURE) != 0) {
+//            if (image == null || image.length == 0) {
+//                return false;
+//            }
+//            /* raw video case. The API may change slightly in the future for that? */
+//            av_init_packet(video_pkt);
+//            video_pkt.flags(video_pkt.flags() | AV_PKT_FLAG_KEY);
+//            video_pkt.stream_index(video_st.index());
+//            video_pkt.data(new BytePointer(picture));
+//            video_pkt.size(Loader.sizeof(AVFrame.class));
+//        } else {
             /* encode the image */
             av_init_packet(video_pkt);
             video_pkt.data(video_outbuf);
@@ -969,7 +969,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else {
                 return false;
             }
-        }
+//        }
 
         writePacket(AVMEDIA_TYPE_VIDEO, video_pkt);
         return image != null ? (video_pkt.flags() & AV_PKT_FLAG_KEY) != 0 : got_video_packet[0] != 0;

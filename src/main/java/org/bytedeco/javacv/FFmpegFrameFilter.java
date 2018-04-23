@@ -555,9 +555,10 @@ public class FFmpegFrameFilter extends FrameFilter {
         if (f == null && abuffersrc_ctx != null) {
             f = pullSamples();
         }
-        if (f == null && buffersrc_ctx == null && abuffersrc_ctx == null) {
+        if (f == null) {
             f = inframe;
         }
+        inframe = null;
         return f;
     }
 
