@@ -567,7 +567,7 @@ public class FFmpegFrameFilter extends FrameFilter {
 
         /* pull a filtered frame from the filtergraph */
         int ret = av_buffersink_get_frame(buffersink_ctx, filt_frame);
-        if (ret == -11 /*AVERROR(EAGAIN)*/ || ret == AVERROR_EOF) {
+        if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
             return null;
         } else if (ret < 0) {
             throw new Exception("av_buffersink_get_frame(): Error occurred: "
@@ -607,7 +607,7 @@ public class FFmpegFrameFilter extends FrameFilter {
 
         /* pull a filtered frame from the filtergraph */
         int ret = av_buffersink_get_frame(abuffersink_ctx, filt_frame);
-        if (ret == -11 /*AVERROR(EAGAIN)*/ || ret == AVERROR_EOF) {
+        if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
             return null;
         } else if (ret < 0) {
             throw new Exception("av_buffersink_get_frame(): Error occurred: "

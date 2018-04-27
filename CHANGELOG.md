@@ -1,4 +1,5 @@
 
+ * Fix `FFmpegFrameFilter` on Mac throwing "Resource temporarily unavailable" ([issue #974](https://github.com/bytedeco/javacv/issues/974))
  * Upgrade dependencies for FFmpeg 4.0
  * Add initial limited version of `JavaFXFrameConverter` ([pull #969](https://github.com/bytedeco/javacv/pull/969))
  * Revert default behavior of `FFmpegFrameGrabber.setTimestamp()` to previous version ([pull #949](https://github.com/bytedeco/javacv/pull/949))
