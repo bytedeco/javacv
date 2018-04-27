@@ -579,13 +579,15 @@ public class FFmpegFrameFilter extends FrameFilter {
         if (filt_frame.data(1) == null) {
             frame.imageStride = filt_frame.linesize(0);
             BytePointer ptr = filt_frame.data(0);
+            // Fix bug on vflip filter, frame.imageStride can be negative
+            // see https://github.com/bytedeco/javacv/issues/975
             if (ptr != null && !ptr.equals(image_ptr[0])) {
-                image_ptr[0] = ptr.capacity(frame.imageHeight * frame.imageStride);
+                image_ptr[0] = ptr.capacity(frame.imageHeight * Math.abs(frame.imageStride));
                 image_buf[0] = ptr.asBuffer();
             }
             frame.image = image_buf;
-            frame.image[0].position(0).limit(frame.imageHeight * frame.imageStride);
-            frame.imageChannels = frame.imageStride / frame.imageWidth;
+            frame.image[0].position(0).limit(frame.imageHeight * Math.abs(frame.imageStride));
+            frame.imageChannels = Math.abs(frame.imageStride) / frame.imageWidth;
         } else {
             frame.imageStride = frame.imageWidth;
             int size = av_image_get_buffer_size(filt_frame.format(), frame.imageWidth, frame.imageHeight, 1);
