@@ -42,6 +42,13 @@ We can also have everything downloaded and installed automatically with:
   }
 ```
 
+ * Leiningen (inside the `project.clj` file)
+```clojure
+  :dependencies [
+    [org.bytedeco/javacv-platform "1.4.1"]
+  ]
+```
+
  * sbt (inside the `build.sbt` file)
 ```scala
   libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.4.1"
