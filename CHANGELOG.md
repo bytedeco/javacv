@@ -1,4 +1,5 @@
 
+ * Update `RecordActivity` to fix issue with pixel formats ([issue #979](https://github.com/bytedeco/javacv/issues/979))
  * Fix `FFmpegFrameFilter` to support negative strides returned by "vflip" ([pull #977](https://github.com/bytedeco/javacv/pull/977))
  * Fix `FFmpegFrameFilter` on Mac throwing "Resource temporarily unavailable" ([issue #974](https://github.com/bytedeco/javacv/issues/974))
  * Upgrade dependencies for FFmpeg 4.0
