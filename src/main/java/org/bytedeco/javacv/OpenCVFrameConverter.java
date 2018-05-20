@@ -106,8 +106,8 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
             frame.imageChannels = img.nChannels();
             frame.imageStride = img.widthStep() * 8 / Math.abs(frame.imageDepth);
             frame.image = new Buffer[] { img.createBuffer() };
-            frame.opaque = img;
         }
+        frame.opaque = img;
         return frame;
     }
 

@@ -75,6 +75,16 @@
       <artifactId>flandmark-platform</artifactId>
       <version>1.07-${javacpp.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>leptonica-platform</artifactId>
+      <version>1.76.0-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>tesseract-platform</artifactId>
+      <version>4.0.0-beta.1-${javacpp.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>junit</groupId>

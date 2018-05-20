@@ -27,9 +27,12 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
+import org.bytedeco.javacpp.lept.PIX;
 import org.junit.Test;
 
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -269,4 +272,67 @@ public class FrameConverterTest {
         frame2Idx.release();
     }
 
+    @Test public void testLeptonicaFrameConverter() {
+        System.out.println("LeptonicaFrameConverter");
+
+        Frame frame = new Frame(640 + 1, 480, Frame.DEPTH_UBYTE, 3);
+        LeptonicaFrameConverter converter = new LeptonicaFrameConverter();
+
+        UByteIndexer frameIdx = frame.createIndexer();
+        for (int i = 0; i < frameIdx.rows(); i++) {
+            for (int j = 0; j < frameIdx.cols(); j++) {
+                for (int k = 0; k < frameIdx.channels(); k++) {
+                    frameIdx.put(i, j, k, i + j + k);
+                }
+            }
+        }
+
+        PIX pix = converter.convert(frame);
+
+        converter.frame = null;
+        Frame frame1 = converter.convert(pix);
+        assertEquals(frame1.opaque, pix);
+
+        PIX pix2 = PIX.createHeader(pix.w(), pix.h(), pix.d()).data(pix.data()).wpl(pix.wpl());
+        assertNotEquals(pix, pix2);
+
+        Frame frame2 = converter.convert(pix2);
+        assertEquals(frame2.opaque, pix2);
+
+        IntBuffer frameBuf = ((ByteBuffer)frame.image[0].position(0)).asIntBuffer();
+        IntBuffer frame1Buf = ((ByteBuffer)frame1.image[0].position(0)).asIntBuffer();
+        IntBuffer frame2Buf = ((ByteBuffer)frame2.image[0].position(0)).asIntBuffer();
+        IntBuffer pixBuf = pix.createBuffer().order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+        IntBuffer pix2Buf = pix2.createBuffer().order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+        for (int i = 0; i < frameBuf.capacity(); i++) {
+            int j = frameBuf.get(i);
+            assertEquals(j, frame1Buf.get(i));
+            assertEquals(j, frame2Buf.get(i));
+            assertEquals(j, pixBuf.get(i));
+            assertEquals(j, pix2Buf.get(i));
+        }
+
+        try {
+            frame1Buf.get(frameBuf.capacity() + 1);
+            fail("IndexOutOfBoundsException should have been thrown.");
+        } catch (IndexOutOfBoundsException e) { }
+
+        try {
+            frame2Buf.get(frameBuf.capacity() + 1);
+            fail("IndexOutOfBoundsException should have been thrown.");
+        } catch (IndexOutOfBoundsException e) { }
+
+        try {
+            pixBuf.get(frameBuf.capacity() + 1);
+            fail("IndexOutOfBoundsException should have been thrown.");
+        } catch (IndexOutOfBoundsException e) { }
+
+        try {
+            pix2Buf.get(frameBuf.capacity() + 1);
+            fail("IndexOutOfBoundsException should have been thrown.");
+        } catch (IndexOutOfBoundsException e) { }
+
+        pix2.deallocate();
+        pix.deallocate();
+    }
 }

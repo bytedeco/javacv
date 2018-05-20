@@ -121,6 +121,16 @@
       <artifactId>flandmark</artifactId>
       <version>1.07-${javacpp.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>leptonica</artifactId>
+      <version>1.76.0-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco.javacpp-presets</groupId>
+      <artifactId>tesseract</artifactId>
+      <version>4.0.0-beta.1-${javacpp.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.google.android</groupId>

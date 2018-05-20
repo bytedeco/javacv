@@ -1,4 +1,5 @@
 
+ * Add `LeptonicaFrameConverter` to easily but efficiently pass image data to Tesseract ([issue bytedeco/javacpp-presets#224](https://github.com/bytedeco/javacpp-presets/issues/224))
  * Update `RecordActivity` to fix issue with pixel formats ([issue #979](https://github.com/bytedeco/javacv/issues/979))
  * Fix `FFmpegFrameFilter` to support negative strides returned by "vflip" ([pull #977](https://github.com/bytedeco/javacv/pull/977))
  * Fix `FFmpegFrameFilter` on Mac throwing "Resource temporarily unavailable" ([issue #974](https://github.com/bytedeco/javacv/issues/974))
