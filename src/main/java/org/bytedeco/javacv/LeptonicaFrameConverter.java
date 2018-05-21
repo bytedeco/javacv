@@ -45,7 +45,8 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
         return pix != null && frame != null && frame.image != null && frame.image.length > 0
                 && frame.imageWidth == pix.w() && frame.imageHeight == pix.h()
                 && frame.imageChannels == pix.d() / 8 && frame.imageDepth == Frame.DEPTH_UBYTE
-                && new Pointer(frame.image[0]).address() == pix.data().address()
+                && (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)
+                    || new Pointer(frame.image[0]).address() == pix.data().address())
                 && frame.imageStride * Math.abs(frame.imageDepth) / 8 == pix.wpl() * 4;
     }
 
