@@ -1,9 +1,10 @@
 
+ * Expose `apiPreference` constructor argument of `VideoCapture` to `OpenCVFrameGrabber` ([pull #1025](https://github.com/bytedeco/javacv/pull/1025))
  * Add `LeptonicaFrameConverter` to easily but efficiently pass image data to Tesseract ([issue bytedeco/javacpp-presets#224](https://github.com/bytedeco/javacpp-presets/issues/224))
  * Update `RecordActivity` to fix issue with pixel formats ([issue #979](https://github.com/bytedeco/javacv/issues/979))
  * Fix `FFmpegFrameFilter` to support negative strides returned by "vflip" ([pull #977](https://github.com/bytedeco/javacv/pull/977))
  * Fix `FFmpegFrameFilter` on Mac throwing "Resource temporarily unavailable" ([issue #974](https://github.com/bytedeco/javacv/issues/974))
- * Upgrade dependencies for FFmpeg 4.0
+ * Upgrade dependencies for FFmpeg 4.0.1 and Tesseract 4.0.0-beta.3
  * Add initial limited version of `JavaFXFrameConverter` ([pull #969](https://github.com/bytedeco/javacv/pull/969))
  * Revert default behavior of `FFmpegFrameGrabber.setTimestamp()` to previous version ([pull #949](https://github.com/bytedeco/javacv/pull/949))
  * Add support for audio frames to `FFmpegFrameFilter` ([issue #492](https://github.com/bytedeco/javacv/issues/492))

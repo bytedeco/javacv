@@ -79,7 +79,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>4.0-${javacpp.version}</version>
+      <version>4.0.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -129,7 +129,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>tesseract</artifactId>
-      <version>4.0.0-beta.1-${javacpp.version}</version>
+      <version>4.0.0-beta.3-${javacpp.version}</version>
     </dependency>
 
     <dependency>
