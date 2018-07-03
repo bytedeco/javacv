@@ -63,6 +63,9 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     public OpenCVFrameGrabber(File file) {
         this(file.getAbsolutePath());
     }
+    public OpenCVFrameGrabber(File file, int apiPreference) {
+      this(file.getAbsolutePath(), apiPreference);
+    }
     public OpenCVFrameGrabber(String filename) {
         this.filename = filename;
     }
