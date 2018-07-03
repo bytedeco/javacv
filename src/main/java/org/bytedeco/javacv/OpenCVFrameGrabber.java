@@ -66,6 +66,11 @@ public class OpenCVFrameGrabber extends FrameGrabber {
     public OpenCVFrameGrabber(String filename) {
         this.filename = filename;
     }
+    public OpenCVFrameGrabber(String filename, int apiPreference) {
+      this.filename = filename;
+      this.apiPreference = apiPreference;
+    }
+
     public void release() throws Exception {
         stop();
     }
@@ -76,6 +81,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
     private int deviceNumber = 0;
     private String filename = null;
+    private int apiPreference = 0;
     private VideoCapture capture = null;
     private Mat returnMatrix = null;
     private final OpenCVFrameConverter converter = new OpenCVFrameConverter.ToMat();
@@ -171,7 +177,11 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
     public void start() throws Exception {
         if (filename != null && filename.length() > 0) {
-            capture = new VideoCapture(filename);
+            if (apiPreference > 0) {
+                capture = new VideoCapture(filename, apiPreference);
+            } else {
+                capture = new VideoCapture(filename);
+            }
         } else {
             capture = new VideoCapture(deviceNumber);
         }
