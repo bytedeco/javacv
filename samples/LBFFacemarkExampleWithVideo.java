@@ -1,4 +1,4 @@
-*
+/*
  * LBF Facemark example for JavaCV with Video camera and Transparent API
  * 
  * @author Théophile Gonos
