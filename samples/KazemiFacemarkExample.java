@@ -1,4 +1,4 @@
-/*
+/**
  * Kazemi Facemark example for JavaCV
  * 
  * @author Théophile Gonos
