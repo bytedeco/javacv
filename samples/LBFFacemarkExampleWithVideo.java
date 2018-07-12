@@ -3,6 +3,8 @@
  * 
  * @author Théophile Gonos
  *
+ * you can find the lbfmodel here:
+ * https://raw.githubusercontent.com/kurnianggoro/GSOC2017/master/data/lbfmodel.yaml
  */
 
 import java.io.IOException;
