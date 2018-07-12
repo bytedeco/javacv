@@ -3,6 +3,8 @@
  * 
  * @author Théophile Gonos
  *
+ * Link to Kazemi model : 
+ * https://raw.githubusercontent.com/opencv/opencv_3rdparty/contrib_face_alignment_20170818/face_landmark_model.dat
  */
 
 import java.io.IOException;
