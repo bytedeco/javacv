@@ -1,4 +1,4 @@
-/*
+/**
  * LBF Facemark example for JavaCV with Video camera and Transparent API
  * 
  * @author Théophile Gonos
@@ -26,10 +26,6 @@ import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 import org.bytedeco.javacpp.opencv_videoio.VideoCapture;
 
-/**
- *
- * @author theo
- */
 public class LBFFacemarkExampleWithVideo {
     
     /**
