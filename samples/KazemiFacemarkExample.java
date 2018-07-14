@@ -72,3 +72,4 @@ public class KazemiFacemarkExample {
         // Save results
         imwrite ("kazemi_landmarks.jpg", img);
     }
+}

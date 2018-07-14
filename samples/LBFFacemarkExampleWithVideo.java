@@ -73,7 +73,7 @@ public class LBFFacemarkExampleWithVideo {
                 Point2fVectorVector landmarks = new Point2fVectorVector();
 
                 // Run landmark detector
-                boolean success = facemark.fit(frame, faces, landmarks, null);
+                boolean success = facemark.fit(frame, faces, landmarks);
         
                 if(success) {
                     // If successful, render the landmarks on the face
