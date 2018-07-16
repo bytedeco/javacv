@@ -1,4 +1,5 @@
 
+ * Allow `FFmpegFrameGrabber` to use accelerated decoders with `videoCodecName` and `audioCodecName` properties ([pull #948](https://github.com/bytedeco/javacv/pull/948))
  * Add new `KazemiFacemarkExample` and `LBFFacemarkExampleWithVideo` samples ([pull #1030](https://github.com/bytedeco/javacv/pull/1030))
  * Expose `apiPreference` constructor argument of `VideoCapture` to `OpenCVFrameGrabber` ([pull #1025](https://github.com/bytedeco/javacv/pull/1025))
  * Add `LeptonicaFrameConverter` to easily but efficiently pass image data to Tesseract ([issue bytedeco/javacpp-presets#224](https://github.com/bytedeco/javacpp-presets/issues/224))

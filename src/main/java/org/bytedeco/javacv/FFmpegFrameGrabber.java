@@ -792,7 +792,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (video_st != null) {
             // Find the decoder for the video stream
-            AVCodec codec = avcodec_find_decoder(video_par.codec_id());
+            AVCodec codec = avcodec_find_decoder_by_name(videoCodecName);
+            if (codec == null) {
+                codec = avcodec_find_decoder(video_par.codec_id());
+            }
             if (codec == null) {
                 throw new Exception("avcodec_find_decoder() error: Unsupported video format or codec not found: " + video_par.codec_id() + ".");
             }
@@ -836,7 +839,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (audio_st != null) {
             // Find the decoder for the audio stream
-            AVCodec codec = avcodec_find_decoder(audio_par.codec_id());
+            AVCodec codec = avcodec_find_decoder_by_name(audioCodecName);
+            if (codec == null) {
+                codec = avcodec_find_decoder(audio_par.codec_id());
+            }
             if (codec == null) {
                 throw new Exception("avcodec_find_decoder() error: Unsupported audio format or codec not found: " + audio_par.codec_id() + ".");
             }
