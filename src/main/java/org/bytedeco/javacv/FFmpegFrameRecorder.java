@@ -101,6 +101,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 Loader.load(org.bytedeco.javacpp.swscale.class);
 
                 /* initialize libavcodec, and register all codecs and formats */
+                av_jni_set_java_vm(Loader.getJavaVM(), null);
                 avcodec_register_all();
                 av_register_all();
                 avformat_network_init();

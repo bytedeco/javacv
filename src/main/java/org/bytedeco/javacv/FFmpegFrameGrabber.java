@@ -101,6 +101,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 Loader.load(org.bytedeco.javacpp.swscale.class);
 
                 // Register all formats and codecs
+                av_jni_set_java_vm(Loader.getJavaVM(), null);
                 avcodec_register_all();
                 av_register_all();
                 avformat_network_init();
