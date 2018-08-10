@@ -1,4 +1,7 @@
 
+ * Update the `Demo` class to use the C++ API of OpenCV ([issue #1042](https://github.com/bytedeco/javacv/issues/1042))
+ * Add new `DeepLearningFaceDetection` sample ([pull #1041](https://github.com/bytedeco/javacv/pull/1041))
+
 ### July 17, 2018 version 1.4.2
  * Allow `FFmpegFrameGrabber` to use accelerated decoders with `videoCodecName` and `audioCodecName` properties ([pull #948](https://github.com/bytedeco/javacv/pull/948))
  * Add new `KazemiFacemarkExample` and `LBFFacemarkExampleWithVideo` samples ([pull #1030](https://github.com/bytedeco/javacv/pull/1030))
