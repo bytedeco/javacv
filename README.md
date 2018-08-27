@@ -267,6 +267,10 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
     <version>1.4.2</version>
+    <properties>
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
