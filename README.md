@@ -268,8 +268,8 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <artifactId>demo</artifactId>
     <version>1.4.2</version>
     <properties>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
