@@ -66,6 +66,7 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
+import org.bytedeco.javacpp.PointerScope;
 
 import static org.bytedeco.javacpp.avcodec.*;
 import static org.bytedeco.javacpp.avdevice.*;
@@ -296,6 +297,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     static ReadCallback readCallback = new ReadCallback();
     static SeekCallback seekCallback = new SeekCallback();
+    static {
+        PointerScope s = PointerScope.getInnerScope();
+        if (s != null) {
+            s.detach(readCallback);
+            s.detach(seekCallback);
+        }
+    }
 
     private InputStream     inputStream;
     private AVIOContext     avio;

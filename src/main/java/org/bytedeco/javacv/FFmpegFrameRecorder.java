@@ -71,6 +71,7 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
+import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.ShortPointer;
 
 import static org.bytedeco.javacpp.avcodec.*;
@@ -308,6 +309,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     static WriteCallback writeCallback = new WriteCallback();
+    static {
+        PointerScope s = PointerScope.getInnerScope();
+        if (s != null) {
+            s.detach(writeCallback);
+        }
+    }
 
     private OutputStream outputStream;
     private AVIOContext avio;

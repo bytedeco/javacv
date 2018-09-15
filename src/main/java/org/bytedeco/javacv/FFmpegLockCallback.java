@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.PointerPointer;
+import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.avcodec;
 import org.bytedeco.javacpp.avcodec.Cb_PointerPointer_int;
 import org.bytedeco.javacpp.annotation.Cast;
@@ -62,6 +63,12 @@ public class FFmpegLockCallback {
             }
         }
     };
+    static {
+        PointerScope s = PointerScope.getInnerScope();
+        if (s != null) {
+            s.detach(lockCallback);
+        }
+    }
 
     public static synchronized void init() {
         if (!initialized) {

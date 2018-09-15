@@ -30,6 +30,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Random;
 import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
 
@@ -143,7 +144,8 @@ public class FrameGrabberTest {
                 public void run() {
 
                     File tempFile = new File(Loader.getTempDir(), "test" + instance_final + ".mkv");
-                    try {
+                    try (PointerScope scope = new PointerScope()) {
+                        FFmpegLogCallback.set();
                         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480, 2);
                         recorder.setFormat("matroska"); // mp4 doesn't support streaming
                         recorder.setPixelFormat(AV_PIX_FMT_BGR24);
@@ -268,7 +270,8 @@ public class FrameGrabberTest {
     public void testFFmpegFrameGrabberSeeking() throws IOException {
         System.out.println("FFmpegFrameGrabberSeeking");
 
-        for(int seektestnum = 0; seektestnum < 3; seektestnum++) {
+        for(int seektestnum = 0; seektestnum < 3; seektestnum++) try (PointerScope scope = new PointerScope()) {
+            FFmpegLogCallback.set();
             String fileName = seektestnum==0?"testAV.mp4":seektestnum==1?"testV.mp4":"testA.mp4";
             File tempFile = new File(Loader.getTempDir(), fileName);
             tempFile.deleteOnExit();
