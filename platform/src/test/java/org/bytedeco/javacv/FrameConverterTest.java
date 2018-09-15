@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacpp.lept.PIX;
@@ -207,6 +208,7 @@ public class FrameConverterTest {
 
     @Test public void testOpenCVFrameConverter() {
         System.out.println("OpenCVFrameConverter");
+        Loader.load(org.bytedeco.javacpp.opencv_java.class);
 
         for (int depth = 8; depth <= 64; depth *= 2) {
             assertEquals(depth, OpenCVFrameConverter.getFrameDepth(OpenCVFrameConverter.getIplImageDepth(depth)));
@@ -220,6 +222,7 @@ public class FrameConverterTest {
         Frame frame = new Frame(640 + 1, 480, Frame.DEPTH_UBYTE, 3);
         OpenCVFrameConverter.ToIplImage converter1 = new OpenCVFrameConverter.ToIplImage();
         OpenCVFrameConverter.ToMat converter2 = new OpenCVFrameConverter.ToMat();
+        OpenCVFrameConverter.ToOrgOpenCvCoreMat converter3 = new OpenCVFrameConverter.ToOrgOpenCvCoreMat();
 
         UByteIndexer frameIdx = frame.createIndexer();
         for (int i = 0; i < frameIdx.rows(); i++) {
@@ -232,27 +235,45 @@ public class FrameConverterTest {
 
         IplImage image = converter1.convert(frame);
         Mat mat = converter2.convert(frame);
+        final org.opencv.core.Mat cvmat = converter3.convert(frame);
 
         converter1.frame = null;
         converter2.frame = null;
+        converter3.frame = null;
         Frame frame1 = converter1.convert(image);
         Frame frame2 = converter2.convert(mat);
+        Frame frame3 = converter3.convert(cvmat);
         assertEquals(frame2.opaque, mat);
+        assertEquals(frame3.opaque, cvmat);
 
         Mat mat2 = new Mat(mat.rows(), mat.cols(), mat.type(), mat.data(), mat.step());
+        org.opencv.core.Mat cvmat2 = new org.opencv.core.Mat(cvmat.rows(), cvmat.cols(), cvmat.type(),
+                new BytePointer() { { address = cvmat.dataAddr(); } }.capacity(cvmat.rows() * cvmat.cols() * cvmat.elemSize()).asByteBuffer());
         assertNotEquals(mat, mat2);
+        assertNotEquals(cvmat, cvmat2);
 
         frame2 = converter2.convert(mat2);
+        frame3 = converter3.convert(cvmat2);
         assertEquals(frame2.opaque, mat2);
+        assertEquals(frame3.opaque, cvmat2);
+
+        // official Java API does not support memory aligned strides...
+        assertEquals(cvmat2.cols() * cvmat2.channels(), frame3.imageStride);
+        frame3.imageStride = frame2.imageStride;
 
         UByteIndexer frame1Idx = frame1.createIndexer();
         UByteIndexer frame2Idx = frame2.createIndexer();
+        UByteIndexer frame3Idx = frame3.createIndexer();
         for (int i = 0; i < frameIdx.rows(); i++) {
             for (int j = 0; j < frameIdx.cols(); j++) {
                 for (int k = 0; k < frameIdx.channels(); k++) {
                     int b = frameIdx.get(i, j, k);
                     assertEquals(b, frame1Idx.get(i, j, k));
                     assertEquals(b, frame2Idx.get(i, j, k));
+                    if (i < frameIdx.rows() - 2) {
+                        // ... so also cannot access most of the 2 last rows
+                        assertEquals(b, frame3Idx.get(i, j, k));
+                    }
                 }
             }
         }
@@ -267,9 +288,15 @@ public class FrameConverterTest {
             fail("IndexOutOfBoundsException should have been thrown.");
         } catch (IndexOutOfBoundsException e) { }
 
+        try {
+            frame3Idx.get(frameIdx.rows() + 1, frameIdx.cols() + 1);
+            fail("IndexOutOfBoundsException should have been thrown.");
+        } catch (IndexOutOfBoundsException e) { }
+
         frameIdx.release();
         frame1Idx.release();
         frame2Idx.release();
+        frame3Idx.release();
     }
 
     @Test public void testLeptonicaFrameConverter() {

@@ -1,4 +1,5 @@
 
+ * Add `OpenCVFrameConverter.ToOrgOpenCvCoreMat` to easily but efficiently get image data from official Java API of OpenCV ([issue bytedeco/javacpp#38](https://github.com/bytedeco/javacpp/issues/38))
  * Keep globally shared callback objects for FFmpeg out of `PointerScope` ([issue #911](https://github.com/bytedeco/javacv/issues/911))
  * Upgrade dependencies for OpenCV 3.4.3, FFmpeg 4.0.2, and Tesseract 4.0.0-beta.4
  * Update the `Demo` class to use the C++ API of OpenCV ([issue #1042](https://github.com/bytedeco/javacv/issues/1042))
