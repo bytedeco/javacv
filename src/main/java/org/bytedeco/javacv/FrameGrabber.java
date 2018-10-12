@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 Samuel Audet
+ * Copyright (C) 2009-2018 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -182,7 +182,7 @@ public abstract class FrameGrabber implements Closeable {
     protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
     protected long sensorPattern = -1L;
-    protected int pixelFormat = -1, videoCodec, videoBitrate = 0;
+    protected int pixelFormat = -1, videoCodec, videoBitrate = 0, imageScalingFlags = 0;
     protected double aspectRatio = 0, frameRate = 0;
     protected SampleMode sampleMode = SampleMode.SHORT;
     protected int sampleFormat = -1, audioCodec, audioBitrate = 0, sampleRate = 0;
@@ -291,6 +291,13 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setVideoBitrate(int videoBitrate) {
         this.videoBitrate = videoBitrate;
+    }
+
+    public int getImageScalingFlags() {
+        return imageScalingFlags;
+    }
+    public void setImageScalingFlags(int imageScalingFlags) {
+        this.imageScalingFlags = imageScalingFlags;
     }
 
     public double getAspectRatio() {

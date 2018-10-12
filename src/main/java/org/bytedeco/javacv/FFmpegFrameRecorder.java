@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 Samuel Audet
+ * Copyright (C) 2009-2018 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -919,7 +919,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if (video_c.pix_fmt() != pixelFormat || video_c.width() != width || video_c.height() != height) {
                 /* convert to the codec pixel format if needed */
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx, width, height, pixelFormat,
-                        video_c.width(), video_c.height(), video_c.pix_fmt(), SWS_BILINEAR,
+                        video_c.width(), video_c.height(), video_c.pix_fmt(),
+                        imageScalingFlags != 0 ? imageScalingFlags : SWS_BILINEAR,
                         null, null, (DoublePointer)null);
                 if (img_convert_ctx == null) {
                     throw new Exception("sws_getCachedContext() error: Cannot initialize the conversion context.");
