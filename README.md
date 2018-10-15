@@ -9,7 +9,7 @@ JavaCV uses wrappers from the [JavaCPP Presets](https://github.com/bytedeco/java
 
 JavaCV also comes with hardware accelerated full-screen image display (`CanvasFrame` and `GLCanvasFrame`), easy-to-use methods to execute code in parallel on multiple cores (`Parallel`), user-friendly geometric and color calibration of cameras and projectors (`GeometricCalibrator`, `ProCamGeometricCalibrator`, `ProCamColorCalibrator`), detection and matching of feature points (`ObjectFinder`), a set of classes that implement direct image alignment of projector-camera systems (mainly `GNImageAligner`, `ProjectiveTransformer`, `ProjectiveColorTransformer`, `ProCamTransformer`, and `ReflectanceInitializer`), a blob analysis package (`Blobs`), as well as miscellaneous functionality in the `JavaCV` class. Some of these classes also have an OpenCL and OpenGL counterpart, their names ending with `CL` or starting with `GL`, i.e.: `JavaCVCL`, `GLCanvasFrame`, etc.
 
-To learn how to use the API, since documentation currently lacks, please refer to the [Sample Usage](#sample-usage) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [examples ported from OpenCV2 Cookbook](https://github.com/bytedeco/javacv-examples/) and the associated [wiki pages](https://github.com/bytedeco/javacv-examples/blob/master/OpenCV2_Cookbook).
+To learn how to use the API, since documentation currently lacks, please refer to the [Sample Usage](#sample-usage) section below as well as the [sample programs](https://github.com/bytedeco/javacv/tree/master/samples/), including two for Android (`FacePreview.java` and `RecordActivity.java`), also found in the `samples` directory. You may also find it useful to refer to the source code of [ProCamCalib](https://github.com/bytedeco/procamcalib) and [ProCamTracker](https://github.com/bytedeco/procamtracker) as well as [examples ported from OpenCV2 Cookbook](https://github.com/bytedeco/javacv-examples/) and the associated [wiki pages](https://github.com/bytedeco/javacv-examples/tree/master/OpenCV_Cookbook).
 
 Please keep me informed of any updates or fixes you make to the code so that I may integrate them into the next release. Thank you! And feel free to ask questions on [the mailing list](http://groups.google.com/group/javacv) if you encounter any problems with the software! I am sure it is far from perfect...
 
@@ -18,8 +18,8 @@ Downloads
 ---------
 To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation) section below.
 
- * JavaCV 1.4.2 binary archive  [javacv-platform-1.4.2-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.2/javacv-platform-1.4.2-bin.zip) (449 MB)
- * JavaCV 1.4.2 source archive  [javacv-platform-1.4.2-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.2/javacv-platform-1.4.2-src.zip) (576 KB)
+ * JavaCV 1.4.3 binary archive  [javacv-platform-1.4.3-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.3/javacv-platform-1.4.3-bin.zip) (458 MB)
+ * JavaCV 1.4.3 source archive  [javacv-platform-1.4.3-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.3/javacv-platform-1.4.3-src.zip) (585 KB)
 
 The binary archive contains builds for Android, Linux, Mac OS X, and Windows. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
 
@@ -31,27 +31,27 @@ We can also have everything downloaded and installed automatically with:
   <dependency>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacv-platform</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
   </dependency>
 ```
 
  * Gradle (inside the `build.gradle` file)
 ```groovy
   dependencies {
-    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.4.2'
+    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.4.3'
   }
 ```
 
  * Leiningen (inside the `project.clj` file)
 ```clojure
   :dependencies [
-    [org.bytedeco/javacv-platform "1.4.2"]
+    [org.bytedeco/javacv-platform "1.4.3"]
   ]
 ```
 
  * sbt (inside the `build.sbt` file)
 ```scala
-  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.4.2"
+  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.4.3"
 ```
 
 This downloads binaries for all platforms, but to get binaries for only one platform we can set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, `linux-x86_64`, `macosx-x86_64`, `windows-x86_64`, etc. Please refer to the [README.md file of the JavaCPP Presets](https://github.com/bytedeco/javacpp-presets#downloads) for details. Another option available for Scala users is [sbt-javacv](https://github.com/bytedeco/sbt-javacv).
@@ -266,7 +266,7 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
     <properties>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
@@ -275,7 +275,7 @@ Furthermore, after creating a `pom.xml` file with the following content:
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.4.2</version>
+            <version>1.4.3</version>
         </dependency>
     </dependencies>
 </project>
@@ -293,8 +293,8 @@ Build Instructions
 If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
 
  * Maven 3.x  http://maven.apache.org/download.html
- * JavaCPP 1.4.2  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 1.4.2  https://github.com/bytedeco/javacpp-presets
+ * JavaCPP 1.4.3  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 1.4.3  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 
