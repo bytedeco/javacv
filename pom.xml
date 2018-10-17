@@ -129,7 +129,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>tesseract</artifactId>
-      <version>4.0.0-rc2-${javacpp.version}</version>
+      <version>4.0.0-rc3-${javacpp.version}</version>
     </dependency>
 
     <dependency>

@@ -1,4 +1,6 @@
 
+ * Upgrade dependencies for Tesseract 4.0.0-rc3
+
 ### October 15, 2018 version 1.4.3
  * Add `imageScalingFlags` property to `FrameGrabber` and `FrameRecorder`, with `SWS_BILINEAR` as default for FFmpeg ([issue #845](https://github.com/bytedeco/javacv/issues/845))
  * Add `OpenCVFrameConverter.ToOrgOpenCvCoreMat` to easily but efficiently get image data from official Java API of OpenCV ([issue bytedeco/javacpp#38](https://github.com/bytedeco/javacpp/issues/38))
