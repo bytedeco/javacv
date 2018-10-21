@@ -510,8 +510,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                of which frame timestamps are represented. for fixed-fps content,
                timebase should be 1/framerate and timestamp increments should be
                identically 1. */
-            video_c.time_base(av_inv_q(frame_rate));
-            video_st.time_base(av_inv_q(frame_rate));
+            AVRational time_base = av_inv_q(frame_rate);
+            video_c.time_base(time_base);
+            video_st.time_base(time_base);
+            video_st.avg_frame_rate(frame_rate);
+            video_st.codec().time_base(time_base); // "deprecated", but this is actually required
             if (gopSize >= 0) {
                 video_c.gop_size(gopSize); /* emit one intra frame every gopSize frames at most */
             }
@@ -1189,6 +1192,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 }
             }
         }
+
+        av_packet_unref(avPacket);
     }
 
     public boolean recordPacket(AVPacket pkt) throws Exception {
@@ -1217,8 +1222,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             writePacket(AVMEDIA_TYPE_AUDIO, pkt);
         }
-
-        av_free_packet(pkt);
 
         return true;
     }

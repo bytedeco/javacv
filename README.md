@@ -300,6 +300,6 @@ Once installed, simply call the usual `mvn install` command for JavaCPP, its Pre
 
 
 ----
-Project lead: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet at gmail.com)  
+Project lead: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet&nbsp;at&nbsp;gmail.com)  
 Developer site: https://github.com/bytedeco/javacv  
 Discussion group: http://groups.google.com/group/javacv
