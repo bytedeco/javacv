@@ -1,4 +1,5 @@
 
+ * Add support for multiple inputs to `FFmpegFrameFilter` ([issue #955](https://github.com/bytedeco/javacv/issues/955))
  * Fix fps in output of `FFmpegFrameRecorder` by setting deprecated `AVStream.codec.time_base` ([issue #1069](https://github.com/bytedeco/javacv/issues/1069))
  * Fix memory leak in `FFmpegFrameRecorder` on `writePacket()` ([issue #1068](https://github.com/bytedeco/javacv/issues/1068))
  * Upgrade dependencies for Tesseract 4.0.0-rc3

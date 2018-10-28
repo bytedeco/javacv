@@ -1,7 +1,7 @@
 JavaCV
 ======
 
-[![Join the chat at https://gitter.im/bytedeco/javacv](https://badges.gitter.im/bytedeco/javacv.svg)](https://gitter.im/bytedeco/javacv?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.bytedeco/javacv/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.bytedeco/javacv) [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/org.bytedeco/javacv.svg)](http://bytedeco.org/builds/) [![Build Status](https://travis-ci.org/bytedeco/javacv.svg?branch=master)](https://travis-ci.org/bytedeco/javacv)
+[![Join the chat at https://gitter.im/bytedeco/javacv](https://badges.gitter.im/bytedeco/javacv.svg)](https://gitter.im/bytedeco/javacv?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.bytedeco/javacv-platform/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.bytedeco/javacv-platform) [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/org.bytedeco/javacv.svg)](http://bytedeco.org/builds/) [![Build Status](https://travis-ci.org/bytedeco/javacv.svg?branch=master)](https://travis-ci.org/bytedeco/javacv)
 
 Introduction
 ------------

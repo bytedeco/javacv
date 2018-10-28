@@ -119,11 +119,13 @@ public class FFmpegFrameFilter extends FrameFilter {
         this.pixelFormat = AV_PIX_FMT_BGR24;
         this.frameRate = 30;
         this.aspectRatio = 0;
+        this.videoInputs = 1;
 
         this.afilters = audioFilters;
         this.audioChannels = audioChannels;
         this.sampleFormat = AV_SAMPLE_FMT_S16;
         this.sampleRate = 44100;
+        this.audioInputs = 1;
     }
 
     public FFmpegFrameFilter(String filters, int imageWidth, int imageHeight) {
@@ -173,12 +175,12 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     AVFilterContext buffersink_ctx;
-    AVFilterContext buffersrc_ctx;
-    AVFilterContext setpts_ctx;
+    AVFilterContext[] buffersrc_ctx;
+    AVFilterContext[] setpts_ctx;
     AVFilterGraph filter_graph;
 
     AVFilterContext abuffersink_ctx;
-    AVFilterContext abuffersrc_ctx;
+    AVFilterContext[] abuffersrc_ctx;
     AVFilterGraph afilter_graph;
 
     AVFrame image_frame;
@@ -252,10 +254,10 @@ public class FFmpegFrameFilter extends FrameFilter {
             if (image_frame == null || samples_frame == null || filt_frame == null) {
                 throw new Exception("Could not allocate frames");
             }
-            if (filters != null && imageWidth > 0 && imageHeight > 0) {
+            if (filters != null && imageWidth > 0 && imageHeight > 0 && videoInputs > 0) {
                 startVideoUnsafe();
             }
-            if (afilters != null && audioChannels > 0) {
+            if (afilters != null && audioChannels > 0 && audioInputs > 0) {
                 startAudioUnsafe();
             }
         }
@@ -266,7 +268,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         AVFilter buffersrc  = avfilter_get_by_name("buffer");
         AVFilter buffersink = avfilter_get_by_name("buffersink");
         AVFilter setpts = avfilter_get_by_name("setpts");
-        AVFilterInOut outputs = avfilter_inout_alloc();
+        AVFilterInOut[] outputs = new AVFilterInOut[videoInputs];
         AVFilterInOut inputs  = avfilter_inout_alloc();
         AVRational time_base = av_inv_q(av_d2q(frameRate, 1001000));
         int pix_fmts[] = { pixelFormat, AV_PIX_FMT_NONE };
@@ -282,25 +284,53 @@ public class FFmpegFrameFilter extends FrameFilter {
             String args = String.format(
                     "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
                     imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den());
-            ret = avfilter_graph_create_filter(buffersrc_ctx = new AVFilterContext(), buffersrc, "in",
-                                               args, null, filter_graph);
-            if (ret < 0) {
-                throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create video buffer source.");
+            buffersrc_ctx = new AVFilterContext[videoInputs];
+            setpts_ctx = new AVFilterContext[videoInputs];
+            for (int i = 0; i < videoInputs; i++) {
+                String name = videoInputs > 1 ? i + ":v" : "in";
+                outputs[i] = avfilter_inout_alloc();
+
+                ret = avfilter_graph_create_filter(buffersrc_ctx[i] = new AVFilterContext(), buffersrc, name,
+                                                   args, null, filter_graph);
+                if (ret < 0) {
+                    throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create video buffer source.");
+                }
+
+                ret = avfilter_graph_create_filter(setpts_ctx[i] = new AVFilterContext(), setpts, videoInputs > 1 ? "setpts" + i : "setpts",
+                                                   "N", null, filter_graph);
+                if (ret < 0) {
+                    throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create setpts filter.");
+                }
+
+                ret = avfilter_link(buffersrc_ctx[i], 0, setpts_ctx[i], 0);
+                if (ret < 0) {
+                    throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot link setpts filter.");
+                }
+
+                /*
+                 * Set the endpoints for the filter graph. The filter_graph will
+                 * be linked to the graph described by filters_descr.
+                 */
+
+                /*
+                 * The buffer source output must be connected to the input pad of
+                 * the first filter described by filters_descr; since the first
+                 * filter input label is not specified, it is set to "in" by
+                 * default.
+                 */
+                outputs[i].name(av_strdup(new BytePointer(name)));
+                outputs[i].filter_ctx(setpts_ctx[i]);
+                outputs[i].pad_idx(0);
+                outputs[i].next(null);
+                if (i > 0) {
+                    outputs[i - 1].next(outputs[i]);
+                }
             }
 
-            ret = avfilter_graph_create_filter(setpts_ctx = new AVFilterContext(), setpts, "setpts",
-                                               "N", null, filter_graph);
-            if (ret < 0) {
-                throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create setpts filter.");
-            }
-
-            ret = avfilter_link(buffersrc_ctx, 0, setpts_ctx, 0);
-            if (ret < 0) {
-                throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot link setpts filter.");
-            }
+            String name = videoInputs > 1 ? "v" : "out";
 
             /* buffer video sink: to terminate the filter chain. */
-            ret = avfilter_graph_create_filter(buffersink_ctx = new AVFilterContext(), buffersink, "out",
+            ret = avfilter_graph_create_filter(buffersink_ctx = new AVFilterContext(), buffersink, name,
                                                null, null, filter_graph);
             if (ret < 0) {
                 throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create video buffer sink.");
@@ -311,33 +341,17 @@ public class FFmpegFrameFilter extends FrameFilter {
 //            }
 
             /*
-             * Set the endpoints for the filter graph. The filter_graph will
-             * be linked to the graph described by filters_descr.
-             */
-
-            /*
-             * The buffer source output must be connected to the input pad of
-             * the first filter described by filters_descr; since the first
-             * filter input label is not specified, it is set to "in" by
-             * default.
-             */
-            outputs.name(av_strdup(new BytePointer("in")));
-            outputs.filter_ctx(setpts_ctx);
-            outputs.pad_idx(0);
-            outputs.next(null);
-
-            /*
              * The buffer sink input must be connected to the output pad of
              * the last filter described by filters_descr; since the last
              * filter output label is not specified, it is set to "out" by
              * default.
              */
-            inputs.name(av_strdup(new BytePointer("out")));
+            inputs.name(av_strdup(new BytePointer(name)));
             inputs.filter_ctx(buffersink_ctx);
             inputs.pad_idx(0);
             inputs.next(null);
             if ((ret = avfilter_graph_parse_ptr(filter_graph, filters,
-                                                inputs, outputs, null)) < 0) {
+                                                inputs, outputs[0], null)) < 0) {
                 throw new Exception("avfilter_graph_parse_ptr() error " + ret);
             }
             if ((ret = avfilter_graph_config(filter_graph, null)) < 0) {
@@ -345,7 +359,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             }
         } finally {
             avfilter_inout_free(inputs);
-            avfilter_inout_free(outputs);
+            avfilter_inout_free(outputs[0]);
         }
     }
 
@@ -353,7 +367,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         int ret;
         AVFilter abuffersrc  = avfilter_get_by_name("abuffer");
         AVFilter abuffersink = avfilter_get_by_name("abuffersink");
-        AVFilterInOut aoutputs = avfilter_inout_alloc();
+        AVFilterInOut[] aoutputs = new AVFilterInOut[audioInputs];
         AVFilterInOut ainputs  = avfilter_inout_alloc();
         int sample_fmts[] = { sampleFormat, AV_PIX_FMT_NONE };
 
@@ -363,17 +377,44 @@ public class FFmpegFrameFilter extends FrameFilter {
                 throw new Exception("Could not allocate audio filter graph: Out of memory?");
             }
 
-            /* buffer audio source: the decoded frames from the decoder will be inserted here. */
-            String aargs = String.format("channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
-                    audioChannels, sampleFormat, sampleRate, av_get_default_channel_layout(audioChannels));
-            ret = avfilter_graph_create_filter(abuffersrc_ctx = new AVFilterContext(), abuffersrc, "in",
-                                               aargs, null, afilter_graph);
-            if (ret < 0) {
-                throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create audio buffer source.");
+            abuffersrc_ctx = new AVFilterContext[audioInputs];
+            for (int i = 0; i < audioInputs; i++) {
+                String name = audioInputs > 1 ? i + ":a" : "in";
+                aoutputs[i] = avfilter_inout_alloc();
+
+                /* buffer audio source: the decoded frames from the decoder will be inserted here. */
+                String aargs = String.format("channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
+                        audioChannels, sampleFormat, sampleRate, av_get_default_channel_layout(audioChannels));
+                ret = avfilter_graph_create_filter(abuffersrc_ctx[i] = new AVFilterContext(), abuffersrc, name,
+                                                   aargs, null, afilter_graph);
+                if (ret < 0) {
+                    throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create audio buffer source.");
+                }
+
+                /*
+                 * Set the endpoints for the filter graph. The filter_graph will
+                 * be linked to the graph described by filters_descr.
+                 */
+
+                /*
+                 * The buffer source output must be connected to the input pad of
+                 * the first filter described by filters_descr; since the first
+                 * filter input label is not specified, it is set to "in" by
+                 * default.
+                 */
+                aoutputs[i].name(av_strdup(new BytePointer(name)));
+                aoutputs[i].filter_ctx(abuffersrc_ctx[i]);
+                aoutputs[i].pad_idx(0);
+                aoutputs[i].next(null);
+                if (i > 0) {
+                    aoutputs[i - 1].next(aoutputs[i]);
+                }
             }
 
+            String name = audioInputs > 1 ? "a" : "out";
+
             /* buffer audio sink: to terminate the filter chain. */
-            ret = avfilter_graph_create_filter(abuffersink_ctx = new AVFilterContext(), abuffersink, "out",
+            ret = avfilter_graph_create_filter(abuffersink_ctx = new AVFilterContext(), abuffersink, name,
                                                null, null, afilter_graph);
             if (ret < 0) {
                 throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create audio buffer sink.");
@@ -384,33 +425,17 @@ public class FFmpegFrameFilter extends FrameFilter {
 //            }
 
             /*
-             * Set the endpoints for the filter graph. The filter_graph will
-             * be linked to the graph described by filters_descr.
-             */
-
-            /*
-             * The buffer source output must be connected to the input pad of
-             * the first filter described by filters_descr; since the first
-             * filter input label is not specified, it is set to "in" by
-             * default.
-             */
-            aoutputs.name(av_strdup(new BytePointer("in")));
-            aoutputs.filter_ctx(abuffersrc_ctx);
-            aoutputs.pad_idx(0);
-            aoutputs.next(null);
-
-            /*
              * The buffer sink input must be connected to the output pad of
              * the last filter described by filters_descr; since the last
              * filter output label is not specified, it is set to "out" by
              * default.
              */
-            ainputs.name(av_strdup(new BytePointer("out")));
+            ainputs.name(av_strdup(new BytePointer(name)));
             ainputs.filter_ctx(abuffersink_ctx);
             ainputs.pad_idx(0);
             ainputs.next(null);
             if ((ret = avfilter_graph_parse_ptr(afilter_graph, afilters,
-                                                ainputs, aoutputs, null)) < 0) {
+                                                ainputs, aoutputs[0], null)) < 0) {
                 throw new Exception("avfilter_graph_parse_ptr() error " + ret);
             }
             if ((ret = avfilter_graph_config(afilter_graph, null)) < 0) {
@@ -418,7 +443,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             }
         } finally {
             avfilter_inout_free(ainputs);
-            avfilter_inout_free(aoutputs);
+            avfilter_inout_free(aoutputs[0]);
         }
     }
 
@@ -431,21 +456,27 @@ public class FFmpegFrameFilter extends FrameFilter {
         push(frame, AV_PIX_FMT_NONE);
     }
     public void push(Frame frame, int pixelFormat) throws Exception {
+        push(0, frame, pixelFormat);
+    }
+    public void push(int n, Frame frame) throws Exception {
+        push(n, frame, AV_PIX_FMT_NONE);
+    }
+    public void push(int n, Frame frame, int pixelFormat) throws Exception {
         inframe = frame;
         if (frame != null && frame.image != null && buffersrc_ctx != null) {
-            pushImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
+            pushImage(n, frame.imageWidth, frame.imageHeight, frame.imageDepth,
                     frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
         }
         if (frame != null && frame.samples != null && abuffersrc_ctx != null) {
-            pushSamples(frame.audioChannels, sampleRate, sampleFormat, frame.samples);
+            pushSamples(n, frame.audioChannels, sampleRate, sampleFormat, frame.samples);
         }
         if (frame == null || (frame.image == null && frame.samples == null)) {
             // indicate EOF as required, for example, by the "palettegen" filter
-            av_buffersrc_add_frame_flags(buffersrc_ctx, null, 0);
+            av_buffersrc_add_frame_flags(buffersrc_ctx[n], null, 0);
         }
     }
 
-    public void pushImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
+    public void pushImage(int n, int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
         int ret;
         int step = stride * Math.abs(depth) / 8;
         BytePointer data = image[0] instanceof ByteBuffer
@@ -480,12 +511,12 @@ public class FFmpegFrameFilter extends FrameFilter {
         image_frame.height(height);
 
         /* push the decoded frame into the filtergraph */
-        if ((ret = av_buffersrc_add_frame_flags(buffersrc_ctx, image_frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
+        if ((ret = av_buffersrc_add_frame_flags(buffersrc_ctx[n], image_frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
             throw new Exception("av_buffersrc_add_frame_flags() error " + ret + ": Error while feeding the filtergraph.");
         }
     }
 
-    public void pushSamples(int audioChannels, int sampleRate, int sampleFormat, Buffer ... samples) throws Exception {
+    public void pushSamples(int n, int audioChannels, int sampleRate, int sampleFormat, Buffer ... samples) throws Exception {
         int ret;
         Pointer[] data = new Pointer[samples.length];
         int sampleSize = samples != null ? ((samples[0].limit() - samples[0].position()) / (samples.length > 1 ? 1 : audioChannels)) : 0;
@@ -531,7 +562,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         samples_frame.sample_rate(sampleRate);
 
         /* push the decoded frame into the filtergraph */
-        if ((ret = av_buffersrc_add_frame_flags(abuffersrc_ctx, samples_frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
+        if ((ret = av_buffersrc_add_frame_flags(abuffersrc_ctx[n], samples_frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
             throw new Exception("av_buffersrc_add_frame_flags() error " + ret + ": Error while feeding the filtergraph.");
         }
     }
@@ -556,7 +587,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         if (f == null && abuffersrc_ctx != null) {
             f = pullSamples();
         }
-        if (f == null) {
+        if (f == null && buffersrc_ctx == null && abuffersrc_ctx == null) {
             f = inframe;
         }
         inframe = null;

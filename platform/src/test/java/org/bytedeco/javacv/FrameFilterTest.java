@@ -131,4 +131,88 @@ public class FrameFilterTest {
             tempFile.delete();
         }
     }
+
+    @Test
+    public void testFFmpegFrameFilterMultipleInputs() {
+        System.out.println("FFmpegFrameFilterMultipleInputs");
+
+        File tempFile = new File(Loader.getTempDir(), "test.avi");
+        try {
+            FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(tempFile, 320, 200, 2);
+            recorder.setVideoCodec(AV_CODEC_ID_VP8);
+            recorder.setAudioCodec(AV_CODEC_ID_VORBIS);
+            recorder.start();
+
+            int n = 1000;
+            Frame frame = new Frame(320, 200, Frame.DEPTH_UBYTE, 3);
+            for (int i = 0; i < n; i++) {
+                recorder.record(frame);
+            }
+            Frame audioFrame = new Frame();
+            ShortBuffer audioBuffer = ShortBuffer.allocate(8000 * 2 * n / 30);
+            audioFrame.sampleRate = 8000;
+            audioFrame.audioChannels = 2;
+            audioFrame.samples = new ShortBuffer[] {audioBuffer};
+            recorder.record(audioFrame);
+            recorder.stop();
+            recorder.release();
+
+            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
+            grabber.start();
+
+            FFmpegFrameFilter filter = new FFmpegFrameFilter(
+                    "[0:v][1:v]hstack=inputs=2[v]",
+                    "[0:a][1:a]amerge[a]",
+                    grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
+            filter.setPixelFormat(grabber.getPixelFormat());
+            filter.setSampleFormat(grabber.getSampleFormat());
+            filter.setVideoInputs(2);
+            filter.setAudioInputs(2);
+            filter.start();
+
+            int a = 0, b = 0, c = 0, d = 0;
+            Frame frame2;
+            while ((frame2 = grabber.grab()) != null) {
+                if (frame2.image != null) {
+                    a++;
+                }
+                if (frame2.samples != null) {
+                    b++;
+                }
+                filter.push(0, frame2);
+                filter.push(1, frame2);
+                Frame frame3;
+                while ((frame3 = filter.pull()) != null) {
+                    if (frame3.image != null) {
+                        c++;
+                        assertEquals(640, frame3.imageWidth);
+                        assertEquals(200, frame3.imageHeight);
+                        assertEquals(3, frame3.imageChannels);
+                    }
+                    if (frame3.samples != null) {
+                        d++;
+                        assertEquals(2, frame3.audioChannels);
+                        assertEquals(1, frame3.samples.length);
+                        assertTrue(frame3.samples[0] instanceof ByteBuffer);
+                        assertEquals(frame2.samples.length, frame3.samples.length);
+                        assertEquals(frame2.samples[0].limit(), frame3.samples[0].limit());
+                    }
+                }
+            }
+            assertEquals(a, c);
+            assertEquals(b, d);
+            assertEquals(null, grabber.grab());
+            filter.stop();
+            filter.release();
+            grabber.restart();
+            grabber.stop();
+            grabber.release();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception should not have been thrown: " + e);
+        } finally {
+            tempFile.delete();
+        }
+    }
+
 }
