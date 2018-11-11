@@ -992,7 +992,7 @@ public class JavaCV {
         }
         System.out.println(
             "JavaCV version " + version + "\n" +
-            "Copyright (C) 2009-2016 Samuel Audet <samuel.audet@gmail.com>\n" +
+            "Copyright (C) 2009-2018 Samuel Audet <samuel.audet@gmail.com>\n" +
             "Project site: https://github.com/bytedeco/javacv");
         System.exit(0);
     }

@@ -204,7 +204,7 @@
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
-              <Class-Path>. javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar libfreenect2.jar librealsense.jar videoinput.jar artoolkitplus.jar flandmark.jar</Class-Path>
+              <Class-Path>javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar libfreenect2.jar librealsense.jar videoinput.jar artoolkitplus.jar flandmark.jar</Class-Path>
               <Name>org/bytedeco/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Bytedeco</Implementation-Vendor>
