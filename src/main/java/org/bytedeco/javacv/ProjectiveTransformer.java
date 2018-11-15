@@ -489,7 +489,7 @@ public class ProjectiveTransformer implements ImageTransformer {
                         t2 = CvMat.create(3, 1);
                     }
                     t2.put(0, projectiveParameters, 0, 3);
-                    cvRodrigues2(t2, R2, null);
+                    Rodrigues(cvarrToMat(t2), cvarrToMat(R2), null);
                     t2.put(0, projectiveParameters, 3, 3);
 
                     // H = R-tn^T

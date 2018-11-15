@@ -209,6 +209,38 @@ public class GeometricCalibrator {
         return allObjectMarkers.size();
     }
 
+    private Point3fVectorVector getObjectPoints(CvMat points, CvMat counts) {
+        FloatBuffer pointsBuf = points.getFloatBuffer();
+        IntBuffer countsBuf = counts.getIntBuffer();
+        int n = counts.length();
+        Point3fVectorVector vectors = new Point3fVectorVector(n);
+        for (int i = 0; i < n; i++) {
+            int m = countsBuf.get();
+            Point3fVector vector = new Point3fVector(m);
+            for (int j = 0; j < m; j++) {
+                vector.put(j, new Point3f(pointsBuf.get(), pointsBuf.get(), pointsBuf.get()));
+            }
+            vectors.put(i, vector);
+        }
+        return vectors;
+    }
+
+    private Point2fVectorVector getImagePoints(CvMat points, CvMat counts) {
+        FloatBuffer pointsBuf = points.getFloatBuffer();
+        IntBuffer countsBuf = counts.getIntBuffer();
+        int n = counts.length();
+        Point2fVectorVector vectors = new Point2fVectorVector(n);
+        for (int i = 0; i < n; i++) {
+            int m = countsBuf.get();
+            Point2fVector vector = new Point2fVector(m);
+            for (int j = 0; j < m; j++) {
+                vector.put(j, new Point2f(pointsBuf.get(), pointsBuf.get()));
+            }
+            vectors.put(i, vector);
+        }
+        return vectors;
+    }
+
     private CvMat[] getPoints(boolean useCenters) {
         // fill up pointCounts, objectPoints and imagePoints, with data from
         // srcMarkers and dstMarkers
@@ -294,8 +326,8 @@ public class GeometricCalibrator {
             cvGetRows(rot_vects,   rot_vect,   i, i+1, 1);
             cvGetRows(trans_vects, trans_vect, i, i+1, 1);
 
-            cvProjectPoints2(object_points_i, rot_vect, trans_vect,
-                                camera_matrix, dist_coeffs, image_points2_i);
+            projectPoints(cvarrToMat(object_points_i), cvarrToMat(rot_vect), cvarrToMat(trans_vect),
+                          cvarrToMat(camera_matrix), cvarrToMat(dist_coeffs), cvarrToMat(image_points2_i));
             err = cvNorm(image_points_i, image_points2_i);
             err *= err;
             if (per_view_errors != null)
@@ -347,11 +379,21 @@ public class GeometricCalibrator {
         cvGetCols(d.extrParams, transVects, 3, 6);
 
         CvMat[] points = getPoints(useCenters);
-        cvCalibrateCamera2(points[0], points[1], points[2],
-                cvSize(d.imageWidth, d.imageHeight),
-                d.cameraMatrix, d.distortionCoeffs,
-                rotVects, transVects, dsettings.flags,
-                cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 30, JavaCV.DBL_EPSILON));
+        MatVector rvecs = new MatVector();
+        MatVector tvecs = new MatVector();
+        Mat distortionCoeffs = new Mat();
+        calibrateCamera(getObjectPoints(points[0], points[2]), getImagePoints(points[1], points[2]),
+                new Size(d.imageWidth, d.imageHeight),
+                cvarrToMat(d.cameraMatrix), distortionCoeffs,
+                rvecs, tvecs, dsettings.flags,
+                new TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 30, JavaCV.DBL_EPSILON));
+        int n = (int)rvecs.size();
+        CvMat row = new CvMat();
+        for (int i = 0; i < n; i++) {
+            cvTranspose(cvMat(rvecs.get(i)), cvGetRow(rotVects, row, i));
+            cvTranspose(cvMat(tvecs.get(i)), cvGetRow(transVects, row, i));
+        }
+        d.distortionCoeffs = cvMat(distortionCoeffs).clone();
 
         if (cvCheckArr(d.cameraMatrix,     CV_CHECK_QUIET, 0, 0) != 0 &&
             cvCheckArr(d.distortionCoeffs, CV_CHECK_QUIET, 0, 0) != 0 &&
@@ -383,12 +425,12 @@ public class GeometricCalibrator {
         CvMat L1 = CvMat.create(1, N, CV_32F, 3);
         CvMat L2 = CvMat.create(1, N, CV_32F, 3);
         //Always work in undistorted space
-        cvUndistortPoints(imagePoints1, imagePoints1, M1, D1, null, M1);
-        cvUndistortPoints(imagePoints2, imagePoints2, M2, D2, null, M2);
+        undistortPoints(cvarrToMat(imagePoints1), cvarrToMat(imagePoints1), cvarrToMat(M1), cvarrToMat(D1), null, cvarrToMat(M1));
+        undistortPoints(cvarrToMat(imagePoints2), cvarrToMat(imagePoints2), cvarrToMat(M2), cvarrToMat(D2), null, cvarrToMat(M2));
         //imagePoints1.put(d1.undistort(imagePoints1.get()));
         //imagePoints2.put(d2.undistort(imagePoints2.get()));
-        cvComputeCorrespondEpilines(imagePoints1, 1, F, L1);
-        cvComputeCorrespondEpilines(imagePoints2, 2, F, L2);
+        computeCorrespondEpilines(cvarrToMat(imagePoints1), 1, cvarrToMat(F), cvarrToMat(L1));
+        computeCorrespondEpilines(cvarrToMat(imagePoints2), 2, cvarrToMat(F), cvarrToMat(L2));
         double avgErr = 0, maxErr = 0;
         CvMat p1 = imagePoints1, p2 = imagePoints2;
         for(int i = 0; i < N; i++ ) {
@@ -488,10 +530,10 @@ public class GeometricCalibrator {
         dp.E = CvMat.create(3, 3);
         dp.F = CvMat.create(3, 3);
 
-        cvStereoCalibrate(objectPointsMat, imagePoints1Mat, imagePoints2Mat, pointCountsMat,
-                d.cameraMatrix, d.distortionCoeffs, dp.cameraMatrix, dp.distortionCoeffs,
-                cvSize(d.imageWidth, d.imageHeight), dp.R, dp.T, dp.E, dp.F, dpsettings.flags,
-                cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,100,1e-6));
+        stereoCalibrate(getObjectPoints(objectPointsMat, pointCountsMat), getImagePoints(imagePoints1Mat, pointCountsMat), getImagePoints(imagePoints2Mat, pointCountsMat),
+                cvarrToMat(d.cameraMatrix), cvarrToMat(d.distortionCoeffs), cvarrToMat(dp.cameraMatrix), cvarrToMat(dp.distortionCoeffs),
+                new Size(d.imageWidth, d.imageHeight), cvarrToMat(dp.R), cvarrToMat(dp.T), cvarrToMat(dp.E), cvarrToMat(dp.F), dpsettings.flags,
+                new TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,100,1e-6));
 
         // compute and return epipolar error...
         d.avgEpipolarErr = 0.0;

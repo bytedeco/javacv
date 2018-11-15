@@ -473,7 +473,7 @@ public class ProCamTransformer implements ImageTransformer {
             }
             double[] dst = new double[8+3];
             t.put(p[0], p[1], p[2]);
-            cvRodrigues2(t, R, null);
+            Rodrigues(cvarrToMat(t), cvarrToMat(R), null);
             t.put(p[3], p[4], p[5]);
 
             // compute new H
@@ -514,7 +514,7 @@ public class ProCamTransformer implements ImageTransformer {
             cvMatMul(surfaceTransformer.getInvK2(), H, H);
 
             JavaCV.HtoRt(H, R, t);
-            cvRodrigues2(R, n, null);
+            Rodrigues(cvarrToMat(R), cvarrToMat(n), null);
             double[] p = { n.get(0), n.get(1), n.get(2),
                            t.get(0), t.get(1), t.get(2) };
             return p;

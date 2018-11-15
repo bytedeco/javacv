@@ -43,7 +43,7 @@ public class ProjectorDevice extends ProjectiveDevice {
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
     }
-    public ProjectorDevice(String name, CvFileStorage fs) throws Exception {
+    public ProjectorDevice(String name, FileStorage fs) throws Exception {
         super(name, fs);
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
@@ -370,21 +370,21 @@ public class ProjectorDevice extends ProjectiveDevice {
     }
 
     public static ProjectorDevice[] read(String filename) throws Exception {
-        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_READ);
+        FileStorage fs = new FileStorage(filename, FileStorage.READ);
         ProjectorDevice[] devices = read(fs);
         fs.release();
         return devices;
     }
-    public static ProjectorDevice[] read(CvFileStorage fs) throws Exception {
-        CvFileNode node = cvGetFileNodeByName(fs, null, "Projectors");
-        CvSeq seq = node.data_seq();
-        int count = seq.total();
+    public static ProjectorDevice[] read(FileStorage fs) throws Exception {
+        FileNode node = fs.get("Projectors");
+        FileNodeIterator seq = node.begin();
+        int count = (int)seq.remaining();
 
         ProjectorDevice[] devices = new ProjectorDevice[count];
-        for (int i = 0; i < count; i++) {
-            Pointer p = cvGetSeqElem(seq, i);
-            if (p == null) continue;
-            String name = cvReadString(new CvFileNode(p), (String)null);
+        for (int i = 0; i < count; i++, seq.increment()) {
+            FileNode n = seq.access();
+            if (n.empty()) continue;
+            String name = n.asBytePointer().getString();
             devices[i] = new ProjectorDevice(name, fs);
         }
         return devices;

@@ -38,6 +38,8 @@ import static org.bytedeco.javacpp.opencv_core.*;
  */
 public class JavaCvErrorCallback extends CvErrorCallback {
 
+    static JavaCvErrorCallback instance;
+
     public JavaCvErrorCallback() {
         this(false);
     }
@@ -48,6 +50,7 @@ public class JavaCvErrorCallback extends CvErrorCallback {
         this(showDialog, parent, 0);
     }
     public JavaCvErrorCallback(boolean showDialog, Component parent, int rc) {
+        instance = this;
         this.parent = parent;
         this.showDialog = showDialog;
         this.rc = rc;

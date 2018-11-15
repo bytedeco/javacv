@@ -200,7 +200,7 @@ public class MarkedPlane {
             if (numPoints == 4) {
                 JavaCV.getPerspectiveTransform(srcPts.get(), dstPts.get(), totalWarp);
             } else {
-                cvFindHomography(srcPts, dstPts, totalWarp);
+                cvCopy(cvMat(findHomography(cvarrToMat(srcPts), cvarrToMat(dstPts))), totalWarp);
             }
 
             // compute transformed source<->dest RMSE

@@ -68,7 +68,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     private final int readTimeout;
     private DataInputStream input;
     private byte[] pixelBuffer = new byte[1024];
-    private IplImage decoded = null;
+    private Mat decoded = null;
 
     /**
      * @param url          The URL to create the camera connection with.
@@ -160,9 +160,9 @@ public class IPCameraFrameGrabber extends FrameGrabber {
     public Frame grab() throws Exception {
         try {
             final byte[] b = readImage();
-            final CvMat mat = cvMat(1, b.length, CV_8UC1, new BytePointer(b));
+            final Mat mat = new Mat(1, b.length, CV_8UC1, new BytePointer(b));
             releaseDecoded();
-            return converter.convert(decoded = cvDecodeImage(mat));
+            return converter.convert(decoded = imdecode(mat, IMREAD_COLOR));
         } catch (IOException e) {
             throw new Exception(e.getMessage(), e);
         }
@@ -180,7 +180,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
      */
     private void releaseDecoded() {
         if (decoded != null) {
-            cvReleaseImage(decoded);
+            decoded.release();
             decoded = null;
         }
     }
