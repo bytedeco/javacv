@@ -200,12 +200,12 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
         if (imageWidth > 0) {
             if (!capture.set(CV_CAP_PROP_FRAME_WIDTH, imageWidth)) {
-                capture.set(CV_CAP_PROP_MODE, imageWidth); // ??
+                capture.set(CV_CAP_PROP_FRAME_WIDTH, imageWidth);
             }
         }
         if (imageHeight > 0) {
             if (!capture.set(CV_CAP_PROP_FRAME_HEIGHT, imageHeight)) {
-                capture.set(CV_CAP_PROP_MODE, imageHeight); // ??
+                capture.set(CV_CAP_PROP_FRAME_HEIGHT, imageHeight);
             }
         }
         if (frameRate > 0) {
@@ -214,7 +214,12 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (bpp > 0) {
             capture.set(CV_CAP_PROP_FORMAT, bpp); // ??
         }
-        capture.set(CV_CAP_PROP_CONVERT_RGB, imageMode == ImageMode.COLOR ? 1 : 0);
+        switch (imageMode) {
+            case COLOR: capture.set(CV_CAP_PROP_MODE, CV_CAP_MODE_BGR);  break;
+            case GRAY:  capture.set(CV_CAP_PROP_MODE, CV_CAP_MODE_GRAY); break;
+            case RAW:   capture.set(CV_CAP_PROP_CONVERT_RGB, 0);         break;
+            default: assert false;
+        }
 
         Mat mat = new Mat();
 
