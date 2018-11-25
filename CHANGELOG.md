@@ -3,7 +3,7 @@
  * Add support for multiple inputs to `FFmpegFrameFilter` ([issue #955](https://github.com/bytedeco/javacv/issues/955))
  * Fix fps in output of `FFmpegFrameRecorder` by setting deprecated `AVStream.codec.time_base` ([issue #1069](https://github.com/bytedeco/javacv/issues/1069))
  * Fix memory leak in `FFmpegFrameRecorder` on `writePacket()` ([issue #1068](https://github.com/bytedeco/javacv/issues/1068))
- * Upgrade dependencies for OpenCV 4.0.0-rc, FFmpeg 4.1, and Tesseract 4.0.0
+ * Upgrade dependencies for OpenCV 4.0.0, FFmpeg 4.1, and Tesseract 4.0.0
 
 ### October 15, 2018 version 1.4.3
  * Add `imageScalingFlags` property to `FrameGrabber` and `FrameRecorder`, with `SWS_BILINEAR` as default for FFmpeg ([issue #845](https://github.com/bytedeco/javacv/issues/845))

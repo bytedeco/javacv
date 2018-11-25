@@ -338,8 +338,8 @@ public class ObjectFinder {
         String objectFilename = args.length == 2 ? args[0] : "/usr/local/share/OpenCV/samples/c/box.png";
         String sceneFilename  = args.length == 2 ? args[1] : "/usr/local/share/OpenCV/samples/c/box_in_scene.png";
 
-        IplImage object = cvLoadImage(objectFilename, CV_LOAD_IMAGE_GRAYSCALE);
-        IplImage image  = cvLoadImage(sceneFilename,  CV_LOAD_IMAGE_GRAYSCALE);
+        IplImage object = cvLoadImage(objectFilename, IMREAD_GRAYSCALE);
+        IplImage image  = cvLoadImage(sceneFilename,  IMREAD_GRAYSCALE);
         if (object == null || image == null) {
             System.err.println("Can not load " + objectFilename + " and/or " + sceneFilename);
             System.exit(-1);

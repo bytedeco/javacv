@@ -58,7 +58,8 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         this.imageHeight = imageHeight;
 
         this.pixelFormat = 1;
-        this.videoCodec  = windows ? CV_FOURCC_PROMPT : CV_FOURCC_DEFAULT;
+//        this.videoCodec  = windows ? CV_FOURCC_PROMPT : CV_FOURCC_DEFAULT;
+        this.videoCodec  = windows ? -1 : VideoWriter.fourcc((byte)'I', (byte)'Y', (byte)'U', (byte)'V');
         this.frameRate   = 30;
     }
     public void release() throws Exception {

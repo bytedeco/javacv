@@ -526,7 +526,7 @@ public class CameraDevice extends ProjectiveDevice {
 
         CameraDevice[] devices = new CameraDevice[count];
         for (int i = 0; i < count; i++, seq.increment()) {
-            FileNode n = seq.access();
+            FileNode n = seq.multiply();
             if (n.empty()) continue;
             String name = n.asBytePointer().getString();
             devices[i] = new CameraDevice(name, fs);

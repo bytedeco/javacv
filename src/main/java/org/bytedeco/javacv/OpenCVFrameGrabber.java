@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 Samuel Audet
+ * Copyright (C) 2009-2018 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -103,7 +103,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (capture == null) {
             return super.getFormat();
         } else {
-            int fourcc = (int)capture.get(CV_CAP_PROP_FOURCC);
+            int fourcc = (int)capture.get(CAP_PROP_FOURCC);
             return "" + (char)( fourcc        & 0xFF) +
                         (char)((fourcc >>  8) & 0xFF) +
                         (char)((fourcc >> 16) & 0xFF) +
@@ -115,7 +115,7 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (returnMatrix != null) {
             return returnMatrix.cols();
         } else {
-            return capture == null ? super.getImageWidth() : (int)capture.get(CV_CAP_PROP_FRAME_WIDTH);
+            return capture == null ? super.getImageWidth() : (int)capture.get(CAP_PROP_FRAME_WIDTH);
         }
     }
 
@@ -123,16 +123,16 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         if (returnMatrix != null) {
             return returnMatrix.rows();
         } else {
-            return capture == null ? super.getImageHeight() : (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+            return capture == null ? super.getImageHeight() : (int)capture.get(CAP_PROP_FRAME_HEIGHT);
         }
     }
 
     @Override public int getPixelFormat() {
-        return capture == null ? super.getPixelFormat() : (int)capture.get(CV_CAP_PROP_CONVERT_RGB);
+        return capture == null ? super.getPixelFormat() : (int)capture.get(CAP_PROP_CONVERT_RGB);
     }
 
     @Override public double getFrameRate() {
-        return capture == null ? super.getFrameRate() : (int)capture.get(CV_CAP_PROP_FPS);
+        return capture == null ? super.getFrameRate() : (int)capture.get(CAP_PROP_FPS);
     }
 
     @Override public void setImageMode(ImageMode imageMode) {
@@ -144,35 +144,35 @@ public class OpenCVFrameGrabber extends FrameGrabber {
 
     @Override public int getFrameNumber() {
         return capture == null ? super.getFrameNumber() :
-                (int)capture.get(CV_CAP_PROP_POS_FRAMES);
+                (int)capture.get(CAP_PROP_POS_FRAMES);
     }
     @Override public void setFrameNumber(int frameNumber) throws Exception {
         if (capture == null) {
             super.setFrameNumber(frameNumber);
         } else {
-            if (!capture.set(CV_CAP_PROP_POS_FRAMES, frameNumber)) {
-                throw new Exception("set() Error: Could not set CV_CAP_PROP_POS_FRAMES to " + frameNumber + ".");
+            if (!capture.set(CAP_PROP_POS_FRAMES, frameNumber)) {
+                throw new Exception("set() Error: Could not set CAP_PROP_POS_FRAMES to " + frameNumber + ".");
             }
         }
     }
 
     @Override public long getTimestamp() {
         return capture == null ? super.getTimestamp() :
-                Math.round(capture.get(CV_CAP_PROP_POS_MSEC)*1000);
+                Math.round(capture.get(CAP_PROP_POS_MSEC)*1000);
     }
     @Override public void setTimestamp(long timestamp) throws Exception {
         if (capture == null) {
             super.setTimestamp(timestamp);
         } else {
-            if (!capture.set(CV_CAP_PROP_POS_MSEC, timestamp/1000.0)) {
-                throw new Exception("set() Error: Could not set CV_CAP_PROP_POS_MSEC to " + timestamp/1000.0 + ".");
+            if (!capture.set(CAP_PROP_POS_MSEC, timestamp/1000.0)) {
+                throw new Exception("set() Error: Could not set CAP_PROP_POS_MSEC to " + timestamp/1000.0 + ".");
             }
         }
     }
 
     @Override public int getLengthInFrames() {
         return capture == null ? super.getLengthInFrames() :
-                (int)capture.get(CV_CAP_PROP_FRAME_COUNT);
+                (int)capture.get(CAP_PROP_FRAME_COUNT);
     }
     @Override public long getLengthInTime() {
         return Math.round(getLengthInFrames() * 1000000L / getFrameRate());
@@ -195,30 +195,27 @@ public class OpenCVFrameGrabber extends FrameGrabber {
             byte cc1 = (byte)format.charAt(1);
             byte cc2 = (byte)format.charAt(2);
             byte cc3 = (byte)format.charAt(3);
-            capture.set(CV_CAP_PROP_FOURCC, CV_FOURCC(cc0, cc1, cc2, cc3));
+            capture.set(CAP_PROP_FOURCC, VideoWriter.fourcc(cc0, cc1, cc2, cc3));
         }
 
         if (imageWidth > 0) {
-            if (!capture.set(CV_CAP_PROP_FRAME_WIDTH, imageWidth)) {
-                capture.set(CV_CAP_PROP_FRAME_WIDTH, imageWidth);
+            if (!capture.set(CAP_PROP_FRAME_WIDTH, imageWidth)) {
+                capture.set(CAP_PROP_FRAME_WIDTH, imageWidth);
             }
         }
         if (imageHeight > 0) {
-            if (!capture.set(CV_CAP_PROP_FRAME_HEIGHT, imageHeight)) {
-                capture.set(CV_CAP_PROP_FRAME_HEIGHT, imageHeight);
+            if (!capture.set(CAP_PROP_FRAME_HEIGHT, imageHeight)) {
+                capture.set(CAP_PROP_FRAME_HEIGHT, imageHeight);
             }
         }
         if (frameRate > 0) {
-            capture.set(CV_CAP_PROP_FPS, frameRate);
+            capture.set(CAP_PROP_FPS, frameRate);
         }
         if (bpp > 0) {
-            capture.set(CV_CAP_PROP_FORMAT, bpp); // ??
+            capture.set(CAP_PROP_FORMAT, bpp); // ??
         }
-        switch (imageMode) {
-            case COLOR: capture.set(CV_CAP_PROP_MODE, CV_CAP_MODE_BGR);  break;
-            case GRAY:  capture.set(CV_CAP_PROP_MODE, CV_CAP_MODE_GRAY); break;
-            case RAW:   capture.set(CV_CAP_PROP_CONVERT_RGB, 0);         break;
-            default: assert false;
+        if (imageMode == ImageMode.RAW) {
+            capture.set(CAP_PROP_CONVERT_RGB, 0);
         }
 
         Mat mat = new Mat();
