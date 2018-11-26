@@ -56,14 +56,15 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
         } else if (frame.opaque instanceof PIX) {
             return (PIX)frame.opaque;
         } else if (!isEqual(frame, pix)) {
-            pix = PIX.createHeader(frame.imageWidth, frame.imageHeight, frame.imageChannels * 8)
-                     .wpl(frame.imageStride / 4 * Math.abs(frame.imageDepth) / 8);
+            Pointer data;
             if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
                 pixBuffer = ByteBuffer.allocateDirect(frame.imageHeight * frame.imageStride).order(ByteOrder.BIG_ENDIAN);
-                pix.data(new IntPointer(new Pointer(pixBuffer)));
+                data = new Pointer(pixBuffer);
             } else {
-                pix.data(new IntPointer(new Pointer(frame.image[0].position(0))));
+                data = new Pointer(frame.image[0].position(0));
             }
+            pix = PIX.create(frame.imageWidth, frame.imageHeight, frame.imageChannels * 8, data)
+                     .wpl(frame.imageStride / 4 * Math.abs(frame.imageDepth) / 8);
         }
 
         if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {

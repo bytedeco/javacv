@@ -1,4 +1,5 @@
 
+ * Prevent premature deallocations with `LeptonicaFrameConverter` ([issue bytedeco/javacpp#272](https://github.com/bytedeco/javacpp/issues/272))
  * Fix `OpenCVFrameGrabber` from crashing when in `ImageMode.GRAY`
  * Add support for multiple inputs to `FFmpegFrameFilter` ([issue #955](https://github.com/bytedeco/javacv/issues/955))
  * Fix fps in output of `FFmpegFrameRecorder` by setting deprecated `AVStream.codec.time_base` ([issue #1069](https://github.com/bytedeco/javacv/issues/1069))
