@@ -1,4 +1,5 @@
 
+ * Set `pts` and `dts` for `AVPacket` in `FFmpegFrameRecorder.recordPacket()` ([pull #1097](https://github.com/bytedeco/javacv/pull/1097))
  * Prevent premature deallocations with `LeptonicaFrameConverter` ([issue bytedeco/javacpp#272](https://github.com/bytedeco/javacpp/issues/272))
  * Fix `OpenCVFrameGrabber` from crashing when in `ImageMode.GRAY`
  * Add support for multiple inputs to `FFmpegFrameFilter` ([issue #955](https://github.com/bytedeco/javacv/issues/955))
