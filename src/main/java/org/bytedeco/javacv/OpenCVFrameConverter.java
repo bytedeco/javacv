@@ -96,8 +96,7 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
             return (IplImage)frame.opaque;
         } else if (!isEqual(frame, img)) {
             int depth = getIplImageDepth(frame.imageDepth);
-            img = depth < 0 ? null : IplImage.createHeader(frame.imageWidth, frame.imageHeight, depth, frame.imageChannels)
-                    .imageData(new BytePointer(new Pointer(frame.image[0].position(0))))
+            img = depth < 0 ? null : IplImage.create(frame.imageWidth, frame.imageHeight, depth, frame.imageChannels, new Pointer(frame.image[0].position(0)))
                     .widthStep(frame.imageStride * Math.abs(frame.imageDepth) / 8)
                     .imageSize(frame.image[0].capacity() * Math.abs(frame.imageDepth) / 8);
         }
