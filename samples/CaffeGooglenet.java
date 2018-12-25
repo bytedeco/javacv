@@ -84,7 +84,7 @@ public class CaffeGooglenet {
         //! [Prepare blob]
 
         //! [Set input blob]
-        net.setInput(inputBlob, "data");      //set the network input
+        net.setInput(inputBlob, "data", 1.0, null);      //set the network input
         //! [Set input blob]
 
         //! [Make forward pass]

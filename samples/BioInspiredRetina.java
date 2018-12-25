@@ -26,20 +26,20 @@ import static org.bytedeco.javacpp.opencv_bioinspired.*;
  *
  * Created by mbetzel on 04.09.2016.
  */
-public class RetinaExample {
+public class BioInspiredRetina {
 
     static {
         System.setProperty("org.bytedeco.javacpp.logger", "slf4jlogger");
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
     }
 
-    private static final Slf4jLogger logger = (Slf4jLogger) org.bytedeco.javacpp.tools.Logger.create(RetinaExample.class);
+    private static final Slf4jLogger logger = (Slf4jLogger) org.bytedeco.javacpp.tools.Logger.create(BioInspiredRetina.class);
 
     public static void main(String[] args) {
         try {
             logger.info(String.valueOf(logger.isDebugEnabled()));
             logger.info("Start");
-            new RetinaExample().execute(args);
+            new BioInspiredRetina().execute(args);
             logger.info("Stop");
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,7 +55,7 @@ public class RetinaExample {
         matrix.convertTo(matrix, CV_32F);
         Mat gammaTransformedImage = new Mat(matrix.size(), CV_32F);
         pow(matrix, 1. / 5, gammaTransformedImage);
-        Retina retina = createRetina(gammaTransformedImage.size());
+        Retina retina = Retina.create(gammaTransformedImage.size());
         Mat retinaOutput_parvo = new Mat();
         Mat retinaOutput_magno = new Mat();
         retina.clearBuffers();

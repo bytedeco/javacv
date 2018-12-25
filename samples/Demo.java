@@ -37,8 +37,7 @@ public class Demo {
             classifierName = args[0];
         } else {
             URL url = new URL("https://raw.github.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_alt.xml");
-            File file = Loader.extractResource(url, null, "classifier", ".xml");
-            file.deleteOnExit();
+            File file = Loader.cacheResource(url);
             classifierName = file.getAbsolutePath();
         }
 

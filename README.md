@@ -142,8 +142,7 @@ public class Demo {
             classifierName = args[0];
         } else {
             URL url = new URL("https://raw.github.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_alt.xml");
-            File file = Loader.extractResource(url, null, "classifier", ".xml");
-            file.deleteOnExit();
+            File file = Loader.cacheResource(url);
             classifierName = file.getAbsolutePath();
         }
 
@@ -218,8 +217,7 @@ public class Demo {
             // Let's try to detect some faces! but we need a grayscale image...
             cvtColor(grabbedImage, grayImage, CV_BGR2GRAY);
             RectVector faces = new RectVector();
-            classifier.detectMultiScale(grayImage, faces,
-                    1.1, 3, CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH, null, null);
+            classifier.detectMultiScale(grayImage, faces);
             long total = faces.size();
             for (long i = 0; i < total; i++) {
                 Rect r = faces.get(i);
