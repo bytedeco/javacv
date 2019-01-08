@@ -246,22 +246,24 @@
             </goals>
             <configuration>
               <links>
-                <link>http://bytedeco.org/javacpp/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/opencv/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/ffmpeg/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/flycapture/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/libdc1394/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/libfreenect/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/libfreenect2/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/librealsense/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/videoinput/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/artoolkitplus/apidocs/</link>
-                <link>http://bytedeco.org/javacpp-presets/flandmark/apidocs/</link>
-                <link>https://developer.android.com/reference/</link>
-                <link>https://jogamp.org/deployment/v2.3.1/javadoc/gluegen/javadoc/</link>
-                <link>https://jogamp.org/deployment/v2.3.1/javadoc/jocl/javadoc/</link>
-                <link>https://jogamp.org/deployment/v2.3.1/javadoc/jogl/javadoc/</link>
-                <link>http://junit.org/junit4/javadoc/4.11/</link>
+                <link>http://bytedeco.org/javacpp/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/opencv/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/ffmpeg/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/flycapture/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/libdc1394/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/libfreenect/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/libfreenect2/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/librealsense/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/videoinput/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/artoolkitplus/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/flandmark/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/leptonica/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/tesseract/apidocs</link>
+                <link>https://developer.android.com/reference</link>
+                <link>https://jogamp.org/deployment/v2.3.2/javadoc/gluegen/javadoc</link>
+                <link>https://jogamp.org/deployment/v2.3.2/javadoc/jocl/javadoc</link>
+                <link>https://jogamp.org/deployment/v2.3.2/javadoc/jogl/javadoc</link>
+                <link>http://junit.org/junit4/javadoc/4.12</link>
               </links>
             </configuration>
           </execution>
