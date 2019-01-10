@@ -1,4 +1,5 @@
 
+ * Add `FFmpegFrameGrabber(InputStream, int)` constructor to set the maximum cache size used for seeking
  * Set `pts` and `dts` for `AVPacket` in `FFmpegFrameRecorder.recordPacket()` ([pull #1097](https://github.com/bytedeco/javacv/pull/1097))
  * Prevent premature deallocations with `LeptonicaFrameConverter` ([issue bytedeco/javacpp#272](https://github.com/bytedeco/javacpp/issues/272)) and `OpenCVFrameConverter.IplImage` ([issue #1101](https://github.com/bytedeco/javacv/issues/1101))
  * Fix `OpenCVFrameGrabber` from crashing when in `ImageMode.GRAY`

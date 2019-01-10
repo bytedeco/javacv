@@ -134,10 +134,16 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         this.pixelFormat = AV_PIX_FMT_NONE;
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
     }
+    /** Calls {@code FFmpegFrameGrabber(inputStream, Integer.MAX_VALUE - 8)}
+     *  so that the whole input stream is seekable. */
     public FFmpegFrameGrabber(InputStream inputStream) {
+        this(inputStream, Integer.MAX_VALUE - 8);
+    }
+    public FFmpegFrameGrabber(InputStream inputStream, int maximumSize) {
         this.inputStream = inputStream;
         this.pixelFormat = AV_PIX_FMT_NONE;
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
+        this.maximumSize = maximumSize;
     }
     public void release() throws Exception {
         // synchronized (org.bytedeco.javacpp.avcodec.class) {
@@ -306,6 +312,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     private InputStream     inputStream;
+    private int             maximumSize;
     private AVIOContext     avio;
     private String          filename;
     private AVFormatContext oc;
@@ -748,7 +755,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (!inputStream.markSupported()) {
                 inputStream = new BufferedInputStream(inputStream);
             }
-            inputStream.mark(Integer.MAX_VALUE - 8); // so that the whole input stream is seekable
+            inputStream.mark(maximumSize);
             oc = avformat_alloc_context();
             avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, seekCallback);
             oc.pb(avio);
