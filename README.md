@@ -18,8 +18,8 @@ Downloads
 ---------
 To install manually the JAR files, obtain the following archives and follow the instructions in the [Manual Installation](#manual-installation) section below.
 
- * JavaCV 1.4.3 binary archive  [javacv-platform-1.4.3-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.3/javacv-platform-1.4.3-bin.zip) (458 MB)
- * JavaCV 1.4.3 source archive  [javacv-platform-1.4.3-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.3/javacv-platform-1.4.3-src.zip) (585 KB)
+ * JavaCV 1.4.4 binary archive  [javacv-platform-1.4.4-bin.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.4/javacv-platform-1.4.4-bin.zip) (473 MB)
+ * JavaCV 1.4.4 source archive  [javacv-platform-1.4.4-src.zip](http://search.maven.org/remotecontent?filepath=org/bytedeco/javacv-platform/1.4.4/javacv-platform-1.4.4-src.zip) (586 KB)
 
 The binary archive contains builds for Android, Linux, Mac OS X, and Windows. The JAR files for specific child modules or platforms can also be obtained individually from the [Maven Central Repository](http://search.maven.org/#search|ga|1|bytedeco).
 
@@ -31,27 +31,27 @@ We can also have everything downloaded and installed automatically with:
   <dependency>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacv-platform</artifactId>
-    <version>1.4.3</version>
+    <version>1.4.4</version>
   </dependency>
 ```
 
  * Gradle (inside the `build.gradle` file)
 ```groovy
   dependencies {
-    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.4.3'
+    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.4.4'
   }
 ```
 
  * Leiningen (inside the `project.clj` file)
 ```clojure
   :dependencies [
-    [org.bytedeco/javacv-platform "1.4.3"]
+    [org.bytedeco/javacv-platform "1.4.4"]
   ]
 ```
 
  * sbt (inside the `build.sbt` file)
 ```scala
-  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.4.3"
+  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.4.4"
 ```
 
 This downloads binaries for all platforms, but to get binaries for only one platform we can set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, `linux-x86_64`, `macosx-x86_64`, `windows-x86_64`, etc. Please refer to the [README.md file of the JavaCPP Presets](https://github.com/bytedeco/javacpp-presets#downloads) for details. Another option available for Scala users is [sbt-javacv](https://github.com/bytedeco/sbt-javacv).
@@ -264,7 +264,7 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>1.4.3</version>
+    <version>1.4.4</version>
     <properties>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
@@ -273,7 +273,7 @@ Furthermore, after creating a `pom.xml` file with the following content:
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.4.3</version>
+            <version>1.4.4</version>
         </dependency>
     </dependencies>
 </project>
@@ -291,8 +291,8 @@ Build Instructions
 If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
 
  * Maven 3.x  http://maven.apache.org/download.html
- * JavaCPP 1.4.3  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 1.4.3  https://github.com/bytedeco/javacpp-presets
+ * JavaCPP 1.4.4  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 1.4.4  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 
