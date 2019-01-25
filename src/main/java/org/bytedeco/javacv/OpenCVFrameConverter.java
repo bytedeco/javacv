@@ -25,6 +25,7 @@ package org.bytedeco.javacv;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -38,6 +39,8 @@ import static org.bytedeco.javacpp.opencv_core.*;
  * @author Samuel Audet
  */
 public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
+    static { Loader.load(org.bytedeco.javacpp.opencv_core.class); }
+
     IplImage img;
     Mat mat;
     org.opencv.core.Mat orgOpenCvCoreMat;

@@ -1,4 +1,6 @@
 
+ * Add `static { Loader.load(); }` in `LeptonicaFrameConverter` and `OpenCVFrameConverter` to prevent link errors ([issue #1128](https://github.com/bytedeco/javacv/issues/1128))
+
 ### January 11, 2019 version 1.4.4
  * Add `FFmpegFrameGrabber(InputStream, int)` constructor to set the maximum cache size used for seeking
  * Set `pts` and `dts` for `AVPacket` in `FFmpegFrameRecorder.recordPacket()` ([pull #1097](https://github.com/bytedeco/javacv/pull/1097))

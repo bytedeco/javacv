@@ -26,6 +26,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 
 import static org.bytedeco.javacpp.lept.*;
@@ -38,6 +39,8 @@ import static org.bytedeco.javacpp.lept.*;
  * @author Samuel Audet
  */
 public class LeptonicaFrameConverter extends FrameConverter<PIX> {
+    static { Loader.load(org.bytedeco.javacpp.lept.class); }
+
     PIX pix;
     ByteBuffer frameBuffer, pixBuffer;
 
