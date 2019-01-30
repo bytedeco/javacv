@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2010,2011,2012 Samuel Audet
+ * Copyright (C) 2010-2019 Samuel Audet
  *
  * FacePreview - A fusion of OpenCV's facedetect and Android's CameraPreview samples,
  *               with JavaCV + JavaCPP as the glue in between.
  *
- * This file was based on CameraPreview.java that came with the Samples for 
+ * This file was based on CameraPreview.java that came with the Samples for
  * Android SDK API 8, revision 1 and contained the following copyright notice:
  *
  * Copyright (C) 2007 The Android Open Source Project
@@ -66,15 +66,13 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.opencv_objdetect;
 
 import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_objdetect.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 // ----------------------------------------------------------------------
 
@@ -112,30 +110,26 @@ public class FacePreview extends Activity {
 class FaceView extends View implements Camera.PreviewCallback {
     public static final int SUBSAMPLING_FACTOR = 4;
 
-    private IplImage grayImage;
-    private CvHaarClassifierCascade classifier;
-    private CvMemStorage storage;
-    private CvSeq faces;
+    private Mat grayImage;
+    private CascadeClassifier classifier;
+    private RectVector faces;
 
     public FaceView(FacePreview context) throws IOException {
         super(context);
 
         // Load the classifier file from Java resources.
         File classifierFile = Loader.extractResource(getClass(),
-            "/org/bytedeco/javacv/facepreview/haarcascade_frontalface_alt.xml",
-            context.getCacheDir(), "classifier", ".xml");
+                "/org/bytedeco/javacv/facepreview/haarcascade_frontalface_alt.xml",
+                context.getCacheDir(), "classifier", ".xml");
         if (classifierFile == null || classifierFile.length() <= 0) {
             throw new IOException("Could not extract the classifier file from Java resource.");
         }
 
-        // Preload the opencv_objdetect module to work around a known bug.
-        Loader.load(opencv_objdetect.class);
-        classifier = new CvHaarClassifierCascade(cvLoad(classifierFile.getAbsolutePath()));
+        classifier = new CascadeClassifier(classifierFile.getAbsolutePath());
         classifierFile.delete();
         if (classifier.isNull()) {
             throw new IOException("Could not load the classifier file.");
         }
-        storage = CvMemStorage.create();
     }
 
     public void onPreviewFrame(final byte[] data, final Camera camera) {
@@ -149,16 +143,16 @@ class FaceView extends View implements Camera.PreviewCallback {
     }
 
     protected void processImage(byte[] data, int width, int height) {
-        // First, downsample our image and convert it into a grayscale IplImage
+        // First, downsample our image and convert it into a grayscale Mat
         int f = SUBSAMPLING_FACTOR;
-        if (grayImage == null || grayImage.width() != width/f || grayImage.height() != height/f) {
-            grayImage = IplImage.create(width/f, height/f, IPL_DEPTH_8U, 1);
+        if (grayImage == null || grayImage.cols() != width/f || grayImage.rows() != height/f) {
+            grayImage = new Mat(height/f, width/f, CV_8UC1);
         }
-        int imageWidth  = grayImage.width();
-        int imageHeight = grayImage.height();
+        int imageWidth  = grayImage.cols();
+        int imageHeight = grayImage.rows();
         int dataStride = f*width;
-        int imageStride = grayImage.widthStep();
-        ByteBuffer imageBuffer = grayImage.getByteBuffer();
+        int imageStride = grayImage.step(0);
+        ByteBuffer imageBuffer = grayImage.createBuffer();
         for (int y = 0; y < imageHeight; y++) {
             int dataLine = y*dataStride;
             int imageLine = y*imageStride;
@@ -167,9 +161,8 @@ class FaceView extends View implements Camera.PreviewCallback {
             }
         }
 
-        cvClearMemStorage(storage);
-        faces = cvHaarDetectObjects(grayImage, classifier, storage, 1.1, 3,
-                CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH);
+        faces = new RectVector();
+        classifier.detectMultiScale(grayImage, faces);
         postInvalidate();
     }
 
@@ -186,11 +179,11 @@ class FaceView extends View implements Camera.PreviewCallback {
         if (faces != null) {
             paint.setStrokeWidth(2);
             paint.setStyle(Paint.Style.STROKE);
-            float scaleX = (float)getWidth()/grayImage.width();
-            float scaleY = (float)getHeight()/grayImage.height();
-            int total = faces.total();
-            for (int i = 0; i < total; i++) {
-                CvRect r = new CvRect(cvGetSeqElem(faces, i));
+            float scaleX = (float)getWidth()/grayImage.cols();
+            float scaleY = (float)getHeight()/grayImage.rows();
+            long total = faces.size();
+            for (long i = 0; i < total; i++) {
+                Rect r = faces.get(i);
                 int x = r.x(), y = r.y(), w = r.width(), h = r.height();
                 canvas.drawRect(x*scaleX, y*scaleY, (x+w)*scaleX, (y+h)*scaleY, paint);
             }
@@ -221,7 +214,7 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
         // to draw.
         mCamera = Camera.open();
         try {
-           mCamera.setPreviewDisplay(holder);
+            mCamera.setPreviewDisplay(holder);
         } catch (IOException exception) {
             mCamera.release();
             mCamera = null;
