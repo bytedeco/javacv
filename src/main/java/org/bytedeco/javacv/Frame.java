@@ -100,20 +100,27 @@ public class Frame implements Indexable {
     /** Timestamp of the frame creation. */
     public long timestamp;
 
+    /** Returns {@code Math.abs(depth) / 8}. */
+    public static int pixelSize(int depth) {
+        return Math.abs(depth) / 8;
+    }
+
     /** Empty constructor. */
     public Frame() { }
 
     /** Allocates a new packed image frame in native memory where rows are 8-byte aligned. */
     public Frame(int width, int height, int depth, int channels) {
-        int pixelSize = Math.abs(depth) / 8;
+        this(width, height, depth, channels, ((width * channels * pixelSize(depth) + 7) & ~7) / pixelSize(depth));
+    }
+    public Frame(int width, int height, int depth, int channels, int imageStride) {
         this.imageWidth = width;
         this.imageHeight = height;
         this.imageDepth = depth;
         this.imageChannels = channels;
-        this.imageStride = ((imageWidth * imageChannels * pixelSize + 7) & ~7) / pixelSize; // 8-byte aligned
+        this.imageStride = imageStride;
         this.image = new Buffer[1];
 
-        ByteBuffer buffer = ByteBuffer.allocateDirect(imageHeight * imageStride * pixelSize).order(ByteOrder.nativeOrder());
+        ByteBuffer buffer = ByteBuffer.allocateDirect(imageHeight * imageStride * pixelSize(depth)).order(ByteOrder.nativeOrder());
         switch (imageDepth) {
             case DEPTH_BYTE:
             case DEPTH_UBYTE:  image[0] = buffer;                  break;
