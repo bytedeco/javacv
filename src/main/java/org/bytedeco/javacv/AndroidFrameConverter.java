@@ -110,9 +110,10 @@ public class AndroidFrameConverter extends FrameConverter<Bitmap> {
             default: assert false;
         }
 
-        if (frame == null || frame.imageWidth != bitmap.getWidth()
+        if (frame == null || frame.imageWidth != bitmap.getWidth() || frame.imageStride != bitmap.getRowBytes()
                 || frame.imageHeight != bitmap.getHeight() || frame.imageChannels != channels) {
             frame = new Frame(bitmap.getWidth(), bitmap.getHeight(), Frame.DEPTH_UBYTE, channels);
+            frame.imageStride = bitmap.getRowBytes();
         }
 
         // assume matching strides

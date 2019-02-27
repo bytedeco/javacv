@@ -1,4 +1,5 @@
 
+ * Take into account `Bitmap.getRowBytes()` in `AndroidFrameConverter.convert(Bitmap)` ([issue #1143](https://github.com/bytedeco/javacv/issues/1143))
  * Add `static { Loader.load(); }` in `LeptonicaFrameConverter` and `OpenCVFrameConverter` to prevent link errors ([issue #1128](https://github.com/bytedeco/javacv/issues/1128))
 
 ### January 11, 2019 version 1.4.4
