@@ -1,4 +1,5 @@
 
+ * Upgrade dependencies for FFmpeg 4.1.1 and libfreenect 0.5.7
  * Allow allocation of `Frame` images with custom strides
  * Take into account `Bitmap.getRowBytes()` in `AndroidFrameConverter.convert(Bitmap)` ([issue #1143](https://github.com/bytedeco/javacv/issues/1143))
  * Add `static { Loader.load(); }` in `LeptonicaFrameConverter` and `OpenCVFrameConverter` to prevent link errors ([issue #1128](https://github.com/bytedeco/javacv/issues/1128))

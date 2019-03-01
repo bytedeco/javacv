@@ -33,7 +33,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>4.1-${javacpp.version}</version>
+      <version>4.1.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -48,7 +48,7 @@
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>libfreenect-platform</artifactId>
-      <version>0.5.3-${javacpp.version}</version>
+      <version>0.5.7-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
@@ -105,7 +105,7 @@
             <configuration>
               <archive>
                 <manifestEntries>
-                  <Class-Path>javacv.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar libfreenect-platform.jar libfreenect2-platform.jar librealsense-platform.jar videoinput-platform.jar artoolkitplus-platform.jar flandmark-platform.jar</Class-Path>
+                  <Class-Path>javacv.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar libfreenect-platform.jar libfreenect2-platform.jar librealsense-platform.jar videoinput-platform.jar artoolkitplus-platform.jar flandmark-platform.jar leptonica-platform.jar tesseract-platform.jar</Class-Path>
                   <Name>org/bytedeco/javacv/</Name>
                 </manifestEntries>
               </archive>
