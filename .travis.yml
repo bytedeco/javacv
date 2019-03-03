@@ -2,7 +2,7 @@ dist: trusty
 sudo: false
 language: java
 jdk:
-  - oraclejdk8
+  - oraclejdk9
 cache:
   directories:
     - $HOME/.m2

@@ -32,7 +32,7 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
 
-import static org.bytedeco.javacpp.avutil.*;
+import static org.bytedeco.ffmpeg.global.avutil.*;
 import static org.junit.Assert.*;
 
 /**

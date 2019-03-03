@@ -64,10 +64,14 @@ import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.ShortPointer;
 
-import static org.bytedeco.javacpp.avcodec.*;
-import static org.bytedeco.javacpp.avfilter.*;
-import static org.bytedeco.javacpp.avformat.*;
-import static org.bytedeco.javacpp.avutil.*;
+import org.bytedeco.ffmpeg.avcodec.*;
+import org.bytedeco.ffmpeg.avfilter.*;
+import org.bytedeco.ffmpeg.avformat.*;
+import org.bytedeco.ffmpeg.avutil.*;
+import static org.bytedeco.ffmpeg.global.avcodec.*;
+import static org.bytedeco.ffmpeg.global.avfilter.*;
+import static org.bytedeco.ffmpeg.global.avformat.*;
+import static org.bytedeco.ffmpeg.global.avutil.*;
 
 /**
  * A {@link FrameFilter} that uses FFmpeg to filter frames. We can refer to
@@ -86,13 +90,13 @@ public class FFmpegFrameFilter extends FrameFilter {
             throw loadingException;
         } else {
             try {
-                Loader.load(org.bytedeco.javacpp.avutil.class);
-                Loader.load(org.bytedeco.javacpp.avcodec.class);
-                Loader.load(org.bytedeco.javacpp.avformat.class);
-                Loader.load(org.bytedeco.javacpp.postproc.class);
-                Loader.load(org.bytedeco.javacpp.swresample.class);
-                Loader.load(org.bytedeco.javacpp.swscale.class);
-                Loader.load(org.bytedeco.javacpp.avfilter.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avutil.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avcodec.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avformat.class);
+                Loader.load(org.bytedeco.ffmpeg.global.postproc.class);
+                Loader.load(org.bytedeco.ffmpeg.global.swresample.class);
+                Loader.load(org.bytedeco.ffmpeg.global.swscale.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avfilter.class);
 
                 av_register_all();
                 avfilter_register_all();
@@ -137,7 +141,7 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     @Override public void release() throws Exception {
-        synchronized (org.bytedeco.javacpp.avfilter.class) {
+        synchronized (org.bytedeco.ffmpeg.global.avfilter.class) {
             releaseUnsafe();
         }
     }
@@ -241,7 +245,7 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     @Override public void start() throws Exception {
-        synchronized (org.bytedeco.javacpp.avfilter.class) {
+        synchronized (org.bytedeco.ffmpeg.global.avfilter.class) {
             image_frame = av_frame_alloc();
             samples_frame = av_frame_alloc();
             filt_frame = av_frame_alloc();

@@ -29,9 +29,12 @@ import java.nio.ShortBuffer;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 
-import static org.bytedeco.javacpp.dc1394.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.bytedeco.libdc1394.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.libdc1394.global.dc1394.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  *
@@ -83,7 +86,7 @@ public class DC1394FrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                Loader.load(org.bytedeco.javacpp.dc1394.class);
+                Loader.load(org.bytedeco.libdc1394.global.dc1394.class);
             } catch (Throwable t) {
                 throw loadingException = new Exception("Failed to load " + DC1394FrameGrabber.class, t);
             }

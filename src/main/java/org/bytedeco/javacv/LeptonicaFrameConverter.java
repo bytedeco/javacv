@@ -29,7 +29,8 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 
-import static org.bytedeco.javacpp.lept.*;
+import org.bytedeco.leptonica.*;
+import static org.bytedeco.leptonica.global.lept.*;
 
 /**
  * A utility class to map data between {@link Frame} and {@link PIX},
@@ -39,7 +40,7 @@ import static org.bytedeco.javacpp.lept.*;
  * @author Samuel Audet
  */
 public class LeptonicaFrameConverter extends FrameConverter<PIX> {
-    static { Loader.load(org.bytedeco.javacpp.lept.class); }
+    static { Loader.load(org.bytedeco.leptonica.global.lept.class); }
 
     PIX pix;
     ByteBuffer frameBuffer, pixBuffer;

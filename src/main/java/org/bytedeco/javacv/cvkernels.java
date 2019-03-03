@@ -25,13 +25,14 @@ package org.bytedeco.javacv;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import static org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
 
 /**
  *
  * @author Samuel Audet
  */
-public class cvkernels extends org.bytedeco.javacpp.cvkernels {
+public class cvkernels extends org.bytedeco.opencv.cvkernels {
 
     private static class ParallelData {
         KernelData data = null;

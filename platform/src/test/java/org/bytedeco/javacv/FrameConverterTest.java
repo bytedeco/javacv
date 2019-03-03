@@ -33,11 +33,13 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.Indexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
-import org.bytedeco.javacpp.lept.PIX;
 import org.junit.Test;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.bytedeco.leptonica.PIX;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 import static org.junit.Assert.*;
 
 /**
@@ -208,7 +210,7 @@ public class FrameConverterTest {
 
     @Test public void testOpenCVFrameConverter() {
         System.out.println("OpenCVFrameConverter");
-        Loader.load(org.bytedeco.javacpp.opencv_java.class);
+        Loader.load(org.bytedeco.opencv.opencv_java.class);
 
         for (int depth = 8; depth <= 64; depth *= 2) {
             assertEquals(depth, OpenCVFrameConverter.getFrameDepth(OpenCVFrameConverter.getIplImageDepth(depth)));

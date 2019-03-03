@@ -1,7 +1,5 @@
 package org.bytedeco.javacv;
 
-import static org.bytedeco.javacpp.avcodec.av_lockmgr_register;
-
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -10,9 +8,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.PointerScope;
-import org.bytedeco.javacpp.avcodec;
-import org.bytedeco.javacpp.avcodec.Cb_PointerPointer_int;
 import org.bytedeco.javacpp.annotation.Cast;
+
+import org.bytedeco.ffmpeg.avcodec.*;
+import static org.bytedeco.ffmpeg.global.avcodec.*;
 
 public class FFmpegLockCallback {
     private static boolean initialized = false;
@@ -26,13 +25,13 @@ public class FFmpegLockCallback {
             Lock l;
             // System.out.println "Locking: " + op);
             switch (op) {
-            case avcodec.AV_LOCK_CREATE:
+            case AV_LOCK_CREATE:
                 number = lockCounter.incrementAndGet();
                 // System.out.println("Command: " + op + " number: " + number);
                 new IntPointer(mutex).put(0, number);
                 lockArray.put(number, new ReentrantLock());
                 return 0;
-            case avcodec.AV_LOCK_OBTAIN:
+            case AV_LOCK_OBTAIN:
                 number = new IntPointer(mutex).get(0);
                 // System.out.println("Command: " + op + " number: " + number);
                 l = lockArray.get(number);
@@ -42,7 +41,7 @@ public class FFmpegLockCallback {
                 }
                 l.lock();
                 return 0;
-            case avcodec.AV_LOCK_RELEASE:
+            case AV_LOCK_RELEASE:
                 number = new IntPointer(mutex).get(0);
                 // System.out.println("Command: " + op + " number: " + number);
                 l = lockArray.get(number);
@@ -52,7 +51,7 @@ public class FFmpegLockCallback {
                 }
                 l.unlock();
                 return 0;
-            case avcodec.AV_LOCK_DESTROY:
+            case AV_LOCK_DESTROY:
                 number = new IntPointer(mutex).get(0);
                 // System.out.println("Command: " + op + " number: " + number);
                 lockArray.remove(number);

@@ -26,7 +26,8 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.tools.Logger;
 
-import static org.bytedeco.javacpp.avutil.*;
+import org.bytedeco.ffmpeg.avutil.*;
+import static org.bytedeco.ffmpeg.global.avutil.*;
 
 /**
  * A utility class to redirect to Java log messages from FFmpeg.

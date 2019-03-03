@@ -28,7 +28,8 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 
-import static org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
 
 /**
  * A utility class to map data between {@link Frame} and {@link IplImage} or {@link Mat}.
@@ -39,7 +40,7 @@ import static org.bytedeco.javacpp.opencv_core.*;
  * @author Samuel Audet
  */
 public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
-    static { Loader.load(org.bytedeco.javacpp.opencv_core.class); }
+    static { Loader.load(org.bytedeco.opencv.global.opencv_core.class); }
 
     IplImage img;
     Mat mat;

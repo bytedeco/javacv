@@ -26,9 +26,12 @@ import java.io.File;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.videoInputLib.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.videoinput.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.videoinput.global.videoInputLib.*;
 
 /**
  *
@@ -56,7 +59,7 @@ public class VideoInputFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                Loader.load(org.bytedeco.javacpp.videoInputLib.class);
+                Loader.load(org.bytedeco.videoinput.global.videoInputLib.class);
             } catch (Throwable t) {
                 throw loadingException = new Exception("Failed to load " + VideoInputFrameGrabber.class, t);
             }

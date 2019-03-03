@@ -36,8 +36,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.TimeUnit;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
 
 public class IPCameraFrameGrabber extends FrameGrabber {
 
@@ -55,7 +56,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                Loader.load(org.bytedeco.javacpp.opencv_highgui.class);
+                Loader.load(org.bytedeco.opencv.global.opencv_highgui.class);
             } catch (Throwable t) {
                 throw loadingException = new Exception("Failed to load " + IPCameraFrameGrabber.class, t);
             }

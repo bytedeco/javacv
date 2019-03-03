@@ -28,14 +28,16 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.javacpp.FlyCapture2;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import org.bytedeco.javacpp.FlyCapture2.Error;
-import static org.bytedeco.javacpp.FlyCapture2.*;
+import org.bytedeco.flycapture.FlyCapture2.*;
+import org.bytedeco.flycapture.FlyCapture2.Error;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.flycapture.global.FlyCapture2.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  *
@@ -116,7 +118,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                Loader.load(org.bytedeco.javacpp.FlyCapture2.class);
+                Loader.load(org.bytedeco.flycapture.global.FlyCapture2.class);
             } catch (Throwable t) {
                 throw loadingException = new FrameGrabber.Exception("Failed to load " + FlyCapture2FrameGrabber.class, t);
             }
@@ -324,7 +326,7 @@ public class FlyCapture2FrameGrabber extends FrameGrabber {
         // TODO: set fastest bus speed ? This may lead to system instability. Use default.
 
         // set `gamma`
-        Property gammaProp = new Property(FlyCapture2.GAMMA);
+        Property gammaProp = new Property(GAMMA);
         if (gamma != 0.0) {
             error = camera.GetProperty(gammaProp);
             if (error.notEquals(PGRERROR_OK)) {

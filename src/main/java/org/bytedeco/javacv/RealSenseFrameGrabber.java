@@ -28,12 +28,13 @@ import java.nio.ShortBuffer;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.RealSense;
-import org.bytedeco.javacpp.RealSense.context;
-import org.bytedeco.javacpp.RealSense.device;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.bytedeco.librealsense.*;
+import org.bytedeco.librealsense.global.RealSense;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  *
@@ -96,7 +97,7 @@ public class RealSenseFrameGrabber extends FrameGrabber {
                 if (context != null) {
                     return;
                 }
-                Loader.load(org.bytedeco.javacpp.RealSense.class);
+                Loader.load(RealSense.class);
 
                 // Context is shared accross cameras. 
                 context = new context();

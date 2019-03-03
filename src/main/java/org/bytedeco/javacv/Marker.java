@@ -25,9 +25,12 @@ package org.bytedeco.javacv;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import static org.bytedeco.javacpp.ARToolKitPlus.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.bytedeco.artoolkitplus.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.artoolkitplus.global.ARToolKitPlus.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  *
