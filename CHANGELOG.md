@@ -1,4 +1,6 @@
 
+ * Allocate native memory for `Frame` using `Pointer` to allow deallocation with `PointerScope` ([issue #1152](https://github.com/bytedeco/javacv/issues/1152))
+ * Add `module-info.java` and depend on modularized JavaCPP Presets to comply with JPMS
  * Upgrade dependencies for FFmpeg 4.1.1 and libfreenect 0.5.7
  * Allow allocation of `Frame` images with custom strides
  * Take into account `Bitmap.getRowBytes()` in `AndroidFrameConverter.convert(Bitmap)` ([issue #1143](https://github.com/bytedeco/javacv/issues/1143))

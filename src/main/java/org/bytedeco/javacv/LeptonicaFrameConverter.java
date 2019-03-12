@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Samuel Audet
+ * Copyright (C) 2018-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ package org.bytedeco.javacv;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
@@ -62,8 +63,8 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
         } else if (!isEqual(frame, pix)) {
             Pointer data;
             if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-                pixBuffer = ByteBuffer.allocateDirect(frame.imageHeight * frame.imageStride).order(ByteOrder.BIG_ENDIAN);
-                data = new Pointer(pixBuffer);
+                data = new BytePointer(frame.imageHeight * frame.imageStride);
+                pixBuffer = data.asByteBuffer().order(ByteOrder.BIG_ENDIAN);
             } else {
                 data = new Pointer(frame.image[0].position(0));
             }
@@ -110,9 +111,12 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
             frame.imageChannels = pix.d() / 8;
             frame.imageStride = pix.wpl() * 4;
             if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-                frameBuffer = ByteBuffer.allocateDirect(frame.imageHeight * frame.imageStride).order(ByteOrder.LITTLE_ENDIAN);
+                Pointer data = new BytePointer(frame.imageHeight * frame.imageStride);
+                frameBuffer = data.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
+                frame.opaque = data;
                 frame.image = new Buffer[] { frameBuffer };
             } else {
+                frame.opaque = tempPix != null ? pix.clone() : pix;
                 frame.image = new Buffer[] { pix.createBuffer() };
             }
         }
@@ -123,10 +127,7 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
         }
 
         if (tempPix != null) {
-            frame.opaque = pix.clone();
             pixDestroy(tempPix);
-        } else {
-            frame.opaque = pix;
         }
         return frame;
     }

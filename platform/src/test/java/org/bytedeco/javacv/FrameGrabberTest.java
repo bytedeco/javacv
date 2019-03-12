@@ -94,26 +94,35 @@ public class FrameGrabberTest {
             int n = 0, m = 0;
             Frame frame2;
             while ((frame2 = grabber.grab()) != null) {
+                Frame clone2 = frame2.clone();
                 if (frame2.image != null) {
                     Frame frame = frames[n++];
                     assertEquals(frame.imageWidth, frame2.imageWidth);
                     assertEquals(frame.imageHeight, frame2.imageHeight);
                     assertEquals(frame.imageChannels, frame2.imageChannels);
+                    assertEquals(frame.imageWidth, clone2.imageWidth);
+                    assertEquals(frame.imageHeight, clone2.imageHeight);
+                    assertEquals(frame.imageChannels, clone2.imageChannels);
 
                     UByteIndexer frameIdx = frame.createIndexer();
                     UByteIndexer frame2Idx = frame2.createIndexer();
+                    UByteIndexer clone2Idx = clone2.createIndexer();
                     for (int i = 0; i < frameIdx.rows(); i++) {
                         for (int j = 0; j < frameIdx.cols(); j++) {
                             for (int k = 0; k < frameIdx.channels(); k++) {
                                 int b = frameIdx.get(i, j, k);
                                 assertEquals(b, frame2Idx.get(i, j, k));
+                                assertEquals(b, clone2Idx.get(i, j, k));
                             }
                         }
                     }
                 } else {
                     FloatBuffer audioBuffer2 = (FloatBuffer)frame2.samples[0];
+                    FloatBuffer cloneBuffer2 = (FloatBuffer)clone2.samples[0];
                     while (audioBuffer2.hasRemaining()) {
-                        assertEquals((float)audioBuffer.get(m++) / (Short.MAX_VALUE + 1), audioBuffer2.get(), 0);
+                        assertEquals((float)audioBuffer.get(m) / (Short.MAX_VALUE + 1), audioBuffer2.get(), 0);
+                        assertEquals((float)audioBuffer.get(m) / (Short.MAX_VALUE + 1), cloneBuffer2.get(), 0);
+                        m++;
                     }
                 }
             }
@@ -289,9 +298,9 @@ public class FrameGrabberTest {
             recorder.setAudioQuality(0);
             recorder.start();
             if (seektestnum!=2) {
+                Frame frame = new Frame(640, 480, Frame.DEPTH_UBYTE, 3);
+                UByteIndexer frameIdx = frame.createIndexer();
                 for (int n = 0; n < 10000; n++) {
-                    Frame frame = new Frame(640, 480, Frame.DEPTH_UBYTE, 3);
-                    UByteIndexer frameIdx = frame.createIndexer();
                     for (int i = 0; i < frameIdx.rows(); i++) {
                         for (int j = 0; j < frameIdx.cols(); j++) {
                             for (int k = 0; k < frameIdx.channels(); k++) {
