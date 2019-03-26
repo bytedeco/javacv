@@ -182,7 +182,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
     public void release() throws Exception {
         // synchronized (org.bytedeco.javacpp.avcodec.class) {
-            releaseUnsafe();
+        releaseUnsafe();
         // }
     }
     void releaseUnsafe() throws Exception {
@@ -371,7 +371,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     public void start() throws Exception {
         // synchronized (org.bytedeco.javacpp.avcodec.class) {
-            startUnsafe();
+        startUnsafe();
         // }
     }
 
@@ -456,7 +456,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             /* find the video encoder */
             if ((video_codec = avcodec_find_encoder_by_name(videoCodecName)) == null &&
-                (video_codec = avcodec_find_encoder(oformat.video_codec())) == null) {
+                    (video_codec = avcodec_find_encoder(oformat.video_codec())) == null) {
                 release();
                 throw new Exception("avcodec_find_encoder() error: Video codec not found.");
             }
@@ -532,7 +532,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if (pixelFormat != AV_PIX_FMT_NONE) {
                 video_c.pix_fmt(pixelFormat);
             } else if (video_c.codec_id() == AV_CODEC_ID_RAWVIDEO || video_c.codec_id() == AV_CODEC_ID_PNG ||
-                       video_c.codec_id() == AV_CODEC_ID_HUFFYUV  || video_c.codec_id() == AV_CODEC_ID_FFV1) {
+                    video_c.codec_id() == AV_CODEC_ID_HUFFYUV  || video_c.codec_id() == AV_CODEC_ID_FFV1) {
                 video_c.pix_fmt(AV_PIX_FMT_RGB32);   // appropriate for common lossless formats
             } else if (video_c.codec_id() == AV_CODEC_ID_JPEGLS) {
                 video_c.pix_fmt(AV_PIX_FMT_BGR24);
@@ -602,7 +602,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             /* find the audio encoder */
             if ((audio_codec = avcodec_find_encoder_by_name(audioCodecName)) == null &&
-                (audio_codec = avcodec_find_encoder(oformat.audio_codec())) == null) {
+                    (audio_codec = avcodec_find_encoder(oformat.audio_codec())) == null) {
                 release();
                 throw new Exception("avcodec_find_encoder() error: Audio codec not found.");
             }
@@ -853,7 +853,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             try {
                 synchronized (oc) {
                     /* flush all the buffers */
-                    while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
+                    while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (BytePointer[])null));
                     while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
 
                     if (interleaved && video_st != null && audio_st != null) {
@@ -876,11 +876,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
     public void record(Frame frame, int pixelFormat) throws Exception {
         if (frame == null || (frame.image == null && frame.samples == null)) {
-            recordImage(0, 0, 0, 0, 0, pixelFormat, (Buffer[])null);
+            recordImage(0, 0, 0, 0, 0, pixelFormat, (BytePointer[])null);
         } else {
             if (frame.image != null) {
+                BytePointer pointer = new BytePointer(((Pointer[])frame.opaque)[0]).position(0);
                 frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
-                        frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
+                        frame.imageChannels, frame.imageStride, pixelFormat, pointer);
             }
             if (frame.samples != null) {
                 frame.keyFrame = recordSamples(frame.sampleRate, frame.audioChannels, frame.samples);
@@ -888,7 +889,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
-    public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
+    public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, BytePointer ... image) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
         }
@@ -900,9 +901,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                passing the same picture again */
         } else {
             int step = stride * Math.abs(depth) / 8;
-            BytePointer data = image[0] instanceof ByteBuffer
-                    ? new BytePointer((ByteBuffer)image[0].position(0))
-                    : new BytePointer(new Pointer(image[0].position(0)));
+            BytePointer data = image[0];
 
             if (pixelFormat == AV_PIX_FMT_NONE) {
                 if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 3) {
@@ -944,7 +943,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 picture.width(video_c.width());
                 picture.height(video_c.height());
                 sws_scale(img_convert_ctx, new PointerPointer(tmp_picture), tmp_picture.linesize(),
-                          0, height, new PointerPointer(picture), picture.linesize());
+                        0, height, new PointerPointer(picture), picture.linesize());
             } else {
                 av_image_fill_arrays(new PointerPointer(picture), picture.linesize(), data, pixelFormat, width, height, 1);
                 picture.linesize(0, step);
@@ -965,28 +964,28 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 //            video_pkt.data(new BytePointer(picture));
 //            video_pkt.size(Loader.sizeof(AVFrame.class));
 //        } else {
-            /* encode the image */
-            av_init_packet(video_pkt);
-            video_pkt.data(video_outbuf);
-            video_pkt.size(video_outbuf_size);
-            picture.quality(video_c.global_quality());
-            if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null || image.length == 0 ? null : picture, got_video_packet)) < 0) {
-                throw new Exception("avcodec_encode_video2() error " + ret + ": Could not encode video packet.");
-            }
-            picture.pts(picture.pts() + 1); // magic required by libx264
+        /* encode the image */
+        av_init_packet(video_pkt);
+        video_pkt.data(video_outbuf);
+        video_pkt.size(video_outbuf_size);
+        picture.quality(video_c.global_quality());
+        if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null || image.length == 0 ? null : picture, got_video_packet)) < 0) {
+            throw new Exception("avcodec_encode_video2() error " + ret + ": Could not encode video packet.");
+        }
+        picture.pts(picture.pts() + 1); // magic required by libx264
 
-            /* if zero size, it means the image was buffered */
-            if (got_video_packet[0] != 0) {
-                if (video_pkt.pts() != AV_NOPTS_VALUE) {
-                    video_pkt.pts(av_rescale_q(video_pkt.pts(), video_c.time_base(), video_st.time_base()));
-                }
-                if (video_pkt.dts() != AV_NOPTS_VALUE) {
-                    video_pkt.dts(av_rescale_q(video_pkt.dts(), video_c.time_base(), video_st.time_base()));
-                }
-                video_pkt.stream_index(video_st.index());
-            } else {
-                return false;
+        /* if zero size, it means the image was buffered */
+        if (got_video_packet[0] != 0) {
+            if (video_pkt.pts() != AV_NOPTS_VALUE) {
+                video_pkt.pts(av_rescale_q(video_pkt.pts(), video_c.time_base(), video_st.time_base()));
             }
+            if (video_pkt.dts() != AV_NOPTS_VALUE) {
+                video_pkt.dts(av_rescale_q(video_pkt.dts(), video_c.time_base(), video_st.time_base()));
+            }
+            video_pkt.stream_index(video_st.index());
+        } else {
+            return false;
+        }
 //        }
 
         writePacket(AVMEDIA_TYPE_VIDEO, video_pkt);
@@ -1210,7 +1209,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
         AVStream in_stream = ifmt_ctx.streams(pkt.stream_index());
 /**
- * Repair the problem of error decoding and playback caused by the absence of dts/pts 
+ * Repair the problem of error decoding and playback caused by the absence of dts/pts
  * in the output audio/video file or audio/video stream,
  * Comment out this line of code so that PTS / DTS can specify the timestamp manually.
  */
