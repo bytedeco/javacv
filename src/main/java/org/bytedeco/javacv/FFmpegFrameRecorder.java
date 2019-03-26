@@ -879,7 +879,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             recordImage(0, 0, 0, 0, 0, pixelFormat, (BytePointer[])null);
         } else {
             if (frame.image != null) {
-                BytePointer pointer = new BytePointer(((Pointer[])frame.opaque)[0]).position(0);
+                BytePointer pointer = frame.opaque instanceof ByteBuffer[]
+                        ? new BytePointer(((ByteBuffer[])frame.opaque)[0]).position(0)
+                        : new BytePointer(((Pointer[])frame.opaque)[0]).position(0);
                 frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
                         frame.imageChannels, frame.imageStride, pixelFormat, pointer);
             }
