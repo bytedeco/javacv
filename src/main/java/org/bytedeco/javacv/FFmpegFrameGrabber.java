@@ -147,16 +147,17 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
     public FFmpegFrameGrabber(InputStream inputStream, int maximumSize) {
         this.inputStream = inputStream;
+        this.closeInputStream = true;
         this.pixelFormat = AV_PIX_FMT_NONE;
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
         this.maximumSize = maximumSize;
     }
     public void release() throws Exception {
-        // synchronized (org.bytedeco.javacpp.avcodec.class) {
+        synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
             releaseUnsafe();
-        // }
+        }
     }
-    void releaseUnsafe() throws Exception {
+    public void releaseUnsafe() throws Exception {
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
                 av_packet_unref(pkt);
@@ -234,7 +235,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             try {
                 if (oc == null) {
                     // when called a second time
-                    inputStream.close();
+                    if (closeInputStream) {
+                        inputStream.close();
+                    }
                 } else {
                     inputStream.reset();
                 }
@@ -318,6 +321,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     private InputStream     inputStream;
+    private boolean         closeInputStream;
     private int             maximumSize;
     private AVIOContext     avio;
     private String          filename;
@@ -340,6 +344,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
+
+    public boolean isCloseInputStream() {
+        return closeInputStream;
+    }
+    public void setCloseInputStream(boolean closeInputStream) {
+        this.closeInputStream = closeInputStream;
+    }
 
     /**
      * Is there a video stream?
@@ -707,11 +718,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
-        // synchronized (org.bytedeco.javacpp.avcodec.class) {
+        synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
             startUnsafe();
-        // }
+        }
     }
-    void startUnsafe() throws Exception {
+    public void startUnsafe() throws Exception {
         int ret;
         img_convert_ctx = null;
         oc              = new AVFormatContext(null);
@@ -829,7 +840,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(video_c, video_st.codecpar())) < 0) {
-                release();
+                releaseUnsafe();
                 throw new Exception("avcodec_parameters_to_context() error: Could not copy the video stream parameters.");
             }
 
@@ -876,7 +887,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(audio_c, audio_st.codecpar())) < 0) {
-                release();
+                releaseUnsafe();
                 throw new Exception("avcodec_parameters_to_context() error: Could not copy the audio stream parameters.");
             }
 

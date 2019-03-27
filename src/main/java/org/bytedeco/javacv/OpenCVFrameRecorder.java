@@ -98,6 +98,9 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         return videoCodec;
     }
 
+    public void flush() throws Exception {
+    }
+
     public void stop() throws Exception {
         release();
     }

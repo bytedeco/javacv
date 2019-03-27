@@ -33,7 +33,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>4.1.1-${javacpp.version}</version>
+      <version>4.1.2-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -114,6 +114,33 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-maven-plugin</artifactId>
+        <version>1.0.0.Beta2</version>
+        <configuration>
+          <jvmVersion>9</jvmVersion>
+          <overwriteExistingFiles>true</overwriteExistingFiles>
+          <outputDirectory>${project.build.directory}</outputDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>add-module-infos</id>
+            <phase>package</phase>
+            <goals>
+              <goal>add-module-info</goal>
+            </goals>
+            <configuration>
+              <modules>
+                <module>
+                  <file>${project.build.directory}/${project.artifactId}.jar</file>
+                  <moduleInfoFile>${project.basedir}/src/main/java9/module-info.java</moduleInfoFile>
+                </module>
+              </modules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>3.1.1</version>
         <executions>
@@ -139,6 +166,7 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
+          <attach>false</attach>
           <descriptors>
             <descriptor>src/main/assembly/bin.xml</descriptor>
             <descriptor>src/main/assembly/src.xml</descriptor>
@@ -155,80 +183,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <!-- If we have at least Java 9, compile module-info.class as well and create a multi-release JAR -->
-    <profile>
-      <id>module-java9-enable</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>java9</id>
-                <phase>compile</phase>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                <configuration>
-                  <source>9</source>
-                  <target>9</target>
-                  <compileSourceRoots>
-                    <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
-                  </compileSourceRoots>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <!-- Copy module-info.class into META-INF and make sure to exclude the original from the JAR file -->
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>java9</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${project.build.outputDirectory}</directory>
-                      <includes>
-                        <include>module-info.class</include>
-                      </includes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-jar-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>default-jar</id>
-                <configuration>
-                  <archive>
-                    <manifestEntries>
-                      <Multi-Release>true</Multi-Release>
-                    </manifestEntries>
-                  </archive>
-                  <includes>
-                    <include>META-INF/versions/9/module-info.class</include>
-                  </includes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>
