@@ -171,14 +171,17 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public FFmpegFrameRecorder(OutputStream outputStream, int audioChannels) {
         this(outputStream.toString(), audioChannels);
         this.outputStream = outputStream;
+        this.closeOutputStream = true;
     }
     public FFmpegFrameRecorder(OutputStream outputStream, int imageWidth, int imageHeight) {
         this(outputStream.toString(), imageWidth, imageHeight);
         this.outputStream = outputStream;
+        this.closeOutputStream = true;
     }
     public FFmpegFrameRecorder(OutputStream outputStream, int imageWidth, int imageHeight, int audioChannels) {
         this(outputStream.toString(), imageWidth, imageHeight, audioChannels);
         this.outputStream = outputStream;
+        this.closeOutputStream = true;
     }
     public void release() throws Exception {
         synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
@@ -274,7 +277,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
         if (outputStream != null) {
             try {
-                outputStream.close();
+                if (closeOutputStream) {
+                    outputStream.close();
+                }
             } catch (IOException ex) {
                 throw new Exception("Error on OutputStream.close(): ", ex);
             } finally {
@@ -323,6 +328,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     private OutputStream outputStream;
+    private boolean closeOutputStream;
     private AVIOContext avio;
     private String filename;
     private AVFrame picture, tmp_picture;
@@ -348,6 +354,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVPacket video_pkt, audio_pkt;
     private int[] got_video_packet, got_audio_packet;
     private AVFormatContext ifmt_ctx;
+
+    public boolean isCloseOutputStream() {
+        return closeOutputStream;
+    }
+    public void setCloseOutputStream(boolean closeOutputStream) {
+        this.closeOutputStream = closeOutputStream;
+    }
 
     @Override public int getFrameNumber() {
         return picture == null ? super.getFrameNumber() : (int)picture.pts();

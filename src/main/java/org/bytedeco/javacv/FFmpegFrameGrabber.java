@@ -147,6 +147,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
     public FFmpegFrameGrabber(InputStream inputStream, int maximumSize) {
         this.inputStream = inputStream;
+        this.closeInputStream = true;
         this.pixelFormat = AV_PIX_FMT_NONE;
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
         this.maximumSize = maximumSize;
@@ -234,7 +235,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             try {
                 if (oc == null) {
                     // when called a second time
-                    inputStream.close();
+                    if (closeInputStream) {
+                        inputStream.close();
+                    }
                 } else {
                     inputStream.reset();
                 }
@@ -318,6 +321,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     private InputStream     inputStream;
+    private boolean         closeInputStream;
     private int             maximumSize;
     private AVIOContext     avio;
     private String          filename;
@@ -340,6 +344,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
+
+    public boolean isCloseInputStream() {
+        return closeInputStream;
+    }
+    public void setCloseInputStream(boolean closeInputStream) {
+        this.closeInputStream = closeInputStream;
+    }
 
     /**
      * Is there a video stream?
