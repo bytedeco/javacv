@@ -864,7 +864,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public void flush() throws Exception {
         synchronized (oc) {
             /* flush all the buffers */
-            while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
+            while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (BytePointer[])null));
             while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
 
             if (interleaved && video_st != null && audio_st != null) {
