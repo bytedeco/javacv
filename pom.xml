@@ -35,10 +35,6 @@
     </developer>
   </developers>
 
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
-
   <scm>
     <url>https://github.com/bytedeco/javacv</url>
     <connection>scm:git:git://github.com/bytedeco/javacv.git</connection>
@@ -79,7 +75,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>4.1.1-${javacpp.version}</version>
+      <version>4.1.2-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
