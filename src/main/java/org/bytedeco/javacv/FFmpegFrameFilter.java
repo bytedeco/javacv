@@ -145,7 +145,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             releaseUnsafe();
         }
     }
-    void releaseUnsafe() throws Exception {
+    public void releaseUnsafe() throws Exception {
         if (filter_graph != null) {
             avfilter_graph_free(filter_graph);
             buffersink_ctx = null;
@@ -246,24 +246,27 @@ public class FFmpegFrameFilter extends FrameFilter {
 
     @Override public void start() throws Exception {
         synchronized (org.bytedeco.ffmpeg.global.avfilter.class) {
-            image_frame = av_frame_alloc();
-            samples_frame = av_frame_alloc();
-            filt_frame = av_frame_alloc();
-            image_ptr = new BytePointer[] { null };
-            image_buf = new Buffer[] { null };
-            samples_ptr = new BytePointer[] { null };
-            samples_buf = new Buffer[] { null };
-            frame = new Frame();
+            startUnsafe();
+        }
+    }
+    public void startUnsafe() throws Exception {
+        image_frame = av_frame_alloc();
+        samples_frame = av_frame_alloc();
+        filt_frame = av_frame_alloc();
+        image_ptr = new BytePointer[] { null };
+        image_buf = new Buffer[] { null };
+        samples_ptr = new BytePointer[] { null };
+        samples_buf = new Buffer[] { null };
+        frame = new Frame();
 
-            if (image_frame == null || samples_frame == null || filt_frame == null) {
-                throw new Exception("Could not allocate frames");
-            }
-            if (filters != null && imageWidth > 0 && imageHeight > 0 && videoInputs > 0) {
-                startVideoUnsafe();
-            }
-            if (afilters != null && audioChannels > 0 && audioInputs > 0) {
-                startAudioUnsafe();
-            }
+        if (image_frame == null || samples_frame == null || filt_frame == null) {
+            throw new Exception("Could not allocate frames");
+        }
+        if (filters != null && imageWidth > 0 && imageHeight > 0 && videoInputs > 0) {
+            startVideoUnsafe();
+        }
+        if (afilters != null && audioChannels > 0 && audioInputs > 0) {
+            startAudioUnsafe();
         }
     }
 

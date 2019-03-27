@@ -152,11 +152,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         this.maximumSize = maximumSize;
     }
     public void release() throws Exception {
-        // synchronized (org.bytedeco.javacpp.avcodec.class) {
+        synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
             releaseUnsafe();
-        // }
+        }
     }
-    void releaseUnsafe() throws Exception {
+    public void releaseUnsafe() throws Exception {
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
                 av_packet_unref(pkt);
@@ -707,11 +707,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public void start() throws Exception {
-        // synchronized (org.bytedeco.javacpp.avcodec.class) {
+        synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
             startUnsafe();
-        // }
+        }
     }
-    void startUnsafe() throws Exception {
+    public void startUnsafe() throws Exception {
         int ret;
         img_convert_ctx = null;
         oc              = new AVFormatContext(null);
@@ -829,7 +829,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(video_c, video_st.codecpar())) < 0) {
-                release();
+                releaseUnsafe();
                 throw new Exception("avcodec_parameters_to_context() error: Could not copy the video stream parameters.");
             }
 
@@ -876,7 +876,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(audio_c, audio_st.codecpar())) < 0) {
-                release();
+                releaseUnsafe();
                 throw new Exception("avcodec_parameters_to_context() error: Could not copy the audio stream parameters.");
             }
 

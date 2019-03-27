@@ -1,4 +1,6 @@
 
+ * Add `FFmpegFrameRecorder.flush()` method that does not release the stream ([issue #1149](https://github.com/bytedeco/javacv/issues/1149))
+ * Readd `synchronized` blocks for `FFmpegFrameGrabber` and `FFmpegFrameRecorder`, but make unsafe methods public ([issue #1139](https://github.com/bytedeco/javacv/issues/1139))
  * Allocate native memory for `Frame` using `Pointer` to allow deallocation with `PointerScope` ([issue #1152](https://github.com/bytedeco/javacv/issues/1152))
  * Add `module-info.java` and depend on modularized JavaCPP Presets to comply with JPMS
  * Upgrade dependencies for FFmpeg 4.1.2 and libfreenect 0.5.7

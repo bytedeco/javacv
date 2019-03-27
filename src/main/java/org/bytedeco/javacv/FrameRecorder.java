@@ -390,6 +390,7 @@ public abstract class FrameRecorder implements Closeable {
     }
 
     public abstract void start() throws Exception;
+    public abstract void flush() throws Exception;
     public abstract void stop() throws Exception;
     public abstract void record(Frame frame) throws Exception;
     public abstract void release() throws Exception;

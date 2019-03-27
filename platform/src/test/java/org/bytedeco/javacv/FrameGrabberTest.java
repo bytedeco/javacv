@@ -163,7 +163,7 @@ public class FrameGrabberTest {
                         recorder.setSampleFormat(AV_SAMPLE_FMT_S16);
                         recorder.setSampleRate(44100);
                         recorder.setAudioCodecName("pcm_s16le");
-                        recorder.start();
+                        recorder.startUnsafe();
 
                         Frame[] frames = new Frame[10];
                         for (int n = 0; n < frames.length; n++) {
@@ -195,7 +195,7 @@ public class FrameGrabberTest {
 
                         FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(new FileInputStream(tempFile));
                         grabber.setSampleMode(FrameGrabber.SampleMode.FLOAT);
-                        grabber.start();
+                        grabber.startUnsafe();
 
                         int n = 0, m = 0;
                         Frame frame2;
