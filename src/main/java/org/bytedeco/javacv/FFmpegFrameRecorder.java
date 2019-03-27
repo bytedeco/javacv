@@ -864,7 +864,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public void flush() throws Exception {
         synchronized (oc) {
             /* flush all the buffers */
-            while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (BytePointer[])null));
+            while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
             while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
 
             if (interleaved && video_st != null && audio_st != null) {
@@ -883,7 +883,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             try {
                 synchronized (oc) {
                     /* flush all the buffers */
-                    while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (BytePointer[])null));
+                    while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
                     while (audio_st != null && ifmt_ctx == null && recordSamples(0, 0, (Buffer[])null));
 
                     if (interleaved && video_st != null && audio_st != null) {
@@ -906,12 +906,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
     public void record(Frame frame, int pixelFormat) throws Exception {
         if (frame == null || (frame.image == null && frame.samples == null)) {
-            recordImage(0, 0, 0, 0, 0, pixelFormat, (BytePointer[])null);
+            recordImage(0, 0, 0, 0, 0, pixelFormat, (Buffer[])null);
         } else {
             if (frame.image != null) {
-                BytePointer pointer = new BytePointer(new Pointer(frame.image[0])).position(0);
                 frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
-                        frame.imageChannels, frame.imageStride, pixelFormat, pointer);
+                        frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
             }
             if (frame.samples != null) {
                 frame.keyFrame = recordSamples(frame.sampleRate, frame.audioChannels, frame.samples);
@@ -919,7 +918,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
-    public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, BytePointer ... image) throws Exception {
+    public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
         }
@@ -931,7 +930,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                passing the same picture again */
         } else {
             int step = stride * Math.abs(depth) / 8;
-            BytePointer data = image[0];
+            BytePointer data = new BytePointer(new Pointer(image[0])).position(0);
 
             if (pixelFormat == AV_PIX_FMT_NONE) {
                 if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 3) {
