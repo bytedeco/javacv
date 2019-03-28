@@ -450,7 +450,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
     }
     public static void copy(Frame frame, BufferedImage bufferedImage, double gamma, boolean flipChannels, Rectangle roi) {
         Buffer in = frame.image[0];
-        int buffer_index = roi == null ? 0 : roi.y*frame.imageStride + roi.x*frame.imageChannels;
+        int bufferIndex = roi == null ? 0 : roi.y*frame.imageStride + roi.x*frame.imageChannels;
         SampleModel sm = bufferedImage.getSampleModel();
         Raster r       = bufferedImage.getRaster();
         DataBuffer out = r.getDataBuffer();
@@ -472,13 +472,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
 
         if (out instanceof DataBufferByte) {
             byte[] a = ((DataBufferByte)out).getData();
-            flipCopyWithGamma((ByteBuffer)in, buffer_index, frame.imageStride, ByteBuffer.wrap(a, start, a.length - start), start, step, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((ByteBuffer)in, bufferIndex, frame.imageStride, ByteBuffer.wrap(a, start, a.length - start), start, step, false, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferDouble) {
             double[] a = ((DataBufferDouble)out).getData();
-            flipCopyWithGamma((DoubleBuffer)in, buffer_index, frame.imageStride, DoubleBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((DoubleBuffer)in, bufferIndex, frame.imageStride, DoubleBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferFloat) {
             float[] a = ((DataBufferFloat)out).getData();
-            flipCopyWithGamma((FloatBuffer)in, buffer_index, frame.imageStride, FloatBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((FloatBuffer)in, bufferIndex, frame.imageStride, FloatBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferInt) {
             int[] a = ((DataBufferInt)out).getData();
             int stride = frame.imageStride;
@@ -486,13 +486,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 in = ((ByteBuffer)in).order(flipChannels ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN).asIntBuffer();
                 stride /= 4;
             }
-            flipCopyWithGamma((IntBuffer)in, buffer_index, stride, IntBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((IntBuffer)in, bufferIndex, stride, IntBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferShort) {
             short[] a = ((DataBufferShort)out).getData();
-            flipCopyWithGamma((ShortBuffer)in, buffer_index, frame.imageStride, ShortBuffer.wrap(a, start, a.length - start), start, step, true, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((ShortBuffer)in, bufferIndex, frame.imageStride, ShortBuffer.wrap(a, start, a.length - start), start, step, true, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferUShort) {
             short[] a = ((DataBufferUShort)out).getData();
-            flipCopyWithGamma((ShortBuffer)in, buffer_index, frame.imageStride, ShortBuffer.wrap(a, start, a.length - start), start, step, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((ShortBuffer)in, bufferIndex, frame.imageStride, ShortBuffer.wrap(a, start, a.length - start), start, step, false, gamma, false, flipChannels ? channels : 0);
         } else {
             assert false;
         }
@@ -506,7 +506,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
     }
     public static void copy(BufferedImage image, Frame frame, double gamma, boolean flipChannels, Rectangle roi) {
         Buffer out = frame.image[0];
-        int buffer_index = roi == null ? 0 : roi.y*frame.imageStride + roi.x*frame.imageChannels;
+        int bufferIndex = roi == null ? 0 : roi.y*frame.imageStride + roi.x*frame.imageChannels;
         SampleModel sm = image.getSampleModel();
         Raster r       = image.getRaster();
         DataBuffer in  = r.getDataBuffer();
@@ -528,13 +528,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
 
         if (in instanceof DataBufferByte) {
             byte[] a = ((DataBufferByte)in).getData();
-            flipCopyWithGamma(ByteBuffer.wrap(a, start, a.length - start), start, step, (ByteBuffer)out, buffer_index, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(ByteBuffer.wrap(a, start, a.length - start), start, step, (ByteBuffer)out, bufferIndex, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferDouble) {
             double[] a = ((DataBufferDouble)in).getData();
-            flipCopyWithGamma(DoubleBuffer.wrap(a, start, a.length - start), start, step, (DoubleBuffer)out, buffer_index, frame.imageStride, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(DoubleBuffer.wrap(a, start, a.length - start), start, step, (DoubleBuffer)out, bufferIndex, frame.imageStride, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferFloat) {
             float[] a = ((DataBufferFloat)in).getData();
-            flipCopyWithGamma(FloatBuffer.wrap(a, start, a.length - start), start, step, (FloatBuffer)out, buffer_index, frame.imageStride, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(FloatBuffer.wrap(a, start, a.length - start), start, step, (FloatBuffer)out, bufferIndex, frame.imageStride, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferInt) {
             int[] a = ((DataBufferInt)in).getData();
             int stride = frame.imageStride;
@@ -542,13 +542,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 out = ((ByteBuffer)out).order(flipChannels ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN).asIntBuffer();
                 stride /= 4;
             }
-            flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), start, step, (IntBuffer)out, buffer_index, stride, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), start, step, (IntBuffer)out, bufferIndex, stride, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferShort) {
             short[] a = ((DataBufferShort)in).getData();
-            flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), start, step, (ShortBuffer)out, buffer_index, frame.imageStride, true, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), start, step, (ShortBuffer)out, bufferIndex, frame.imageStride, true, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferUShort) {
             short[] a = ((DataBufferUShort)in).getData();
-            flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), start, step, (ShortBuffer)out, buffer_index, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), start, step, (ShortBuffer)out, bufferIndex, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
         } else {
             assert false;
         }
