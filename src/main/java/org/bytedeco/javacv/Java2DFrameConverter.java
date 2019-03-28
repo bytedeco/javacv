@@ -107,25 +107,25 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
     public static int encodeGamma22(int value) {
         return gamma22inv[value & 0xFF] & 0xFF;
     }
-    public static void flipCopyWithGamma(ByteBuffer srcBuf, int buffer_index, int srcStep,
-                                         ByteBuffer dstBuf, int dst_buffer_index, int dstStep, boolean signed, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(ByteBuffer srcBuf, int bufferIndex, int srcStep,
+                                         ByteBuffer dstBuf, int dstBufferIndex, int dstStep, boolean signed, double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = buffer_index, dstLine = dst_buffer_index;
+        int srcLine = bufferIndex, dstLine = dstBufferIndex;
         byte[] buffer = new byte[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                buffer_index = srcBuf.capacity() - srcLine - srcStep;
+                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                buffer_index = srcLine;
+                bufferIndex = srcLine;
             }
-            dst_buffer_index = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - buffer_index), dstBuf.capacity() - dst_buffer_index);
+            dstBufferIndex = dstLine;
+            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (signed) {
                 if (channels > 1) {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
-                            int in = srcBuf.get(buffer_index++);
+                            int in = srcBuf.get(bufferIndex++);
                             byte out;
                             if (gamma == 1.0) {
                                 out = (byte)in;
@@ -135,19 +135,19 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                             buffer[z] = out;
                         }
                         for (int z = channels-1; z >= 0; z--) {
-                            dstBuf.put(dst_buffer_index++, buffer[z]);
+                            dstBuf.put(dstBufferIndex++, buffer[z]);
                         }
                     }
                 } else {
                     for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get(buffer_index++);
+                        int in = srcBuf.get(bufferIndex++);
                         byte out;
                         if (gamma == 1.0) {
                             out = (byte)in;
                         } else {
                             out = (byte)Math.round(Math.pow((double)in/Byte.MAX_VALUE, gamma)*Byte.MAX_VALUE);
                         }
-                        dstBuf.put(dst_buffer_index++, out);
+                        dstBuf.put(dstBufferIndex++, out);
                     }
                 }
             } else {
@@ -155,7 +155,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
                             byte out;
-                            int in = srcBuf.get(buffer_index++) & 0xFF;
+                            int in = srcBuf.get(bufferIndex++) & 0xFF;
                             if (gamma == 1.0) {
                                 out = (byte)in;
                             } else if (gamma == 2.2) {
@@ -168,13 +168,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                             buffer[z] = out;
                         }
                         for (int z = channels-1; z >= 0; z--) {
-                            dstBuf.put(dst_buffer_index++, buffer[z]);
+                            dstBuf.put(dstBufferIndex++, buffer[z]);
                         }
                     }
                 } else {
                     for (int x = 0; x < w; x++) {
                         byte out;
-                        int in = srcBuf.get(buffer_index++) & 0xFF;
+                        int in = srcBuf.get(bufferIndex++) & 0xFF;
                         if (gamma == 1.0) {
                             out = (byte)in;
                         } else if (gamma == 2.2) {
@@ -184,7 +184,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                         } else {
                             out = (byte)Math.round(Math.pow((double)in/0xFF, gamma)*0xFF);
                         }
-                        dstBuf.put(dst_buffer_index++, out);
+                        dstBuf.put(dstBufferIndex++, out);
                     }
                 }
             }
@@ -192,25 +192,25 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(ShortBuffer srcBuf, int buffer_index, int srcStep,
-                                         ShortBuffer dstBuf, int dst_buffer_index, int dstStep, boolean signed, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(ShortBuffer srcBuf, int bufferIndex, int srcStep,
+                                         ShortBuffer dstBuf, int dstBufferIndex, int dstStep, boolean signed, double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = buffer_index, dstLine = dst_buffer_index;
+        int srcLine = bufferIndex, dstLine = dstBufferIndex;
         short[] buffer = new short[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                buffer_index = srcBuf.capacity() - srcLine - srcStep;
+                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                buffer_index = srcLine;
+                bufferIndex = srcLine;
             }
-            dst_buffer_index = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - buffer_index), dstBuf.capacity() - dst_buffer_index);
+            dstBufferIndex = dstLine;
+            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (signed) {
                 if (channels > 1) {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
-                            int in = srcBuf.get(buffer_index++);
+                            int in = srcBuf.get(bufferIndex++);
                             short out;
                             if (gamma == 1.0) {
                                 out = (short)in;
@@ -220,26 +220,26 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                             buffer[z] = out;
                         }
                         for (int z = channels-1; z >= 0; z--) {
-                            dstBuf.put(dst_buffer_index++, buffer[z]);
+                            dstBuf.put(dstBufferIndex++, buffer[z]);
                         }
                     }
                 } else {
                     for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get(buffer_index++);
+                        int in = srcBuf.get(bufferIndex++);
                         short out;
                         if (gamma == 1.0) {
                             out = (short)in;
                         } else {
                             out = (short)Math.round(Math.pow((double)in/Short.MAX_VALUE, gamma)*Short.MAX_VALUE);
                         }
-                        dstBuf.put(dst_buffer_index++, out);
+                        dstBuf.put(dstBufferIndex++, out);
                     }
                 }
             } else {
                 if (channels > 1) {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
-                            int in = srcBuf.get(buffer_index++);
+                            int in = srcBuf.get(bufferIndex++);
                             short out;
                             if (gamma == 1.0) {
                                 out = (short)in;
@@ -249,19 +249,19 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                             buffer[z] = out;
                         }
                         for (int z = channels-1; z >= 0; z--) {
-                            dstBuf.put(dst_buffer_index++, buffer[z]);
+                            dstBuf.put(dstBufferIndex++, buffer[z]);
                         }
                     }
                 } else {
                     for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get(buffer_index++) & 0xFFFF;
+                        int in = srcBuf.get(bufferIndex++) & 0xFFFF;
                         short out;
                         if (gamma == 1.0) {
                             out = (short)in;
                         } else {
                             out = (short)Math.round(Math.pow((double)in/0xFFFF, gamma)*0xFFFF);
                         }
-                        dstBuf.put(dst_buffer_index++, out);
+                        dstBuf.put(dstBufferIndex++, out);
                     }
                 }
             }
@@ -269,24 +269,24 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(IntBuffer srcBuf, int buffer_index, int srcStep,
-                                         IntBuffer dstBuf, int dst_buffer_index, int dstStep, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(IntBuffer srcBuf, int bufferIndex, int srcStep,
+                                         IntBuffer dstBuf, int dstBufferIndex, int dstStep, double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = buffer_index, dstLine = dst_buffer_index;
+        int srcLine = bufferIndex, dstLine = dstBufferIndex;
         int[] buffer = new int[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                buffer_index = srcBuf.capacity() - srcLine - srcStep;
+                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                buffer_index = srcLine;
+                bufferIndex = srcLine;
             }
-            dst_buffer_index = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - buffer_index), dstBuf.capacity() - dst_buffer_index);
+            dstBufferIndex = dstLine;
+            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (channels > 1) {
                 for (int x = 0; x < w; x+=channels) {
                     for (int z = 0; z < channels; z++) {
-                        int in = srcBuf.get(buffer_index++);
+                        int in = srcBuf.get(bufferIndex++);
                         int out;
                         if (gamma == 1.0) {
                             out = (int)in;
@@ -296,43 +296,43 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                         buffer[z] = out;
                     }
                     for (int z = channels-1; z >= 0; z--) {
-                        dstBuf.put(dst_buffer_index++, buffer[z]);
+                        dstBuf.put(dstBufferIndex++, buffer[z]);
                     }
                 }
             } else {
                 for (int x = 0; x < w; x++) {
-                    int in = srcBuf.get(buffer_index++);
+                    int in = srcBuf.get(bufferIndex++);
                     int out;
                     if (gamma == 1.0) {
                         out = in;
                     } else {
                         out = (int)Math.round(Math.pow((double)in/Integer.MAX_VALUE, gamma)*Integer.MAX_VALUE);
                     }
-                    dstBuf.put(dst_buffer_index++, out);
+                    dstBuf.put(dstBufferIndex++, out);
                 }
             }
             srcLine += srcStep;
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(FloatBuffer srcBuf, int buffer_index, int srcStep,
-                                         FloatBuffer dstBuf, int dst_buffer_index, int dstStep, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(FloatBuffer srcBuf, int bufferIndex, int srcStep,
+                                         FloatBuffer dstBuf, int dstBufferIndex, int dstStep, double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = buffer_index, dstLine = dst_buffer_index;
+        int srcLine = bufferIndex, dstLine = dstBufferIndex;
         float[] buffer = new float[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                buffer_index = srcBuf.capacity() - srcLine - srcStep;
+                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                buffer_index = srcLine;
+                bufferIndex = srcLine;
             }
-            dst_buffer_index = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - buffer_index), dstBuf.capacity() - dst_buffer_index);
+            dstBufferIndex = dstLine;
+            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (channels > 1) {
                 for (int x = 0; x < w; x+=channels) {
                     for (int z = 0; z < channels; z++) {
-                        float in = srcBuf.get(buffer_index++);
+                        float in = srcBuf.get(bufferIndex++);
                         float out;
                         if (gamma == 1.0) {
                             out = in;
@@ -342,43 +342,43 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                         buffer[z] = out;
                     }
                     for (int z = channels-1; z >= 0; z--) {
-                        dstBuf.put(dst_buffer_index++, buffer[z]);
+                        dstBuf.put(dstBufferIndex++, buffer[z]);
                     }
                 }
             } else {
                 for (int x = 0; x < w; x++) {
-                    float in = srcBuf.get(buffer_index++);
+                    float in = srcBuf.get(bufferIndex++);
                     float out;
                     if (gamma == 1.0) {
                         out = in;
                     } else {
                         out = (float)Math.pow(in, gamma);
                     }
-                    dstBuf.put(dst_buffer_index++, out);
+                    dstBuf.put(dstBufferIndex++, out);
                 }
             }
             srcLine += srcStep;
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(DoubleBuffer srcBuf, int buffer_index, int srcStep,
-                                         DoubleBuffer dstBuf, int dst_buffer_index, int dstStep, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(DoubleBuffer srcBuf, int bufferIndex, int srcStep,
+                                         DoubleBuffer dstBuf, int dstBufferIndex, int dstStep, double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = buffer_index, dstLine = dst_buffer_index;
+        int srcLine = bufferIndex, dstLine = dstBufferIndex;
         double[] buffer = new double[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                buffer_index = srcBuf.capacity() - srcLine - srcStep;
+                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                buffer_index = srcLine;
+                bufferIndex = srcLine;
             }
-            dst_buffer_index = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - buffer_index), dstBuf.capacity() - dst_buffer_index);
+            dstBufferIndex = dstLine;
+            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (channels > 1) {
                 for (int x = 0; x < w; x+=channels) {
                     for (int z = 0; z < channels; z++) {
-                        double in = srcBuf.get(buffer_index++);
+                        double in = srcBuf.get(bufferIndex++);
                         double out;
                         if (gamma == 1.0) {
                             out = in;
@@ -388,19 +388,19 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                         buffer[z] = out;
                     }
                     for (int z = channels-1; z >= 0; z--) {
-                        dstBuf.put(dst_buffer_index++, buffer[z]);
+                        dstBuf.put(dstBufferIndex++, buffer[z]);
                     }
                 }
             } else {
                 for (int x = 0; x < w; x++) {
-                    double in = srcBuf.get(buffer_index++);
+                    double in = srcBuf.get(bufferIndex++);
                     double out;
                     if (gamma == 1.0) {
                         out = in;
                     } else {
                         out = Math.pow(in, gamma);
                     }
-                    dstBuf.put(dst_buffer_index++, out);
+                    dstBuf.put(dstBufferIndex++, out);
                 }
             }
             srcLine += srcStep;
