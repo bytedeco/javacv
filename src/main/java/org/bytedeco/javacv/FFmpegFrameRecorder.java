@@ -918,8 +918,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         } else {
             int step = stride * Math.abs(depth) / 8;
             BytePointer data = image[0] instanceof ByteBuffer
-                    ? new BytePointer((ByteBuffer)image[0].position(0))
-                    : new BytePointer(new Pointer(image[0].position(0)));
+                    ? new BytePointer((ByteBuffer)image[0]).position(0)
+                    : new BytePointer(new Pointer(image[0]).position(0));
 
             if (pixelFormat == AV_PIX_FMT_NONE) {
                 if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 3) {
