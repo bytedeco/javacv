@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Samuel Audet
+ * Copyright (C) 2015-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -107,25 +107,26 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
     public static int encodeGamma22(int value) {
         return gamma22inv[value & 0xFF] & 0xFF;
     }
-    public static void flipCopyWithGamma(ByteBuffer srcBuf, int bufferIndex, int srcStep,
-                                         ByteBuffer dstBuf, int dstBufferIndex, int dstStep, boolean signed, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(ByteBuffer srcBuf, int srcBufferIndex, int srcStep,
+                                         ByteBuffer dstBuf, int dstBufferIndex, int dstStep,
+                                         boolean signed, double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = bufferIndex, dstLine = dstBufferIndex;
+        int srcLine = srcBufferIndex, dstLine = dstBufferIndex;
         byte[] buffer = new byte[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
+                srcBufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                bufferIndex = srcLine;
+                srcBufferIndex = srcLine;
             }
             dstBufferIndex = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
+            w = Math.min(Math.min(w, srcBuf.capacity() - srcBufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (signed) {
                 if (channels > 1) {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
-                            int in = srcBuf.get(bufferIndex++);
+                            int in = srcBuf.get(srcBufferIndex++);
                             byte out;
                             if (gamma == 1.0) {
                                 out = (byte)in;
@@ -140,7 +141,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                     }
                 } else {
                     for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get(bufferIndex++);
+                        int in = srcBuf.get(srcBufferIndex++);
                         byte out;
                         if (gamma == 1.0) {
                             out = (byte)in;
@@ -155,7 +156,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
                             byte out;
-                            int in = srcBuf.get(bufferIndex++) & 0xFF;
+                            int in = srcBuf.get(srcBufferIndex++) & 0xFF;
                             if (gamma == 1.0) {
                                 out = (byte)in;
                             } else if (gamma == 2.2) {
@@ -174,7 +175,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 } else {
                     for (int x = 0; x < w; x++) {
                         byte out;
-                        int in = srcBuf.get(bufferIndex++) & 0xFF;
+                        int in = srcBuf.get(srcBufferIndex++) & 0xFF;
                         if (gamma == 1.0) {
                             out = (byte)in;
                         } else if (gamma == 2.2) {
@@ -192,25 +193,26 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(ShortBuffer srcBuf, int bufferIndex, int srcStep,
-                                         ShortBuffer dstBuf, int dstBufferIndex, int dstStep, boolean signed, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(ShortBuffer srcBuf, int srcBufferIndex, int srcStep,
+                                         ShortBuffer dstBuf, int dstBufferIndex, int dstStep,
+                                         boolean signed, double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = bufferIndex, dstLine = dstBufferIndex;
+        int srcLine = srcBufferIndex, dstLine = dstBufferIndex;
         short[] buffer = new short[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
+                srcBufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                bufferIndex = srcLine;
+                srcBufferIndex = srcLine;
             }
             dstBufferIndex = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
+            w = Math.min(Math.min(w, srcBuf.capacity() - srcBufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (signed) {
                 if (channels > 1) {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
-                            int in = srcBuf.get(bufferIndex++);
+                            int in = srcBuf.get(srcBufferIndex++);
                             short out;
                             if (gamma == 1.0) {
                                 out = (short)in;
@@ -225,7 +227,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                     }
                 } else {
                     for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get(bufferIndex++);
+                        int in = srcBuf.get(srcBufferIndex++);
                         short out;
                         if (gamma == 1.0) {
                             out = (short)in;
@@ -239,7 +241,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 if (channels > 1) {
                     for (int x = 0; x < w; x+=channels) {
                         for (int z = 0; z < channels; z++) {
-                            int in = srcBuf.get(bufferIndex++);
+                            int in = srcBuf.get(srcBufferIndex++);
                             short out;
                             if (gamma == 1.0) {
                                 out = (short)in;
@@ -254,7 +256,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                     }
                 } else {
                     for (int x = 0; x < w; x++) {
-                        int in = srcBuf.get(bufferIndex++) & 0xFFFF;
+                        int in = srcBuf.get(srcBufferIndex++) & 0xFFFF;
                         short out;
                         if (gamma == 1.0) {
                             out = (short)in;
@@ -269,24 +271,25 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(IntBuffer srcBuf, int bufferIndex, int srcStep,
-                                         IntBuffer dstBuf, int dstBufferIndex, int dstStep, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(IntBuffer srcBuf, int srcBufferIndex, int srcStep,
+                                         IntBuffer dstBuf, int dstBufferIndex, int dstStep,
+                                         double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = bufferIndex, dstLine = dstBufferIndex;
+        int srcLine = srcBufferIndex, dstLine = dstBufferIndex;
         int[] buffer = new int[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
+                srcBufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                bufferIndex = srcLine;
+                srcBufferIndex = srcLine;
             }
             dstBufferIndex = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
+            w = Math.min(Math.min(w, srcBuf.capacity() - srcBufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (channels > 1) {
                 for (int x = 0; x < w; x+=channels) {
                     for (int z = 0; z < channels; z++) {
-                        int in = srcBuf.get(bufferIndex++);
+                        int in = srcBuf.get(srcBufferIndex++);
                         int out;
                         if (gamma == 1.0) {
                             out = (int)in;
@@ -301,7 +304,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 }
             } else {
                 for (int x = 0; x < w; x++) {
-                    int in = srcBuf.get(bufferIndex++);
+                    int in = srcBuf.get(srcBufferIndex++);
                     int out;
                     if (gamma == 1.0) {
                         out = in;
@@ -315,24 +318,25 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(FloatBuffer srcBuf, int bufferIndex, int srcStep,
-                                         FloatBuffer dstBuf, int dstBufferIndex, int dstStep, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(FloatBuffer srcBuf, int srcBufferIndex, int srcStep,
+                                         FloatBuffer dstBuf, int dstBufferIndex, int dstStep,
+                                         double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = bufferIndex, dstLine = dstBufferIndex;
+        int srcLine = srcBufferIndex, dstLine = dstBufferIndex;
         float[] buffer = new float[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
+                srcBufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                bufferIndex = srcLine;
+                srcBufferIndex = srcLine;
             }
             dstBufferIndex = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
+            w = Math.min(Math.min(w, srcBuf.capacity() - srcBufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (channels > 1) {
                 for (int x = 0; x < w; x+=channels) {
                     for (int z = 0; z < channels; z++) {
-                        float in = srcBuf.get(bufferIndex++);
+                        float in = srcBuf.get(srcBufferIndex++);
                         float out;
                         if (gamma == 1.0) {
                             out = in;
@@ -347,7 +351,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 }
             } else {
                 for (int x = 0; x < w; x++) {
-                    float in = srcBuf.get(bufferIndex++);
+                    float in = srcBuf.get(srcBufferIndex++);
                     float out;
                     if (gamma == 1.0) {
                         out = in;
@@ -361,24 +365,25 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
             dstLine += dstStep;
         }
     }
-    public static void flipCopyWithGamma(DoubleBuffer srcBuf, int bufferIndex, int srcStep,
-                                         DoubleBuffer dstBuf, int dstBufferIndex, int dstStep, double gamma, boolean flip, int channels) {
+    public static void flipCopyWithGamma(DoubleBuffer srcBuf, int srcBufferIndex, int srcStep,
+                                         DoubleBuffer dstBuf, int dstBufferIndex, int dstStep,
+                                         double gamma, boolean flip, int channels) {
         assert srcBuf != dstBuf;
         int w = Math.min(srcStep, dstStep);
-        int srcLine = bufferIndex, dstLine = dstBufferIndex;
+        int srcLine = srcBufferIndex, dstLine = dstBufferIndex;
         double[] buffer = new double[channels];
         while (srcLine < srcBuf.capacity() && dstLine < dstBuf.capacity()) {
             if (flip) {
-                bufferIndex = srcBuf.capacity() - srcLine - srcStep;
+                srcBufferIndex = srcBuf.capacity() - srcLine - srcStep;
             } else {
-                bufferIndex = srcLine;
+                srcBufferIndex = srcLine;
             }
             dstBufferIndex = dstLine;
-            w = Math.min(Math.min(w, srcBuf.capacity() - bufferIndex), dstBuf.capacity() - dstBufferIndex);
+            w = Math.min(Math.min(w, srcBuf.capacity() - srcBufferIndex), dstBuf.capacity() - dstBufferIndex);
             if (channels > 1) {
                 for (int x = 0; x < w; x+=channels) {
                     for (int z = 0; z < channels; z++) {
-                        double in = srcBuf.get(bufferIndex++);
+                        double in = srcBuf.get(srcBufferIndex++);
                         double out;
                         if (gamma == 1.0) {
                             out = in;
@@ -393,7 +398,7 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 }
             } else {
                 for (int x = 0; x < w; x++) {
-                    double in = srcBuf.get(bufferIndex++);
+                    double in = srcBuf.get(srcBufferIndex++);
                     double out;
                     if (gamma == 1.0) {
                         out = in;
@@ -472,13 +477,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
 
         if (out instanceof DataBufferByte) {
             byte[] a = ((DataBufferByte)out).getData();
-            flipCopyWithGamma((ByteBuffer)in, bufferIndex, frame.imageStride, ByteBuffer.wrap(a, start, a.length - start), start, step, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((ByteBuffer)in, bufferIndex, frame.imageStride, ByteBuffer.wrap(a), start, step, false, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferDouble) {
             double[] a = ((DataBufferDouble)out).getData();
-            flipCopyWithGamma((DoubleBuffer)in, bufferIndex, frame.imageStride, DoubleBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((DoubleBuffer)in, bufferIndex, frame.imageStride, DoubleBuffer.wrap(a), start, step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferFloat) {
             float[] a = ((DataBufferFloat)out).getData();
-            flipCopyWithGamma((FloatBuffer)in, bufferIndex, frame.imageStride, FloatBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((FloatBuffer)in, bufferIndex, frame.imageStride, FloatBuffer.wrap(a), start, step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferInt) {
             int[] a = ((DataBufferInt)out).getData();
             int stride = frame.imageStride;
@@ -486,13 +491,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 in = ((ByteBuffer)in).order(flipChannels ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN).asIntBuffer();
                 stride /= 4;
             }
-            flipCopyWithGamma((IntBuffer)in, bufferIndex, stride, IntBuffer.wrap(a, start, a.length - start), start, step, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((IntBuffer)in, bufferIndex, stride, IntBuffer.wrap(a), start, step, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferShort) {
             short[] a = ((DataBufferShort)out).getData();
-            flipCopyWithGamma((ShortBuffer)in, bufferIndex, frame.imageStride, ShortBuffer.wrap(a, start, a.length - start), start, step, true, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((ShortBuffer)in, bufferIndex, frame.imageStride, ShortBuffer.wrap(a), start, step, true, gamma, false, flipChannels ? channels : 0);
         } else if (out instanceof DataBufferUShort) {
             short[] a = ((DataBufferUShort)out).getData();
-            flipCopyWithGamma((ShortBuffer)in, bufferIndex, frame.imageStride, ShortBuffer.wrap(a, start, a.length - start), start, step, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma((ShortBuffer)in, bufferIndex, frame.imageStride, ShortBuffer.wrap(a), start, step, false, gamma, false, flipChannels ? channels : 0);
         } else {
             assert false;
         }
@@ -528,13 +533,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
 
         if (in instanceof DataBufferByte) {
             byte[] a = ((DataBufferByte)in).getData();
-            flipCopyWithGamma(ByteBuffer.wrap(a, start, a.length - start), start, step, (ByteBuffer)out, bufferIndex, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(ByteBuffer.wrap(a), start, step, (ByteBuffer)out, bufferIndex, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferDouble) {
             double[] a = ((DataBufferDouble)in).getData();
-            flipCopyWithGamma(DoubleBuffer.wrap(a, start, a.length - start), start, step, (DoubleBuffer)out, bufferIndex, frame.imageStride, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(DoubleBuffer.wrap(a), start, step, (DoubleBuffer)out, bufferIndex, frame.imageStride, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferFloat) {
             float[] a = ((DataBufferFloat)in).getData();
-            flipCopyWithGamma(FloatBuffer.wrap(a, start, a.length - start), start, step, (FloatBuffer)out, bufferIndex, frame.imageStride, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(FloatBuffer.wrap(a), start, step, (FloatBuffer)out, bufferIndex, frame.imageStride, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferInt) {
             int[] a = ((DataBufferInt)in).getData();
             int stride = frame.imageStride;
@@ -542,13 +547,13 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
                 out = ((ByteBuffer)out).order(flipChannels ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN).asIntBuffer();
                 stride /= 4;
             }
-            flipCopyWithGamma(IntBuffer.wrap(a, start, a.length - start), start, step, (IntBuffer)out, bufferIndex, stride, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(IntBuffer.wrap(a), start, step, (IntBuffer)out, bufferIndex, stride, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferShort) {
             short[] a = ((DataBufferShort)in).getData();
-            flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), start, step, (ShortBuffer)out, bufferIndex, frame.imageStride, true, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(ShortBuffer.wrap(a), start, step, (ShortBuffer)out, bufferIndex, frame.imageStride, true, gamma, false, flipChannels ? channels : 0);
         } else if (in instanceof DataBufferUShort) {
             short[] a = ((DataBufferUShort)in).getData();
-            flipCopyWithGamma(ShortBuffer.wrap(a, start, a.length - start), start, step, (ShortBuffer)out, bufferIndex, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
+            flipCopyWithGamma(ShortBuffer.wrap(a), start, step, (ShortBuffer)out, bufferIndex, frame.imageStride, false, gamma, false, flipChannels ? channels : 0);
         } else {
             assert false;
         }
