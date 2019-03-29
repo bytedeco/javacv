@@ -71,8 +71,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import org.bytedeco.javacpp.Loader;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_objdetect.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_objdetect.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_objdetect.*;
 
 // ----------------------------------------------------------------------
 
@@ -151,7 +153,7 @@ class FaceView extends View implements Camera.PreviewCallback {
         int imageWidth  = grayImage.cols();
         int imageHeight = grayImage.rows();
         int dataStride = f*width;
-        int imageStride = grayImage.step(0);
+        int imageStride = (int)grayImage.step(0);
         ByteBuffer imageBuffer = grayImage.createBuffer();
         for (int y = 0; y < imageHeight; y++) {
             int dataLine = y*dataStride;

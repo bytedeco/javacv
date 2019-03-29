@@ -1,9 +1,12 @@
-
 import java.nio.FloatBuffer;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
-import static org.bytedeco.javacpp.opencv_optflow.*;
-import static org.bytedeco.javacpp.opencv_video.*;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_optflow.*;
+import org.bytedeco.opencv.opencv_video.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_optflow.*;
+import static org.bytedeco.opencv.global.opencv_video.*;
 
 /**
  * This code will calculate the optical flow for every pixel using DenseOpticalFlow between two images (Frame-1 &

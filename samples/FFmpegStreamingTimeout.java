@@ -1,11 +1,12 @@
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.avformat;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
+
+import org.bytedeco.ffmpeg.avformat.*;
+import static org.bytedeco.ffmpeg.global.avformat.*;
 
 /**
  *
@@ -108,7 +109,7 @@ public class FFmpegStreamingTimeout {
             grabber.start();
 
             final AtomicBoolean interruptFlag = new AtomicBoolean(false);
-            avformat.AVIOInterruptCB.Callback_Pointer cp = new avformat.AVIOInterruptCB.Callback_Pointer() {
+            AVIOInterruptCB.Callback_Pointer cp = new AVIOInterruptCB.Callback_Pointer() {
                 @Override
                 public int call(Pointer pointer) {
                     // 0 - continue, 1 - exit
@@ -118,12 +119,12 @@ public class FFmpegStreamingTimeout {
                 }
 
             };
-            avformat.AVFormatContext oc = grabber.getFormatContext();
-            avformat.avformat_alloc_context();
-            avformat.AVIOInterruptCB cb = new avformat.AVIOInterruptCB();
+            AVFormatContext oc = grabber.getFormatContext();
+            avformat_alloc_context();
+            AVIOInterruptCB cb = new AVIOInterruptCB();
             cb.callback(cp);
             oc.interrupt_callback(cb);
-            new Thread(() -> {
+            new Thread(new Runnable() { public void run() {
                 try {
                     TimeUnit.SECONDS.sleep(TIMEOUT);
                     interruptFlag.set(true);
@@ -131,7 +132,7 @@ public class FFmpegStreamingTimeout {
                 } catch (InterruptedException ex) {
                     System.out.println("exception in interruption thread: " + ex);
                 }
-            }).start();
+            }}).start();
 
             Frame frame = null;
             /**

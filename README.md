@@ -69,7 +69,7 @@ To use JavaCV, you will first need to download and install the following softwar
 Further, although not always required, some functionality of JavaCV also relies on:
 
  * CL Eye Platform SDK (Windows only)  http://codelaboratories.com/downloads/
- * Android SDK API 14 or newer  http://developer.android.com/sdk/
+ * Android SDK API 21 or newer  http://developer.android.com/sdk/
  * JOCL and JOGL from JogAmp  http://jogamp.org/
 
 Finally, please make sure everything has the same bitness: **32-bit and 64-bit modules do not mix under any circumstances**.
@@ -89,7 +89,7 @@ Eclipse (Java SE 7 or newer):
  1. Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs...".
  2. Locate the JAR files, select them, and click OK.
 
-IntelliJ IDEA (Android 4.0 or newer):
+IntelliJ IDEA (Android 5.0 or newer):
 
  1. Follow the instructions on this page: http://developer.android.com/training/basics/firstapp/
  2. Copy all the JAR files into the `app/libs` subdirectory.
@@ -107,9 +107,11 @@ Sample Usage
 The class definitions are basically ports to Java of the original header files in C/C++, and I deliberately decided to keep as much of the original syntax as possible. For example, here is a method that tries to load an image file, smooth it, and save it back to disk:
 
 ```java
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
 
 public class Smoother {
     public static void smooth(String filename) {
@@ -130,10 +132,14 @@ import java.net.URL;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_objdetect.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_calib3d.*;
+import org.bytedeco.opencv.opencv_objdetect.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_calib3d.*;
+import static org.bytedeco.opencv.global.opencv_objdetect.*;
 
 public class Demo {
     public static void main(String[] args) throws Exception {
@@ -146,9 +152,6 @@ public class Demo {
             classifierName = file.getAbsolutePath();
         }
 
-        // Preload the opencv_objdetect module to work around a known bug.
-        Loader.load(opencv_objdetect.class);
-
         // We can "cast" Pointer objects by instantiating a new object of the desired class.
         CascadeClassifier classifier = new CascadeClassifier(classifierName);
         if (classifier == null) {
@@ -157,7 +160,7 @@ public class Demo {
         }
 
         // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_videoio),
-        // DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber, OpenKinect2FrameGrabber,
+        // DC1394FrameGrabber, FlyCapture2FrameGrabber, OpenKinectFrameGrabber, OpenKinect2FrameGrabber,
         // RealSenseFrameGrabber, PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
         FrameGrabber grabber = FrameGrabber.createDefault(0);
         grabber.start();
@@ -264,7 +267,7 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>1.4.4</version>
+    <version>1.5-SNAPSHOT</version>
     <properties>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
@@ -273,13 +276,16 @@ Furthermore, after creating a `pom.xml` file with the following content:
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.4.4</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
     </dependencies>
+    <build>
+        <sourceDirectory>.</sourceDirectory>
+    </build>
 </project>
 ```
 
-And by placing the source code above in `src/main/java/Demo.java`, we can use the following command to have everything first installed automatically and then executed by Maven:
+And by placing the source code above in `Demo.java`, or similarly for other classes found in the [`samples`](samples), we can use the following command to have everything first installed automatically and then executed by Maven:
 ```bash
  $ mvn compile exec:java -Dexec.mainClass=Demo
 ```
@@ -291,8 +297,8 @@ Build Instructions
 If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
 
  * Maven 3.x  http://maven.apache.org/download.html
- * JavaCPP 1.4.4  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 1.4.4  https://github.com/bytedeco/javacpp-presets
+ * JavaCPP 1.5  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 1.5  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 

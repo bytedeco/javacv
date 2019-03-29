@@ -35,35 +35,35 @@ public class JavaFxPlayVideoAndAudio extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        StackPane root = new StackPane();
-        ImageView imageView = new ImageView();
+    public void start(final Stage primaryStage) throws Exception {
+        final StackPane root = new StackPane();
+        final ImageView imageView = new ImageView();
 
         root.getChildren().add(imageView);
         imageView.fitWidthProperty().bind(primaryStage.widthProperty());
         imageView.fitHeightProperty().bind(primaryStage.heightProperty());
 
-        Scene scene = new Scene(root, 640, 480);
+        final Scene scene = new Scene(root, 640, 480);
 
         primaryStage.setTitle("Video + audio");
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        playThread = new Thread(() -> {
+        playThread = new Thread(new Runnable() { public void run() {
             try {
-                String videoFilename = getParameters().getRaw().get(0);
-                FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(videoFilename);
+                final String videoFilename = getParameters().getRaw().get(0);
+                final FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(videoFilename);
                 grabber.start();
                 primaryStage.setWidth(grabber.getImageWidth());
                 primaryStage.setHeight(grabber.getImageHeight());
-                AudioFormat audioFormat = new AudioFormat(grabber.getSampleRate(), 16, grabber.getAudioChannels(), true, true);
+                final AudioFormat audioFormat = new AudioFormat(grabber.getSampleRate(), 16, grabber.getAudioChannels(), true, true);
 
-                DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
-                SourceDataLine soundLine = (SourceDataLine) AudioSystem.getLine(info);
+                final DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
+                final SourceDataLine soundLine = (SourceDataLine) AudioSystem.getLine(info);
                 soundLine.open(audioFormat);
                 soundLine.start();
 
-                Java2DFrameConverter converter = new Java2DFrameConverter();
+                final Java2DFrameConverter converter = new Java2DFrameConverter();
 
                 ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -73,15 +73,15 @@ public class JavaFxPlayVideoAndAudio extends Application {
                         break;
                     }
                     if (frame.image != null) {
-                        Image image = SwingFXUtils.toFXImage(converter.convert(frame), null);
-                        Platform.runLater(() -> {
+                        final Image image = SwingFXUtils.toFXImage(converter.convert(frame), null);
+                        Platform.runLater(new Runnable() { public void run() {
                             imageView.setImage(image);
-                        });
+                        }});
                     } else if (frame.samples != null) {
-                        ShortBuffer channelSamplesShortBuffer = (ShortBuffer) frame.samples[0];
+                        final ShortBuffer channelSamplesShortBuffer = (ShortBuffer) frame.samples[0];
                         channelSamplesShortBuffer.rewind();
 
-                        ByteBuffer outBuffer = ByteBuffer.allocate(channelSamplesShortBuffer.capacity() * 2);
+                        final ByteBuffer outBuffer = ByteBuffer.allocate(channelSamplesShortBuffer.capacity() * 2);
 
                         for (int i = 0; i < channelSamplesShortBuffer.capacity(); i++) {
                             short val = channelSamplesShortBuffer.get(i);
@@ -93,10 +93,10 @@ public class JavaFxPlayVideoAndAudio extends Application {
                          * interruptions during writing.
                          */
                         try {
-                            executor.submit(() -> {
+                            executor.submit(new Runnable() { public void run() {
                                 soundLine.write(outBuffer.array(), 0, outBuffer.capacity());
                                 outBuffer.clear();
-                            }).get();
+                            }}).get();
                         } catch (InterruptedException interruptedException) {
                             Thread.currentThread().interrupt();
                         }
@@ -112,7 +112,7 @@ public class JavaFxPlayVideoAndAudio extends Application {
                 LOG.log(Level.SEVERE, null, exception);
                 System.exit(1);
             }
-        });
+        }});
         playThread.start();
     }
 

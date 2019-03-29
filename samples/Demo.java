@@ -25,10 +25,14 @@ import java.net.URL;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_objdetect.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_calib3d.*;
+import org.bytedeco.opencv.opencv_objdetect.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_calib3d.*;
+import static org.bytedeco.opencv.global.opencv_objdetect.*;
 
 public class Demo {
     public static void main(String[] args) throws Exception {
@@ -41,9 +45,6 @@ public class Demo {
             classifierName = file.getAbsolutePath();
         }
 
-        // Preload the opencv_objdetect module to work around a known bug.
-        Loader.load(opencv_objdetect.class);
-
         // We can "cast" Pointer objects by instantiating a new object of the desired class.
         CascadeClassifier classifier = new CascadeClassifier(classifierName);
         if (classifier == null) {
@@ -52,7 +53,7 @@ public class Demo {
         }
 
         // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_videoio),
-        // DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber, OpenKinect2FrameGrabber,
+        // DC1394FrameGrabber, FlyCapture2FrameGrabber, OpenKinectFrameGrabber, OpenKinect2FrameGrabber,
         // RealSenseFrameGrabber, PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
         FrameGrabber grabber = FrameGrabber.createDefault(0);
         grabber.start();

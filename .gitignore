@@ -1,5 +1,4 @@
-/target/
-/platform/target/
+**/target/**
 
 # Mac
 .DS_Store

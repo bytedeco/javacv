@@ -9,21 +9,18 @@
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.Point2fVector;
-import org.bytedeco.javacpp.opencv_core.Point2fVectorVector;
-import org.bytedeco.javacpp.opencv_core.RectVector;
-import org.bytedeco.javacpp.opencv_core.Scalar;
-import org.bytedeco.javacpp.opencv_face.FacemarkKazemi;
-import static org.bytedeco.javacpp.opencv_face.drawFacemarks;
-import static org.bytedeco.javacpp.opencv_highgui.cvWaitKey;
-import static org.bytedeco.javacpp.opencv_highgui.imshow;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
-import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
-import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
-import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_face.*;
+import org.bytedeco.opencv.opencv_highgui.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_objdetect.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_face.*;
+import static org.bytedeco.opencv.global.opencv_highgui.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_objdetect.*;
 
 
 public class KazemiFacemarkExample {

@@ -2,20 +2,15 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.IntBuffer;
 
-import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
-import static org.bytedeco.javacpp.opencv_core.CV_8UC1;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
-import static org.bytedeco.javacpp.opencv_imgcodecs.IMREAD_GRAYSCALE;
-
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.DoublePointer;
-import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
-import org.bytedeco.javacpp.opencv_face.FisherFaceRecognizer;
-import org.bytedeco.javacpp.opencv_face.EigenFaceRecognizer;
-import org.bytedeco.javacpp.opencv_face.LBPHFaceRecognizer;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.MatVector;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_face.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_face.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
 
 /**
  * I couldn't find any tutorial on how to perform face recognition using OpenCV and Java,

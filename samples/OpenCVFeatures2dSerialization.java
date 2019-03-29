@@ -1,19 +1,18 @@
-import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacv.Java2DFrameConverter;
-import org.bytedeco.javacv.OpenCVFrameConverter;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import javax.imageio.ImageIO;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_features2d.AKAZE;
-import static org.bytedeco.javacpp.opencv_core.read;
-import static org.bytedeco.javacpp.opencv_core.write;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_features2d.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_features2d.*;
 
 /**
  * (De)serialize OpenCV structures using XML to files and memory
