@@ -336,6 +336,7 @@ public class FrameGrabberTest {
             recorder.release();
 
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
+            grabber.setVideoOption("threads", "1"); // more precise without threads
             grabber.start();
             int length = (int) ( grabber.getLengthInTime() - 1000000L);
 

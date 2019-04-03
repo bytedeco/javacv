@@ -1,4 +1,5 @@
 
+ * Enable multithreading for all codecs by default in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #1163](https://github.com/bytedeco/javacv/issues/1163))
  * Improve thread safety of `FFmpegFrameRecorder` and `Java2DFrameConverter` by relying less on `Buffer.position` ([pull #1166](https://github.com/bytedeco/javacv/pull/1166))
  * Use ModiTect to compile `module-info.java` with JDK 8 and preserve backward compatibility
  * Add `FFmpegFrameRecorder.closeOutputStream` and `FFmpegFrameGrabber.closeInputStream` properties to leave streams opened ([issue #1149](https://github.com/bytedeco/javacv/issues/1149))

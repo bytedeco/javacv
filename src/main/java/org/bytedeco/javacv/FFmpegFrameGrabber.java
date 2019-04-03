@@ -848,6 +848,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             for (Entry<String, String> e : videoOptions.entrySet()) {
                 av_dict_set(options, e.getKey(), e.getValue(), 0);
             }
+
+            // Enable multithreading when available
+            video_c.thread_count(0);
+
             // Open video codec
             if ((ret = avcodec_open2(video_c, codec, options)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open video codec.");
@@ -895,6 +899,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             for (Entry<String, String> e : audioOptions.entrySet()) {
                 av_dict_set(options, e.getKey(), e.getValue(), 0);
             }
+
+            // Enable multithreading when available
+            audio_c.thread_count(0);
+
             // Open audio codec
             if ((ret = avcodec_open2(audio_c, codec, options)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open audio codec.");

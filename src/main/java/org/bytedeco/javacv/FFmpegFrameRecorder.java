@@ -710,6 +710,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             for (Entry<String, String> e : videoOptions.entrySet()) {
                 av_dict_set(options, e.getKey(), e.getValue(), 0);
             }
+
+            // Enable multithreading when available
+            video_c.thread_count(0);
+
             /* open the codec */
             if ((ret = avcodec_open2(video_c, video_codec, options)) < 0) {
                 releaseUnsafe();
@@ -771,6 +775,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             for (Entry<String, String> e : audioOptions.entrySet()) {
                 av_dict_set(options, e.getKey(), e.getValue(), 0);
             }
+
+            // Enable multithreading when available
+            audio_c.thread_count(0);
+
             /* open the codec */
             if ((ret = avcodec_open2(audio_c, audio_codec, options)) < 0) {
                 releaseUnsafe();
