@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 Samuel Audet
+ * Copyright (C) 2009-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -897,7 +897,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     @Override public void record(Frame frame) throws Exception {
-        record(frame, AV_PIX_FMT_NONE);
+        record(frame, frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public void record(Frame frame, int pixelFormat) throws Exception {
         if (frame == null || (frame.image == null && frame.samples == null)) {

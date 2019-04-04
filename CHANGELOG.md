@@ -1,4 +1,5 @@
 
+ * Use `AVFormat.format()` from `Frame.opaque` when available in `FFmpegFrameFilter` and `FFmpegFrameRecorder` ([issue #1173](https://github.com/bytedeco/javacv/issues/1173))
  * Enable multithreading for all codecs by default in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #1163](https://github.com/bytedeco/javacv/issues/1163))
  * Improve thread safety of `FFmpegFrameRecorder` and `Java2DFrameConverter` by relying less on `Buffer.position` ([pull #1166](https://github.com/bytedeco/javacv/pull/1166))
  * Use ModiTect to compile `module-info.java` with JDK 8 and preserve backward compatibility
@@ -7,7 +8,7 @@
  * Readd `synchronized` blocks for `FFmpegFrameGrabber` and `FFmpegFrameRecorder`, but make unsafe methods public ([issue #1139](https://github.com/bytedeco/javacv/issues/1139))
  * Allocate native memory for `Frame` using `Pointer` to allow deallocation with `PointerScope` ([issue #1152](https://github.com/bytedeco/javacv/issues/1152))
  * Add `module-info.java` and depend on modularized JavaCPP Presets to comply with JPMS
- * Upgrade dependencies for FFmpeg 4.1.2 and libfreenect 0.5.7
+ * Upgrade dependencies for FFmpeg 4.1.3, libfreenect 0.5.7, and Leptonica 1.78.0
  * Allow allocation of `Frame` images with custom strides
  * Take into account `Bitmap.getRowBytes()` in `AndroidFrameConverter.convert(Bitmap)` ([issue #1143](https://github.com/bytedeco/javacv/issues/1143))
  * Add `static { Loader.load(); }` in `LeptonicaFrameConverter` and `OpenCVFrameConverter` to prevent link errors ([issue #1128](https://github.com/bytedeco/javacv/issues/1128))

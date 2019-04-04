@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 Samuel Audet
+ * Copyright (C) 2009-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -1011,6 +1011,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         video_c.height(), new PointerPointer(picture_rgb), picture_rgb.linesize());
                 frame.imageStride = picture_rgb.linesize(0);
                 frame.image = image_buf;
+                frame.opaque = picture_rgb;
                 break;
 
             case RAW:
@@ -1021,6 +1022,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     image_buf[0] = ptr.asBuffer();
                 }
                 frame.image = image_buf;
+                frame.opaque = picture;
                 break;
 
             default:
@@ -1044,6 +1046,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.sampleRate = audio_c.sample_rate();
         frame.audioChannels = audio_c.channels();
         frame.samples = samples_buf;
+        frame.opaque = samples_frame;
         int sample_size = data_size / av_get_bytes_per_sample(sample_format);
         for (int i = 0; i < planes; i++) {
             BytePointer p = samples_frame.data(i);
@@ -1162,14 +1165,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 processImage();
             }
             frame.keyFrame = picture.key_frame() != 0;
-            frame.opaque = picture;
             return frame;
         } else if (doAudio && audioFrameGrabbed) {
             if (doProcessing) {
                 processSamples();
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
-            frame.opaque = samples_frame;
             return frame;
         }
         boolean done = false;
@@ -1209,7 +1210,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     done = true;
                     frame.timestamp = timestamp;
                     frame.keyFrame = picture.key_frame() != 0;
-                    frame.opaque = picture;
                 } else if (pkt.data() == null && pkt.size() == 0) {
                     return null;
                 }
@@ -1240,7 +1240,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         frame.timestamp = timestamp;
                         frame.keyFrame = samples_frame.key_frame() != 0;
-                        frame.opaque = samples_frame;
                     }
                 }
             }

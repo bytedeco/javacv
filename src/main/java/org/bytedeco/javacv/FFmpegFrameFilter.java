@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Samuel Audet
+ * Copyright (C) 2015-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -460,13 +460,13 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     @Override public void push(Frame frame) throws Exception {
-        push(frame, AV_PIX_FMT_NONE);
+        push(frame, frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public void push(Frame frame, int pixelFormat) throws Exception {
         push(0, frame, pixelFormat);
     }
     public void push(int n, Frame frame) throws Exception {
-        push(n, frame, AV_PIX_FMT_NONE);
+        push(n, frame, frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public void push(int n, Frame frame, int pixelFormat) throws Exception {
         inframe = frame;
@@ -487,8 +487,8 @@ public class FFmpegFrameFilter extends FrameFilter {
         int ret;
         int step = stride * Math.abs(depth) / 8;
         BytePointer data = image[0] instanceof ByteBuffer
-                ? new BytePointer((ByteBuffer)image[0].position(0))
-                : new BytePointer(new Pointer(image[0].position(0)));
+                ? new BytePointer((ByteBuffer)image[0]).position(0)
+                : new BytePointer(new Pointer(image[0]).position(0));
 
         if (pixelFormat == AV_PIX_FMT_NONE) {
             if ((depth == Frame.DEPTH_UBYTE || depth == Frame.DEPTH_BYTE) && channels == 3) {
@@ -627,6 +627,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             frame.image = image_buf;
             frame.image[0].position(0).limit(frame.imageHeight * Math.abs(frame.imageStride));
             frame.imageChannels = Math.abs(frame.imageStride) / frame.imageWidth;
+            frame.opaque = filt_frame;
         } else {
             frame.imageStride = frame.imageWidth;
             int size = av_image_get_buffer_size(filt_frame.format(), frame.imageWidth, frame.imageHeight, 1);
@@ -639,6 +640,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             frame.imageChannels = (size + frame.imageWidth * frame.imageHeight - 1) / (frame.imageWidth * frame.imageHeight);
             ret = av_image_copy_to_buffer(image_ptr[0].position(0), (int)image_ptr[0].capacity(),
                     new PointerPointer(filt_frame), filt_frame.linesize(), filt_frame.format(), frame.imageWidth, frame.imageHeight, 1);
+            frame.opaque = image_ptr[0];
         }
         return frame;
     }
@@ -665,6 +667,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         frame.audioChannels = filt_frame.channels();
         frame.sampleRate = filt_frame.sample_rate();
         frame.samples = samples_buf;
+        frame.opaque = filt_frame;
         int sample_size = data_size / av_get_bytes_per_sample(sample_format);
         for (int i = 0; i < planes; i++) {
             BytePointer p = filt_frame.data(i);
