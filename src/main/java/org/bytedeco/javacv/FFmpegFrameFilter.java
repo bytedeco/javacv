@@ -157,6 +157,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             avfilter_graph_free(afilter_graph);
             abuffersink_ctx = null;
             abuffersrc_ctx = null;
+            asetpts_ctx = null;
             afilter_graph = null;
         }
         if (image_frame != null) {
@@ -185,6 +186,7 @@ public class FFmpegFrameFilter extends FrameFilter {
 
     AVFilterContext abuffersink_ctx;
     AVFilterContext[] abuffersrc_ctx;
+    AVFilterContext[] asetpts_ctx;
     AVFilterGraph afilter_graph;
 
     AVFrame image_frame;
@@ -374,6 +376,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         int ret;
         AVFilter abuffersrc  = avfilter_get_by_name("abuffer");
         AVFilter abuffersink = avfilter_get_by_name("abuffersink");
+        AVFilter asetpts = avfilter_get_by_name("asetpts");
         AVFilterInOut[] aoutputs = new AVFilterInOut[audioInputs];
         AVFilterInOut ainputs  = avfilter_inout_alloc();
         int sample_fmts[] = { sampleFormat, AV_PIX_FMT_NONE };
@@ -385,6 +388,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             }
 
             abuffersrc_ctx = new AVFilterContext[audioInputs];
+            asetpts_ctx = new AVFilterContext[audioInputs];
             for (int i = 0; i < audioInputs; i++) {
                 String name = audioInputs > 1 ? i + ":a" : "in";
                 aoutputs[i] = avfilter_inout_alloc();
@@ -396,6 +400,17 @@ public class FFmpegFrameFilter extends FrameFilter {
                                                    aargs, null, afilter_graph);
                 if (ret < 0) {
                     throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create audio buffer source.");
+                }
+
+                ret = avfilter_graph_create_filter(asetpts_ctx[i] = new AVFilterContext(), asetpts, audioInputs > 1 ? "asetpts" + i : "asetpts",
+                                                   "N", null, afilter_graph);
+                if (ret < 0) {
+                    throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create asetpts filter.");
+                }
+
+                ret = avfilter_link(abuffersrc_ctx[i], 0, asetpts_ctx[i], 0);
+                if (ret < 0) {
+                    throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot link asetpts filter.");
                 }
 
                 /*
@@ -410,7 +425,7 @@ public class FFmpegFrameFilter extends FrameFilter {
                  * default.
                  */
                 aoutputs[i].name(av_strdup(new BytePointer(name)));
-                aoutputs[i].filter_ctx(abuffersrc_ctx[i]);
+                aoutputs[i].filter_ctx(asetpts_ctx[i]);
                 aoutputs[i].pad_idx(0);
                 aoutputs[i].next(null);
                 if (i > 0) {
