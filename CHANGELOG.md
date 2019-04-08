@@ -1,4 +1,5 @@
 
+ * Fix sample rate in output of `FFmpegFrameRecorder` by setting deprecated `AVStream.codec.time_base` ([issue #1179](https://github.com/bytedeco/javacv/issues/1179))
  * Add `asetpts=N` to input of `FFmpegFrameFilter` to make filters like `afade` behave as expected ([issue #1171](https://github.com/bytedeco/javacv/issues/1171))
  * Use `AVFormat.format()` from `Frame.opaque` when available in `FFmpegFrameFilter` and `FFmpegFrameRecorder` ([issue #1173](https://github.com/bytedeco/javacv/issues/1173))
  * Enable multithreading for all codecs by default in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #1163](https://github.com/bytedeco/javacv/issues/1163))

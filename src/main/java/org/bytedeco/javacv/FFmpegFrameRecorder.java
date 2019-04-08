@@ -621,6 +621,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             oformat.audio_codec(audio_codec.id());
 
+            AVRational sample_rate = av_d2q(sampleRate, 1001000);
+
             if ((audio_st = avformat_new_stream(oc, null)) == null) {
                 releaseUnsafe();
                 throw new Exception("avformat_new_stream() error: Could not allocate audio stream.");
@@ -670,8 +672,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     }
                 }
             }
-            audio_c.time_base().num(1).den(sampleRate);
-            audio_st.time_base().num(1).den(sampleRate);
+            AVRational time_base = av_inv_q(sample_rate);
+            audio_c.time_base(time_base);
+            audio_st.time_base(time_base);
+            audio_st.codec().time_base(time_base); // "deprecated", but this is actually required
             switch (audio_c.sample_fmt()) {
                 case AV_SAMPLE_FMT_U8:
                 case AV_SAMPLE_FMT_U8P:  audio_c.bits_per_raw_sample(8);  break;
