@@ -496,6 +496,42 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return sampleRate > 0 || audio_c == null ? super.getSampleRate() : audio_c.sample_rate();
     }
 
+    @Override public Map<String, String> getMetadata() {
+        if (oc == null) {
+            return super.getMetadata();
+        }
+        AVDictionaryEntry entry = null;
+        Map<String, String> metadata = new HashMap<String, String>();
+        while ((entry = av_dict_get(oc.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
+            metadata.put(entry.key().getString(), entry.value().getString());
+        }
+        return metadata;
+    }
+
+    @Override public Map<String, String> getVideoMetadata() {
+        if (video_st == null) {
+            return super.getVideoMetadata();
+        }
+        AVDictionaryEntry entry = null;
+        Map<String, String> metadata = new HashMap<String, String>();
+        while ((entry = av_dict_get(video_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
+            metadata.put(entry.key().getString(), entry.value().getString());
+        }
+        return metadata;
+    }
+
+    @Override public Map<String, String> getAudioMetadata() {
+        if (audio_st == null) {
+            return super.getAudioMetadata();
+        }
+        AVDictionaryEntry entry = null;
+        Map<String, String> metadata = new HashMap<String, String>();
+        while ((entry = av_dict_get(audio_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
+            metadata.put(entry.key().getString(), entry.value().getString());
+        }
+        return metadata;
+    }
+
     @Override public String getMetadata(String key) {
         if (oc == null) {
             return super.getMetadata(key);
