@@ -81,6 +81,8 @@ public class FrameFilterTest {
                     grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
             filter.setPixelFormat(grabber.getPixelFormat());
             filter.setSampleFormat(grabber.getSampleFormat());
+            filter.setFrameRate(grabber.getFrameRate());
+            filter.setSampleRate(grabber.getSampleRate());
             filter.start();
 
             FFmpegFrameFilter nullFilter = new FFmpegFrameFilter(null, null, 0, 0, 0);
@@ -112,6 +114,7 @@ public class FrameFilterTest {
                         assertEquals(frame2.samples.length, frame3.samples.length);
                         assertEquals(frame2.samples[0].limit() / 2, frame3.samples[0].limit());
                     }
+                    assertEquals(frame2.timestamp, frame3.timestamp);
                 }
                 nullFilter.push(frame2);
                 assertEquals(frame2, nullFilter.pull());

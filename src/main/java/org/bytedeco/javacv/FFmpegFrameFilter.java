@@ -152,6 +152,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             buffersrc_ctx = null;
             setpts_ctx = null;
             filter_graph = null;
+            time_base = null;
         }
         if (afilter_graph != null) {
             avfilter_graph_free(afilter_graph);
@@ -159,6 +160,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             abuffersrc_ctx = null;
             asetpts_ctx = null;
             afilter_graph = null;
+            atime_base = null;
         }
         if (image_frame != null) {
             av_frame_free(image_frame);
@@ -183,11 +185,13 @@ public class FFmpegFrameFilter extends FrameFilter {
     AVFilterContext[] buffersrc_ctx;
     AVFilterContext[] setpts_ctx;
     AVFilterGraph filter_graph;
+    AVRational time_base;
 
     AVFilterContext abuffersink_ctx;
     AVFilterContext[] abuffersrc_ctx;
     AVFilterContext[] asetpts_ctx;
     AVFilterGraph afilter_graph;
+    AVRational atime_base;
 
     AVFrame image_frame;
     AVFrame samples_frame;
@@ -366,6 +370,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             if ((ret = avfilter_graph_config(filter_graph, null)) < 0) {
                 throw new Exception("avfilter_graph_config() error " + ret);
             }
+            this.time_base = av_buffersink_get_time_base(buffersink_ctx);
         } finally {
             avfilter_inout_free(inputs);
             avfilter_inout_free(outputs[0]);
@@ -463,6 +468,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             if ((ret = avfilter_graph_config(afilter_graph, null)) < 0) {
                 throw new Exception("avfilter_graph_config() error " + ret);
             }
+            this.atime_base = av_buffersink_get_time_base(abuffersink_ctx);
         } finally {
             avfilter_inout_free(ainputs);
             avfilter_inout_free(aoutputs[0]);
@@ -486,10 +492,12 @@ public class FFmpegFrameFilter extends FrameFilter {
     public void push(int n, Frame frame, int pixelFormat) throws Exception {
         inframe = frame;
         if (frame != null && frame.image != null && buffersrc_ctx != null) {
+            image_frame.pts(frame.timestamp * time_base.den() / (1000000L * time_base.num()));
             pushImage(n, frame.imageWidth, frame.imageHeight, frame.imageDepth,
                     frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
         }
         if (frame != null && frame.samples != null && abuffersrc_ctx != null) {
+            samples_frame.pts(frame.timestamp * atime_base.den() / (1000000L * atime_base.num()));
             pushSamples(n, frame.audioChannels, sampleRate, sampleFormat, frame.samples);
         }
         if (frame == null || (frame.image == null && frame.samples == null)) {
@@ -657,6 +665,7 @@ public class FFmpegFrameFilter extends FrameFilter {
                     new PointerPointer(filt_frame), filt_frame.linesize(), filt_frame.format(), frame.imageWidth, frame.imageHeight, 1);
             frame.opaque = image_ptr[0];
         }
+        frame.timestamp = 1000000L * filt_frame.pts() * time_base.num() / time_base.den();
         return frame;
     }
 
@@ -705,6 +714,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             }
             samples_buf[i].position(0).limit(sample_size);
         }
+        frame.timestamp = 1000000L * filt_frame.pts() * atime_base.num() / atime_base.den();
         return frame;
     }
 }

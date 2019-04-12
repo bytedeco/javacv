@@ -369,7 +369,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (picture == null) { super.setFrameNumber(frameNumber); } else { picture.pts(frameNumber); }
     }
 
-    // best guess for timestamp in microseconds...
+    /** best guess for timestamp in microseconds... */
     @Override public long getTimestamp() {
         return Math.round(getFrameNumber() * 1000000L / getFrameRate());
     }

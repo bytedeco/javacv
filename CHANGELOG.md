@@ -1,4 +1,6 @@
 
+ * Add support for `Frame.timestamp` to `FFmpegFrameFilter` ([issue #1177](https://github.com/bytedeco/javacv/issues/1177))
+
 ### April 11, 2019 version 1.5
  * Override methods in `FFmpegFrameGrabber` to get all metadata from streams ([issue #1180](https://github.com/bytedeco/javacv/issues/1180))
  * Fix sample rate in output of `FFmpegFrameRecorder` by setting deprecated `AVStream.codec.time_base` ([issue #1179](https://github.com/bytedeco/javacv/issues/1179))

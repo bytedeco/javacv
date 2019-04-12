@@ -97,7 +97,7 @@ public class Frame implements Indexable {
     /** The underlying data object, for example, Pointer, AVFrame, IplImage, or Mat. */
     public Object opaque;
 
-    /** Timestamp of the frame creation. */
+    /** Timestamp of the frame creation in microseconds. */
     public long timestamp;
 
     /** Returns {@code Math.abs(depth) / 8}. */
