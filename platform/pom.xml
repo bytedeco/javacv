@@ -28,7 +28,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform</artifactId>
-      <version>4.0.1-${javacpp.version}</version>
+      <version>4.1.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>libdc1394-platform</artifactId>
-      <version>2.2.5-${javacpp.version}</version>
+      <version>2.2.6-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>

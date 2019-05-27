@@ -7,7 +7,7 @@
   <version>1.5.1-SNAPSHOT</version>
 
   <name>JavaCV</name>
-  <description>Java interface to OpenCV and more</description>
+  <description>Java interface to OpenCV, FFmpeg, and more</description>
   <url>http://bytedeco.org/javacv/</url>
 
   <licenses>
@@ -70,7 +70,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
-      <version>4.0.1-${javacpp.version}</version>
+      <version>4.1.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>libdc1394</artifactId>
-      <version>2.2.5-${javacpp.version}</version>
+      <version>2.2.6-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
