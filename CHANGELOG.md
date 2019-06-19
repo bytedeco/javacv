@@ -1,4 +1,5 @@
 
+ * Add dependency on OpenBLAS/MKL, now used by OpenCV to accelerate some matrix operations
  * Upgrade dependencies for OpenCV 4.1.0, libdc1394 2.2.6
  * Add support for `Frame.timestamp` to `FFmpegFrameFilter` ([issue #1177](https://github.com/bytedeco/javacv/issues/1177))
 

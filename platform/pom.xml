@@ -27,6 +27,11 @@
 
     <dependency>
       <groupId>org.bytedeco</groupId>
+      <artifactId>openblas-platform</artifactId>
+      <version>0.3.6-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform</artifactId>
       <version>4.1.0-${javacpp.version}</version>
     </dependency>
@@ -105,7 +110,7 @@
             <configuration>
               <archive>
                 <manifestEntries>
-                  <Class-Path>javacv.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar libfreenect-platform.jar libfreenect2-platform.jar librealsense-platform.jar videoinput-platform.jar artoolkitplus-platform.jar flandmark-platform.jar leptonica-platform.jar tesseract-platform.jar</Class-Path>
+                  <Class-Path>javacv.jar openblas-platform.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar libfreenect-platform.jar libfreenect2-platform.jar librealsense-platform.jar videoinput-platform.jar artoolkitplus-platform.jar flandmark-platform.jar leptonica-platform.jar tesseract-platform.jar</Class-Path>
                   <Name>org/bytedeco/javacv/</Name>
                 </manifestEntries>
               </archive>

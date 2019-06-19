@@ -69,6 +69,11 @@
 
     <dependency>
       <groupId>org.bytedeco</groupId>
+      <artifactId>openblas</artifactId>
+      <version>0.3.6-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
       <version>4.1.0-${javacpp.version}</version>
     </dependency>
@@ -200,7 +205,7 @@
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
-              <Class-Path>javacpp.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar libfreenect2.jar librealsense.jar videoinput.jar artoolkitplus.jar flandmark.jar leptonica.jar tesseract.jar</Class-Path>
+              <Class-Path>javacpp.jar openblas.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar libfreenect2.jar librealsense.jar videoinput.jar artoolkitplus.jar flandmark.jar leptonica.jar tesseract.jar</Class-Path>
               <Name>org/bytedeco/javacv/</Name>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Bytedeco</Implementation-Vendor>
@@ -271,6 +276,7 @@
             <configuration>
               <links>
                 <link>http://bytedeco.org/javacpp/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/openblas/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/opencv/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/ffmpeg/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/flycapture/apidocs</link>
