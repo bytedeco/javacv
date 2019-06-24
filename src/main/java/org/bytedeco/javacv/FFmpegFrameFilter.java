@@ -256,6 +256,10 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
     }
     public void startUnsafe() throws Exception {
+        if (frame != null) {
+            throw new Exception("start() has already been called: Call stop() before calling start() again.");
+        }
+
         image_frame = av_frame_alloc();
         samples_frame = av_frame_alloc();
         filt_frame = av_frame_alloc();

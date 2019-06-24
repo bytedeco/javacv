@@ -389,6 +389,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public void startUnsafe() throws Exception {
+        if (oc != null && !oc.isNull()) {
+            throw new Exception("start() has already been called: Call stop() before calling start() again.");
+        }
+
         int ret;
         picture = null;
         tmp_picture = null;

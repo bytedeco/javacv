@@ -759,6 +759,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
     public void startUnsafe() throws Exception {
+        if (oc != null && !oc.isNull()) {
+            throw new Exception("start() has already been called: Call stop() before calling start() again.");
+        }
+
         int ret;
         img_convert_ctx = null;
         oc              = new AVFormatContext(null);

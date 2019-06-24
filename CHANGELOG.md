@@ -1,4 +1,5 @@
 
+ * Throw exception on `start()` for already started `FFmpegFrameFilter`, `FFmpegFrameGrabber`, or `FFmpegFrameRecorder` ([issue #1233](https://github.com/bytedeco/javacv/issues/1233))
  * Add dependency on OpenBLAS/MKL, now used by OpenCV to accelerate some matrix operations
  * Upgrade dependencies for OpenCV 4.1.0, libdc1394 2.2.6
  * Add support for `Frame.timestamp` to `FFmpegFrameFilter` ([issue #1177](https://github.com/bytedeco/javacv/issues/1177))
