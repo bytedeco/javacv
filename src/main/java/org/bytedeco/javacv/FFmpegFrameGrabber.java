@@ -291,9 +291,36 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         @Override public long call(Pointer opaque, long offset, int whence) {
             try {
                 InputStream is = inputStreams.get(opaque);
+                long size = 0;
                 switch (whence) {
-                    case 0: is.reset(); break;
-                    case 1: break;
+                    case 0: is.reset(); break; // SEEK_SET
+                    case 1: break;             // SEEK_CUR
+                    case 2:                    // SEEK_END
+                        is.reset();
+                        while (true) {
+                            long n = is.skip(Long.MAX_VALUE);
+                            if (n == 0) break;
+                            size += n;
+                        }
+                        offset += size;
+                        is.reset();
+                        break;
+                    case AVSEEK_SIZE:
+                        long remaining = 0;
+                        while (true) {
+                            long n = is.skip(Long.MAX_VALUE);
+                            if (n == 0) break;
+                            remaining += n;
+                        }
+                        is.reset();
+                        while (true) {
+                            long n = is.skip(Long.MAX_VALUE);
+                            if (n == 0) break;
+                            size += n;
+                        }
+                        offset = size - remaining;
+                        is.reset();
+                        break;
                     default: return -1;
                 }
                 long remaining = offset;
@@ -302,7 +329,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     if (skipped == 0) break; // end of the stream
                     remaining -= skipped;
                 }
-                return 0;
+                return whence == AVSEEK_SIZE ? size : 0;
             } catch (Throwable t) {
                 System.err.println("Error on InputStream.reset() or skip(): " + t);
                 return -1;
