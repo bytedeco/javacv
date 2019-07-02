@@ -130,7 +130,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract</artifactId>
-      <version>4.0.0-${javacpp.version}</version>
+      <version>4.1.0-rc4-${javacpp.version}</version>
     </dependency>
 
     <dependency>
