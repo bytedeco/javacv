@@ -1,4 +1,5 @@
 
+ * Work around `swscale` bug in `FFmpegFrameGrabber` for images with unaligned width ([issue #845](https://github.com/bytedeco/javacv/issues/845))
  * Add support for `AVSEEK_SIZE` to `FFmpegFrameGrabber` as required by MPEG-TS ([issue #1234](https://github.com/bytedeco/javacv/issues/1234))
  * Throw exception on `start()` for already started `FFmpegFrameFilter`, `FFmpegFrameGrabber`, or `FFmpegFrameRecorder` ([issue #1233](https://github.com/bytedeco/javacv/issues/1233))
  * Add dependency on OpenBLAS/MKL, now used by OpenCV to accelerate some matrix operations

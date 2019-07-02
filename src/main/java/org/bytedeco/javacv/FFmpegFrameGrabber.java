@@ -1003,14 +1003,25 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 }
                 int fmt = getPixelFormat();
 
+                // work around bug in swscale: https://trac.ffmpeg.org/ticket/1031
+                int align = 32;
+                int stride = width;
+                for (int i = 1; i <= align; i += i) {
+                     stride = (width + (i - 1)) & ~(i - 1);
+                     av_image_fill_linesizes(picture_rgb.linesize(), fmt, stride);
+                     if ((picture_rgb.linesize(0) & (align - 1)) == 0) {
+                        break;
+                    }
+                }
+
                 // Determine required buffer size and allocate buffer
-                int size = av_image_get_buffer_size(fmt, width, height, 1);
+                int size = av_image_get_buffer_size(fmt, stride, height, 1);
                 image_ptr = new BytePointer[] { new BytePointer(av_malloc(size)).capacity(size) };
                 image_buf = new Buffer[] { image_ptr[0].asBuffer() };
 
                 // Assign appropriate parts of buffer to image planes in picture_rgb
                 // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
-                av_image_fill_arrays(new PointerPointer(picture_rgb), picture_rgb.linesize(), image_ptr[0], fmt, width, height, 1);
+                av_image_fill_arrays(new PointerPointer(picture_rgb), picture_rgb.linesize(), image_ptr[0], fmt, stride, height, 1);
                 picture_rgb.format(fmt);
                 picture_rgb.width(width);
                 picture_rgb.height(height);
