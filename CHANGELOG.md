@@ -1,4 +1,6 @@
 
+ * Upgrade dependencies for FFmpeg 4.1.3
+
 ### July 9, 2019 version 1.5.1
  * Work around `swscale` bug in `FFmpegFrameGrabber` for images with unaligned width ([issue #845](https://github.com/bytedeco/javacv/issues/845))
  * Add support for `AVSEEK_SIZE` to `FFmpegFrameGrabber` as required by MPEG-TS ([issue #1234](https://github.com/bytedeco/javacv/issues/1234))
