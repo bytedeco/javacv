@@ -1,5 +1,6 @@
 module org.bytedeco.javacv {
     exports org.bytedeco.javacv;
+    requires java.desktop;
     requires javafx.graphics;
     requires transitive org.bytedeco.javacpp;
     requires org.bytedeco.opencv;
