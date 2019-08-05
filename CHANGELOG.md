@@ -1,6 +1,6 @@
 
  * Add missing `requires java.desktop` to `module-info.java` ([issue #1265](https://github.com/bytedeco/javacv/issues/1265))
- * Upgrade dependencies for FFmpeg 4.1.3
+ * Upgrade dependencies for OpenCV 4.1.1, FFmpeg 4.1.4
 
 ### July 9, 2019 version 1.5.1
  * Work around `swscale` bug in `FFmpegFrameGrabber` for images with unaligned width ([issue #845](https://github.com/bytedeco/javacv/issues/845))
