@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 Samuel Audet
+ * Copyright (C) 2009-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 package org.bytedeco.javacv;
 
 import java.io.File;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.bytedeco.javacpp.Loader;
 
 import org.bytedeco.opencv.opencv_core.*;
@@ -181,6 +183,19 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         return Math.round(getLengthInFrames() * 1000000L / getFrameRate());
     }
 
+    public double getOption(int propId) {
+        if (capture != null) {
+            return capture.get(propId);
+        }
+        return Double.parseDouble(options.get(Integer.toString(propId)));
+    }
+    public void setOption(int propId, double value) {
+        options.put(Integer.toString(propId), Double.toString(value));
+        if (capture != null) {
+            capture.set(propId, value);
+        }
+    }
+
     public void start() throws Exception {
         if (filename != null && filename.length() > 0) {
             if (apiPreference > 0) {
@@ -219,6 +234,10 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         }
         if (imageMode == ImageMode.RAW) {
             capture.set(CAP_PROP_CONVERT_RGB, 0);
+        }
+
+        for (Entry<String, String> e : options.entrySet()) {
+            capture.set(Integer.parseInt(e.getKey()), Double.parseDouble(e.getValue()));
         }
 
         Mat mat = new Mat();
