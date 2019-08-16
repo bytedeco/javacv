@@ -1,0 +1,76 @@
+package main.java.org.bytedeco.javacv;
+
+public class OpenCVOptions {
+    // Current position of the video file in milliseconds.
+    public static final int POS_MSEC = 0;
+    // 0-based index of the frame to be decoded/captured next.
+    public static final int POS_FRAMES = 1;
+    // Relative position of the video file: 0=start of the film, 1=end of the film.
+    public static final int POS_AVI_RATIO = 2;
+    // Width of the frames in the video stream.
+    public static final int FRAME_WIDTH = 3;
+    // Height of the frames in the video stream.
+    public static final int FRAME_HEIGHT = 4;
+    // Frame rate.
+    public static final int FPS = 5;
+    // 4-character code of codec. see VideoWriter::fourcc.
+    public static final int FOURCC = 6;
+    // Number of frames in the video file.
+    public static final int FRAME_COUNT = 7;
+    // Format of the Mat objects returned by VideoCapture::retrieve().
+    public static final int FORMAT = 8;
+    // Backend-specific value indicating the current capture mode.
+    public static final int MODE = 9;
+    // Brightness of the image (only for those cameras that support).
+    public static final int BRIGHTNESS = 10;
+    // Contrast of the image (only for cameras).
+    public static final int CONTRAST = 11;
+    // Saturation of the image (only for cameras).
+    public static final int SATURATION = 12;
+    // Hue of the image (only for cameras).
+    public static final int HUE = 13;
+    // Gain of the image (only for those cameras that support).
+    public static final int GAIN = 14;
+    // Exposure (only for those cameras that support).
+    public static final int EXPOSURE = 15;
+    // Boolean flags indicating whether images should be converted to RGB.
+    public static final int CONVERT_RGB = 16;
+    // Currently unsupported.
+    public static final int WHITE_BALANCE_BLUE_U = 17;
+    // Rectification flag for stereo cameras (note: only supported by DC1394 v 2.x backend currently).
+    public static final int RECTIFICATION = 18;
+    public static final int MONOCHROME = 19;
+    public static final int SHARPNESS = 20;
+    // DC1394: exposure control done by camera, user can adjust reference level using this feature.
+    public static final int AUTO_EXPOSURE = 21;
+    public static final int GAMMA = 22;
+    public static final int TEMPERATURE = 23;
+    public static final int TRIGGER = 24;
+    public static final int TRIGGER_DELAY = 25;
+    public static final int WHITE_BALANCE_RED_V = 26;
+    public static final int ZOOM = 27;
+    public static final int FOCUS = 28;
+    public static final int GUID = 29;
+    public static final int ISO_SPEED = 30;
+    public static final int BACKLIGHT = 31;
+    public static final int PAN = 32;
+    public static final int TILT = 33;
+    public static final int ROLL = 34;
+    public static final int IRIS = 35;
+    // Pop up video/camera filter dialog (note: only supported by DSHOW backend currently. The property value is ignored)
+    public static final int SETTINGS = 36;
+    public static final int BUFFERSIZE = 37;
+    public static final int AUTOFOCUS = 38;
+    // Sample aspect ratio: num/den (num)
+    public static final int SAR_NUM = 39;
+    // Sample aspect ratio: num/den (den)
+    public static final int SAR_DEN = 40;
+    // Current backend (enum VideoCaptureAPIs). Read-only property.
+    public static final int BACKEND = 41;
+    // Video input or Channel Number (only for those cameras that support)
+    public static final int CHANNEL = 42;
+    // enable/ disable auto white-balance
+    public static final int AUTO_WB = 43;
+    // white-balance color temperature
+    public static final int WB_TEMPERATURE = 44;
+}
