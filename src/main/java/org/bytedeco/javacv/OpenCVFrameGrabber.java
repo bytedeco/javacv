@@ -189,6 +189,12 @@ public class OpenCVFrameGrabber extends FrameGrabber {
         }
         return Double.parseDouble(options.get(Integer.toString(propId)));
     }
+    
+    /**
+     *
+     * @param propId Property ID, look at opencv_videoio for possible values
+     * @param value
+     */
     public void setOption(int propId, double value) {
         options.put(Integer.toString(propId), Double.toString(value));
         if (capture != null) {
