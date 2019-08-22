@@ -1,4 +1,5 @@
 
+ * Fix `OpenCVFrameConverter` error in `IPCameraFrameGrabber` ([pull #1278](https://github.com/bytedeco/javacv/pull/1278))
  * Allow setting properties for `OpenCVFrameGrabber` and `OpenCVFrameRecorder` with `setOption()` ([issue #1269](https://github.com/bytedeco/javacv/issues/1269))
  * Add missing `requires java.desktop` to `module-info.java` ([issue #1265](https://github.com/bytedeco/javacv/issues/1265))
  * Upgrade dependencies for OpenCV 4.1.1, FFmpeg 4.2
