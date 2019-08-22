@@ -63,7 +63,7 @@ public class IPCameraFrameGrabber extends FrameGrabber {
         }
     }
 
-    private final FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+    private final FrameConverter converter = new OpenCVFrameConverter.ToMat();
     private final URL url;
     private final int connectionTimeout;
     private final int readTimeout;
