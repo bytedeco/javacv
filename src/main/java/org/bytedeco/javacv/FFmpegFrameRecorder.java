@@ -1171,7 +1171,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         for (int i = 0; i < samples_out.length; i++) {
             int linesize = 0;
             if (samples_out[0].position() > 0 && samples_out[0].position() < samples_out[0].limit()) {
-                linesize = (int)samples_out[i].position();
+                // align the end of the buffer to a 32-byte boundary as sometimes required by FFmpeg
+                linesize = ((int)samples_out[i].position() + 31) & ~31;
             } else {
                 linesize = (int)Math.min(samples_out[i].limit(), Integer.MAX_VALUE);
             }
