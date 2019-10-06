@@ -38,7 +38,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>4.2-${javacpp.version}</version>
+      <version>4.2.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -63,7 +63,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>librealsense-platform</artifactId>
-      <version>1.12.1-${javacpp.version}</version>
+      <version>1.12.4-${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>librealsense2-platform</artifactId>
+      <version>2.25.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>

@@ -23,7 +23,6 @@
 package org.bytedeco.javacv;
 
 import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.tools.Logger;
 
 import org.bytedeco.ffmpeg.avutil.*;
@@ -40,13 +39,7 @@ public class FFmpegLogCallback extends LogCallback {
 
     private static final Logger logger = Logger.create(FFmpegLogCallback.class);
 
-    static final FFmpegLogCallback instance = new FFmpegLogCallback();
-    static {
-        PointerScope s = PointerScope.getInnerScope();
-        if (s != null) {
-            s.detach(instance);
-        }
-    }
+    static final FFmpegLogCallback instance = new FFmpegLogCallback().retainReference();
 
     /** Returns an instance that can be used with {@link #setLogCallback(LogCallback)}. */
     public static FFmpegLogCallback getInstance() {
