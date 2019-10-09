@@ -1,4 +1,5 @@
 
+ * Disable seek function in `FFmpegFrameGrabber` when `maximumSize <= 0` ([issue #1304](https://github.com/bytedeco/javacv/issues/1304))
  * Use `Pointer.retainReference()` to prevent `PointerScope` from deallocating globally shared callback objects for FFmpeg
  * Fix `FFmpegFrameRecorder` failing to encode `float` samples in MP3 ([issue #1294](https://github.com/bytedeco/javacv/issues/1294))
  * Fix `OpenCVFrameConverter` error in `IPCameraFrameGrabber` ([pull #1278](https://github.com/bytedeco/javacv/pull/1278))

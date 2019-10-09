@@ -833,7 +833,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             inputStream.mark(maximumSize);
             oc = avformat_alloc_context();
-            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, seekCallback);
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, maximumSize > 0 ? seekCallback : null);
             oc.pb(avio);
 
             filename = inputStream.toString();
