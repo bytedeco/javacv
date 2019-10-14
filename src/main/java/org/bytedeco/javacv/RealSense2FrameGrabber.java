@@ -175,8 +175,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         int frameCount = rs2_embedded_frames_count(frameset, error);
         checkError(error);
 
-        System.out.println("found n streams:" + frameCount);
-
         int i = 0;
         int searchIndex = 0;
         while (i < frameCount) {
@@ -324,12 +322,12 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return value.equals("YES");
     }
 
-    private static class StreamProfileData {
-        IntPointer nativeStreamIndex = new IntPointer();
-        IntPointer nativeFormatIndex = new IntPointer();
-        IntPointer index = new IntPointer();
-        IntPointer uniqueId = new IntPointer();
-        IntPointer frameRate = new IntPointer();
+    static class StreamProfileData {
+        IntPointer nativeStreamIndex = new IntPointer(1);
+        IntPointer nativeFormatIndex = new IntPointer(1);
+        IntPointer index = new IntPointer(1);
+        IntPointer uniqueId = new IntPointer(1);
+        IntPointer frameRate = new IntPointer(1);
     }
 
     public static class RealSense2DeviceInfo {
