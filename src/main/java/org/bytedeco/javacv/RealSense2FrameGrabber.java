@@ -21,6 +21,7 @@
  */
 package org.bytedeco.javacv;
 
+import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.librealsense2.*;
 import org.bytedeco.opencv.opencv_core.IplImage;
@@ -38,6 +39,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private rs2_pipeline pipeline;
     private rs2_config config;
     private rs2_pipeline_profile pipelineProfile;
+
+    private rs2_frame frameset;
 
     private int deviceNumber;
     private boolean enableColorStream;
@@ -110,10 +113,11 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() throws FrameGrabber.Exception {
         rs2_pipeline_stop(this.pipeline, error);
         checkError(error);
 
+        rs2_release_frame(this.frameset);
         rs2_delete_pipeline_profile(this.pipelineProfile);
         rs2_delete_config(this.config);
         rs2_delete_pipeline(this.pipeline);
@@ -122,51 +126,77 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public void trigger() throws Exception {
-        rs2_frame frames = rs2_pipeline_wait_for_frames(pipeline, RS2_DEFAULT_TIMEOUT, error);
+    public void trigger() throws FrameGrabber.Exception {
+        // release previous frame
+        rs2_release_frame(this.frameset);
+
+        // read frames
+        this.frameset = rs2_pipeline_wait_for_frames(pipeline, RS2_DEFAULT_TIMEOUT, error);
         checkError(error);
-        rs2_release_frame(frames);
     }
 
     @Override
-    public Frame grab() throws Exception {
-        Frame cvFrame = null;
-        rs2_frame frames = rs2_pipeline_wait_for_frames(pipeline, RS2_DEFAULT_TIMEOUT, error);
-        checkError(error);
+    public Frame grab() throws FrameGrabber.Exception {
+        return new Frame();
+    }
 
-        int frameCount = rs2_embedded_frames_count(frames, error);
+    public Frame grabDepth() throws FrameGrabber.Exception {
+        Frame depthFrame = null;
+
+        int frameCount = rs2_embedded_frames_count(frameset, error);
         checkError(error);
 
         for (int i = 0; i < frameCount; i++) {
-            rs2_frame frame = rs2_extract_frame(frames, i, error);
+            rs2_frame frame = rs2_extract_frame(frameset, i, error);
             checkError(error);
 
-            // get frame dimensions
-            int width = rs2_get_frame_width(frame, error);
-            checkError(error);
-            int height = rs2_get_frame_height(frame, error);
-            checkError(error);
-
-            // todo: read all different frame types
             if (toBoolean(rs2_is_frame_extendable_to(frame, RS2_EXTENSION_DEPTH_FRAME, error))) {
                 Pointer frameData = rs2_get_frame_data(frame, error);
+                checkError(error);
+
+                // get frame dimensions
+                int width = rs2_get_frame_width(frame, error);
+                checkError(error);
+                int height = rs2_get_frame_height(frame, error);
                 checkError(error);
 
                 IplImage image = IplImage.createHeader(width, height, IPL_DEPTH_16U, 1);
                 // todo: check if this really is correct
                 cvSetData(image, frameData, width * IPL_DEPTH_16U / 8);
-                cvFrame = converter.convert(image);
+                depthFrame = converter.convert(image);
             }
 
             rs2_release_frame(frame);
         }
 
-        rs2_release_frame(frames);
-        return cvFrame;
+        return depthFrame;
+    }
+
+    private rs2_frame findFrameByStreamType(rs2_frame frameset, int streamType, int index) throws FrameGrabber.Exception {
+        rs2_frame result = null;
+
+        // read frames
+        int frameCount = rs2_embedded_frames_count(frameset, error);
+        checkError(error);
+
+        int i = 0;
+        int searchIndex = 0;
+        while (i < frameCount) {
+            rs2_frame frame = rs2_extract_frame(frameset, i, error);
+            checkError(error);
+
+            rs2_stream_profile streamProfile = getStreamProfile(frame);
+            // todo check stream profile
+
+            rs2_release_frame(frame);
+            i++;
+        }
+
+        return result;
     }
 
     @Override
-    public void release() throws Exception {
+    public void release() throws FrameGrabber.Exception {
         rs2_delete_device(this.device);
         rs2_delete_context(this.context);
     }
@@ -232,6 +262,28 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return infoText;
     }
 
+    private rs2_stream_profile getStreamProfile(rs2_frame frame) throws Exception {
+        rs2_stream_profile streamProfile = rs2_get_frame_stream_profile(frame, error);
+        checkError(error);
+        return streamProfile;
+    }
+
+    private StreamProfileData getStreamProfileData(rs2_stream_profile streamProfile) throws Exception {
+        StreamProfileData profileData = new StreamProfileData();
+
+        // check if stream profile matches search type
+        rs2_get_stream_profile_data(streamProfile,
+                profileData.index,
+                profileData.uniqueId,
+                profileData.frameRate,
+                profileData.nativeStreamIndex,
+                profileData.nativeFormatIndex,
+                error);
+        checkError(error);
+
+        return profileData;
+    }
+
     private static void checkError(rs2_error e) throws FrameGrabber.Exception {
         if (!e.isNull()) {
             throw new FrameGrabber.Exception(String.format("rs_error was raised when calling %s(%s):\n%s\n",
@@ -252,14 +304,22 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return value.equals("YES");
     }
 
-    public class RealSense2DeviceInfo {
+    private static class StreamProfileData {
+        IntPointer index = new IntPointer();
+        IntPointer uniqueId = new IntPointer();
+        IntPointer frameRate = new IntPointer();
+        IntPointer nativeStreamIndex = new IntPointer();
+        IntPointer nativeFormatIndex = new IntPointer();
+    }
+
+    public static class RealSense2DeviceInfo {
         private String name;
         private String serialNumber;
         private String firmware;
         private boolean inAdvancedMode;
         private boolean locked;
 
-        public RealSense2DeviceInfo(String name, String serialNumber, String firmware, boolean inAdvancedMode, boolean locked) {
+        RealSense2DeviceInfo(String name, String serialNumber, String firmware, boolean inAdvancedMode, boolean locked) {
             this.name = name;
             this.serialNumber = serialNumber;
             this.firmware = firmware;
