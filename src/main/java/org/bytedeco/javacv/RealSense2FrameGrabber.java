@@ -109,12 +109,14 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         checkError(error);
 
         // right ir stream
-        rs2_config_enable_stream(config, RS2_STREAM_INFRARED, 1, 640, 480, RS2_FORMAT_Y8, 30, error);
+        rs2_config_enable_stream(config, RS2_STREAM_INFRARED, 1, 1280, 720, RS2_FORMAT_Y8, 30, error);
         checkError(error);
 
         // left ir stream
         //rs2_config_enable_stream(config, RS2_STREAM_INFRARED, 2, 640, 480, RS2_FORMAT_Y8, 30, error);
         //checkError(error);
+
+        // todo: set options (emitter)
 
         // set image width & height
         this.imageWidth = 640;
@@ -174,7 +176,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // get depth frame if available
         rs2_frame frame = findFrameByStreamType(this.frameset, streamType, streamIndex);
-        if(frame == null)
+        if (frame == null)
             return null;
 
         // get frame data
@@ -210,7 +212,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
             StreamProfileData streamProfileData = getStreamProfileData(streamProfile);
 
             // compare stream type
-            if(streamType == streamProfileData.nativeStreamIndex.get() && searchIndex == index) {
+            if (streamType == streamProfileData.nativeStreamIndex.get() && searchIndex == index) {
                 result = frame;
                 break;
             }
