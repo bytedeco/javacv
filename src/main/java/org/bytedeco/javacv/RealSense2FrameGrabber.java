@@ -25,6 +25,8 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.librealsense2.*;
 import org.bytedeco.opencv.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.Point;
+import org.bytedeco.opencv.opencv_core.Size;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,10 +139,35 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
     @Override
     public Frame grab() throws FrameGrabber.Exception {
-        return new Frame();
+        return grabDepthOld();
     }
 
-    public Frame grabDepth() throws FrameGrabber.Exception {
+    public Frame grabDepth() throws Exception {
+        Frame depthFrame;
+
+        // get depth frame if available
+        rs2_frame frame = findFrameByStreamType(this.frameset, RS2_STREAM_DEPTH, 0);
+        if(frame == null)
+            return null;
+
+        // convert depth frame
+        Pointer frameData = getFrameData(frame);
+
+        // get frame dimensions
+        Size size = getFrameSize(frame);
+
+        // create cv frame
+        IplImage image = IplImage.createHeader(size.width(), size.height(), IPL_DEPTH_16U, 1);
+        cvSetData(image, frameData, size.width() * IPL_DEPTH_16U / 8);
+        depthFrame = converter.convert(image);
+
+        // cleanup
+        rs2_release_frame(frame);
+
+        return depthFrame;
+    }
+
+    public Frame grabDepthOld() throws FrameGrabber.Exception {
         Frame depthFrame = null;
 
         int frameCount = rs2_embedded_frames_count(frameset, error);
@@ -179,14 +206,23 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         int frameCount = rs2_embedded_frames_count(frameset, error);
         checkError(error);
 
+        System.out.println("found n streams:" + frameCount);
+
         int i = 0;
         int searchIndex = 0;
         while (i < frameCount) {
             rs2_frame frame = rs2_extract_frame(frameset, i, error);
             checkError(error);
 
+            // get stream profile data
             rs2_stream_profile streamProfile = getStreamProfile(frame);
-            // todo check stream profile
+            StreamProfileData streamProfileData = getStreamProfileData(streamProfile);
+
+            // compare stream type
+            if(streamType == streamProfileData.nativeStreamIndex.get() && searchIndex == index) {
+                result = frame;
+                break;
+            }
 
             rs2_release_frame(frame);
             i++;
@@ -262,6 +298,20 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return infoText;
     }
 
+    private Pointer getFrameData(rs2_frame frame) throws Exception {
+        Pointer frameData = rs2_get_frame_data(frame, error);
+        checkError(error);
+        return frameData;
+    }
+
+    private Size getFrameSize(rs2_frame frame) throws Exception {
+        int width = rs2_get_frame_width(frame, error);
+        checkError(error);
+        int height = rs2_get_frame_height(frame, error);
+        checkError(error);
+        return new Size(width, height);
+    }
+
     private rs2_stream_profile getStreamProfile(rs2_frame frame) throws Exception {
         rs2_stream_profile streamProfile = rs2_get_frame_stream_profile(frame, error);
         checkError(error);
@@ -273,11 +323,11 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // check if stream profile matches search type
         rs2_get_stream_profile_data(streamProfile,
+                profileData.nativeStreamIndex,
+                profileData.nativeFormatIndex,
                 profileData.index,
                 profileData.uniqueId,
                 profileData.frameRate,
-                profileData.nativeStreamIndex,
-                profileData.nativeFormatIndex,
                 error);
         checkError(error);
 
@@ -305,11 +355,11 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     private static class StreamProfileData {
+        IntPointer nativeStreamIndex = new IntPointer();
+        IntPointer nativeFormatIndex = new IntPointer();
         IntPointer index = new IntPointer();
         IntPointer uniqueId = new IntPointer();
         IntPointer frameRate = new IntPointer();
-        IntPointer nativeStreamIndex = new IntPointer();
-        IntPointer nativeFormatIndex = new IntPointer();
     }
 
     public static class RealSense2DeviceInfo {
