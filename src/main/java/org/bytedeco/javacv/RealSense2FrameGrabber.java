@@ -224,6 +224,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
                 break;
             }
 
+            rs2_delete_stream_profile(streamProfile);
             rs2_release_frame(frame);
             i++;
         }
