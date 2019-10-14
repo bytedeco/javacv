@@ -102,12 +102,15 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // enable streams
         // todo: implement enable all available streams
-        rs2_config_enable_stream(config, RS2_STREAM_DEPTH, 0, 640, 0, RS2_FORMAT_Z16, 30, error);
+        //rs2_config_enable_stream(config, RS2_STREAM_DEPTH, 0, 640, 480, RS2_FORMAT_Z16, 30, error);
+        checkError(error);
+
+        rs2_config_enable_stream(config, RS2_STREAM_COLOR, 0, 1280, 720, RS2_FORMAT_BGR8, 30, error);
         checkError(error);
 
         // set image width & height
-        this.imageWidth = 640;
-        this.imageHeight = 480;
+        this.imageWidth = 1280;
+        this.imageHeight = 720;
 
         // start pipeline
         pipelineProfile = rs2_pipeline_start_with_config(pipeline, config, error);
@@ -143,6 +146,33 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return new Frame();
     }
 
+    private Frame grabCVFrame(int streamType, int streamIndex, int iplDepth, int iplChannels) throws Exception {
+        Frame colorFrame;
+
+        // get depth frame if available
+        rs2_frame frame = findFrameByStreamType(this.frameset, streamType, streamIndex);
+        if(frame == null)
+            return null;
+
+        // get frame data
+        Pointer frameData = getFrameData(frame);
+        Size size = getFrameSize(frame);
+
+        // create cv frame
+        IplImage image = IplImage.createHeader(size.width(), size.height(), iplDepth, iplChannels);
+        cvSetData(image, frameData, size.width() * iplChannels * iplDepth / 8);
+        colorFrame = converter.convert(image);
+
+        // cleanup
+        rs2_release_frame(frame);
+
+        return colorFrame;
+    }
+
+    public Frame grabColor() throws Exception {
+        return grabCVFrame(RS2_STREAM_COLOR, 0, IPL_DEPTH_8U, 3);
+    }
+
     public Frame grabDepth() throws Exception {
         Frame depthFrame;
 
@@ -151,10 +181,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         if(frame == null)
             return null;
 
-        // convert depth frame
+        // get frame data
         Pointer frameData = getFrameData(frame);
-
-        // get frame dimensions
         Size size = getFrameSize(frame);
 
         // create cv frame
