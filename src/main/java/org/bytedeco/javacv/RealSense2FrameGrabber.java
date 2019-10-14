@@ -40,6 +40,9 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private rs2_pipeline_profile pipelineProfile;
 
     private int deviceNumber;
+    private boolean enableColorStream;
+    private boolean enableDepthStream;
+    private boolean enableIRStream;
 
     private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
@@ -97,6 +100,10 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         rs2_config_enable_stream(config, RS2_STREAM_DEPTH, 0, 640, 0, RS2_FORMAT_Z16, 30, error);
         checkError(error);
 
+        // set image width & height
+        this.imageWidth = 640;
+        this.imageHeight = 480;
+
         // start pipeline
         pipelineProfile = rs2_pipeline_start_with_config(pipeline, config, error);
         checkError(error);
@@ -141,16 +148,15 @@ public class RealSense2FrameGrabber extends FrameGrabber {
             checkError(error);
 
             // todo: read all different frame types
-            if (0 == rs2_is_frame_extendable_to(frame, RS2_EXTENSION_DEPTH_FRAME, error))
-                continue;
+            if (toBoolean(rs2_is_frame_extendable_to(frame, RS2_EXTENSION_DEPTH_FRAME, error))) {
+                Pointer frameData = rs2_get_frame_data(frame, error);
+                checkError(error);
 
-            Pointer frameData = rs2_get_frame_data(frame, error);
-            checkError(error);
-
-            IplImage image = IplImage.createHeader(width, height, IPL_DEPTH_16U, 1);
-            // todo: check if this really is correct
-            cvSetData(image, frameData, width * IPL_DEPTH_16U / 8);
-            cvFrame = converter.convert(image);
+                IplImage image = IplImage.createHeader(width, height, IPL_DEPTH_16U, 1);
+                // todo: check if this really is correct
+                cvSetData(image, frameData, width * IPL_DEPTH_16U / 8);
+                cvFrame = converter.convert(image);
+            }
 
             rs2_release_frame(frame);
         }
@@ -193,6 +199,12 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         rs2_config config = rs2_create_config(error);
         checkError(error);
         return config;
+    }
+
+    private double getFrameTimeStamp(rs2_frame frame) throws FrameGrabber.Exception {
+        double timestamp = rs2_get_frame_timestamp(frame, error);
+        checkError(error);
+        return timestamp;
     }
 
     private int getDeviceCount() throws FrameGrabber.Exception {
