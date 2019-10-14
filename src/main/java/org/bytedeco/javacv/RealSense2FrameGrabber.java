@@ -105,12 +105,20 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         //rs2_config_enable_stream(config, RS2_STREAM_DEPTH, 0, 640, 480, RS2_FORMAT_Z16, 30, error);
         checkError(error);
 
-        rs2_config_enable_stream(config, RS2_STREAM_COLOR, 0, 1280, 720, RS2_FORMAT_BGR8, 30, error);
+        //rs2_config_enable_stream(config, RS2_STREAM_COLOR, 0, 640, 480, RS2_FORMAT_BGR8, 30, error);
         checkError(error);
 
+        // right ir stream
+        rs2_config_enable_stream(config, RS2_STREAM_INFRARED, 1, 640, 480, RS2_FORMAT_Y8, 30, error);
+        checkError(error);
+
+        // left ir stream
+        //rs2_config_enable_stream(config, RS2_STREAM_INFRARED, 2, 640, 480, RS2_FORMAT_Y8, 30, error);
+        //checkError(error);
+
         // set image width & height
-        this.imageWidth = 1280;
-        this.imageHeight = 720;
+        this.imageWidth = 640;
+        this.imageHeight = 480;
 
         // start pipeline
         pipelineProfile = rs2_pipeline_start_with_config(pipeline, config, error);
@@ -142,8 +150,23 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
     @Override
     public Frame grab() throws FrameGrabber.Exception {
-        // todo: implement this
-        return new Frame();
+        return grabColor();
+    }
+
+    public Frame grabColor() throws Exception {
+        return grabCVFrame(RS2_STREAM_COLOR, 0, IPL_DEPTH_8U, 3);
+    }
+
+    public Frame grabDepth() throws Exception {
+        return grabCVFrame(RS2_STREAM_DEPTH, 0, IPL_DEPTH_16U, 1);
+    }
+
+    public Frame grabIR() throws Exception {
+        return grabIR(0);
+    }
+
+    public Frame grabIR(int streamIndex) throws Exception {
+        return grabCVFrame(RS2_STREAM_INFRARED, streamIndex, IPL_DEPTH_8U, 1);
     }
 
     private Frame grabCVFrame(int streamType, int streamIndex, int iplDepth, int iplChannels) throws Exception {
@@ -167,33 +190,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         rs2_release_frame(frame);
 
         return colorFrame;
-    }
-
-    public Frame grabColor() throws Exception {
-        return grabCVFrame(RS2_STREAM_COLOR, 0, IPL_DEPTH_8U, 3);
-    }
-
-    public Frame grabDepth() throws Exception {
-        Frame depthFrame;
-
-        // get depth frame if available
-        rs2_frame frame = findFrameByStreamType(this.frameset, RS2_STREAM_DEPTH, 0);
-        if(frame == null)
-            return null;
-
-        // get frame data
-        Pointer frameData = getFrameData(frame);
-        Size size = getFrameSize(frame);
-
-        // create cv frame
-        IplImage image = IplImage.createHeader(size.width(), size.height(), IPL_DEPTH_16U, 1);
-        cvSetData(image, frameData, size.width() * IPL_DEPTH_16U / 8);
-        depthFrame = converter.convert(image);
-
-        // cleanup
-        rs2_release_frame(frame);
-
-        return depthFrame;
     }
 
     private rs2_frame findFrameByStreamType(rs2_frame frameset, int streamType, int index) throws FrameGrabber.Exception {
