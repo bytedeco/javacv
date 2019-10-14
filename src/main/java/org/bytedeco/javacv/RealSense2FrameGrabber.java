@@ -139,7 +139,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
     @Override
     public Frame grab() throws FrameGrabber.Exception {
-        return grabDepthOld();
+        // todo: implement this
+        return new Frame();
     }
 
     public Frame grabDepth() throws Exception {
@@ -163,38 +164,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // cleanup
         rs2_release_frame(frame);
-
-        return depthFrame;
-    }
-
-    public Frame grabDepthOld() throws FrameGrabber.Exception {
-        Frame depthFrame = null;
-
-        int frameCount = rs2_embedded_frames_count(frameset, error);
-        checkError(error);
-
-        for (int i = 0; i < frameCount; i++) {
-            rs2_frame frame = rs2_extract_frame(frameset, i, error);
-            checkError(error);
-
-            if (toBoolean(rs2_is_frame_extendable_to(frame, RS2_EXTENSION_DEPTH_FRAME, error))) {
-                Pointer frameData = rs2_get_frame_data(frame, error);
-                checkError(error);
-
-                // get frame dimensions
-                int width = rs2_get_frame_width(frame, error);
-                checkError(error);
-                int height = rs2_get_frame_height(frame, error);
-                checkError(error);
-
-                IplImage image = IplImage.createHeader(width, height, IPL_DEPTH_16U, 1);
-                // todo: check if this really is correct
-                cvSetData(image, frameData, width * IPL_DEPTH_16U / 8);
-                depthFrame = converter.convert(image);
-            }
-
-            rs2_release_frame(frame);
-        }
 
         return depthFrame;
     }
