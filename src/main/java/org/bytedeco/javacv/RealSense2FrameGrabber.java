@@ -30,6 +30,7 @@ import org.bytedeco.opencv.opencv_core.Point;
 import org.bytedeco.opencv.opencv_core.Size;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.bytedeco.librealsense2.global.realsense2.*;
@@ -106,16 +107,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         ));
     }
 
-    public void addIRStream(int width, int height, int frameRate) {
-        addStream(new RealSenseStream(
-                RS2_STREAM_INFRARED,
-                1,
-                new Size(width, height),
-                frameRate,
-                RS2_FORMAT_Y8
-        ));
-    }
-
     public void addDepthStream(int width, int height, int frameRate) {
         addStream(new RealSenseStream(
                 RS2_STREAM_DEPTH,
@@ -126,11 +117,21 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         ));
     }
 
+    public void addIRStream(int width, int height, int frameRate) {
+        addStream(new RealSenseStream(
+                RS2_STREAM_INFRARED,
+                1,
+                new Size(width, height),
+                frameRate,
+                RS2_FORMAT_Y8
+        ));
+    }
+
     @Override
     public void start() throws FrameGrabber.Exception {
         // check if device is available
         if (getDeviceCount() <= 0) {
-            throw new FrameGrabber.Exception("No rs2_device is connected.");
+            throw new FrameGrabber.Exception("No realsense2 device is connected.");
         }
 
         // create device
@@ -143,7 +144,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // check if streams is not empty
         if (streams.isEmpty())
-            throw new FrameGrabber.Exception("No stream has been added.");
+            throw new FrameGrabber.Exception("No stream has been added to be enabled.");
 
         // enable streams
         for (RealSenseStream stream : streams) {
@@ -160,9 +161,10 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // todo: set options (emitter)
 
-        // set image width & height
-        this.imageWidth = 640;
-        this.imageHeight = 480;
+        // set image width & height to largest stream
+        RealSenseStream largestStream = streams.stream().max(Comparator.comparing(RealSenseStream::getArea)).get();
+        this.imageWidth = largestStream.size.width();
+        this.imageHeight = largestStream.size.height();
 
         // start pipeline
         pipelineProfile = rs2_pipeline_start_with_config(pipeline, config, error);
@@ -431,6 +433,10 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         public int getFormat() {
             return format;
+        }
+
+        protected int getArea() {
+            return size.area();
         }
     }
 
