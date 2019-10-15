@@ -45,7 +45,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private rs2_frame frameset;
 
     private int deviceNumber;
-    private ArrayList<RealSenseStream> streams = new ArrayList<>();
+    private List<RealSenseStream> streams = new ArrayList<>();
 
     private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
@@ -81,6 +81,20 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         rs2_delete_device_list(deviceList);
         return devices;
+    }
+
+    public static String[] getDeviceDescriptions() throws FrameGrabber.Exception {
+        RealSense2FrameGrabber rs2 = new RealSense2FrameGrabber();
+        List<RealSense2DeviceInfo> infos = rs2.getDeviceInfos();
+        rs2.release();
+
+        String[] deviceDescriptions = new String[infos.size()];
+        for(int i = 0; i < deviceDescriptions.length; i++) {
+            RealSense2DeviceInfo info = infos.get(i);
+            deviceDescriptions[i] = info.toString();
+        }
+
+        return deviceDescriptions;
     }
 
     public void disableAllStreams() {
@@ -499,6 +513,11 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         public boolean isLocked() {
             return locked;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s", name);
         }
     }
 }
