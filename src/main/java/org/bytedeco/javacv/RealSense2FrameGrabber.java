@@ -103,7 +103,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
                 0,
                 new Size(width, height),
                 frameRate,
-                RS2_FORMAT_BGR8
+                RS2_FORMAT_RGB8
         ));
     }
 
@@ -197,6 +197,17 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     @Override
     public Frame grab() throws FrameGrabber.Exception {
         return grabColor();
+    }
+
+    public float getDistance(int x, int y) throws Exception {
+        rs2_frame frame = findFrameByStreamType(this.frameset, RS2_STREAM_DEPTH, 0);
+        if (frame == null)
+            return -1f;
+
+        float distance = rs2_depth_frame_get_distance(frame, x, y, error);
+        checkError(error);
+        rs2_release_frame(frame);
+        return distance;
     }
 
     public Frame grabColor() throws Exception {
