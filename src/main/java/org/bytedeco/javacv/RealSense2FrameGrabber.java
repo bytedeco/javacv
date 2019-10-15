@@ -405,9 +405,9 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private static void checkError(rs2_error e) throws FrameGrabber.Exception {
         if (!e.isNull()) {
             throw new FrameGrabber.Exception(String.format("rs_error was raised when calling %s(%s):\n%s\n",
-                    rs2_get_failed_function(e),
-                    rs2_get_failed_args(e),
-                    rs2_get_error_message(e)));
+                    rs2_get_failed_function(e).getString(),
+                    rs2_get_failed_args(e).getString(),
+                    rs2_get_error_message(e).getString()));
         }
     }
 
