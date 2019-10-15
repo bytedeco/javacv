@@ -160,7 +160,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         // todo: set options (emitter)
 
         // set image width & height to largest stream
-        RealSenseStream largestStream = streams.stream().max(Comparator.comparing(RealSenseStream::getArea)).get();
+        RealSenseStream largestStream = getLargestStream();
         this.imageWidth = largestStream.size.width();
         this.imageHeight = largestStream.size.height();
 
@@ -233,6 +233,16 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
     public Frame grabIR(int streamIndex) throws Exception {
         return grabCVFrame(RS2_STREAM_INFRARED, streamIndex, IPL_DEPTH_8U, 1);
+    }
+
+    private RealSenseStream getLargestStream() {
+        RealSenseStream largest = streams.get(0);
+        for(RealSenseStream rs : streams) {
+            if(rs.size.area() > largest.size.area()) {
+                largest = rs;
+            }
+        }
+        return largest;
     }
 
     private Frame grabCVFrame(int streamType, int streamIndex, int iplDepth, int iplChannels) throws Exception {
@@ -453,10 +463,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         public int getFormat() {
             return format;
-        }
-
-        protected int getArea() {
-            return size.area();
         }
     }
 
