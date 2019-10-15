@@ -103,7 +103,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
                 0,
                 new Size(width, height),
                 frameRate,
-                RS2_FORMAT_RGB8
+                RS2_FORMAT_BGR8
         ));
     }
 
