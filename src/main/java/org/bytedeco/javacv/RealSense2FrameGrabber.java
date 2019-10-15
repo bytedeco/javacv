@@ -42,7 +42,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private rs2_pipeline_profile pipelineProfile;
 
     private rs2_frame frameset;
-    private boolean useTriggerToLoadFrames = false;
 
     private int deviceNumber;
     private List<RealSenseStream> streams = new ArrayList<>();
@@ -89,7 +88,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         rs2.release();
 
         String[] deviceDescriptions = new String[infos.size()];
-        for(int i = 0; i < deviceDescriptions.length; i++) {
+        for (int i = 0; i < deviceDescriptions.length; i++) {
             RealSense2DeviceInfo info = infos.get(i);
             deviceDescriptions[i] = info.toString();
         }
@@ -209,8 +208,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     @Override
     public void trigger() throws FrameGrabber.Exception {
         // set trigger load flag
-        if(!useTriggerToLoadFrames)
-            useTriggerToLoadFrames = true;
+        if (!triggerMode)
+            triggerMode = true;
 
         // read frames
         readNextFrameSet();
@@ -244,14 +243,14 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     public Frame grabColor() throws Exception {
-        if(!useTriggerToLoadFrames)
+        if (!triggerMode)
             readNextFrameSet();
 
         return grabCVFrame(RS2_STREAM_COLOR, 0, IPL_DEPTH_8U, 3);
     }
 
     public Frame grabDepth() throws Exception {
-        if(!useTriggerToLoadFrames)
+        if (!triggerMode)
             readNextFrameSet();
 
         return grabCVFrame(RS2_STREAM_DEPTH, 0, IPL_DEPTH_16U, 1);
@@ -262,7 +261,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     public Frame grabIR(int streamIndex) throws Exception {
-        if(!useTriggerToLoadFrames)
+        if (!triggerMode)
             readNextFrameSet();
 
         return grabCVFrame(RS2_STREAM_INFRARED, streamIndex, IPL_DEPTH_8U, 1);
@@ -270,8 +269,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
     private RealSenseStream getLargestStreamByArea() {
         RealSenseStream largest = streams.get(0);
-        for(RealSenseStream rs : streams) {
-            if(rs.size.area() > largest.size.area()) {
+        for (RealSenseStream rs : streams) {
+            if (rs.size.area() > largest.size.area()) {
                 largest = rs;
             }
         }
