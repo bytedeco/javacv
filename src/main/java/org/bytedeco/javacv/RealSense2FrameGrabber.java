@@ -23,6 +23,7 @@ package org.bytedeco.javacv;
 
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.librealsense.global.RealSense;
 import org.bytedeco.librealsense2.*;
 import org.bytedeco.opencv.opencv_core.IplImage;
 import org.bytedeco.opencv.opencv_core.Point;
@@ -45,9 +46,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private rs2_frame frameset;
 
     private int deviceNumber;
-    private boolean enableColorStream;
-    private boolean enableDepthStream;
-    private boolean enableIRStream;
+    private ArrayList<RealSenseStream> streams = new ArrayList<>();
 
     private FrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 
@@ -85,11 +84,53 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return devices;
     }
 
+    public void clearStreams() {
+        streams.clear();
+    }
+
+    public List<RealSenseStream> getStreams() {
+        return this.streams;
+    }
+
+    public void addStream(RealSenseStream stream) {
+        streams.add(stream);
+    }
+
+    public void addColorStream(int width, int height, int frameRate) {
+        addStream(new RealSenseStream(
+                RS2_STREAM_COLOR,
+                0,
+                new Size(width, height),
+                frameRate,
+                RS2_FORMAT_BGR8
+        ));
+    }
+
+    public void addIRStream(int width, int height, int frameRate) {
+        addStream(new RealSenseStream(
+                RS2_STREAM_INFRARED,
+                1,
+                new Size(width, height),
+                frameRate,
+                RS2_FORMAT_Y8
+        ));
+    }
+
+    public void addDepthStream(int width, int height, int frameRate) {
+        addStream(new RealSenseStream(
+                RS2_STREAM_DEPTH,
+                0,
+                new Size(width, height),
+                frameRate,
+                RS2_FORMAT_Z16
+        ));
+    }
+
     @Override
     public void start() throws FrameGrabber.Exception {
         // check if device is available
         if (getDeviceCount() <= 0) {
-            throw new FrameGrabber.Exception("No rs2_device is connected!");
+            throw new FrameGrabber.Exception("No rs2_device is connected.");
         }
 
         // create device
@@ -100,21 +141,22 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         this.pipeline = createPipeline();
         this.config = createConfig();
 
+        // check if streams is not empty
+        if (streams.isEmpty())
+            throw new FrameGrabber.Exception("No stream has been added.");
+
         // enable streams
-        // todo: implement enable all available streams
-        //rs2_config_enable_stream(config, RS2_STREAM_DEPTH, 0, 640, 480, RS2_FORMAT_Z16, 30, error);
-        checkError(error);
-
-        //rs2_config_enable_stream(config, RS2_STREAM_COLOR, 0, 640, 480, RS2_FORMAT_BGR8, 30, error);
-        checkError(error);
-
-        // right ir stream
-        rs2_config_enable_stream(config, RS2_STREAM_INFRARED, 1, 1280, 720, RS2_FORMAT_Y8, 30, error);
-        checkError(error);
-
-        // left ir stream
-        //rs2_config_enable_stream(config, RS2_STREAM_INFRARED, 2, 640, 480, RS2_FORMAT_Y8, 30, error);
-        //checkError(error);
+        for (RealSenseStream stream : streams) {
+            rs2_config_enable_stream(config,
+                    stream.type,
+                    stream.index,
+                    stream.size.width(),
+                    stream.size.height(),
+                    stream.format,
+                    stream.frameRate,
+                    error);
+            checkError(error);
+        }
 
         // todo: set options (emitter)
 
@@ -354,6 +396,42 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         IntPointer index = new IntPointer(1);
         IntPointer uniqueId = new IntPointer(1);
         IntPointer frameRate = new IntPointer(1);
+    }
+
+    public static class RealSenseStream {
+        private int type;
+        private int index;
+        private Size size;
+        private int frameRate;
+        private int format;
+
+        public RealSenseStream(int type, int index, Size size, int frameRate, int format) {
+            this.type = type;
+            this.index = index;
+            this.size = size;
+            this.frameRate = frameRate;
+            this.format = format;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public Size getSize() {
+            return size;
+        }
+
+        public int getFrameRate() {
+            return frameRate;
+        }
+
+        public int getFormat() {
+            return format;
+        }
     }
 
     public static class RealSense2DeviceInfo {
