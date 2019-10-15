@@ -196,7 +196,18 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
     @Override
     public Frame grab() throws FrameGrabber.Exception {
-        return grabColor();
+        RealSenseStream stream = streams.get(0);
+
+        switch (stream.type) {
+            case RS2_STREAM_DEPTH:
+                return grabDepth();
+
+            case RS2_STREAM_INFRARED:
+                return grabIR();
+
+            default:
+                return grabColor();
+        }
     }
 
     public float getDistance(int x, int y) throws Exception {
