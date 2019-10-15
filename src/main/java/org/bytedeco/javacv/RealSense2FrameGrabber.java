@@ -171,8 +171,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
             checkError(error);
         }
 
-        // todo: set options (emitter)
-
         // set image width & height to largest stream
         RealSenseStream largestStream = getLargestStreamByArea();
         this.imageWidth = largestStream.size.width();
