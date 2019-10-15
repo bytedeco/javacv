@@ -33,7 +33,7 @@ public class RealSense2DepthMeasuring {
         RealSense2FrameGrabber rs2 = new RealSense2FrameGrabber();
 
         // list all cameras
-        for(RealSense2FrameGrabber.RealSense2DeviceInfo info : rs2.getDeviceInfos()) {
+        for (RealSense2FrameGrabber.RealSense2DeviceInfo info : rs2.getDeviceInfos()) {
             System.out.printf("Device: %s %s %s Locked: %b\n",
                     info.getName(),
                     info.getFirmware(),
@@ -46,9 +46,9 @@ public class RealSense2DepthMeasuring {
 
         // here are more examples of streams:
         /*
-        rs2.addColorStream(640, 480, 30); // color stream
-        rs2.addIRStream(640, 480, 90); // ir stream
-        rs2.addStream(new RealSense2FrameGrabber.RealSenseStream(
+        rs2.enableColorStream(640, 480, 30); // color stream
+        rs2.enableIRStream(640, 480, 90); // ir stream
+        rs2.enableStream(new RealSense2FrameGrabber.RealSenseStream(
                 RS2_STREAM_INFRARED,
                 2,
                 new Size(640, 480),
