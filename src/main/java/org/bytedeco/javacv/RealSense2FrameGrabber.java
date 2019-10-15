@@ -28,7 +28,6 @@ import org.bytedeco.opencv.opencv_core.IplImage;
 import org.bytedeco.opencv.opencv_core.Size;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.bytedeco.librealsense2.global.realsense2.*;
@@ -43,6 +42,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private rs2_pipeline_profile pipelineProfile;
 
     private rs2_frame frameset;
+    private boolean useTriggerToLoadFrames = false;
 
     private int deviceNumber;
     private List<RealSenseStream> streams = new ArrayList<>();
@@ -174,7 +174,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         // todo: set options (emitter)
 
         // set image width & height to largest stream
-        RealSenseStream largestStream = getLargestStream();
+        RealSenseStream largestStream = getLargestStreamByArea();
         this.imageWidth = largestStream.size.width();
         this.imageHeight = largestStream.size.height();
 
@@ -196,14 +196,23 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         this.device = null;
     }
 
-    @Override
-    public void trigger() throws FrameGrabber.Exception {
+    private void readNextFrameSet() throws Exception {
         // release previous frame
         rs2_release_frame(this.frameset);
 
         // read frames
         this.frameset = rs2_pipeline_wait_for_frames(pipeline, RS2_DEFAULT_TIMEOUT, error);
         checkError(error);
+    }
+
+    @Override
+    public void trigger() throws FrameGrabber.Exception {
+        // set trigger load flag
+        if(!useTriggerToLoadFrames)
+            useTriggerToLoadFrames = true;
+
+        // read frames
+        readNextFrameSet();
     }
 
     @Override
@@ -234,10 +243,16 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     public Frame grabColor() throws Exception {
+        if(!useTriggerToLoadFrames)
+            readNextFrameSet();
+
         return grabCVFrame(RS2_STREAM_COLOR, 0, IPL_DEPTH_8U, 3);
     }
 
     public Frame grabDepth() throws Exception {
+        if(!useTriggerToLoadFrames)
+            readNextFrameSet();
+
         return grabCVFrame(RS2_STREAM_DEPTH, 0, IPL_DEPTH_16U, 1);
     }
 
@@ -246,10 +261,13 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     public Frame grabIR(int streamIndex) throws Exception {
+        if(!useTriggerToLoadFrames)
+            readNextFrameSet();
+
         return grabCVFrame(RS2_STREAM_INFRARED, streamIndex, IPL_DEPTH_8U, 1);
     }
 
-    private RealSenseStream getLargestStream() {
+    private RealSenseStream getLargestStreamByArea() {
         RealSenseStream largest = streams.get(0);
         for(RealSenseStream rs : streams) {
             if(rs.size.area() > largest.size.area()) {
@@ -262,7 +280,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private Frame grabCVFrame(int streamType, int streamIndex, int iplDepth, int iplChannels) throws Exception {
         Frame colorFrame;
 
-        // get depth frame if available
+        // get frame of type if available
         rs2_frame frame = findFrameByStreamType(this.frameset, streamType, streamIndex);
         if (frame == null)
             return null;
