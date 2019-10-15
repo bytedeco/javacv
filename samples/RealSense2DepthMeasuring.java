@@ -42,7 +42,7 @@ public class RealSense2DepthMeasuring {
         }
 
         // enable the depth stream of the realsense camera
-        rs2.addDepthStream(640, 480, 30);
+        rs2.enableDepthStream(640, 480, 30);
 
         // here are more examples of streams:
         /*

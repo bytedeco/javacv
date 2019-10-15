@@ -23,10 +23,8 @@ package org.bytedeco.javacv;
 
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.librealsense.global.RealSense;
 import org.bytedeco.librealsense2.*;
 import org.bytedeco.opencv.opencv_core.IplImage;
-import org.bytedeco.opencv.opencv_core.Point;
 import org.bytedeco.opencv.opencv_core.Size;
 
 import java.util.ArrayList;
@@ -85,20 +83,20 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return devices;
     }
 
-    public void clearStreams() {
+    public void disableAllStreams() {
         streams.clear();
     }
 
-    public List<RealSenseStream> getStreams() {
+    public List<RealSenseStream> getEnabledStreams() {
         return this.streams;
     }
 
-    public void addStream(RealSenseStream stream) {
+    public void enableStream(RealSenseStream stream) {
         streams.add(stream);
     }
 
-    public void addColorStream(int width, int height, int frameRate) {
-        addStream(new RealSenseStream(
+    public void enableColorStream(int width, int height, int frameRate) {
+        enableStream(new RealSenseStream(
                 RS2_STREAM_COLOR,
                 0,
                 new Size(width, height),
@@ -107,8 +105,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         ));
     }
 
-    public void addDepthStream(int width, int height, int frameRate) {
-        addStream(new RealSenseStream(
+    public void enableDepthStream(int width, int height, int frameRate) {
+        enableStream(new RealSenseStream(
                 RS2_STREAM_DEPTH,
                 0,
                 new Size(width, height),
@@ -117,8 +115,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         ));
     }
 
-    public void addIRStream(int width, int height, int frameRate) {
-        addStream(new RealSenseStream(
+    public void enableIRStream(int width, int height, int frameRate) {
+        enableStream(new RealSenseStream(
                 RS2_STREAM_INFRARED,
                 1,
                 new Size(width, height),
