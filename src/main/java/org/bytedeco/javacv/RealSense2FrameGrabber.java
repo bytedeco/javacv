@@ -149,6 +149,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         // create device
         rs2_device_list devices = createDeviceList();
         this.device = createDevice(devices, this.deviceNumber);
+        rs2_delete_device_list(devices);
 
         // create pipeline
         this.pipeline = createPipeline();
