@@ -158,7 +158,7 @@ public class Demo {
 
         // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_videoio),
         // DC1394FrameGrabber, FlyCapture2FrameGrabber, OpenKinectFrameGrabber, OpenKinect2FrameGrabber,
-        // RealSenseFrameGrabber, PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
+        // RealSenseFrameGrabber, RealSense2FrameGrabber, PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
         FrameGrabber grabber = FrameGrabber.createDefault(0);
         grabber.start();
 
