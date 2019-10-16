@@ -1,11 +1,12 @@
 
+ * Add `RealSense2FrameGrabber` to capture images with librealsense2 ([pull #1316](https://github.com/bytedeco/javacv/pull/1316))
  * Disable seek function in `FFmpegFrameGrabber` when `maximumSize <= 0` ([issue #1304](https://github.com/bytedeco/javacv/issues/1304))
  * Use `Pointer.retainReference()` to prevent `PointerScope` from deallocating globally shared callback objects for FFmpeg
  * Fix `FFmpegFrameRecorder` failing to encode `float` samples in MP3 ([issue #1294](https://github.com/bytedeco/javacv/issues/1294))
  * Fix `OpenCVFrameConverter` error in `IPCameraFrameGrabber` ([pull #1278](https://github.com/bytedeco/javacv/pull/1278))
  * Allow setting properties for `OpenCVFrameGrabber` and `OpenCVFrameRecorder` with `setOption()` ([issue #1269](https://github.com/bytedeco/javacv/issues/1269))
  * Add missing `requires java.desktop` to `module-info.java` ([issue #1265](https://github.com/bytedeco/javacv/issues/1265))
- * Upgrade dependencies for OpenBLAS 0.3.7, OpenCV 4.1.1, FFmpeg 4.2.1, librealsense 1.12.4 and 2.25.0
+ * Upgrade dependencies for OpenBLAS 0.3.7, OpenCV 4.1.1, FFmpeg 4.2.1, librealsense 1.12.4, and librealsense2 2.25.0
 
 ### July 9, 2019 version 1.5.1
  * Work around `swscale` bug in `FFmpegFrameGrabber` for images with unaligned width ([issue #845](https://github.com/bytedeco/javacv/issues/845))
