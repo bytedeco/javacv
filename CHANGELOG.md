@@ -1,4 +1,5 @@
 
+ * Let `FFmpegFrameFilter.push(null)` indicate EOF to audio filters as well ([issue #1315](https://github.com/bytedeco/javacv/issues/1315))
  * Add `RealSense2FrameGrabber` to capture images with librealsense2 ([pull #1316](https://github.com/bytedeco/javacv/pull/1316))
  * Disable seek function in `FFmpegFrameGrabber` when `maximumSize <= 0` ([issue #1304](https://github.com/bytedeco/javacv/issues/1304))
  * Use `Pointer.retainReference()` to prevent `PointerScope` from deallocating globally shared callback objects for FFmpeg

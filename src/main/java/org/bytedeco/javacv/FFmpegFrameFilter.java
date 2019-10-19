@@ -505,7 +505,12 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
         if (frame == null || (frame.image == null && frame.samples == null)) {
             // indicate EOF as required, for example, by the "palettegen" filter
-            av_buffersrc_add_frame_flags(buffersrc_ctx[n], null, 0);
+            if (buffersrc_ctx != null && n < buffersrc_ctx.length) {
+                av_buffersrc_add_frame_flags(buffersrc_ctx[n], null, 0);
+            }
+            if (abuffersrc_ctx != null && n < abuffersrc_ctx.length) {
+                av_buffersrc_add_frame_flags(abuffersrc_ctx[n], null, 0);
+            }
         }
     }
 
