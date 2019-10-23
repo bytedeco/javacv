@@ -119,6 +119,8 @@ public class FrameFilterTest {
                 nullFilter.push(frame2);
                 assertEquals(frame2, nullFilter.pull());
             }
+            filter.push(null);
+            assertEquals(null, filter.pull());
             assertEquals(a, c);
             assertEquals(b, d);
             assertEquals(null, grabber.grab());
@@ -202,6 +204,9 @@ public class FrameFilterTest {
                     }
                 }
             }
+            filter.push(0, null);
+            filter.push(1, null);
+            assertEquals(null, filter.pull());
             assertEquals(a, c);
             assertEquals(b, d);
             assertEquals(null, grabber.grab());

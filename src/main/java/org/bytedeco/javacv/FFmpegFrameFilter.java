@@ -484,13 +484,13 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     @Override public void push(Frame frame) throws Exception {
-        push(frame, frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
+        push(frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public void push(Frame frame, int pixelFormat) throws Exception {
         push(0, frame, pixelFormat);
     }
     public void push(int n, Frame frame) throws Exception {
-        push(n, frame, frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
+        push(n, frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public void push(int n, Frame frame, int pixelFormat) throws Exception {
         inframe = frame;
