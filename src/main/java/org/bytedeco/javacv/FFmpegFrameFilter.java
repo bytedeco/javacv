@@ -506,10 +506,10 @@ public class FFmpegFrameFilter extends FrameFilter {
         if (frame == null || (frame.image == null && frame.samples == null)) {
             // indicate EOF as required, for example, by the "palettegen" filter
             if (buffersrc_ctx != null && n < buffersrc_ctx.length) {
-                av_buffersrc_add_frame_flags(buffersrc_ctx[n], null, 0);
+                av_buffersrc_add_frame_flags(buffersrc_ctx[n], null, AV_BUFFERSRC_FLAG_PUSH);
             }
             if (abuffersrc_ctx != null && n < abuffersrc_ctx.length) {
-                av_buffersrc_add_frame_flags(abuffersrc_ctx[n], null, 0);
+                av_buffersrc_add_frame_flags(abuffersrc_ctx[n], null, AV_BUFFERSRC_FLAG_PUSH);
             }
         }
     }
@@ -549,7 +549,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         image_frame.height(height);
 
         /* push the decoded frame into the filtergraph */
-        if ((ret = av_buffersrc_add_frame_flags(buffersrc_ctx[n], image_frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
+        if ((ret = av_buffersrc_add_frame_flags(buffersrc_ctx[n], image_frame, AV_BUFFERSRC_FLAG_KEEP_REF | AV_BUFFERSRC_FLAG_PUSH)) < 0) {
             throw new Exception("av_buffersrc_add_frame_flags() error " + ret + ": Error while feeding the filtergraph.");
         }
     }
@@ -600,7 +600,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         samples_frame.sample_rate(sampleRate);
 
         /* push the decoded frame into the filtergraph */
-        if ((ret = av_buffersrc_add_frame_flags(abuffersrc_ctx[n], samples_frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
+        if ((ret = av_buffersrc_add_frame_flags(abuffersrc_ctx[n], samples_frame, AV_BUFFERSRC_FLAG_KEEP_REF | AV_BUFFERSRC_FLAG_PUSH)) < 0) {
             throw new Exception("av_buffersrc_add_frame_flags() error " + ret + ": Error while feeding the filtergraph.");
         }
     }
