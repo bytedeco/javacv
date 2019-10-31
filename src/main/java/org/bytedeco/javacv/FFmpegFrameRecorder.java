@@ -188,6 +188,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
     public void releaseUnsafe() throws Exception {
+        started = false;
+
         /* close each codec */
         if (video_c != null) {
             avcodec_free_context(video_c);
@@ -347,6 +349,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVPacket video_pkt, audio_pkt;
     private int[] got_video_packet, got_audio_packet;
     private AVFormatContext ifmt_ctx;
+
+    private volatile boolean started = false;
 
     public boolean isCloseOutputStream() {
         return closeOutputStream;
@@ -872,6 +876,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (av_log_get_level() >= AV_LOG_INFO) {
             av_dump_format(oc, 0, filename, 1);
         }
+
+        started = true;
     }
 
     public void flush() throws Exception {
@@ -921,6 +927,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
         }
         int ret;
 
@@ -1029,6 +1038,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public boolean recordSamples(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
         }
 
         if (samples == null && samples_out[0].position() > 0) {
