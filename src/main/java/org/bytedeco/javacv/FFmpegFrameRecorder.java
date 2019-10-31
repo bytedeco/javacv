@@ -862,7 +862,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_dict_set(metadata, e.getKey(), e.getValue(), 0);
         }
         /* write the stream header, if any */
-        avformat_write_header(oc.metadata(metadata), options);
+        if ((ret = avformat_write_header(oc.metadata(metadata), options)) < 0) {
+            releaseUnsafe();
+            av_dict_free(options);
+            throw new Exception("avformat_write_header error() error " + ret + ": Could not write header to '" + filename + "'");
+        }
         av_dict_free(options);
 
         if (av_log_get_level() >= AV_LOG_INFO) {
