@@ -188,6 +188,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
     public void releaseUnsafe() throws Exception {
+        started = false;
+
         /* close each codec */
         if (video_c != null) {
             avcodec_free_context(video_c);
@@ -348,6 +350,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private int[] got_video_packet, got_audio_packet;
     private AVFormatContext ifmt_ctx;
 
+    private volatile boolean started = false;
+
     public boolean isCloseOutputStream() {
         return closeOutputStream;
     }
@@ -370,8 +374,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         setFrameNumber((int)Math.round(timestamp * getFrameRate() / 1000000L));
     }
 
-    public void start(AVFormatContext ifmt_ctx) throws Exception {
-        this.ifmt_ctx = ifmt_ctx;
+    public void start(AVFormatContext inputFormatContext) throws Exception {
+        this.ifmt_ctx = inputFormatContext;
         start();
     }
 
@@ -862,12 +866,18 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_dict_set(metadata, e.getKey(), e.getValue(), 0);
         }
         /* write the stream header, if any */
-        avformat_write_header(oc.metadata(metadata), options);
+        if ((ret = avformat_write_header(oc.metadata(metadata), options)) < 0) {
+            releaseUnsafe();
+            av_dict_free(options);
+            throw new Exception("avformat_write_header error() error " + ret + ": Could not write header to '" + filename + "'");
+        }
         av_dict_free(options);
 
         if (av_log_get_level() >= AV_LOG_INFO) {
             av_dump_format(oc, 0, filename, 1);
         }
+
+        started = true;
     }
 
     public void flush() throws Exception {
@@ -917,6 +927,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
         }
         int ret;
 
@@ -1025,6 +1038,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public boolean recordSamples(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
         }
 
         if (samples == null && samples_out[0].position() > 0) {
@@ -1230,6 +1246,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public boolean recordPacket(AVPacket pkt) throws Exception {
+        if (ifmt_ctx == null) {
+            throw new Exception("No input format context (Has start(AVFormatContext) been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
 
         if (pkt == null) {
             return false;

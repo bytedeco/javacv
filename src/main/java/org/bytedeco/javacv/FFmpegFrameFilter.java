@@ -145,6 +145,8 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
     }
     public void releaseUnsafe() throws Exception {
+        started = false;
+
         if (filter_graph != null) {
             avfilter_graph_free(filter_graph);
             buffersink_ctx = null;
@@ -201,6 +203,8 @@ public class FFmpegFrameFilter extends FrameFilter {
     Buffer[] image_buf;
     Buffer[] samples_buf;
     Frame frame, inframe;
+
+    private volatile boolean started = false;
 
     @Override public int getImageWidth() {
         return buffersink_ctx != null ? av_buffersink_get_w(buffersink_ctx) : super.getImageWidth();
@@ -277,6 +281,8 @@ public class FFmpegFrameFilter extends FrameFilter {
         if (afilters != null && audioChannels > 0 && audioInputs > 0) {
             startAudioUnsafe();
         }
+
+        started = true;
     }
 
     void startVideoUnsafe() throws Exception {
@@ -493,6 +499,10 @@ public class FFmpegFrameFilter extends FrameFilter {
         push(n, frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public void push(int n, Frame frame, int pixelFormat) throws Exception {
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         inframe = frame;
         if (frame != null && frame.image != null && buffersrc_ctx != null) {
             image_frame.pts(frame.timestamp * time_base.den() / (1000000L * time_base.num()));
@@ -515,6 +525,10 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     public void pushImage(int n, int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         int ret;
         int step = stride * Math.abs(depth) / 8;
         BytePointer data = image[0] instanceof ByteBuffer
@@ -555,6 +569,10 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     public void pushSamples(int n, int audioChannels, int sampleRate, int sampleFormat, Buffer ... samples) throws Exception {
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         int ret;
         Pointer[] data = new Pointer[samples.length];
         int sampleSize = samples != null ? ((samples[0].limit() - samples[0].position()) / (samples.length > 1 ? 1 : audioChannels)) : 0;
@@ -606,6 +624,10 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     @Override public Frame pull() throws Exception {
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         frame.keyFrame = false;
         frame.imageWidth = 0;
         frame.imageHeight = 0;
@@ -633,6 +655,10 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     public Frame pullImage() throws Exception {
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         av_frame_unref(filt_frame);
 
         /* pull a filtered frame from the filtergraph */
@@ -678,6 +704,10 @@ public class FFmpegFrameFilter extends FrameFilter {
     }
 
     public Frame pullSamples() throws Exception {
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         av_frame_unref(filt_frame);
 
         /* pull a filtered frame from the filtergraph */

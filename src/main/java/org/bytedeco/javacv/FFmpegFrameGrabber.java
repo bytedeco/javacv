@@ -157,6 +157,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
     public void releaseUnsafe() throws Exception {
+        started = false;
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
                 av_packet_unref(pkt);
@@ -363,6 +364,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
+
+    private volatile boolean started = false;
 
     public boolean isCloseInputStream() {
         return closeInputStream;
@@ -976,6 +979,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             samples_ptr = new BytePointer[] { null };
             samples_buf = new Buffer[] { null };
         }
+        started = true;
     }
 
     private void initPictureRGB() {
@@ -1216,6 +1220,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
             return null;
         }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
         boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
         frameGrabbed = false;
@@ -1324,7 +1332,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     public AVPacket grabPacket() throws Exception {
         if (oc == null || oc.isNull()) {
-            throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
+            throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
         }
 
         // Return the next frame of a stream.
