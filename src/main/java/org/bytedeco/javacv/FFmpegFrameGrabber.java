@@ -1332,7 +1332,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     public AVPacket grabPacket() throws Exception {
         if (oc == null || oc.isNull()) {
-            throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
+            throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }
         if (!started) {
             throw new Exception("start() was not called successfully!");

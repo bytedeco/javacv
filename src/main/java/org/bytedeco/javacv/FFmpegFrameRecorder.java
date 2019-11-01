@@ -374,8 +374,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         setFrameNumber((int)Math.round(timestamp * getFrameRate() / 1000000L));
     }
 
-    public void start(AVFormatContext ifmt_ctx) throws Exception {
-        this.ifmt_ctx = ifmt_ctx;
+    public void start(AVFormatContext inputFormatContext) throws Exception {
+        this.ifmt_ctx = inputFormatContext;
         start();
     }
 
@@ -1246,6 +1246,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public boolean recordPacket(AVPacket pkt) throws Exception {
+        if (ifmt_ctx == null) {
+            throw new Exception("No input format context (Has start(AVFormatContext) been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
 
         if (pkt == null) {
             return false;
