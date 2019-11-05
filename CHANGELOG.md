@@ -1,4 +1,5 @@
 
+### November 5, 2019 version 1.5.2
  * Increase thread safety of `FFmpegFrameFilter`, `FFmpegFrameGrabber`, and `FFmpegFrameRecorder` with `volatile boolean started` flag ([pull #1325](https://github.com/bytedeco/javacv/pull/1325))
  * Let `FFmpegFrameFilter.push(null)` indicate EOF to audio filters as well ([issue #1315](https://github.com/bytedeco/javacv/issues/1315))
  * Add `RealSense2FrameGrabber` to capture images with librealsense2 ([pull #1316](https://github.com/bytedeco/javacv/pull/1316))
