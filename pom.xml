@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.5.2</version>
+  <version>1.5.3-SNAPSHOT</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV, FFmpeg, and more</description>
