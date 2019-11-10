@@ -8,8 +8,9 @@ jobs:
          apt:
           packages: maven
        arch: arm64
+       language: shell
        script: 
-          - "apt-cache search openjdk"
+          - "sudo apt install openjdk-8-jdk-headless; mvn install -B -U"
      - os: linux
        arch: amd64
        jdk: openjdk11
