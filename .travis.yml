@@ -14,7 +14,7 @@ jobs:
           - "sudo apt-get update"
           - "sudo apt install openjdk-11-jdk-headless"
           - "mvn install -B -U"
-          - "mvn $MAVEN_PHASE -B -U -f platform -D javacpp.platform=linux-arm64"
+          - "mvn install -B -U -f platform -D javacpp.platform=linux-arm64"
      - os: linux
        arch: amd64
        jdk: openjdk11
