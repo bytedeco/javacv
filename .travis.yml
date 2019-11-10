@@ -10,7 +10,7 @@ jobs:
        arch: arm64
        language: java
        script: 
-          - "apt-cache search openjdk
+          - "apt-cache search openjdk"
      - os: linux
        arch: amd64
        jdk: openjdk11
