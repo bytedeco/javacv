@@ -8,7 +8,6 @@ jobs:
          apt:
           packages: maven
        arch: arm64
-       language: java
        script: 
           - "apt-cache search openjdk"
      - os: linux
