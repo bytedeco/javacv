@@ -6,11 +6,10 @@ jobs:
        addons:
          apt:
           packages: maven
-       jdk: openjdk12
        arch: arm64
        language: java
        script: 
-          - "mvn install -B -U"
+          - "apt-cache search openjdk; mvn install -B -U"
      - os: linux
        arch: amd64
        jdk: openjdk11
