@@ -1,4 +1,5 @@
 dist: xenial
+sudo: required
 
 jobs:
   include:
@@ -9,7 +10,7 @@ jobs:
        arch: arm64
        language: java
        script: 
-          - "apt-cache search openjdk; mvn install -B -U"
+          - "apt-cache search openjdk
      - os: linux
        arch: amd64
        jdk: openjdk11
