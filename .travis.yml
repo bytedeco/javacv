@@ -1,13 +1,29 @@
 dist: xenial
-sudo: false
-language: java
-jdk:
-  - openjdk11
+sudo: required
 cache:
   directories:
     - $HOME/.m2
-script:
-  - "echo '<settings><servers><server><id>sonatype-nexus-snapshots</id><username>${env.CI_DEPLOY_USERNAME}</username><password>${env.CI_DEPLOY_PASSWORD}</password></server></servers></settings>' > $HOME/settings.xml"
-  - "[[ $TRAVIS_PULL_REQUEST == 'false' ]] && export MAVEN_PHASE=deploy || export MAVEN_PHASE=install"
-  - "mvn $MAVEN_PHASE -B -U -s $HOME/settings.xml"
-  - "mvn $MAVEN_PHASE -B -U -s $HOME/settings.xml -f platform -D javacpp.platform=linux-x86_64"
+
+jobs:
+  include:
+     - os: linux
+       addons:
+         apt:
+          packages: maven
+       arch: arm64
+       language: minimal
+       script: 
+          - "sudo add-apt-repository ppa:openjdk-r/ppa"
+          - "sudo apt-get update"
+          - "sudo apt install openjdk-11-jdk-headless"
+          - "mvn install -B -U"
+          - "mvn install -B -U -f platform -D javacpp.platform=linux-arm64"
+     - os: linux
+       arch: amd64
+       jdk: openjdk11
+       language: java
+       script:
+          - "echo '<settings><servers><server><id>sonatype-nexus-snapshots</id><username>${env.CI_DEPLOY_USERNAME}</username><password>${env.CI_DEPLOY_PASSWORD}</password></server></servers></settings>' > $HOME/settings.xml"
+          - "[[ $TRAVIS_PULL_REQUEST == 'false' ]] && export MAVEN_PHASE=deploy || export MAVEN_PHASE=install"
+          - "mvn $MAVEN_PHASE -B -U -s $HOME/settings.xml"
+          - "mvn $MAVEN_PHASE -B -U -s $HOME/settings.xml -f platform -D javacpp.platform=linux-x86_64"
