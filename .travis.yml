@@ -6,6 +6,7 @@ jobs:
        addons:
          apt:
           packages: maven openjdk-11-jdk-headless
+       jdk: openjdk11
        arch: arm64
        language: java
        script: 
