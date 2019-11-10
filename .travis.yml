@@ -5,7 +5,7 @@ jobs:
      - os: linux
        addons:
          apt:
-          packages: maven openjdk-11-jdk-headless
+          packages: maven
        jdk: openjdk11
        arch: arm64
        language: java
