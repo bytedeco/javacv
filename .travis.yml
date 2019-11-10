@@ -10,7 +10,7 @@ jobs:
        arch: arm64
        language: shell
        script: 
-          - "sudo apt install openjdk-8-jdk-headless; mvn install -B -U"
+          - "sudo add-apt-repository ppa:openjdk-r/ppa; sudo apt-get update; apt-cache search openjdk; sudo apt install openjdk-lts; mvn install -B -U"
      - os: linux
        arch: amd64
        jdk: openjdk11
