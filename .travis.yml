@@ -8,7 +8,7 @@ jobs:
          apt:
           packages: maven
        arch: arm64
-       language: java
+       language: shell
        script: 
           - "sudo add-apt-repository ppa:openjdk-r/ppa"
           - "sudo apt-get update"
