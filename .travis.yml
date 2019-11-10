@@ -11,7 +11,7 @@ jobs:
          apt:
           packages: maven
        arch: arm64
-       language: shell
+       language: minimal
        script: 
           - "sudo add-apt-repository ppa:openjdk-r/ppa"
           - "sudo apt-get update"
