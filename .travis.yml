@@ -1,5 +1,8 @@
 dist: xenial
 sudo: required
+cache:
+  directories:
+    - $HOME/.m2
 
 jobs:
   include:
