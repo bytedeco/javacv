@@ -6,7 +6,7 @@ jobs:
        addons:
          apt:
           packages: maven
-       jdk: openjdk11
+       jdk: openjdk12
        arch: arm64
        language: java
        script: 
