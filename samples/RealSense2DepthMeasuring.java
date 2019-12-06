@@ -30,7 +30,7 @@ import java.awt.event.MouseEvent;
 
 public class RealSense2DepthMeasuring {
     public static void main(String[] args) throws FrameGrabber.Exception {
-        final RealSense2FrameGrabber rs2 = new RealSense2FrameGrabber();
+        RealSense2FrameGrabber rs2 = new RealSense2FrameGrabber();
 
         // list all cameras
         for (RealSense2FrameGrabber.RealSense2DeviceInfo info : rs2.getDeviceInfos()) {
@@ -41,7 +41,8 @@ public class RealSense2DepthMeasuring {
                     info.isLocked());
         }
 
-        // enable the depth stream of the realsense camera
+        // enable the color & depth stream of the realsense camera
+        rs2.enableColorStream(640, 480, 30);
         rs2.enableDepthStream(640, 480, 30);
 
         // here are more examples of streams:
@@ -84,6 +85,11 @@ public class RealSense2DepthMeasuring {
             // display images -> grab will return the first stream added
             // use rs2.grabDepth(), rs2.grabColor() and rs2.grabIR() for the other streams
             Frame frame = rs2.grab();
+
+            if (frame == null) {
+                System.err.println("Frame is null!");
+                break;
+            }
 
             // display frame
             canvasFrame.showImage(frame);
