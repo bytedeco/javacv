@@ -30,7 +30,7 @@ import java.awt.event.MouseEvent;
 
 public class RealSense2DepthMeasuring {
     public static void main(String[] args) throws FrameGrabber.Exception {
-        RealSense2FrameGrabber rs2 = new RealSense2FrameGrabber();
+        final RealSense2FrameGrabber rs2 = new RealSense2FrameGrabber();
 
         // list all cameras
         for (RealSense2FrameGrabber.RealSense2DeviceInfo info : rs2.getDeviceInfos()) {

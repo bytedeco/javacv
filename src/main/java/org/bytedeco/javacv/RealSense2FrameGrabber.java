@@ -52,7 +52,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         this(0);
     }
 
-    public RealSense2FrameGrabber(int deviceNumber) throws FrameGrabber.Exception {
+    public RealSense2FrameGrabber(int deviceNumber) throws Exception {
         this.deviceNumber = deviceNumber;
 
         // create context
@@ -82,7 +82,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return devices;
     }
 
-    public static String[] getDeviceDescriptions() throws FrameGrabber.Exception {
+    public static String[] getDeviceDescriptions() throws Exception {
         RealSense2FrameGrabber rs2 = new RealSense2FrameGrabber();
         List<RealSense2DeviceInfo> infos = rs2.getDeviceInfos();
         rs2.release();
@@ -145,7 +145,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     public void open() throws Exception {
         // check if device is available
         if (getDeviceCount() <= 0) {
-            throw new FrameGrabber.Exception("No realsense2 device is connected.");
+            throw new Exception("No realsense2 device is connected.");
         }
 
         // create device
@@ -155,8 +155,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public void start() throws FrameGrabber.Exception {
-        if(this.device == null) {
+    public void start() throws Exception {
+        if (this.device == null) {
             open();
         }
 
@@ -166,7 +166,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // check if streams is not empty
         if (streams.isEmpty())
-            throw new FrameGrabber.Exception("No stream has been added to be enabled.");
+            throw new Exception("No stream has been added to be enabled.");
 
         // enable streams
         for (RealSenseStream stream : streams) {
@@ -192,7 +192,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public void stop() throws FrameGrabber.Exception {
+    public void stop() throws Exception {
         rs2_pipeline_stop(this.pipeline, error);
         checkError(error);
 
@@ -214,7 +214,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public void trigger() throws FrameGrabber.Exception {
+    public void trigger() throws Exception {
         // set trigger load flag
         if (!triggerMode)
             triggerMode = true;
@@ -224,7 +224,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     @Override
-    public Frame grab() throws FrameGrabber.Exception {
+    public Frame grab() throws Exception {
         RealSenseStream stream = streams.get(0);
 
         switch (stream.type) {
@@ -319,7 +319,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return outputFrame;
     }
 
-    private rs2_frame findFrameByStreamType(rs2_frame frameset, int streamType, int index) throws FrameGrabber.Exception {
+    private rs2_frame findFrameByStreamType(rs2_frame frameset, int streamType, int index) throws Exception {
         rs2_frame result = null;
 
         // read frames
@@ -337,7 +337,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
             StreamProfileData streamProfileData = getStreamProfileData(streamProfile);
 
             // compare stream type
-            if(streamType == streamProfileData.nativeStreamIndex.get()) {
+            if (streamType == streamProfileData.nativeStreamIndex.get()) {
                 if (searchIndex == index) {
                     result = frame;
                     break;
@@ -387,43 +387,43 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         rs2_delete_sensor_list(sensorList);
     }
 
-    private rs2_context createContext() throws FrameGrabber.Exception {
+    private rs2_context createContext() throws Exception {
         rs2_context context = rs2_create_context(RS2_API_VERSION, error);
         checkError(error);
         return context;
     }
 
-    private rs2_device_list createDeviceList() throws FrameGrabber.Exception {
+    private rs2_device_list createDeviceList() throws Exception {
         rs2_device_list deviceList = rs2_query_devices(context, error);
         checkError(error);
         return deviceList;
     }
 
-    private rs2_device createDevice(rs2_device_list deviceList, int index) throws FrameGrabber.Exception {
+    private rs2_device createDevice(rs2_device_list deviceList, int index) throws Exception {
         rs2_device device = rs2_create_device(deviceList, index, error);
         checkError(error);
         return device;
     }
 
-    private rs2_pipeline createPipeline() throws FrameGrabber.Exception {
+    private rs2_pipeline createPipeline() throws Exception {
         rs2_pipeline pipeline = rs2_create_pipeline(context, error);
         checkError(error);
         return pipeline;
     }
 
-    private rs2_config createConfig() throws FrameGrabber.Exception {
+    private rs2_config createConfig() throws Exception {
         rs2_config config = rs2_create_config(error);
         checkError(error);
         return config;
     }
 
-    private double getFrameTimeStamp(rs2_frame frame) throws FrameGrabber.Exception {
+    private double getFrameTimeStamp(rs2_frame frame) throws Exception {
         double timestamp = rs2_get_frame_timestamp(frame, error);
         checkError(error);
         return timestamp;
     }
 
-    private int getDeviceCount() throws FrameGrabber.Exception {
+    private int getDeviceCount() throws Exception {
         rs2_device_list deviceList = createDeviceList();
         int count = rs2_get_device_count(deviceList, error);
 
@@ -432,7 +432,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return count;
     }
 
-    private String getDeviceInfo(rs2_device device, int info) throws FrameGrabber.Exception {
+    private String getDeviceInfo(rs2_device device, int info) throws Exception {
         // check if info is supported
         rs2_error error = new rs2_error();
         boolean isSupported = toBoolean(rs2_supports_device_info(device, info, error));
@@ -518,9 +518,9 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         checkError(error);
     }
 
-    private static void checkError(rs2_error e) throws FrameGrabber.Exception {
+    private static void checkError(rs2_error e) throws Exception {
         if (!e.isNull()) {
-            throw new FrameGrabber.Exception(String.format("rs_error was raised when calling %s(%s):\n%s\n",
+            throw new Exception(String.format("rs_error was raised when calling %s(%s):\n%s\n",
                     rs2_get_failed_function(e).getString(),
                     rs2_get_failed_args(e).getString(),
                     rs2_get_error_message(e).getString()));
