@@ -72,6 +72,7 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
+import org.bytedeco.javacv.FFmpegFrameRecorder.SeekCallback;
 
 import org.bytedeco.ffmpeg.avcodec.*;
 import org.bytedeco.ffmpeg.avdevice.*;
@@ -322,6 +323,33 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     static WriteCallback writeCallback = new WriteCallback().retainReference();
 
+    public static interface SeekableOutputStream {
+
+        public void setPosition(long offset, int whence);
+    }
+
+    static class SeekCallback extends Seek_Pointer_long_int {
+
+        @Override public long call(Pointer opaque, long offset, int whence) {
+            try {
+                OutputStream os = outputStreams.get(opaque);
+                if (os instanceof SeekableOutputStream) {
+                    ((SeekableOutputStream) os).setPosition(offset, whence);
+                    return 0;
+                }
+
+                System.err.println("Error on OutputStream is not a SeekableOutputStream");
+                return -1;
+            }
+            catch (Throwable t) {
+                System.err.println("Error on OutputStream.seek(): " + t);
+                return -1;
+            }
+        }
+    }
+
+    static SeekCallback seekCallback = new SeekCallback().retainReference();
+
     private OutputStream outputStream;
     private boolean closeOutputStream;
     private AVIOContext avio;
@@ -424,7 +452,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if (outputStream != null) {
-            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, null);
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, seekCallback);
             oc.pb(avio);
 
             filename = outputStream.toString();
