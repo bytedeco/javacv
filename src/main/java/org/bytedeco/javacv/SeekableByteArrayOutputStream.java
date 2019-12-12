@@ -2,13 +2,11 @@ package org.bytedeco.javacv;
 
 import java.io.ByteArrayOutputStream;
 
-import org.bytedeco.javacv.FFmpegFrameRecorder.SeekableOutputStream;
-
 public class SeekableByteArrayOutputStream extends ByteArrayOutputStream implements SeekableOutputStream {
 
     long position;
 
-    @Override public void setPosition(long position, int whence) {
+    @Override public void seek(long position, int whence) {
         if(position < 0 || position > count || whence != 0)
             throw new IllegalArgumentException();
         this.position = position;

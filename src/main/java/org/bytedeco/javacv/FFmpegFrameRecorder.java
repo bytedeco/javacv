@@ -72,7 +72,6 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
-import org.bytedeco.javacv.FFmpegFrameRecorder.SeekCallback;
 
 import org.bytedeco.ffmpeg.avcodec.*;
 import org.bytedeco.ffmpeg.avdevice.*;
@@ -323,18 +322,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     static WriteCallback writeCallback = new WriteCallback().retainReference();
 
-    public static interface SeekableOutputStream {
-
-        public void setPosition(long offset, int whence);
-    }
-
     static class SeekCallback extends Seek_Pointer_long_int {
 
         @Override public long call(Pointer opaque, long offset, int whence) {
             try {
                 OutputStream os = outputStreams.get(opaque);
                 if (os instanceof SeekableOutputStream) {
-                    ((SeekableOutputStream) os).setPosition(offset, whence);
+                    ((SeekableOutputStream) os).seek(offset, whence);
                     return 0;
                 }
 
