@@ -1,4 +1,5 @@
 
+ * Add `Seekable` and `SeekableByteArrayOutputStream` to be used with `FFmpegFrameRecorder` ([pull #1350](https://github.com/bytedeco/javacv/pull/1350))
  * Update `RealSense2FrameGrabber` with support for sensor options and fix for multiple devices ([pull #1348](https://github.com/bytedeco/javacv/pull/1348))
 
 ### November 5, 2019 version 1.5.2
