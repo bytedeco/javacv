@@ -250,7 +250,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             /* free the streams */
             int nb_streams = oc.nb_streams();
-            for(int i = 0; i < nb_streams; i++) {
+            for (int i = 0; i < nb_streams; i++) {
                 av_free(oc.streams(i).codec());
                 av_free(oc.streams(i));
             }
@@ -327,13 +327,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         @Override public long call(Pointer opaque, long offset, int whence) {
             try {
                 OutputStream os = outputStreams.get(opaque);
-                if (os instanceof SeekableOutputStream) {
-                    ((SeekableOutputStream) os).seek(offset, whence);
-                    return 0;
-                }
-
-                System.err.println("Error on OutputStream is not a SeekableOutputStream");
-                return -1;
+                ((Seekable)os).seek(offset, whence);
+                return 0;
             }
             catch (Throwable t) {
                 System.err.println("Error on OutputStream.seek(): " + t);
@@ -656,7 +651,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 throw new Exception("avcodec_alloc_context3() error: Could not allocate audio encoding context.");
             }
 
-            if(inpAudioStream != null && audioChannels > 0){
+            if (inpAudioStream != null && audioChannels > 0) {
                 if ((ret = avcodec_copy_context(audio_st.codec(), inpAudioStream.codec()))  < 0) {
                     throw new Exception("avcodec_copy_context() error:\tFailed to copy context from input audio to output audio stream codec context\n");
                 }
