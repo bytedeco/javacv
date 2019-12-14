@@ -250,7 +250,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             /* free the streams */
             int nb_streams = oc.nb_streams();
-            for(int i = 0; i < nb_streams; i++) {
+            for (int i = 0; i < nb_streams; i++) {
                 av_free(oc.streams(i).codec());
                 av_free(oc.streams(i));
             }
@@ -321,6 +321,23 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     static WriteCallback writeCallback = new WriteCallback().retainReference();
+
+    static class SeekCallback extends Seek_Pointer_long_int {
+
+        @Override public long call(Pointer opaque, long offset, int whence) {
+            try {
+                OutputStream os = outputStreams.get(opaque);
+                ((Seekable)os).seek(offset, whence);
+                return 0;
+            }
+            catch (Throwable t) {
+                System.err.println("Error on OutputStream.seek(): " + t);
+                return -1;
+            }
+        }
+    }
+
+    static SeekCallback seekCallback = new SeekCallback().retainReference();
 
     private OutputStream outputStream;
     private boolean closeOutputStream;
@@ -424,7 +441,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if (outputStream != null) {
-            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, null);
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, seekCallback);
             oc.pb(avio);
 
             filename = outputStream.toString();
@@ -634,7 +651,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 throw new Exception("avcodec_alloc_context3() error: Could not allocate audio encoding context.");
             }
 
-            if(inpAudioStream != null && audioChannels > 0){
+            if (inpAudioStream != null && audioChannels > 0) {
                 if ((ret = avcodec_copy_context(audio_st.codec(), inpAudioStream.codec()))  < 0) {
                     throw new Exception("avcodec_copy_context() error:\tFailed to copy context from input audio to output audio stream codec context\n");
                 }
