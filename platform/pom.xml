@@ -33,12 +33,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform</artifactId>
-      <version>4.1.2-${javacpp.version}</version>
+      <version>4.2.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>4.2.1-${javacpp.version}</version>
+      <version>4.2.2-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -93,7 +93,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract-platform</artifactId>
-      <version>4.1.0-${javacpp.version}</version>
+      <version>4.1.1-${javacpp.version}</version>
     </dependency>
 
     <dependency>
