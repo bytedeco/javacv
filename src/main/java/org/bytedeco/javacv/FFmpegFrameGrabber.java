@@ -238,8 +238,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     if (closeInputStream) {
                         inputStream.close();
                     }
-                } else {
-                    inputStream.reset();
+                } else if (maximumSize > 0) {
+                    try {
+                        inputStream.reset();
+                    } catch (IOException ex) {
+                        // "Resetting to invalid mark", give up?
+                        System.err.println("Error on InputStream.reset(): " + ex);
+                    }
                 }
             } catch (IOException ex) {
                 throw new Exception("Error on InputStream.close(): ", ex);
