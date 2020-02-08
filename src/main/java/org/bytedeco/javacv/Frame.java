@@ -71,11 +71,12 @@ public class Frame implements Indexable {
             DEPTH_LONG   = -64,
             DEPTH_FLOAT  =  32,
             DEPTH_DOUBLE =  64;
-    
+
     /** Constants defining data type in the frame*/
     public static enum Type {
         VIDEO,
         AUDIO,
+        DATA
     }
 
     /** Information associated with the {@link #image} field. */
@@ -94,6 +95,12 @@ public class Frame implements Indexable {
     /** Buffers to hold audio samples from multiple channels for an audio frame. */
     public Buffer[] samples;
 
+    /** Buffer to hold a data stream associated with a frame. */
+    public ByteBuffer data;
+
+    /** Stream number the audio|video|other data is associated with. */
+    public int streamIndex;
+    
     /** The underlying data object, for example, Pointer, AVFrame, IplImage, or Mat. */
     public Object opaque;
 
@@ -119,6 +126,8 @@ public class Frame implements Indexable {
         this.imageChannels = channels;
         this.imageStride = imageStride;
         this.image = new Buffer[1];
+        this.data = null;
+        this.streamIndex = -1;
 
         Pointer pointer = new BytePointer(imageHeight * imageStride * pixelSize(depth));
         ByteBuffer buffer = pointer.asByteBuffer();
@@ -207,7 +216,8 @@ public class Frame implements Indexable {
         newFrame.imageChannels = imageChannels;
         newFrame.imageStride = imageStride;
         newFrame.keyFrame = keyFrame;
-        newFrame.opaque = new Pointer[2];
+        newFrame.streamIndex = streamIndex;
+        newFrame.opaque = new Pointer[3];
         if (image != null) {
             newFrame.image = new Buffer[image.length];
             ((Pointer[])newFrame.opaque)[0] = cloneBufferArray(image, newFrame.image);
@@ -219,6 +229,18 @@ public class Frame implements Indexable {
         if (samples != null) {
             newFrame.samples = new Buffer[samples.length];
             ((Pointer[])newFrame.opaque)[1] = cloneBufferArray(samples, newFrame.samples);
+        }
+
+        // Other data streams
+        if (data != null) {
+            newFrame.data = ByteBuffer.allocate(data.capacity());
+            BytePointer pointer = new BytePointer(data.capacity());
+            newFrame.data = pointer.limit(pointer.position() + data.limit())
+                        .asByteBuffer().put((ByteBuffer)data);
+            pointer.position(pointer.limit());
+            data.rewind();
+            newFrame.data.rewind();
+            ((Pointer[])newFrame.opaque)[2] = pointer;
         }
 
         // Add timestamp
@@ -330,6 +352,7 @@ public class Frame implements Indexable {
         EnumSet<Type> type = EnumSet.noneOf(Type.class);
         if (image != null) type.add(Type.VIDEO);
         if (samples != null) type.add(Type.AUDIO);
+        if (data != null) type.add(Type.DATA);
         return type;
     }
 }

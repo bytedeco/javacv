@@ -68,7 +68,6 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 
 import org.bytedeco.ffmpeg.avcodec.*;
-import org.bytedeco.ffmpeg.avdevice.*;
 import org.bytedeco.ffmpeg.avformat.*;
 import org.bytedeco.ffmpeg.avutil.*;
 import org.bytedeco.ffmpeg.swresample.*;
@@ -1272,6 +1271,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 }
             }
 
+            frame.streamIndex = pkt.stream_index();
+
             // Is this a packet from the video stream?
             if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
                     && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
@@ -1325,6 +1326,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         frame.keyFrame = samples_frame.key_frame() != 0;
                     }
                 }
+            } else {
+                // Export the stream byte data for non audio / video frames
+                frame.data = pkt.data().position(0).limit(pkt.size()).asByteBuffer();
+                done = true;
             }
 
             if (pkt2.size() <= 0) {
