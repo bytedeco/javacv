@@ -233,14 +233,9 @@ public class Frame implements Indexable {
 
         // Other data streams
         if (data != null) {
-            newFrame.data = ByteBuffer.allocate(data.capacity());
-            BytePointer pointer = new BytePointer(data.capacity());
-            newFrame.data = pointer.limit(pointer.position() + data.limit())
-                        .asByteBuffer().put((ByteBuffer)data);
-            pointer.position(pointer.limit());
-            data.rewind();
-            newFrame.data.rewind();
-            ((Pointer[])newFrame.opaque)[2] = pointer;
+            ByteBuffer[] dst = new ByteBuffer[1];
+            ((Pointer[])newFrame.opaque)[2] = cloneBufferArray(new ByteBuffer[]{data}, dst);
+            newFrame.data = dst[0];
         }
 
         // Add timestamp
