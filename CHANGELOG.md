@@ -1,4 +1,5 @@
 
+ * Let `FFmpegFrameGrabber.grab()` return non-audio/video streams as new `Frame.DATA` type ([pull #1378](https://github.com/bytedeco/javacv/pull/1378))
  * Fix crash in `FFmpegFrameRecorder.flush()` for HLS format and possibly others ([pull #1374](https://github.com/bytedeco/javacv/pull/1374))
  * Fix "Resetting to invalid mark" `IOException` thrown on `FFmpegFrameGrabber.release()` ([issue #911](https://github.com/bytedeco/javacv/issues/911))
  * Upgrade dependencies for OpenCV 4.2.0, FFmpeg 4.2.2, Leptonica 1.79.0, and Tesseract 4.1.1

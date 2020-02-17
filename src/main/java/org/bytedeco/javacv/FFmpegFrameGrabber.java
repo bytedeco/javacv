@@ -68,7 +68,6 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 
 import org.bytedeco.ffmpeg.avcodec.*;
-import org.bytedeco.ffmpeg.avdevice.*;
 import org.bytedeco.ffmpeg.avformat.*;
 import org.bytedeco.ffmpeg.avutil.*;
 import org.bytedeco.ffmpeg.swresample.*;
@@ -1208,18 +1207,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public Frame grab() throws Exception {
-        return grabFrame(true, true, true, false);
+        return grabFrame(true, true, true, false, true);
     }
     public Frame grabImage() throws Exception {
-        return grabFrame(false, true, true, false);
+        return grabFrame(false, true, true, false, false);
     }
     public Frame grabSamples() throws Exception {
-        return grabFrame(true, false, true, false);
+        return grabFrame(true, false, true, false, false);
     }
     public Frame grabKeyFrame() throws Exception {
-        return grabFrame(false, true, true, true);
+        return grabFrame(false, true, true, true, false);
     }
     public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames) throws Exception {
+        return grabFrame(doAudio, doVideo, doProcessing, keyFrames, true);
+    }
+    public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
@@ -1242,6 +1244,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.sampleRate = 0;
         frame.audioChannels = 0;
         frame.samples = null;
+        frame.data = null;
         frame.opaque = null;
         if (doVideo && videoFrameGrabbed) {
             if (doProcessing) {
@@ -1271,6 +1274,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     }
                 }
             }
+
+            frame.streamIndex = pkt.stream_index();
 
             // Is this a packet from the video stream?
             if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
@@ -1325,6 +1330,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         frame.keyFrame = samples_frame.key_frame() != 0;
                     }
                 }
+            } else if (doData) {
+                // Export the stream byte data for non audio / video frames
+                frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
+                done = true;
             }
 
             if (pkt2.size() <= 0) {
