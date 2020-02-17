@@ -1207,18 +1207,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public Frame grab() throws Exception {
-        return grabFrame(true, true, true, false);
+        return grabFrame(true, true, true, false, true);
     }
     public Frame grabImage() throws Exception {
-        return grabFrame(false, true, true, false);
+        return grabFrame(false, true, true, false, false);
     }
     public Frame grabSamples() throws Exception {
-        return grabFrame(true, false, true, false);
+        return grabFrame(true, false, true, false, false);
     }
     public Frame grabKeyFrame() throws Exception {
-        return grabFrame(false, true, true, true);
+        return grabFrame(false, true, true, true, false);
     }
     public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames) throws Exception {
+        return grabFrame(doAudio, doVideo, doProcessing, keyFrames, true);
+    }
+    public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
@@ -1241,6 +1244,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.sampleRate = 0;
         frame.audioChannels = 0;
         frame.samples = null;
+        frame.data = null;
         frame.opaque = null;
         if (doVideo && videoFrameGrabbed) {
             if (doProcessing) {
@@ -1326,9 +1330,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         frame.keyFrame = samples_frame.key_frame() != 0;
                     }
                 }
-            } else {
+            } else if (doData) {
                 // Export the stream byte data for non audio / video frames
-                frame.data = pkt.data().position(0).limit(pkt.size()).asByteBuffer();
+                frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
                 done = true;
             }
 

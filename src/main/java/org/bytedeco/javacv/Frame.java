@@ -100,7 +100,7 @@ public class Frame implements Indexable {
 
     /** Stream number the audio|video|other data is associated with. */
     public int streamIndex;
-    
+
     /** The underlying data object, for example, Pointer, AVFrame, IplImage, or Mat. */
     public Object opaque;
 
