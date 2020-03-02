@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 Samuel Audet
+ * Copyright (C) 2009-2020 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -441,7 +441,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         if (outputStream != null) {
-            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, seekCallback);
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 1, oc, null, writeCallback, outputStream instanceof Seekable ? seekCallback : null);
             oc.pb(avio);
 
             filename = outputStream.toString();
