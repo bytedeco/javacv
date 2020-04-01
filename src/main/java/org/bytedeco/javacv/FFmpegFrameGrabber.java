@@ -143,6 +143,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public FFmpegFrameGrabber(InputStream inputStream) {
         this(inputStream, Integer.MAX_VALUE - 8);
     }
+    /** Set maximumSize to 0 to disable seek and minimize startup time. */
     public FFmpegFrameGrabber(InputStream inputStream, int maximumSize) {
         this.inputStream = inputStream;
         this.closeInputStream = true;
@@ -779,12 +780,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return oc;
     }
 
+    /** Calls {@code start(true)}. */
     public void start() throws Exception {
+        start(true);
+    }
+    /** Set findStreamInfo to false to minimize startup time, at the expense of robustness. */
+    public void start(boolean findStreamInfo) throws Exception {
         synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
-            startUnsafe();
+            startUnsafe(findStreamInfo);
         }
     }
     public void startUnsafe() throws Exception {
+        startUnsafe(true);
+    }
+    public void startUnsafe(boolean findStreamInfo) throws Exception {
         if (oc != null && !oc.isNull()) {
             throw new Exception("start() has already been called: Call stop() before calling start() again.");
         }
@@ -856,8 +865,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         oc.max_delay(maxDelay);
 
-        // Retrieve stream information
-        if ((ret = avformat_find_stream_info(oc, (PointerPointer)null)) < 0) {
+        // Retrieve stream information, if desired
+        if (findStreamInfo && (ret = avformat_find_stream_info(oc, (PointerPointer)null)) < 0) {
             throw new Exception("avformat_find_stream_info() error " + ret + ": Could not find stream information.");
         }
 
