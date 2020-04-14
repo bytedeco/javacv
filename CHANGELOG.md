@@ -1,4 +1,5 @@
 
+### April 14, 2020 version 1.5.3
  * Add `FFmpegFrameGrabber.start(boolean findStreamInfo)` parameter to minimize startup time ([issue #1376](https://github.com/bytedeco/javacv/issues/1376))
  * Let `FFmpegFrameGrabber.grab()` return non-audio/video streams as new `Frame.DATA` type ([pull #1378](https://github.com/bytedeco/javacv/pull/1378))
  * Fix crash in `FFmpegFrameRecorder.flush()` for HLS format and possibly others ([pull #1374](https://github.com/bytedeco/javacv/pull/1374))
