@@ -51,7 +51,7 @@ We can also have everything downloaded and installed automatically with:
   libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.5.3"
 ```
 
-This downloads binaries for all platforms, but to get binaries for only one platform we can set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, `linux-x86_64`, `macosx-x86_64`, `windows-x86_64`, etc. Please refer to the [README.md file of the JavaCPP Presets](https://github.com/bytedeco/javacpp-presets#downloads) for details. Another option available for Scala users is [sbt-javacv](https://github.com/bytedeco/sbt-javacv).
+This downloads binaries for all platforms, but to get binaries for only one platform we can set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, `linux-x86_64`, `macosx-x86_64`, `windows-x86_64`, etc. Please refer to the [README.md file of the JavaCPP Presets](https://github.com/bytedeco/javacpp-presets#downloads) for details. Another option available to Gradle users is [Gradle JavaCPP](https://github.com/bytedeco/gradle-javacpp), and similarly for Scala users there is [SBT-JavaCV](https://github.com/bytedeco/sbt-javacv).
 
 
 Required Software
