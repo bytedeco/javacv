@@ -80,7 +80,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>4.2.2-${javacpp.version}</version>
+      <version>4.2.3-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
