@@ -187,7 +187,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             releaseUnsafe();
         }
     }
-    public void releaseUnsafe() throws Exception {
+    public synchronized void releaseUnsafe() throws Exception {
         started = false;
 
         /* close each codec */
@@ -383,7 +383,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (picture == null) { super.setFrameNumber(frameNumber); } else { picture.pts(frameNumber); }
     }
 
-    /** best guess for timestamp in microseconds... */
+    /** Returns best guess for timestamp in microseconds... */
     @Override public long getTimestamp() {
         return Math.round(getFrameNumber() * 1000000L / getFrameRate());
     }
@@ -396,13 +396,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         start();
     }
 
-    public void start() throws Exception {
+    @Override public void start() throws Exception {
         synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
             startUnsafe();
         }
     }
 
-    public void startUnsafe() throws Exception {
+    public synchronized void startUnsafe() throws Exception {
         if (oc != null && !oc.isNull()) {
             throw new Exception("start() has already been called: Call stop() before calling start() again.");
         }
@@ -652,8 +652,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             if (inpAudioStream != null && audioChannels > 0) {
-                if ((ret = avcodec_copy_context(audio_st.codec(), inpAudioStream.codec()))  < 0) {
-                    throw new Exception("avcodec_copy_context() error:\tFailed to copy context from input audio to output audio stream codec context\n");
+                if ((ret = avcodec_copy_context(audio_st.codec(), inpAudioStream.codec())) < 0) {
+                    throw new Exception("avcodec_copy_context() error " + ret + ": Failed to copy context from input audio to output audio stream codec context\n");
                 }
 
                 audioBitrate = (int) inpAudioStream.codec().bit_rate();
@@ -779,7 +779,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* copy the stream parameters to the muxer */
             if ((ret = avcodec_parameters_from_context(video_st.codecpar(), video_c)) < 0) {
                 releaseUnsafe();
-                throw new Exception("avcodec_parameters_from_context() error: Could not copy the video stream parameters.");
+                throw new Exception("avcodec_parameters_from_context() error " + ret + ": Could not copy the video stream parameters.");
             }
 
             AVDictionary metadata = new AVDictionary(null);
@@ -852,7 +852,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* copy the stream parameters to the muxer */
             if ((ret = avcodec_parameters_from_context(audio_st.codecpar(), audio_c)) < 0) {
                 releaseUnsafe();
-                throw new Exception("avcodec_parameters_from_context() error: Could not copy the audio stream parameters.");
+                throw new Exception("avcodec_parameters_from_context() error " + ret + ": Could not copy the audio stream parameters.");
             }
 
             AVDictionary metadata = new AVDictionary(null);
@@ -897,7 +897,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         started = true;
     }
 
-    public void flush() throws Exception {
+    public synchronized void flush() throws Exception {
         synchronized (oc) {
             /* flush all the buffers */
             while (video_st != null && ifmt_ctx == null && recordImage(0, 0, 0, 0, 0, AV_PIX_FMT_NONE, (Buffer[])null));
@@ -927,7 +927,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     @Override public void record(Frame frame) throws Exception {
         record(frame, frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
-    public void record(Frame frame, int pixelFormat) throws Exception {
+    public synchronized void record(Frame frame, int pixelFormat) throws Exception {
         if (frame == null || (frame.image == null && frame.samples == null)) {
             recordImage(0, 0, 0, 0, 0, pixelFormat, (Buffer[])null);
         } else {
@@ -941,7 +941,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
-    public boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
+    public synchronized boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
         }
@@ -1052,7 +1052,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public boolean recordSamples(Buffer ... samples) throws Exception {
         return recordSamples(0, 0, samples);
     }
-    public boolean recordSamples(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
+    public synchronized boolean recordSamples(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
@@ -1210,7 +1210,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         record(frame);
     }
 
-    boolean record(AVFrame frame) throws Exception {
+    private boolean record(AVFrame frame) throws Exception {
         int ret;
 
         av_init_packet(audio_pkt);
@@ -1262,7 +1262,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         av_packet_unref(avPacket);
     }
 
-    public boolean recordPacket(AVPacket pkt) throws Exception {
+    public synchronized boolean recordPacket(AVPacket pkt) throws Exception {
         if (ifmt_ctx == null) {
             throw new Exception("No input format context (Has start(AVFormatContext) been called?)");
         }

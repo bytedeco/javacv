@@ -156,7 +156,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             releaseUnsafe();
         }
     }
-    public void releaseUnsafe() throws Exception {
+    public synchronized void releaseUnsafe() throws Exception {
         started = false;
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
@@ -633,7 +633,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  audio (frameTypesToSeek contains only Frame.Type.AUDIO),
      *  or any (frameTypesToSeek contains both)
      */
-    private void setTimestamp(long timestamp, EnumSet<Frame.Type> frameTypesToSeek) throws Exception {
+    private synchronized void setTimestamp(long timestamp, EnumSet<Frame.Type> frameTypesToSeek) throws Exception {
         int ret;
         if (oc == null) {
             super.setTimestamp(timestamp);
@@ -781,7 +781,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     /** Calls {@code start(true)}. */
-    public void start() throws Exception {
+    @Override public void start() throws Exception {
         start(true);
     }
     /** Set findStreamInfo to false to minimize startup time, at the expense of robustness. */
@@ -793,7 +793,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public void startUnsafe() throws Exception {
         startUnsafe(true);
     }
-    public void startUnsafe(boolean findStreamInfo) throws Exception {
+    public synchronized void startUnsafe(boolean findStreamInfo) throws Exception {
         if (oc != null && !oc.isNull()) {
             throw new Exception("start() has already been called: Call stop() before calling start() again.");
         }
@@ -916,7 +916,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(video_c, video_st.codecpar())) < 0) {
                 releaseUnsafe();
-                throw new Exception("avcodec_parameters_to_context() error: Could not copy the video stream parameters.");
+                throw new Exception("avcodec_parameters_to_context() error " + ret + ": Could not copy the video stream parameters.");
             }
 
             options = new AVDictionary(null);
@@ -967,7 +967,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(audio_c, audio_st.codecpar())) < 0) {
                 releaseUnsafe();
-                throw new Exception("avcodec_parameters_to_context() error: Could not copy the audio stream parameters.");
+                throw new Exception("avcodec_parameters_to_context() error " + ret + ": Could not copy the audio stream parameters.");
             }
 
             options = new AVDictionary(null);
@@ -1046,11 +1046,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    public void stop() throws Exception {
+    @Override public void stop() throws Exception {
         release();
     }
 
-    public void trigger() throws Exception {
+    @Override public synchronized void trigger() throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
         }
@@ -1230,7 +1230,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames) throws Exception {
         return grabFrame(doAudio, doVideo, doProcessing, keyFrames, true);
     }
-    public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
+    public synchronized Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
@@ -1353,7 +1353,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return frame;
     }
 
-    public AVPacket grabPacket() throws Exception {
+    public synchronized AVPacket grabPacket() throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         }

@@ -1,4 +1,5 @@
 
+ * Increase thread safety of `FFmpegFrameFilter`, `FFmpegFrameGrabber`, and `FFmpegFrameRecorder` with `synchronized` methods ([issue #1434](https://github.com/bytedeco/javacv/issues/1434))
  * Upgrade dependencies for FFmpeg 4.2.3
 
 ### April 14, 2020 version 1.5.3

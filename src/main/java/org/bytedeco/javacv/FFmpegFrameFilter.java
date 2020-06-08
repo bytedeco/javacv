@@ -144,7 +144,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             releaseUnsafe();
         }
     }
-    public void releaseUnsafe() throws Exception {
+    public synchronized void releaseUnsafe() throws Exception {
         started = false;
 
         if (filter_graph != null) {
@@ -258,7 +258,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             startUnsafe();
         }
     }
-    public void startUnsafe() throws Exception {
+    public synchronized void startUnsafe() throws Exception {
         if (frame != null) {
             throw new Exception("start() has already been called: Call stop() before calling start() again.");
         }
@@ -285,7 +285,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         started = true;
     }
 
-    void startVideoUnsafe() throws Exception {
+    private void startVideoUnsafe() throws Exception {
         int ret;
         AVFilter buffersrc  = avfilter_get_by_name("buffer");
         AVFilter buffersink = avfilter_get_by_name("buffersink");
@@ -386,7 +386,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
     }
 
-    void startAudioUnsafe() throws Exception {
+    private void startAudioUnsafe() throws Exception {
         int ret;
         AVFilter abuffersrc  = avfilter_get_by_name("abuffer");
         AVFilter abuffersink = avfilter_get_by_name("abuffersink");
@@ -484,8 +484,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
     }
 
-    @Override
-    public void stop() throws Exception {
+    @Override public void stop() throws Exception {
         release();
     }
 
@@ -498,7 +497,7 @@ public class FFmpegFrameFilter extends FrameFilter {
     public void push(int n, Frame frame) throws Exception {
         push(n, frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
-    public void push(int n, Frame frame, int pixelFormat) throws Exception {
+    public synchronized void push(int n, Frame frame, int pixelFormat) throws Exception {
         if (!started) {
             throw new Exception("start() was not called successfully!");
         }
@@ -524,7 +523,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
     }
 
-    public void pushImage(int n, int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
+    public synchronized void pushImage(int n, int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
         if (!started) {
             throw new Exception("start() was not called successfully!");
         }
@@ -568,7 +567,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
     }
 
-    public void pushSamples(int n, int audioChannels, int sampleRate, int sampleFormat, Buffer ... samples) throws Exception {
+    public synchronized void pushSamples(int n, int audioChannels, int sampleRate, int sampleFormat, Buffer ... samples) throws Exception {
         if (!started) {
             throw new Exception("start() was not called successfully!");
         }
@@ -623,7 +622,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         }
     }
 
-    @Override public Frame pull() throws Exception {
+    @Override public synchronized Frame pull() throws Exception {
         if (!started) {
             throw new Exception("start() was not called successfully!");
         }
@@ -654,7 +653,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         return f;
     }
 
-    public Frame pullImage() throws Exception {
+    public synchronized Frame pullImage() throws Exception {
         if (!started) {
             throw new Exception("start() was not called successfully!");
         }
@@ -703,7 +702,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         return frame;
     }
 
-    public Frame pullSamples() throws Exception {
+    public synchronized Frame pullSamples() throws Exception {
         if (!started) {
             throw new Exception("start() was not called successfully!");
         }
