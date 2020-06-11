@@ -1,4 +1,5 @@
 
+ * Fix `FFmpegFrameFilter` by calling `String.format()` with `Locale.ROOT` ([pull #1441](https://github.com/bytedeco/javacv/pull/1441))
  * Increase thread safety of `FFmpegFrameFilter`, `FFmpegFrameGrabber`, and `FFmpegFrameRecorder` with `synchronized` methods ([issue #1434](https://github.com/bytedeco/javacv/issues/1434))
  * Upgrade dependencies for FFmpeg 4.2.3
 

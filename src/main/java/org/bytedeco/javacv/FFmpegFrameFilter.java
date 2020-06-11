@@ -54,6 +54,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.*;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
@@ -303,8 +304,7 @@ public class FFmpegFrameFilter extends FrameFilter {
 
             /* buffer video source: the decoded frames from the decoder will be inserted here. */
             AVRational r = av_d2q(aspectRatio > 0 ? aspectRatio : 1, 255);
-            String args = String.format(
-                    "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+            String args = String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
                     imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den());
             buffersrc_ctx = new AVFilterContext[videoInputs];
             setpts_ctx = new AVFilterContext[videoInputs];
@@ -408,7 +408,7 @@ public class FFmpegFrameFilter extends FrameFilter {
                 aoutputs[i] = avfilter_inout_alloc();
 
                 /* buffer audio source: the decoded frames from the decoder will be inserted here. */
-                String aargs = String.format("channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
+                String aargs = String.format(Locale.ROOT, "channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
                         audioChannels, sampleFormat, sampleRate, av_get_default_channel_layout(audioChannels));
                 ret = avfilter_graph_create_filter(abuffersrc_ctx[i] = new AVFilterContext(), abuffersrc, name,
                                                    aargs, null, afilter_graph);
