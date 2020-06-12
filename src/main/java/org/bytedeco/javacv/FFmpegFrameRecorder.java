@@ -70,6 +70,7 @@ import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
 
@@ -218,6 +219,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (frame != null) {
             av_frame_free(frame);
             frame = null;
+        }
+        if (samples_in_ptr != null) {
+            samples_in_ptr.releaseReference();
+            samples_in_ptr = null;
+        }
+        if (samples_out_ptr != null) {
+            samples_out_ptr.releaseReference();
+            samples_out_ptr = null;
         }
         if (samples_out != null) {
             for (int i = 0; i < samples_out.length; i++) {
@@ -403,6 +412,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public synchronized void startUnsafe() throws Exception {
+        try (PointerScope scope = new PointerScope()) {
+
         if (oc != null && !oc.isNull()) {
             throw new Exception("start() has already been called: Call stop() before calling start() again.");
         }
@@ -839,8 +850,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 samples_out[i] = new BytePointer(av_malloc(data_size)).capacity(data_size);
             }
             samples_in = new Pointer[AVFrame.AV_NUM_DATA_POINTERS];
-            samples_in_ptr  = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS);
-            samples_out_ptr = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS);
+            samples_in_ptr  = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
+            samples_out_ptr = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
 
             /* allocate the audio frame */
             if ((frame = av_frame_alloc()) == null) {
@@ -895,6 +906,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
 
         started = true;
+
+        }
     }
 
     public synchronized void flush() throws Exception {
@@ -942,6 +955,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     public synchronized boolean recordImage(int width, int height, int depth, int channels, int stride, int pixelFormat, Buffer ... image) throws Exception {
+        try (PointerScope scope = new PointerScope()) {
+
         if (video_st == null) {
             throw new Exception("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
         }
@@ -1047,12 +1062,16 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
         writePacket(AVMEDIA_TYPE_VIDEO, video_pkt);
         return image != null ? (video_pkt.flags() & AV_PKT_FLAG_KEY) != 0 : got_video_packet[0] != 0;
+
+        }
     }
 
     public boolean recordSamples(Buffer ... samples) throws Exception {
         return recordSamples(0, 0, samples);
     }
     public synchronized boolean recordSamples(int sampleRate, int audioChannels, Buffer ... samples) throws Exception {
+        try (PointerScope scope = new PointerScope()) {
+
         if (audio_st == null) {
             throw new Exception("No audio output stream (Is audioChannels > 0 and has start() been called?)");
         }
@@ -1185,6 +1204,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
         }
         return samples != null ? frame.key_frame() != 0 : record((AVFrame)null);
+
+        }
     }
 
     private void writeSamples(int nb_samples) throws Exception {

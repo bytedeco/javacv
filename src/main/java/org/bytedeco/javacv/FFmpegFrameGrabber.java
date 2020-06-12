@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 Samuel Audet
+ * Copyright (C) 2009-2020 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@ import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.PointerPointer;
 
 import org.bytedeco.ffmpeg.avcodec.*;
@@ -162,6 +163,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (pkt2.size() > 0) {
                 av_packet_unref(pkt);
             }
+            pkt.releaseReference();
+            pkt2.releaseReference();
             pkt = pkt2 = null;
         }
 
@@ -794,6 +797,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         startUnsafe(true);
     }
     public synchronized void startUnsafe(boolean findStreamInfo) throws Exception {
+        try (PointerScope scope = new PointerScope()) {
+
         if (oc != null && !oc.isNull()) {
             throw new Exception("start() has already been called: Call stop() before calling start() again.");
         }
@@ -803,8 +808,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         oc              = new AVFormatContext(null);
         video_c         = null;
         audio_c         = null;
-        pkt             = new AVPacket();
-        pkt2            = new AVPacket();
+        pkt             = new AVPacket().retainReference();
+        pkt2            = new AVPacket().retainReference();
         sizeof_pkt      = pkt.sizeof();
         got_frame       = new int[1];
         frameGrabbed    = false;
@@ -993,6 +998,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             samples_buf = new Buffer[] { null };
         }
         started = true;
+
+        }
     }
 
     private void initPictureRGB() {
@@ -1231,6 +1238,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return grabFrame(doAudio, doVideo, doProcessing, keyFrames, true);
     }
     public synchronized Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
+        try (PointerScope scope = new PointerScope()) {
+
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
@@ -1351,6 +1360,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
         }
         return frame;
+
+        }
     }
 
     public synchronized AVPacket grabPacket() throws Exception {
