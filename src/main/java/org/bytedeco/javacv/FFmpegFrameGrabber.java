@@ -159,6 +159,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
     public synchronized void releaseUnsafe() throws Exception {
         started = false;
+
+        if (plane_ptr != null && plane_ptr2 != null) {
+            plane_ptr.releaseReference();
+            plane_ptr2.releaseReference();
+            plane_ptr = plane_ptr2 = null;
+        }
+
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
                 av_packet_unref(pkt);
@@ -364,6 +371,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private Buffer[]        samples_buf;
     private BytePointer[]   samples_ptr_out;
     private Buffer[]        samples_buf_out;
+    private PointerPointer  plane_ptr, plane_ptr2;
     private AVPacket        pkt, pkt2;
     private int             sizeof_pkt;
     private int[]           got_frame;
@@ -808,6 +816,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         oc              = new AVFormatContext(null);
         video_c         = null;
         audio_c         = null;
+        plane_ptr       = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
+        plane_ptr2      = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
         pkt             = new AVPacket().retainReference();
         pkt2            = new AVPacket().retainReference();
         sizeof_pkt      = pkt.sizeof();
@@ -1212,7 +1222,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             frame.audioChannels = samples_channels;
             frame.samples = samples_buf_out;
 
-            if ((ret = swr_convert(samples_convert_ctx, new PointerPointer(samples_ptr_out), sample_size_out, new PointerPointer(samples_ptr), sample_size_in)) < 0) {
+            if ((ret = swr_convert(samples_convert_ctx, plane_ptr.put(samples_ptr_out), sample_size_out, plane_ptr2.put(samples_ptr), sample_size_in)) < 0) {
                 throw new Exception("swr_convert() error " + ret + ": Cannot convert audio samples.");
             }
             for (int i = 0; i < planes_out; i++) {
