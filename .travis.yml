@@ -58,6 +58,7 @@ jobs:
       language: bash
       env: PLATFORMS="windows-x86_64"
       install:
+        - powershell Install-WindowsFeature Server-Media-Foundation
         - choco install jdk8 --params 'installdir=c:\\jdk8'
         - choco install maven --version=3.6.3
         - export JAVA_HOME="/c/jdk8/"
