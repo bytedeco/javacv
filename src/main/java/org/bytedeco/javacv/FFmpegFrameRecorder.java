@@ -230,6 +230,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_frame_free(frame);
             frame = null;
         }
+        if (samples_in != null) {
+            for (int i = 0; i < samples_in.length; i++) {
+                if (samples_in[i] != null) {
+                    samples_in[i].releaseReference();
+                }
+            }
+            samples_in = null;
+        }
         if (samples_out != null) {
             for (int i = 0; i < samples_out.length; i++) {
                 av_free(samples_out[i].position(0));
@@ -1099,7 +1107,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 if (samples_in[i] instanceof BytePointer && samples_in[i].capacity() >= inputSize && b.hasArray()) {
                     ((BytePointer)samples_in[i]).position(0).put(b.array(), b.position(), inputSize);
                 } else {
-                    samples_in[i] = new BytePointer(b);
+                    if (samples_in[i] != null) {
+                        samples_in[i].releaseReference();
+                    }
+                    samples_in[i] = new BytePointer(b).retainReference();
                 }
             }
         } else if (samples != null && samples[0] instanceof ShortBuffer) {
@@ -1110,7 +1121,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 if (samples_in[i] instanceof ShortPointer && samples_in[i].capacity() >= inputSize && b.hasArray()) {
                     ((ShortPointer)samples_in[i]).position(0).put(b.array(), samples[i].position(), inputSize);
                 } else {
-                    samples_in[i] = new ShortPointer(b);
+                    if (samples_in[i] != null) {
+                        samples_in[i].releaseReference();
+                    }
+                    samples_in[i] = new ShortPointer(b).retainReference();
                 }
             }
         } else if (samples != null && samples[0] instanceof IntBuffer) {
@@ -1121,7 +1135,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 if (samples_in[i] instanceof IntPointer && samples_in[i].capacity() >= inputSize && b.hasArray()) {
                     ((IntPointer)samples_in[i]).position(0).put(b.array(), samples[i].position(), inputSize);
                 } else {
-                    samples_in[i] = new IntPointer(b);
+                    if (samples_in[i] != null) {
+                        samples_in[i].releaseReference();
+                    }
+                    samples_in[i] = new IntPointer(b).retainReference();
                 }
             }
         } else if (samples != null && samples[0] instanceof FloatBuffer) {
@@ -1132,7 +1149,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 if (samples_in[i] instanceof FloatPointer && samples_in[i].capacity() >= inputSize && b.hasArray()) {
                     ((FloatPointer)samples_in[i]).position(0).put(b.array(), b.position(), inputSize);
                 } else {
-                    samples_in[i] = new FloatPointer(b);
+                    if (samples_in[i] != null) {
+                        samples_in[i].releaseReference();
+                    }
+                    samples_in[i] = new FloatPointer(b).retainReference();
                 }
             }
         } else if (samples != null && samples[0] instanceof DoubleBuffer) {
@@ -1143,7 +1163,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 if (samples_in[i] instanceof DoublePointer && samples_in[i].capacity() >= inputSize && b.hasArray()) {
                     ((DoublePointer)samples_in[i]).position(0).put(b.array(), b.position(), inputSize);
                 } else {
-                    samples_in[i] = new DoublePointer(b);
+                    if (samples_in[i] != null) {
+                        samples_in[i].releaseReference();
+                    }
+                    samples_in[i] = new DoublePointer(b).retainReference();
                 }
             }
         } else if (samples != null) {
