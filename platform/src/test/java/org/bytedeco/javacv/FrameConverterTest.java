@@ -250,7 +250,8 @@ public class FrameConverterTest {
 
         Mat mat2 = new Mat(mat.rows(), mat.cols(), mat.type(), mat.data(), mat.step());
         org.opencv.core.Mat cvmat2 = new org.opencv.core.Mat(cvmat.rows(), cvmat.cols(), cvmat.type(),
-                new BytePointer() { { address = cvmat.dataAddr(); } }.capacity(cvmat.rows() * cvmat.cols() * cvmat.elemSize()).asByteBuffer());
+                new BytePointer() { { address = cvmat.dataAddr(); } }.capacity(cvmat.rows() * cvmat.cols() * cvmat.elemSize()).asByteBuffer(),
+                cvmat.step1() * cvmat.elemSize1());
         assertNotEquals(mat, mat2);
         assertNotEquals(cvmat, cvmat2);
 
@@ -258,10 +259,7 @@ public class FrameConverterTest {
         frame3 = converter3.convert(cvmat2);
         assertEquals(frame2.opaque, mat2);
         assertEquals(frame3.opaque, cvmat2);
-
-        // official Java API does not support memory aligned strides...
-        assertEquals(cvmat2.cols() * cvmat2.channels(), frame3.imageStride);
-        frame3.imageStride = frame2.imageStride;
+        assertEquals(frame3.imageStride, cvmat2.step1() * cvmat2.elemSize1());
 
         UByteIndexer frame1Idx = frame1.createIndexer();
         UByteIndexer frame2Idx = frame2.createIndexer();

@@ -184,7 +184,8 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
             int depth = getMatDepth(frame.imageDepth);
             orgOpenCvCoreMat = depth < 0 ? null : new org.opencv.core.Mat(frame.imageHeight, frame.imageWidth,
                     CV_MAKETYPE(depth, frame.imageChannels), new BytePointer(new Pointer(frame.image[0].position(0)))
-                            .capacity(frame.image[0].capacity() * Math.abs(frame.imageDepth) / 8).asByteBuffer());
+                            .capacity(frame.image[0].capacity() * Math.abs(frame.imageDepth) / 8).asByteBuffer(),
+                    frame.imageStride * Math.abs(frame.imageDepth) / 8);
         }
         return orgOpenCvCoreMat;
     }

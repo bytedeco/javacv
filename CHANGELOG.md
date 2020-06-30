@@ -1,4 +1,5 @@
 
+ * Update `OpenCVFrameConverter.convertToOrgOpenCvCoreMat()` with new API to set the stride ([issue #1460](https://github.com/bytedeco/javacv/issues/1460))
  * Fix memory leaks and reduce memory fragmentation in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #1366](https://github.com/bytedeco/javacv/issues/1366))
  * Use `PointerScope` in `FFmpegFrameFilter`, `FFmpegFrameGrabber`, and `FFmpegFrameRecorder` to deallocate quickly temporary buffers ([issue #1383](https://github.com/bytedeco/javacv/issues/1383))
  * Fix `FFmpegFrameFilter` by calling `String.format()` with `Locale.ROOT` ([pull #1441](https://github.com/bytedeco/javacv/pull/1441))
