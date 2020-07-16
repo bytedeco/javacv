@@ -270,10 +270,7 @@ public class FrameConverterTest {
                     int b = frameIdx.get(i, j, k);
                     assertEquals(b, frame1Idx.get(i, j, k));
                     assertEquals(b, frame2Idx.get(i, j, k));
-                    if (i < frameIdx.rows() - 2) {
-                        // ... so also cannot access most of the 2 last rows
-                        assertEquals(b, frame3Idx.get(i, j, k));
-                    }
+                    assertEquals(b, frame3Idx.get(i, j, k));
                 }
             }
         }
