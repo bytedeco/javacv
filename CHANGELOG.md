@@ -5,7 +5,7 @@
  * Use `PointerScope` in `FFmpegFrameFilter`, `FFmpegFrameGrabber`, and `FFmpegFrameRecorder` to deallocate quickly temporary buffers ([issue #1383](https://github.com/bytedeco/javacv/issues/1383))
  * Fix `FFmpegFrameFilter` by calling `String.format()` with `Locale.ROOT` ([pull #1441](https://github.com/bytedeco/javacv/pull/1441))
  * Increase thread safety of `FFmpegFrameFilter`, `FFmpegFrameGrabber`, and `FFmpegFrameRecorder` with `synchronized` methods ([issue #1434](https://github.com/bytedeco/javacv/issues/1434))
- * Upgrade dependencies for OpenBLAS 0.3.10, FFmpeg 4.3
+ * Upgrade dependencies for OpenBLAS 0.3.10, OpenCV 4.4.0, FFmpeg 4.3.1
 
 ### April 14, 2020 version 1.5.3
  * Add `FFmpegFrameGrabber.start(boolean findStreamInfo)` parameter to minimize startup time ([issue #1376](https://github.com/bytedeco/javacv/issues/1376))
