@@ -880,9 +880,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (outputStream == null && (oformat.flags() & AVFMT_NOFILE) == 0) {
             AVIOContext pb = new AVIOContext(null);
             if ((ret = avio_open2(pb, filename, AVIO_FLAG_WRITE, null, options)) < 0) {
+                String errorMsg = "avio_open2 error() error " + ret + ": Could not open '" + filename + "'";
                 releaseUnsafe();
                 av_dict_free(options);
-                throw new Exception("avio_open2 error() error " + ret + ": Could not open '" + filename + "'");
+                throw new Exception(errorMsg);
             }
             oc.pb(pb);
         }
@@ -893,9 +894,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
         /* write the stream header, if any */
         if ((ret = avformat_write_header(oc.metadata(metadata), options)) < 0) {
+            String errorMsg = "avformat_write_header error() error " + ret + ": Could not write header to '" + filename + "'";
             releaseUnsafe();
             av_dict_free(options);
-            throw new Exception("avformat_write_header error() error " + ret + ": Could not write header to '" + filename + "'");
+            throw new Exception(errorMsg);
         }
         av_dict_free(options);
 
