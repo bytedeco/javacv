@@ -1,4 +1,5 @@
 
+ * Fix error message thrown from `FFmpegFrameRecorder.start()` not containing filename ([pull #1492](https://github.com/bytedeco/javacv/pull/1492))
  * Fix `FFmpegFrameFilter.pull()` not returning audio/video frames without audio/video filtergraph ([issue #1466](https://github.com/bytedeco/javacv/issues/1466))
  * Update `OpenCVFrameConverter.convertToOrgOpenCvCoreMat()` with new API to set the stride ([issue #1460](https://github.com/bytedeco/javacv/issues/1460))
  * Fix memory leaks and reduce memory fragmentation in `FFmpegFrameGrabber` and `FFmpegFrameRecorder` ([issue #1366](https://github.com/bytedeco/javacv/issues/1366))
