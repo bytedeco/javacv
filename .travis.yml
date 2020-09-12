@@ -46,11 +46,14 @@ jobs:
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml -f platform/pom.xml -Djavacpp.platform=linux-x86_64
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode10.1
       language: java
       env: PLATFORMS="macosx-x86_64"
       install:
         - brew install gpg1
+        - brew tap AdoptOpenJDK/openjdk
+        - brew cask install adoptopenjdk8
+        - export JAVA_HOME=$(/usr/libexec/java_home -v1.8)
       script:
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml -f platform/pom.xml -Djavacpp.platform=macosx-x86_64 '-Dtest=!FrameGrabberTest,!FrameGrabberChangingResolutionTest'
