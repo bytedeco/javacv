@@ -319,6 +319,20 @@
 
   <profiles>
     <profile>
+      <id>OpenJFX-8</id>
+      <activation>
+        <jdk>(,11)</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>net.java.openjfx.backport</groupId>
+          <artifactId>openjfx-78-backport</artifactId>
+          <version>1.8.0-ea-b96.1</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>OpenJFX-11</id>
       <activation>
         <jdk>11</jdk>
