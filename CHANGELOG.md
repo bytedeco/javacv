@@ -38,7 +38,7 @@
  * Upgrade dependencies for OpenCV 4.1.0, libdc1394 2.2.6, and Tesseract 4.1.0
  * Add support for `Frame.timestamp` to `FFmpegFrameFilter` ([issue #1177](https://github.com/bytedeco/javacv/issues/1177))
 
-### April 11, 2019 version 1.5
+### April 11, 2019 version 1.5.0
  * Override methods in `FFmpegFrameGrabber` to get all metadata from streams ([issue #1180](https://github.com/bytedeco/javacv/issues/1180))
  * Fix sample rate in output of `FFmpegFrameRecorder` by setting deprecated `AVStream.codec.time_base` ([issue #1179](https://github.com/bytedeco/javacv/issues/1179))
  * Add `asetpts=N` to input of `FFmpegFrameFilter` to make filters like `afade` behave as expected ([issue #1171](https://github.com/bytedeco/javacv/issues/1171))
