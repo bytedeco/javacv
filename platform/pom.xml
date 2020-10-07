@@ -115,7 +115,7 @@
             <configuration>
               <archive>
                 <manifestEntries>
-                  <Class-Path>javacv.jar javacpp-platform.jar openblas-platform.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar libfreenect-platform.jar libfreenect2-platform.jar librealsense-platform.jar videoinput-platform.jar artoolkitplus-platform.jar flandmark-platform.jar leptonica-platform.jar tesseract-platform.jar</Class-Path>
+                  <Class-Path>javacv.jar javacpp-platform.jar openblas-platform.jar opencv-platform.jar ffmpeg-platform.jar flycapture-platform.jar libdc1394-platform.jar libfreenect-platform.jar libfreenect2-platform.jar librealsense-platform.jar librealsense2-platform.jar videoinput-platform.jar artoolkitplus-platform.jar flandmark-platform.jar leptonica-platform.jar tesseract-platform.jar</Class-Path>
                   <Name>org/bytedeco/javacv/</Name>
                 </manifestEntries>
               </archive>

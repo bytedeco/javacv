@@ -7,6 +7,7 @@ module org.bytedeco.javacv.platform {
     requires org.bytedeco.libfreenect.platform;
     requires org.bytedeco.libfreenect2.platform;
     requires org.bytedeco.librealsense.platform;
+    requires org.bytedeco.librealsense2.platform;
     requires org.bytedeco.videoinput.platform;
     requires org.bytedeco.artoolkitplus.platform;
     requires org.bytedeco.flandmark.platform;

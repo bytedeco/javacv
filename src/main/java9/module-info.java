@@ -10,6 +10,7 @@ module org.bytedeco.javacv {
     requires org.bytedeco.libfreenect;
     requires org.bytedeco.libfreenect2;
     requires org.bytedeco.librealsense;
+    requires org.bytedeco.librealsense2;
     requires org.bytedeco.videoinput;
     requires org.bytedeco.artoolkitplus;
     requires org.bytedeco.flandmark;
