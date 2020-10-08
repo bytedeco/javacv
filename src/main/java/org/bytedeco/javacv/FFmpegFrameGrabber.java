@@ -85,6 +85,12 @@ import static org.bytedeco.ffmpeg.global.swscale.*;
  * @author Samuel Audet
  */
 public class FFmpegFrameGrabber extends FrameGrabber {
+
+    public static class Exception extends FrameGrabber.Exception {
+        public Exception(String message) { super(message + " (For more details, make sure FFmpegLogCallback.set() has been called.)"); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
+    }
+
     public static String[] getDeviceDescriptions() throws Exception {
         tryLoad();
         throw new UnsupportedOperationException("Device enumeration not support by FFmpeg.");
@@ -647,7 +653,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private synchronized void setTimestamp(long timestamp, EnumSet<Frame.Type> frameTypesToSeek) throws Exception {
         int ret;
         if (oc == null) {
-            super.setTimestamp(timestamp);
+            super.timestamp = timestamp;
         } else {
             timestamp = timestamp * AV_TIME_BASE / 1000000L;
             /* add the stream start time */

@@ -32,6 +32,7 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
 
+import static org.bytedeco.ffmpeg.global.avcodec.*;
 import static org.bytedeco.ffmpeg.global.avutil.*;
 import static org.junit.Assert.*;
 
@@ -49,8 +50,8 @@ public class FrameGrabberChangingResolutionTest {
     private void makeTestfile() throws Exception {
         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480, 2);
         recorder.setFormat("matroska"); // mp4 doesn't support streaming
-        recorder.setPixelFormat(AV_PIX_FMT_BGR24);
-        recorder.setVideoCodecName("libx264rgb");
+        recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
+        recorder.setVideoCodec(AV_CODEC_ID_H264);
         recorder.setVideoQuality(0); // lossless
         recorder.setFrameRate(30);
         recorder.startUnsafe();

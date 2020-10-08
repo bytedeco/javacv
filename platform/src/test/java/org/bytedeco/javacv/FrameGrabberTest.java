@@ -54,7 +54,7 @@ public class FrameGrabberTest {
             FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480, 2);
             recorder.setFormat("matroska"); // mp4 doesn't support streaming
             recorder.setPixelFormat(AV_PIX_FMT_BGR24);
-            recorder.setVideoCodecName("libx264rgb");
+            recorder.setVideoCodecName("jpegls");
             recorder.setVideoQuality(0); // lossless
             recorder.setSampleFormat(AV_SAMPLE_FMT_S16);
             recorder.setSampleRate(44100);
@@ -158,7 +158,7 @@ public class FrameGrabberTest {
                         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480, 2);
                         recorder.setFormat("matroska"); // mp4 doesn't support streaming
                         recorder.setPixelFormat(AV_PIX_FMT_BGR24);
-                        recorder.setVideoCodecName("libx264rgb");
+                        recorder.setVideoCodecName("jpegls");
                         recorder.setVideoQuality(0); // lossless
                         recorder.setSampleFormat(AV_SAMPLE_FMT_S16);
                         recorder.setSampleRate(44100);
@@ -290,7 +290,7 @@ public class FrameGrabberTest {
             recorder.setFormat("mp4");
             recorder.setFrameRate(30);
             recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
-            recorder.setVideoCodec(AV_CODEC_ID_H264);
+            recorder.setVideoCodec(AV_CODEC_ID_MPEG4);
             recorder.setVideoQuality(10);
             recorder.setSampleRate(48000);
             recorder.setSampleFormat(AV_SAMPLE_FMT_FLTP);
