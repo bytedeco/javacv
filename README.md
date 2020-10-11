@@ -35,7 +35,7 @@ We can also have everything downloaded and installed automatically with:
  * Gradle (inside the `build.gradle` file)
 ```groovy
   dependencies {
-    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.4'
+    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.4'
   }
 ```
 
