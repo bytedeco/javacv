@@ -536,7 +536,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
                 videoBitrate = (int) inpVideoStream.codec().bit_rate();
                 pixelFormat = inpVideoStream.codec().pix_fmt();
-                aspectRatio = inpVideoStream.codec().sample_aspect_ratio().den()*1.0d/ inpVideoStream.codec().sample_aspect_ratio().den();
+                aspectRatio = inpVideoStream.codec().sample_aspect_ratio().num()*1.0d/ inpVideoStream.codec().sample_aspect_ratio().den();
                 videoQuality = inpVideoStream.codec().global_quality();
                 video_c.codec_tag(0);
             }
