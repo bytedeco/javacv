@@ -25,11 +25,14 @@ package org.bytedeco.javacv;
 import java.io.File;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
-import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.opencv.global.opencv_core;
 
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_calib3d.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_calib3d.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  *
@@ -49,7 +52,7 @@ public class ProjectiveDevice {
         this(name);
         readParameters(filename);
     }
-    public ProjectiveDevice(String name, CvFileStorage fs) throws Exception {
+    public ProjectiveDevice(String name, FileStorage fs) throws Exception {
         this(name);
         readParameters(fs);
     }
@@ -509,7 +512,10 @@ public class ProjectiveDevice {
                 undistortMaps1[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
                 undistortMaps2[p] = IplImage.create(imageWidth, imageHeight, IPL_DEPTH_32F, 1);
             }
-            cvInitUndistortMap(cameraMatrix, distortionCoeffs, undistortMaps1[p], undistortMaps2[p]);
+            Mat A = cvarrToMat(cameraMatrix);
+            Mat m1 = cvarrToMat(undistortMaps1[p]);
+            Mat m2 = cvarrToMat(undistortMaps2[p]);
+            initUndistortRectifyMap(A, cvarrToMat(distortionCoeffs), new Mat(), A, m1.size(), m1.type(), m1, m2);
             if (mapsPyramidLevel > 0) {
                 IplImage map1 = undistortMaps1[p];
                 IplImage map2 = undistortMaps2[p];
@@ -686,7 +692,7 @@ public class ProjectiveDevice {
         double[] dir = JavaCV.unitize(-s*n.get(1), s*n.get(0));
         double theta = Math.acos(s*n.get(2)/JavaCV.norm(n.get()));
         t.put(theta*dir[0], theta*dir[1], 0.0);
-        cvRodrigues2(t, H, null);
+        Rodrigues(cvarrToMat(t), cvarrToMat(H), null);
 
         // and from z-axis to device axis
         cvMatMul(R, H, H);
@@ -729,12 +735,13 @@ public class ProjectiveDevice {
 
         CvMat R1 = R13x3.get(); CvMat P1 = P13x4.get();
         CvMat R2 = R23x3.get(); CvMat P2 = P23x4.get();
-        CvSize imageSize = cvSize((peer.imageWidth  + imageWidth )/2,
+        Size imageSize = new Size((peer.imageWidth  + imageWidth )/2,
                                   (peer.imageHeight + imageHeight)/2); // ?
-        cvStereoRectify(peer.cameraMatrix,     cameraMatrix,
-                        peer.distortionCoeffs, distortionCoeffs,
-                        imageSize, relativeR, relativeT,
-                        R1, R2, P1, P2, null, 0, -1, CvSize.ZERO, null, null);
+        stereoRectify(cvarrToMat(peer.cameraMatrix),     cvarrToMat(cameraMatrix),
+                      cvarrToMat(peer.distortionCoeffs), cvarrToMat(distortionCoeffs),
+                      imageSize, cvarrToMat(relativeR), cvarrToMat(relativeT),
+                      cvarrToMat(R1), cvarrToMat(R2), cvarrToMat(P1), cvarrToMat(P2),
+                      new Mat(), 0, -1, new Size(), null, null);
         cvMatMul(cameraMatrix, R2, R2);
         cvInvert(cameraMatrix, R1);
         cvMatMul(R2, R1, H);
@@ -748,7 +755,7 @@ public class ProjectiveDevice {
     }
 
     public static ProjectiveDevice[] read(String filename) throws Exception {
-        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_READ);
+        FileStorage fs = new FileStorage(filename, FileStorage.READ);
         CameraDevice    [] cameraDevices    = CameraDevice   .read(fs);
         ProjectorDevice [] projectorDevices = ProjectorDevice.read(fs);
         ProjectiveDevice[] devices = new ProjectiveDevice[cameraDevices.length+projectorDevices.length];
@@ -778,24 +785,23 @@ public class ProjectiveDevice {
         write(filename, allDevices);
     }
     public static void write(String filename, ProjectiveDevice ... devices) {
-        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_WRITE);
-        CvAttrList a = cvAttrList();
+        FileStorage fs = new FileStorage(filename, FileStorage.WRITE);
 
-        cvStartWriteStruct(fs, "Cameras", CV_NODE_SEQ, null, a);
+        shiftLeft(shiftLeft(fs, "Cameras"), "[");
         for (ProjectiveDevice d : devices) {
             if (d instanceof CameraDevice) {
-                cvWriteString(fs, null, d.getSettings().getName(), 0);
+                opencv_core.write(fs, d.getSettings().getName());
             }
         }
-        cvEndWriteStruct(fs);
+        shiftLeft(fs, "]");
 
-        cvStartWriteStruct(fs, "Projectors", CV_NODE_SEQ, null, a);
+        shiftLeft(shiftLeft(fs, "Projectors"), "[");
         for (ProjectiveDevice d : devices) {
             if (d instanceof ProjectorDevice) {
-                cvWriteString(fs, null, d.getSettings().getName(), 0);
+                opencv_core.write(fs, d.getSettings().getName());
             }
         }
-        cvEndWriteStruct(fs);
+        shiftLeft(fs, "]");
 
         for (ProjectiveDevice d : devices) {
             d.writeParameters(fs);
@@ -807,108 +813,106 @@ public class ProjectiveDevice {
         writeParameters(file.getAbsolutePath());
     }
     public void writeParameters(String filename) {
-        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_WRITE);
+        FileStorage fs = new FileStorage(filename, FileStorage.WRITE);
         writeParameters(fs);
         fs.release();
     }
-    public void writeParameters(CvFileStorage fs) {
-        CvAttrList a = cvAttrList();
+    public void writeParameters(FileStorage fs) {
+        shiftLeft(shiftLeft(fs, getSettings().getName()), "{");
 
-        cvStartWriteStruct(fs, getSettings().getName(), CV_NODE_MAP, null, a);
-
-        cvWriteInt(fs, "imageWidth", imageWidth);
-        cvWriteInt(fs, "imageHeight", imageHeight);
-        cvWriteReal(fs, "responseGamma", getSettings().getResponseGamma());
-//        cvWriteReal(fs, "initAspectRatio", settings.initAspectRatio);
-//        cvWriteInt(fs, "flags", getSettings().flags);
+        opencv_core.write(fs, "imageWidth", imageWidth);
+        opencv_core.write(fs, "imageHeight", imageHeight);
+        opencv_core.write(fs, "responseGamma", getSettings().getResponseGamma());
+//        opencv_core.write(fs, "initAspectRatio", settings.initAspectRatio);
+//        opencv_core.write(fs, "flags", getSettings().flags);
         if (cameraMatrix != null)
-            cvWrite(fs, "cameraMatrix", cameraMatrix, a);
+            opencv_core.write(fs, "cameraMatrix", cvarrToMat(cameraMatrix));
         if (distortionCoeffs != null)
-            cvWrite(fs, "distortionCoeffs", distortionCoeffs, a);
+            opencv_core.write(fs, "distortionCoeffs", cvarrToMat(distortionCoeffs));
         if (extrParams != null)
-            cvWrite(fs, "extrParams", extrParams, a);
+            opencv_core.write(fs, "extrParams", cvarrToMat(extrParams));
         if (reprojErrs != null)
-            cvWrite(fs, "reprojErrs", reprojErrs, a);
-        cvWriteReal(fs, "avgReprojErr", avgReprojErr);
-        cvWriteReal(fs, "maxReprojErr", maxReprojErr);
-//        cvWriteReal(fs, "nominalDistance", nominalDistance);
+            opencv_core.write(fs, "reprojErrs", cvarrToMat(reprojErrs));
+        opencv_core.write(fs, "avgReprojErr", avgReprojErr);
+        opencv_core.write(fs, "maxReprojErr", maxReprojErr);
+//        opencv_core.write(fs, "nominalDistance", nominalDistance);
         if (R != null)
-            cvWrite(fs, "R", R, a);
+            opencv_core.write(fs, "R", cvarrToMat(R));
         if (T != null)
-            cvWrite(fs, "T", T, a);
+            opencv_core.write(fs, "T", cvarrToMat(T));
         if (E != null)
-            cvWrite(fs, "E", E, a);
+            opencv_core.write(fs, "E", cvarrToMat(E));
         if (F != null)
-            cvWrite(fs, "F", F, a);
-        cvWriteReal(fs, "avgEpipolarErr", avgEpipolarErr);
-        cvWriteReal(fs, "maxEpipolarErr", maxEpipolarErr);
+            opencv_core.write(fs, "F", cvarrToMat(F));
+        opencv_core.write(fs, "avgEpipolarErr", avgEpipolarErr);
+        opencv_core.write(fs, "maxEpipolarErr", maxEpipolarErr);
 
-        cvWriteString(fs, "colorOrder", colorOrder, 0);
+        opencv_core.write(fs, "colorOrder", colorOrder);
         if (colorMixingMatrix != null)
-            cvWrite(fs, "colorMixingMatrix", colorMixingMatrix, a);
+            opencv_core.write(fs, "colorMixingMatrix", cvarrToMat(colorMixingMatrix));
         if (additiveLight != null)
-            cvWrite(fs, "additiveLight", additiveLight, a);
-        cvWriteReal(fs, "avgColorErr", avgColorErr);
-        cvWriteReal(fs, "colorR2", colorR2);
+            opencv_core.write(fs, "additiveLight", cvarrToMat(additiveLight));
+        opencv_core.write(fs, "avgColorErr", avgColorErr);
+        opencv_core.write(fs, "colorR2", colorR2);
 
-        cvEndWriteStruct(fs);
+        shiftLeft(fs, "}");
     }
 
     public void readParameters(File file) throws Exception {
         readParameters(file.getAbsolutePath());
     }
     public void readParameters(String filename) throws Exception {
-        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_READ);
+        FileStorage fs = new FileStorage(filename, FileStorage.READ);
         readParameters(fs);
         fs.release();
     }
-    public void readParameters(CvFileStorage fs) throws Exception {
+    public void readParameters(FileStorage fs) throws Exception {
         if (fs == null) {
-            throw new Exception("Error: CvFileStorage is null, cannot read parameters for device " + 
+            throw new Exception("Error: FileStorage is null, cannot read parameters for device " + 
                     getSettings().getName() + ". Is the parametersFile correct?");
         }
-        CvAttrList a = cvAttrList();
-
-        CvFileNode fn = cvGetFileNodeByName(fs, null, getSettings().getName());
+        FileNode fn = fs.get(getSettings().getName());
         if (fn == null) {
-            throw new Exception("Error: CvFileNode is null, cannot read parameters for device " + 
+            throw new Exception("Error: FileNode is null, cannot read parameters for device " + 
                     getSettings().getName() + ". Is the name correct?");
         }
 
-        imageWidth = cvReadIntByName(fs, fn, "imageWidth", imageWidth);
-        imageHeight = cvReadIntByName(fs, fn, "imageHeight", imageHeight);
-        getSettings().setResponseGamma(cvReadRealByName(fs, fn, "gamma", getSettings().getResponseGamma()));
-//        getSettings().initAspectRatio = cvReadRealByName(fs, fn, "initAspectRatio", getSettings().initAspectRatio);
-//        getSettings().flags = cvReadIntByName(fs, fn, "flags", getSettings().flags);
-        Pointer p = cvReadByName(fs, fn, "cameraMatrix", a);
-        cameraMatrix = p == null ? null : new CvMat(p);
-        p = cvReadByName(fs, fn, "distortionCoeffs", a);
-        distortionCoeffs = p == null ? null : new CvMat(p);
-        p = cvReadByName(fs, fn, "extrParams", a);
-        extrParams = p == null ? null : new CvMat(p);
-        p = cvReadByName(fs, fn, "reprojErrs", a);
-        reprojErrs = p == null ? null : new CvMat(p);
-        avgReprojErr = cvReadRealByName(fs, fn, "avgReprojErr", avgReprojErr);
-        maxReprojErr = cvReadRealByName(fs, fn, "maxReprojErr", maxReprojErr);
-//        nominalDistance = cvReadRealByName(fs, fn, "nominalDistance", nominalDistance);
-        p = cvReadByName(fs, fn, "R", a);
-        R = p == null ? null : new CvMat(p);
-        p = cvReadByName(fs, fn, "T", a);
-        T = p == null ? null : new CvMat(p);
-        p = cvReadByName(fs, fn, "E", a);
-        E = p == null ? null : new CvMat(p);
-        p = cvReadByName(fs, fn, "F", a);
-        F = p == null ? null : new CvMat(p);
-        avgEpipolarErr = cvReadRealByName(fs, fn, "avgEpipolarErr", avgEpipolarErr);
-        maxEpipolarErr = cvReadRealByName(fs, fn, "maxEpipolarErr", maxEpipolarErr);
+        FileNode n;
+        if ((n = fn.get("imageWidth")).isInt()) imageWidth = n.asInt();
+        if ((n = fn.get("imageHeight")).isInt()) imageHeight = n.asInt();
+        if ((n = fn.get("gamma")).isReal()) getSettings().setResponseGamma(n.asDouble());
+//        if ((n = fn.get("initAspectRatio")).isReal()) getSettings().setInitAspectRatio(n.asDouble());
+//        if ((n = fn.get("flags")).isInt()) getSettings().setFlags(n.asInt());
+        Mat m = new Mat();
+        opencv_core.read(fn.get("cameraMatrix"), m);
+        cameraMatrix = m.empty() ? null : cvMat(m).clone();
+        opencv_core.read(fn.get("distortionCoeffs"), m);
+        distortionCoeffs = m.empty() ? null : cvMat(m).clone();
+        opencv_core.read(fn.get("extrParams"), m);
+        extrParams = m.empty() ? null : cvMat(m).clone();
+        opencv_core.read(fn.get("reprojErrs"), m);
+        reprojErrs = m.empty() ? null : cvMat(m).clone();
+        if ((n = fn.get("avgReprojErr")).isReal()) avgReprojErr = n.asDouble();
+        if ((n = fn.get("maxReprojErr")).isReal()) maxReprojErr = n.asDouble();
+//        if ((n = fn.get("nominalDistance")).isReal()) nominalDistance = n.asDouble();
+        opencv_core.read(fn.get("R"), m);
+        R = m.empty() ? null : cvMat(m).clone();
+        opencv_core.read(fn.get("T"), m);
+        T = m.empty() ? null : cvMat(m).clone();
+        opencv_core.read(fn.get("E"), m);
+        E = m.empty() ? null : cvMat(m).clone();
+        opencv_core.read(fn.get("F"), m);
+        F = m.empty() ? null : cvMat(m).clone();
+        if ((n = fn.get("avgEpipolarErr")).isReal()) avgEpipolarErr = n.asDouble();
+        if ((n = fn.get("maxEpipolarErr")).isReal()) maxEpipolarErr = n.asDouble();
 
-        colorOrder = cvReadStringByName(fs, fn, "colorOrder", colorOrder);
-        p = cvReadByName(fs, fn, "colorMixingMatrix", a);
-        colorMixingMatrix = p == null ? null : new CvMat(p);
-        p = cvReadByName(fs, fn, "additiveLight", a);
-        additiveLight = p == null ? null : new CvMat(p);
-        avgColorErr = cvReadRealByName(fs, fn, "avgColorErr", avgColorErr);
-        colorR2 = cvReadRealByName(fs, fn, "colorR2", colorR2);
+        if ((n = fn.get("colorOrder")).isString()) colorOrder = n.asBytePointer().getString();
+        opencv_core.read(fn.get("colorMixingMatrix"), m);
+        colorMixingMatrix = m.empty() ? null : cvMat(m).clone();
+        opencv_core.read(fn.get("additiveLight"), m);
+        additiveLight = m.empty() ? null : cvMat(m).clone();
+        if ((n = fn.get("avgColorErr")).isReal()) avgColorErr = n.asDouble();
+        if ((n = fn.get("colorR2")).isReal()) colorR2 = n.asDouble();
     }
 
     @Override public String toString() {

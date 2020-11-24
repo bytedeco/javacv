@@ -32,7 +32,8 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.junit.Test;
 
-import static org.bytedeco.javacpp.avutil.*;
+import static org.bytedeco.ffmpeg.global.avcodec.*;
+import static org.bytedeco.ffmpeg.global.avutil.*;
 import static org.junit.Assert.*;
 
 /**
@@ -49,11 +50,11 @@ public class FrameGrabberChangingResolutionTest {
     private void makeTestfile() throws Exception {
         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(new FileOutputStream(tempFile), 640, 480, 2);
         recorder.setFormat("matroska"); // mp4 doesn't support streaming
-        recorder.setPixelFormat(AV_PIX_FMT_BGR24);
-        recorder.setVideoCodecName("libx264rgb");
+        recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
+        recorder.setVideoCodec(AV_CODEC_ID_H264);
         recorder.setVideoQuality(0); // lossless
         recorder.setFrameRate(30);
-        recorder.start();
+        recorder.startUnsafe();
 
         Frame[] frames = new Frame[60];
         for (int n = 0; n < frames.length; n++) {
@@ -74,10 +75,10 @@ public class FrameGrabberChangingResolutionTest {
     }
 
     final public void setupUDPSender(final int x, final int y, final int bandwidth, final int count) throws IOException {
-        final FrameGrabber fg = new FFmpegFrameGrabber(tempFile);
+        final FFmpegFrameGrabber fg = new FFmpegFrameGrabber(tempFile);
         fg.setFrameRate(30);
 
-        final FrameRecorder fr = new FFmpegFrameRecorder("udp://127.0.0.1:2345", 0);
+        final FFmpegFrameRecorder fr = new FFmpegFrameRecorder("udp://127.0.0.1:2345", 0);
         fr.setVideoCodecName("mpeg2video");
         fr.setFormat("mpegts");
 
@@ -87,8 +88,8 @@ public class FrameGrabberChangingResolutionTest {
 
         fr.setFrameRate(30);
 
-        fg.start();
-        fr.start();
+        fg.startUnsafe();
+        fr.startUnsafe();
 
         final boolean[] b = new boolean[1];
         Thread t = new Thread() {
@@ -132,10 +133,10 @@ public class FrameGrabberChangingResolutionTest {
         Thread t = new Thread() {
 
             public void run() {
-                FrameGrabber fg = new FFmpegFrameGrabber("udp://127.0.0.1:2345");
+                FFmpegFrameGrabber fg = new FFmpegFrameGrabber("udp://127.0.0.1:2345");
                 fg.setFrameRate(30);
 
-                FrameRecorder fr = new FFmpegFrameRecorder(tempTargetFile, 0);
+                FFmpegFrameRecorder fr = new FFmpegFrameRecorder(tempTargetFile, 0);
                 fr.setVideoCodecName("mpeg2video");
                 fr.setFormat("mpegts");
 
@@ -146,8 +147,8 @@ public class FrameGrabberChangingResolutionTest {
                 fr.setFrameRate(30);
 
                 try {
-                    fg.start();
-                    fr.start();
+                    fg.startUnsafe();
+                    fr.startUnsafe();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -240,7 +241,7 @@ public class FrameGrabberChangingResolutionTest {
         try {
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(new FileInputStream(tempTargetFile));
             grabber.setSampleMode(FrameGrabber.SampleMode.FLOAT);
-            grabber.start();
+            grabber.startUnsafe();
 
             int n = 0;
             Frame frame2;
@@ -257,7 +258,6 @@ public class FrameGrabberChangingResolutionTest {
             assertTrue(n > 300);
             assertTrue(n <= 480);
             assertEquals(null, grabber.grab());
-            grabber.restart();
             grabber.stop();
             grabber.release();
         } catch (Exception e) {

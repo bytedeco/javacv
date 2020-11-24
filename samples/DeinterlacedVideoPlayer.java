@@ -1,15 +1,12 @@
-import static org.bytedeco.javacpp.opencv_core.cvClearMemStorage;
-
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.avutil;
-import org.bytedeco.javacpp.opencv_core.CvMemStorage;
-import org.bytedeco.javacpp.opencv_objdetect;
 import org.bytedeco.javacv.FFmpegFrameFilter;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameFilter;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameGrabber.Exception;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
+
+import org.bytedeco.ffmpeg.global.avutil;
 
 public class DeinterlacedVideoPlayer {
 	
@@ -25,15 +22,12 @@ public class DeinterlacedVideoPlayer {
 	public DeinterlacedVideoPlayer() {}
 	
 	public void start() {
-		Loader.load(opencv_objdetect.class);
 		FrameFilter filter = null;
 		try {
 			startFrameGrabber();
-			CvMemStorage storage = CvMemStorage.create();
 			
 			Frame frame = null;
 			while ((frame = grabber.grab()) != null) {
-				cvClearMemStorage(storage);
 				if (filter == null) {
 					filter = new FFmpegFrameFilter(ffmpegString, frame.imageWidth, frame.imageHeight);
 					filter.setPixelFormat(PIXEL_FORMAT);

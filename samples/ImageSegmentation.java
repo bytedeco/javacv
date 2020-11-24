@@ -8,48 +8,21 @@
  * Paolo Bolettieri <paolo.bolettieri@gmail.com>
  */
 
-import static org.bytedeco.javacpp.helper.opencv_core.RGB;
-import static org.bytedeco.javacpp.opencv_core.CV_32F;
-import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
-import static org.bytedeco.javacpp.opencv_core.CV_8U;
-import static org.bytedeco.javacpp.opencv_core.CV_8UC1;
-import static org.bytedeco.javacpp.opencv_core.CV_8UC3;
-import static org.bytedeco.javacpp.opencv_core.NORM_MINMAX;
-import static org.bytedeco.javacpp.opencv_core.bitwise_not;
-import static org.bytedeco.javacpp.opencv_core.multiply;
-import static org.bytedeco.javacpp.opencv_core.normalize;
-import static org.bytedeco.javacpp.opencv_core.subtract;
-import static org.bytedeco.javacpp.opencv_core.theRNG;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_CHAIN_APPROX_SIMPLE;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_DIST_L2;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_RETR_EXTERNAL;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_THRESH_BINARY;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_THRESH_OTSU;
-import static org.bytedeco.javacpp.opencv_imgproc.circle;
-import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
-import static org.bytedeco.javacpp.opencv_imgproc.dilate;
-import static org.bytedeco.javacpp.opencv_imgproc.distanceTransform;
-import static org.bytedeco.javacpp.opencv_imgproc.drawContours;
-import static org.bytedeco.javacpp.opencv_imgproc.filter2D;
-import static org.bytedeco.javacpp.opencv_imgproc.findContours;
-import static org.bytedeco.javacpp.opencv_imgproc.threshold;
-import static org.bytedeco.javacpp.opencv_imgproc.watershed;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.MatVector;
-import org.bytedeco.javacpp.opencv_core.Point;
-import org.bytedeco.javacpp.opencv_core.Scalar;
 import org.bytedeco.javacpp.indexer.FloatIndexer;
 import org.bytedeco.javacpp.indexer.IntIndexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class ImageSegmentation {
     private static final int[] WHITE = {255, 255, 255};

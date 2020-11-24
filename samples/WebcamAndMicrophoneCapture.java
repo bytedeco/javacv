@@ -23,7 +23,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 
-import org.bytedeco.javacpp.avcodec;
+import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
@@ -43,13 +43,13 @@ public class WebcamAndMicrophoneCapture
 
     public static void main(String[] args) throws Exception, org.bytedeco.javacv.FrameGrabber.Exception
     {
-        int captureWidth = 1280;
-        int captureHeight = 720;
+        final int captureWidth = 1280;
+        final int captureHeight = 720;
 
         // The available FrameGrabber classes include OpenCVFrameGrabber (opencv_videoio),
-        // DC1394FrameGrabber, FlyCaptureFrameGrabber, OpenKinectFrameGrabber,
+        // DC1394FrameGrabber, FlyCapture2FrameGrabber, OpenKinectFrameGrabber,
         // PS3EyeFrameGrabber, VideoInputFrameGrabber, and FFmpegFrameGrabber.
-        OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(WEBCAM_DEVICE_INDEX);
+        final OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(WEBCAM_DEVICE_INDEX);
         grabber.setImageWidth(captureWidth);
         grabber.setImageHeight(captureHeight);
         grabber.start();
@@ -62,7 +62,7 @@ public class WebcamAndMicrophoneCapture
         // imageWidth = width we specified for the grabber
         // imageHeight = height we specified for the grabber
         // audioChannels = 2, because we like stereo
-        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(
+        final FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(
                 "rtmp://my-streaming-server/app_name_here/instance_name/stream_name",
                 captureWidth, captureHeight, 2);
         recorder.setInterleaved(true);
@@ -125,16 +125,16 @@ public class WebcamAndMicrophoneCapture
                     // Open and start capturing audio
                     // It's possible to have more control over the chosen audio device with this line:
                     // TargetDataLine line = (TargetDataLine)mixer.getLine(dataLineInfo);
-                    TargetDataLine line = (TargetDataLine)AudioSystem.getLine(dataLineInfo);
+                    final TargetDataLine line = (TargetDataLine)AudioSystem.getLine(dataLineInfo);
                     line.open(audioFormat);
                     line.start();
 
-                    int sampleRate = (int) audioFormat.getSampleRate();
-                    int numChannels = audioFormat.getChannels();
+                    final int sampleRate = (int) audioFormat.getSampleRate();
+                    final int numChannels = audioFormat.getChannels();
 
                     // Let's initialize our audio buffer...
-                    int audioBufferSize = sampleRate * numChannels;
-                    byte[] audioBytes = new byte[audioBufferSize];
+                    final int audioBufferSize = sampleRate * numChannels;
+                    final byte[] audioBytes = new byte[audioBufferSize];
 
                     // Using a ScheduledThreadPoolExecutor vs a while loop with
                     // a Thread.sleep will allow
@@ -188,7 +188,7 @@ public class WebcamAndMicrophoneCapture
         }).start();
 
         // A really nice hardware accelerated component for our preview...
-        CanvasFrame cFrame = new CanvasFrame("Capture Preview", CanvasFrame.getDefaultGamma() / grabber.getGamma());
+        final CanvasFrame cFrame = new CanvasFrame("Capture Preview", CanvasFrame.getDefaultGamma() / grabber.getGamma());
 
         Frame capturedFrame = null;
 

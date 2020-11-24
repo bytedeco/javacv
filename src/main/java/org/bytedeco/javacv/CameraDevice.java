@@ -30,7 +30,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.bytedeco.javacpp.Pointer;
 
-import static org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
 
 /**
  *
@@ -45,7 +46,7 @@ public class CameraDevice extends ProjectiveDevice {
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
     }
-    public CameraDevice(String name, CvFileStorage fs) throws Exception {
+    public CameraDevice(String name, FileStorage fs) throws Exception {
         super(name, fs);
         settings.setImageWidth(imageWidth);
         settings.setImageHeight(imageHeight);
@@ -514,21 +515,21 @@ public class CameraDevice extends ProjectiveDevice {
     }
 
     public static CameraDevice[] read(String filename) throws Exception {
-        CvFileStorage fs = CvFileStorage.open(filename, null, CV_STORAGE_READ);
+        FileStorage fs = new FileStorage(filename, FileStorage.READ);
         CameraDevice[] devices = read(fs);
         fs.release();
         return devices;
     }
-    public static CameraDevice[] read(CvFileStorage fs) throws Exception {
-        CvFileNode node = cvGetFileNodeByName(fs, null, "Cameras");
-        CvSeq seq = node.data_seq();
-        int count = seq.total();
+    public static CameraDevice[] read(FileStorage fs) throws Exception {
+        FileNode node = fs.get("Cameras");
+        FileNodeIterator seq = node.begin();
+        int count = (int)seq.remaining();
 
         CameraDevice[] devices = new CameraDevice[count];
-        for (int i = 0; i < count; i++) {
-            Pointer p = cvGetSeqElem(seq, i);
-            if (p == null) continue;
-            String name = cvReadString(new CvFileNode(p), (String)null);
+        for (int i = 0; i < count; i++, seq.increment()) {
+            FileNode n = seq.multiply();
+            if (n.empty()) continue;
+            String name = n.asBytePointer().getString();
             devices[i] = new CameraDevice(name, fs);
         }
         return devices;

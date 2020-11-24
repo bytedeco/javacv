@@ -24,7 +24,8 @@ package org.bytedeco.javacv;
 
 import java.awt.Color;
 
-import static org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
 
 /**
  *

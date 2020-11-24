@@ -5,11 +5,6 @@
  * Paolo Bolettieri <paolo.bolettieri@gmail.com>
  */
 
-import static org.bytedeco.javacpp.opencv_core.minMaxLoc;
-import static org.bytedeco.javacpp.opencv_dnn.createCaffeImporter;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
-import static org.bytedeco.javacpp.opencv_imgproc.resize;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -17,18 +12,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.Point;
-import org.bytedeco.javacpp.opencv_core.Size;
-import org.bytedeco.javacpp.opencv_dnn.Blob;
-import org.bytedeco.javacpp.opencv_dnn.Importer;
-import org.bytedeco.javacpp.opencv_dnn.Net;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_dnn.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_dnn.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class CaffeGooglenet {
 
     /* Find best class for the blob (i. e. class with maximal probability) */
-    public static void getMaxClass(Blob probBlob, Point classId, double[] classProb) {
-        Mat probMat =probBlob.matRefConst().reshape(1, 1); //reshape the blob to 1x1000 matrix
+    public static void getMaxClass(Mat probBlob, Point classId, double[] classProb) {
+        Mat probMat = probBlob.reshape(1, 1); //reshape the blob to 1x1000 matrix
         minMaxLoc(probMat, null, classProb, null, classId, null);
     }
 
@@ -54,16 +50,15 @@ public class CaffeGooglenet {
         String modelBin = "bvlc_googlenet.caffemodel";
         String imageFile = (args.length > 0) ? args[0] : "space_shuttle.jpg";
 
-        //! [Create the importer of Caffe model]
-        Importer importer = null;
+        //! [Initialize network]
+        Net net = null;
         try {                                 //Try to import Caffe GoogleNet model
-            importer = createCaffeImporter(modelTxt, modelBin);
+            net = readNetFromCaffe(modelTxt, modelBin);
         } catch (Exception e) {               //Importer can throw errors, we will catch them
             e.printStackTrace();
         }
-        //! [Create the importer of Caffe model]
 
-        if (importer == null) {
+        if (net == null || net.empty()) {
             System.err.println("Can't load network by using the following files: ");
             System.err.println("prototxt:   " + modelTxt);
             System.err.println("caffemodel: " + modelBin);
@@ -71,11 +66,6 @@ public class CaffeGooglenet {
             System.err.println("http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel");
             System.exit(-1);
         }
-
-        //! [Initialize network]
-        Net net = new Net();
-        importer.populateNet(net);
-        importer.close();                     //We don't need importer anymore
         //! [Initialize network]
 
         //! [Prepare blob]
@@ -87,20 +77,18 @@ public class CaffeGooglenet {
         }
 
         resize(img, img, new Size(224, 224)); //GoogLeNet accepts only 224x224 RGB-images
-        Blob inputBlob = Blob.fromImages(img);//Convert Mat to 4-dimensional dnn::Blob from image
+        Mat inputBlob = blobFromImage(img);   //Convert Mat to 4-dimensional dnn::Blob from image
         //! [Prepare blob]
 
         //! [Set input blob]
-        net.setBlob(".data", inputBlob);      //set the network input
+        net.setInput(inputBlob, "data", 1.0, null);      //set the network input
         //! [Set input blob]
 
         //! [Make forward pass]
-        net.forward();                        //compute output
+        Mat prob = net.forward("prob");       //compute output
         //! [Make forward pass]
 
         //! [Gather output]
-        Blob prob = net.getBlob("prob");      //gather output of "prob" layer
-
         Point classId = new Point();
         double[] classProb = new double[1];
         getMaxClass(prob, classId, classProb);//find the best class

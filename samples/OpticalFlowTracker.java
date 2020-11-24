@@ -5,89 +5,81 @@
  * burgetrm@gmail.com
  */
 
-import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.javacpp.FloatPointer;
-import org.bytedeco.javacpp.IntPointer;
-import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_video.*;
-import static org.bytedeco.javacpp.opencv_highgui.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.indexer.*;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_highgui.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_video.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_highgui.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_video.*;
 
 public class OpticalFlowTracker {
     private static final int MAX_CORNERS = 500;
+    private static final int win_size = 15;
 
     public static void main(String[] args) {
         // Load two images and allocate other structures
-        IplImage imgA = cvLoadImage(
+        Mat imgA = imread(
                 "image0.png",
-                CV_LOAD_IMAGE_GRAYSCALE);
-        IplImage imgB = cvLoadImage(
+                IMREAD_GRAYSCALE);
+        Mat imgB = imread(
                 "image1.png",
-                CV_LOAD_IMAGE_GRAYSCALE);
+                IMREAD_GRAYSCALE);
 
-        CvSize img_sz = cvGetSize(imgA);
-        int win_size = 15;
-
-        // IplImage imgC = cvLoadImage("OpticalFlow1.png",
-        // CV_LOAD_IMAGE_UNCHANGED);
-        IplImage imgC = cvLoadImage(
+        // Mat imgC = imread("OpticalFlow1.png",
+        // IMREAD_UNCHANGED);
+        Mat imgC = imread(
                 "image0.png",
-                CV_LOAD_IMAGE_UNCHANGED);
+                IMREAD_UNCHANGED);
+
         // Get the features for tracking
-        IplImage eig_image = cvCreateImage(img_sz, IPL_DEPTH_32F, 1);
-        IplImage tmp_image = cvCreateImage(img_sz, IPL_DEPTH_32F, 1);
+        Mat cornersA = new Mat();
+        goodFeaturesToTrack(imgA, cornersA, MAX_CORNERS,
+                0.05, 5.0, null, 3, false, 0.04);
 
-        IntPointer corner_count = new IntPointer(1).put(MAX_CORNERS);
-        CvPoint2D32f cornersA = new CvPoint2D32f(MAX_CORNERS);
-
-        CvArr mask = null;
-        cvGoodFeaturesToTrack(imgA, eig_image, tmp_image, cornersA,
-                corner_count, 0.05, 5.0, mask, 3, 0, 0.04);
-
-        cvFindCornerSubPix(imgA, cornersA, corner_count.get(),
-                cvSize(win_size, win_size), cvSize(-1, -1),
-                cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
+        cornerSubPix(imgA, cornersA,
+                new Size(win_size, win_size), new Size(-1, -1),
+                new TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
 
         // Call Lucas Kanade algorithm
-        BytePointer features_found = new BytePointer(MAX_CORNERS);
-        FloatPointer feature_errors = new FloatPointer(MAX_CORNERS);
+        Mat features_found = new Mat();
+        Mat feature_errors = new Mat();
 
-        CvSize pyr_sz = cvSize(imgA.width() + 8, imgB.height() / 3);
-
-        IplImage pyrA = cvCreateImage(pyr_sz, IPL_DEPTH_32F, 1);
-        IplImage pyrB = cvCreateImage(pyr_sz, IPL_DEPTH_32F, 1);
-
-        CvPoint2D32f cornersB = new CvPoint2D32f(MAX_CORNERS);
-        cvCalcOpticalFlowPyrLK(imgA, imgB, pyrA, pyrB, cornersA, cornersB,
-                corner_count.get(), cvSize(win_size, win_size), 5,
-                features_found, feature_errors,
-                cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3), 0);
+        Mat cornersB = new Mat();
+        calcOpticalFlowPyrLK(imgA, imgB, cornersA, cornersB,
+                features_found, feature_errors, new Size(win_size, win_size), 5,
+                new TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3), 0, 1e-4);
 
         // Make an image of the results
-        for (int i = 0; i < corner_count.get(); i++) {
-            if (features_found.get(i) == 0 || feature_errors.get(i) > 550) {
-                System.out.println("Error is " + feature_errors.get(i) + "/n");
+        FloatIndexer cornersAidx = cornersA.createIndexer();
+        FloatIndexer cornersBidx = cornersB.createIndexer();
+        UByteIndexer features_found_idx = features_found.createIndexer();
+        FloatIndexer feature_errors_idx = feature_errors.createIndexer();
+        for (int i = 0; i < cornersAidx.size(0); i++) {
+            if (features_found_idx.get(i) == 0 || feature_errors_idx.get(i) > 550) {
+                System.out.println("Error is " + feature_errors_idx.get(i) + "/n");
                 continue;
             }
             System.out.println("Got it/n");
-            cornersA.position(i);
-            cornersB.position(i);
-            CvPoint p0 = cvPoint(Math.round(cornersA.x()),
-                    Math.round(cornersA.y()));
-            CvPoint p1 = cvPoint(Math.round(cornersB.x()),
-                    Math.round(cornersB.y()));
-            cvLine(imgC, p0, p1, CV_RGB(255, 0, 0), 
+            Point p0 = new Point(Math.round(cornersAidx.get(i, 0)),
+                    Math.round(cornersAidx.get(i, 1)));
+            Point p1 = new Point(Math.round(cornersBidx.get(i, 0)),
+                    Math.round(cornersBidx.get(i, 1)));
+            line(imgC, p0, p1, RGB(255, 0, 0),
                     2, 8, 0);
         }
 
-        cvSaveImage(
+        imwrite(
                 "image0-1.png",
                 imgC);
-        cvNamedWindow( "LKpyr_OpticalFlow", 0 );
-        cvShowImage( "LKpyr_OpticalFlow", imgC );
-        cvWaitKey(0);
+        namedWindow("LKpyr_OpticalFlow", 0);
+        imshow("LKpyr_OpticalFlow", imgC);
+        waitKey(0);
     }
 }

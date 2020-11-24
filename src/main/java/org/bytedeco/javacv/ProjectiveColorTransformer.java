@@ -24,8 +24,9 @@ package org.bytedeco.javacv;
 
 import java.util.Arrays;
 
-import static org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.opencv.opencv_core.*;
 import static org.bytedeco.javacv.cvkernels.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
 
 /**
  *

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 Samuel Audet
+ * Copyright (C) 2009-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ import java.util.concurrent.Future;
 public abstract class FrameGrabber implements Closeable {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
-		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "OpenKinect2", "RealSense", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera" }));
+		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "OpenKinect2", "RealSense", "RealSense2", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera" }));
     public static void init() {
         for (String name : list) {
             try {
@@ -178,11 +178,11 @@ public abstract class FrameGrabber implements Closeable {
             SENSOR_PATTERN_BGGR = (1L << 32) | 1;
 
     protected int videoStream = -1, audioStream = -1;
-    protected String format = null;
+    protected String format = null, videoCodecName = null, audioCodecName = null;
     protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
     protected long sensorPattern = -1L;
-    protected int pixelFormat = -1, videoCodec, videoBitrate = 0;
+    protected int pixelFormat = -1, videoCodec, videoBitrate = 0, imageScalingFlags = 0;
     protected double aspectRatio = 0, frameRate = 0;
     protected SampleMode sampleMode = SampleMode.SHORT;
     protected int sampleFormat = -1, audioCodec, audioBitrate = 0, sampleRate = 0;
@@ -221,6 +221,20 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public String getVideoCodecName() {
+        return videoCodecName;
+    }
+    public void setVideoCodecName(String videoCodecName) {
+        this.videoCodecName = videoCodecName;
+    }
+
+    public String getAudioCodecName() {
+        return audioCodecName;
+    }
+    public void setAudioCodecName(String audioCodecName) {
+        this.audioCodecName = audioCodecName;
     }
 
     public int getImageWidth() {
@@ -277,6 +291,13 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setVideoBitrate(int videoBitrate) {
         this.videoBitrate = videoBitrate;
+    }
+
+    public int getImageScalingFlags() {
+        return imageScalingFlags;
+    }
+    public void setImageScalingFlags(int imageScalingFlags) {
+        this.imageScalingFlags = imageScalingFlags;
     }
 
     public double getAspectRatio() {

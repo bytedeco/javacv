@@ -36,12 +36,17 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_features2d.*;
-import static org.bytedeco.javacpp.opencv_flann.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_calib3d.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_features2d.*;
+import org.bytedeco.opencv.opencv_flann.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_calib3d.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_features2d.*;
+import static org.bytedeco.opencv.global.opencv_flann.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  *
@@ -338,8 +343,8 @@ public class ObjectFinder {
         String objectFilename = args.length == 2 ? args[0] : "/usr/local/share/OpenCV/samples/c/box.png";
         String sceneFilename  = args.length == 2 ? args[1] : "/usr/local/share/OpenCV/samples/c/box_in_scene.png";
 
-        IplImage object = cvLoadImage(objectFilename, CV_LOAD_IMAGE_GRAYSCALE);
-        IplImage image  = cvLoadImage(sceneFilename,  CV_LOAD_IMAGE_GRAYSCALE);
+        IplImage object = cvLoadImage(objectFilename, IMREAD_GRAYSCALE);
+        IplImage image  = cvLoadImage(sceneFilename,  IMREAD_GRAYSCALE);
         if (object == null || image == null) {
             System.err.println("Can not load " + objectFilename + " and/or " + sceneFilename);
             System.exit(-1);

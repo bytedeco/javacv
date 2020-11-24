@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 Samuel Audet
+ * Copyright (C) 2009-2020 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -65,20 +65,32 @@ import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.PointerScope;
 import org.bytedeco.javacpp.PointerPointer;
 
-import static org.bytedeco.javacpp.avcodec.*;
-import static org.bytedeco.javacpp.avdevice.*;
-import static org.bytedeco.javacpp.avformat.*;
-import static org.bytedeco.javacpp.avutil.*;
-import static org.bytedeco.javacpp.swresample.*;
-import static org.bytedeco.javacpp.swscale.*;
+import org.bytedeco.ffmpeg.avcodec.*;
+import org.bytedeco.ffmpeg.avformat.*;
+import org.bytedeco.ffmpeg.avutil.*;
+import org.bytedeco.ffmpeg.swresample.*;
+import org.bytedeco.ffmpeg.swscale.*;
+import static org.bytedeco.ffmpeg.global.avcodec.*;
+import static org.bytedeco.ffmpeg.global.avdevice.*;
+import static org.bytedeco.ffmpeg.global.avformat.*;
+import static org.bytedeco.ffmpeg.global.avutil.*;
+import static org.bytedeco.ffmpeg.global.swresample.*;
+import static org.bytedeco.ffmpeg.global.swscale.*;
 
 /**
  *
  * @author Samuel Audet
  */
 public class FFmpegFrameGrabber extends FrameGrabber {
+
+    public static class Exception extends FrameGrabber.Exception {
+        public Exception(String message) { super(message + " (For more details, make sure FFmpegLogCallback.set() has been called.)"); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
+    }
+
     public static String[] getDeviceDescriptions() throws Exception {
         tryLoad();
         throw new UnsupportedOperationException("Device enumeration not support by FFmpeg.");
@@ -94,18 +106,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             throw loadingException;
         } else {
             try {
-                Loader.load(org.bytedeco.javacpp.avutil.class);
-                Loader.load(org.bytedeco.javacpp.swresample.class);
-                Loader.load(org.bytedeco.javacpp.avcodec.class);
-                Loader.load(org.bytedeco.javacpp.avformat.class);
-                Loader.load(org.bytedeco.javacpp.swscale.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avutil.class);
+                Loader.load(org.bytedeco.ffmpeg.global.swresample.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avcodec.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avformat.class);
+                Loader.load(org.bytedeco.ffmpeg.global.swscale.class);
 
                 // Register all formats and codecs
+                av_jni_set_java_vm(Loader.getJavaVM(), null);
                 avcodec_register_all();
                 av_register_all();
                 avformat_network_init();
 
-                Loader.load(org.bytedeco.javacpp.avdevice.class);
+                Loader.load(org.bytedeco.ffmpeg.global.avdevice.class);
                 avdevice_register_all();
             } catch (Throwable t) {
                 if (t instanceof Exception) {
@@ -132,21 +145,39 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         this.pixelFormat = AV_PIX_FMT_NONE;
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
     }
+    /** Calls {@code FFmpegFrameGrabber(inputStream, Integer.MAX_VALUE - 8)}
+     *  so that the whole input stream is seekable. */
     public FFmpegFrameGrabber(InputStream inputStream) {
+        this(inputStream, Integer.MAX_VALUE - 8);
+    }
+    /** Set maximumSize to 0 to disable seek and minimize startup time. */
+    public FFmpegFrameGrabber(InputStream inputStream, int maximumSize) {
         this.inputStream = inputStream;
+        this.closeInputStream = true;
         this.pixelFormat = AV_PIX_FMT_NONE;
         this.sampleFormat = AV_SAMPLE_FMT_NONE;
+        this.maximumSize = maximumSize;
     }
     public void release() throws Exception {
-        // synchronized (org.bytedeco.javacpp.avcodec.class) {
+        synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
             releaseUnsafe();
-        // }
+        }
     }
-    void releaseUnsafe() throws Exception {
+    public synchronized void releaseUnsafe() throws Exception {
+        started = false;
+
+        if (plane_ptr != null && plane_ptr2 != null) {
+            plane_ptr.releaseReference();
+            plane_ptr2.releaseReference();
+            plane_ptr = plane_ptr2 = null;
+        }
+
         if (pkt != null && pkt2 != null) {
             if (pkt2.size() > 0) {
                 av_packet_unref(pkt);
             }
+            pkt.releaseReference();
+            pkt2.releaseReference();
             pkt = pkt2 = null;
         }
 
@@ -220,9 +251,16 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             try {
                 if (oc == null) {
                     // when called a second time
-                    inputStream.close();
-                } else {
-                    inputStream.reset();
+                    if (closeInputStream) {
+                        inputStream.close();
+                    }
+                } else if (maximumSize > 0) {
+                    try {
+                        inputStream.reset();
+                    } catch (IOException ex) {
+                        // "Resetting to invalid mark", give up?
+                        System.err.println("Error on InputStream.reset(): " + ex);
+                    }
                 }
             } catch (IOException ex) {
                 throw new Exception("Error on InputStream.close(): ", ex);
@@ -274,9 +312,36 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         @Override public long call(Pointer opaque, long offset, int whence) {
             try {
                 InputStream is = inputStreams.get(opaque);
+                long size = 0;
                 switch (whence) {
-                    case 0: is.reset(); break;
-                    case 1: break;
+                    case 0: is.reset(); break; // SEEK_SET
+                    case 1: break;             // SEEK_CUR
+                    case 2:                    // SEEK_END
+                        is.reset();
+                        while (true) {
+                            long n = is.skip(Long.MAX_VALUE);
+                            if (n == 0) break;
+                            size += n;
+                        }
+                        offset += size;
+                        is.reset();
+                        break;
+                    case AVSEEK_SIZE:
+                        long remaining = 0;
+                        while (true) {
+                            long n = is.skip(Long.MAX_VALUE);
+                            if (n == 0) break;
+                            remaining += n;
+                        }
+                        is.reset();
+                        while (true) {
+                            long n = is.skip(Long.MAX_VALUE);
+                            if (n == 0) break;
+                            size += n;
+                        }
+                        offset = size - remaining;
+                        is.reset();
+                        break;
                     default: return -1;
                 }
                 long remaining = offset;
@@ -285,7 +350,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     if (skipped == 0) break; // end of the stream
                     remaining -= skipped;
                 }
-                return 0;
+                return whence == AVSEEK_SIZE ? size : 0;
             } catch (Throwable t) {
                 System.err.println("Error on InputStream.reset() or skip(): " + t);
                 return -1;
@@ -293,10 +358,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    static ReadCallback readCallback = new ReadCallback();
-    static SeekCallback seekCallback = new SeekCallback();
+    static ReadCallback readCallback = new ReadCallback().retainReference();
+    static SeekCallback seekCallback = new SeekCallback().retainReference();
 
     private InputStream     inputStream;
+    private boolean         closeInputStream;
+    private int             maximumSize;
     private AVIOContext     avio;
     private String          filename;
     private AVFormatContext oc;
@@ -310,6 +377,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private Buffer[]        samples_buf;
     private BytePointer[]   samples_ptr_out;
     private Buffer[]        samples_buf_out;
+    private PointerPointer  plane_ptr, plane_ptr2;
     private AVPacket        pkt, pkt2;
     private int             sizeof_pkt;
     private int[]           got_frame;
@@ -318,6 +386,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
+
+    private volatile boolean started = false;
+
+    public boolean isCloseInputStream() {
+        return closeInputStream;
+    }
+    public void setCloseInputStream(boolean closeInputStream) {
+        this.closeInputStream = closeInputStream;
+    }
 
     /**
      * Is there a video stream?
@@ -463,6 +540,42 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return sampleRate > 0 || audio_c == null ? super.getSampleRate() : audio_c.sample_rate();
     }
 
+    @Override public Map<String, String> getMetadata() {
+        if (oc == null) {
+            return super.getMetadata();
+        }
+        AVDictionaryEntry entry = null;
+        Map<String, String> metadata = new HashMap<String, String>();
+        while ((entry = av_dict_get(oc.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
+            metadata.put(entry.key().getString(), entry.value().getString());
+        }
+        return metadata;
+    }
+
+    @Override public Map<String, String> getVideoMetadata() {
+        if (video_st == null) {
+            return super.getVideoMetadata();
+        }
+        AVDictionaryEntry entry = null;
+        Map<String, String> metadata = new HashMap<String, String>();
+        while ((entry = av_dict_get(video_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
+            metadata.put(entry.key().getString(), entry.value().getString());
+        }
+        return metadata;
+    }
+
+    @Override public Map<String, String> getAudioMetadata() {
+        if (audio_st == null) {
+            return super.getAudioMetadata();
+        }
+        AVDictionaryEntry entry = null;
+        Map<String, String> metadata = new HashMap<String, String>();
+        while ((entry = av_dict_get(audio_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
+            metadata.put(entry.key().getString(), entry.value().getString());
+        }
+        return metadata;
+    }
+
     @Override public String getMetadata(String key) {
         if (oc == null) {
             return super.getMetadata(key);
@@ -537,10 +650,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  audio (frameTypesToSeek contains only Frame.Type.AUDIO),
      *  or any (frameTypesToSeek contains both)
      */
-    private void setTimestamp(long timestamp, EnumSet<Frame.Type> frameTypesToSeek) throws Exception {
+    private synchronized void setTimestamp(long timestamp, EnumSet<Frame.Type> frameTypesToSeek) throws Exception {
         int ret;
         if (oc == null) {
-            super.setTimestamp(timestamp);
+            super.timestamp = timestamp;
         } else {
             timestamp = timestamp * AV_TIME_BASE / 1000000L;
             /* add the stream start time */
@@ -684,19 +797,35 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return oc;
     }
 
-    public void start() throws Exception {
-        // synchronized (org.bytedeco.javacpp.avcodec.class) {
-            startUnsafe();
-        // }
+    /** Calls {@code start(true)}. */
+    @Override public void start() throws Exception {
+        start(true);
     }
-    void startUnsafe() throws Exception {
+    /** Set findStreamInfo to false to minimize startup time, at the expense of robustness. */
+    public void start(boolean findStreamInfo) throws Exception {
+        synchronized (org.bytedeco.ffmpeg.global.avcodec.class) {
+            startUnsafe(findStreamInfo);
+        }
+    }
+    public void startUnsafe() throws Exception {
+        startUnsafe(true);
+    }
+    public synchronized void startUnsafe(boolean findStreamInfo) throws Exception {
+        try (PointerScope scope = new PointerScope()) {
+
+        if (oc != null && !oc.isNull()) {
+            throw new Exception("start() has already been called: Call stop() before calling start() again.");
+        }
+
         int ret;
         img_convert_ctx = null;
         oc              = new AVFormatContext(null);
         video_c         = null;
         audio_c         = null;
-        pkt             = new AVPacket();
-        pkt2            = new AVPacket();
+        plane_ptr       = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
+        plane_ptr2      = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
+        pkt             = new AVPacket().retainReference();
+        pkt2            = new AVPacket().retainReference();
         sizeof_pkt      = pkt.sizeof();
         got_frame       = new int[1];
         frameGrabbed    = false;
@@ -739,9 +868,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (!inputStream.markSupported()) {
                 inputStream = new BufferedInputStream(inputStream);
             }
-            inputStream.mark(Integer.MAX_VALUE - 8); // so that the whole input stream is seekable
+            inputStream.mark(maximumSize);
             oc = avformat_alloc_context();
-            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, seekCallback);
+            avio = avio_alloc_context(new BytePointer(av_malloc(4096)), 4096, 0, oc, readCallback, null, maximumSize > 0 ? seekCallback : null);
             oc.pb(avio);
 
             filename = inputStream.toString();
@@ -757,8 +886,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         oc.max_delay(maxDelay);
 
-        // Retrieve stream information
-        if ((ret = avformat_find_stream_info(oc, (PointerPointer)null)) < 0) {
+        // Retrieve stream information, if desired
+        if (findStreamInfo && (ret = avformat_find_stream_info(oc, (PointerPointer)null)) < 0) {
             throw new Exception("avformat_find_stream_info() error " + ret + ": Could not find stream information.");
         }
 
@@ -792,7 +921,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (video_st != null) {
             // Find the decoder for the video stream
-            AVCodec codec = avcodec_find_decoder(video_par.codec_id());
+            AVCodec codec = avcodec_find_decoder_by_name(videoCodecName);
+            if (codec == null) {
+                codec = avcodec_find_decoder(video_par.codec_id());
+            }
             if (codec == null) {
                 throw new Exception("avcodec_find_decoder() error: Unsupported video format or codec not found: " + video_par.codec_id() + ".");
             }
@@ -804,14 +936,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(video_c, video_st.codecpar())) < 0) {
-                release();
-                throw new Exception("avcodec_parameters_to_context() error: Could not copy the video stream parameters.");
+                releaseUnsafe();
+                throw new Exception("avcodec_parameters_to_context() error " + ret + ": Could not copy the video stream parameters.");
             }
 
             options = new AVDictionary(null);
             for (Entry<String, String> e : videoOptions.entrySet()) {
                 av_dict_set(options, e.getKey(), e.getValue(), 0);
             }
+
+            // Enable multithreading when available
+            video_c.thread_count(0);
+
             // Open video codec
             if ((ret = avcodec_open2(video_c, codec, options)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open video codec.");
@@ -836,7 +972,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (audio_st != null) {
             // Find the decoder for the audio stream
-            AVCodec codec = avcodec_find_decoder(audio_par.codec_id());
+            AVCodec codec = avcodec_find_decoder_by_name(audioCodecName);
+            if (codec == null) {
+                codec = avcodec_find_decoder(audio_par.codec_id());
+            }
             if (codec == null) {
                 throw new Exception("avcodec_find_decoder() error: Unsupported audio format or codec not found: " + audio_par.codec_id() + ".");
             }
@@ -848,14 +987,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             /* copy the stream parameters from the muxer */
             if ((ret = avcodec_parameters_to_context(audio_c, audio_st.codecpar())) < 0) {
-                release();
-                throw new Exception("avcodec_parameters_to_context() error: Could not copy the audio stream parameters.");
+                releaseUnsafe();
+                throw new Exception("avcodec_parameters_to_context() error " + ret + ": Could not copy the audio stream parameters.");
             }
 
             options = new AVDictionary(null);
             for (Entry<String, String> e : audioOptions.entrySet()) {
                 av_dict_set(options, e.getKey(), e.getValue(), 0);
             }
+
+            // Enable multithreading when available
+            audio_c.thread_count(0);
+
             // Open audio codec
             if ((ret = avcodec_open2(audio_c, codec, options)) < 0) {
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open audio codec.");
@@ -869,6 +1012,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
             samples_ptr = new BytePointer[] { null };
             samples_buf = new Buffer[] { null };
+        }
+        started = true;
+
         }
     }
 
@@ -889,14 +1035,25 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 }
                 int fmt = getPixelFormat();
 
+                // work around bug in swscale: https://trac.ffmpeg.org/ticket/1031
+                int align = 32;
+                int stride = width;
+                for (int i = 1; i <= align; i += i) {
+                     stride = (width + (i - 1)) & ~(i - 1);
+                     av_image_fill_linesizes(picture_rgb.linesize(), fmt, stride);
+                     if ((picture_rgb.linesize(0) & (align - 1)) == 0) {
+                        break;
+                    }
+                }
+
                 // Determine required buffer size and allocate buffer
-                int size = av_image_get_buffer_size(fmt, width, height, 1);
+                int size = av_image_get_buffer_size(fmt, stride, height, 1);
                 image_ptr = new BytePointer[] { new BytePointer(av_malloc(size)).capacity(size) };
                 image_buf = new Buffer[] { image_ptr[0].asBuffer() };
 
                 // Assign appropriate parts of buffer to image planes in picture_rgb
                 // Note that picture_rgb is an AVFrame, but AVFrame is a superset of AVPicture
-                av_image_fill_arrays(new PointerPointer(picture_rgb), picture_rgb.linesize(), image_ptr[0], fmt, width, height, 1);
+                av_image_fill_arrays(new PointerPointer(picture_rgb), picture_rgb.linesize(), image_ptr[0], fmt, stride, height, 1);
                 picture_rgb.format(fmt);
                 picture_rgb.width(width);
                 picture_rgb.height(height);
@@ -912,11 +1069,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    public void stop() throws Exception {
+    @Override public void stop() throws Exception {
         release();
     }
 
-    public void trigger() throws Exception {
+    @Override public synchronized void trigger() throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
         }
@@ -952,7 +1109,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 // Convert the image into BGR or GRAY format that OpenCV uses
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx,
                         video_c.width(), video_c.height(), video_c.pix_fmt(),
-                        frame.imageWidth, frame.imageHeight, getPixelFormat(), SWS_BILINEAR,
+                        frame.imageWidth, frame.imageHeight, getPixelFormat(),
+                        imageScalingFlags != 0 ? imageScalingFlags : SWS_BILINEAR,
                         null, null, (DoublePointer)null);
                 if (img_convert_ctx == null) {
                     throw new Exception("sws_getCachedContext() error: Cannot initialize the conversion context.");
@@ -963,6 +1121,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         video_c.height(), new PointerPointer(picture_rgb), picture_rgb.linesize());
                 frame.imageStride = picture_rgb.linesize(0);
                 frame.image = image_buf;
+                frame.opaque = picture_rgb;
                 break;
 
             case RAW:
@@ -973,6 +1132,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     image_buf[0] = ptr.asBuffer();
                 }
                 frame.image = image_buf;
+                frame.opaque = picture;
                 break;
 
             default:
@@ -996,6 +1156,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.sampleRate = audio_c.sample_rate();
         frame.audioChannels = audio_c.channels();
         frame.samples = samples_buf;
+        frame.opaque = samples_frame;
         int sample_size = data_size / av_get_bytes_per_sample(sample_format);
         for (int i = 0; i < planes; i++) {
             BytePointer p = samples_frame.data(i);
@@ -1067,7 +1228,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             frame.audioChannels = samples_channels;
             frame.samples = samples_buf_out;
 
-            if ((ret = swr_convert(samples_convert_ctx, new PointerPointer(samples_ptr_out), sample_size_out, new PointerPointer(samples_ptr), sample_size_in)) < 0) {
+            if ((ret = swr_convert(samples_convert_ctx, plane_ptr.put(samples_ptr_out), sample_size_out, plane_ptr2.put(samples_ptr), sample_size_in)) < 0) {
                 throw new Exception("swr_convert() error " + ret + ": Cannot convert audio samples.");
             }
             for (int i = 0; i < planes_out; i++) {
@@ -1078,23 +1239,32 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     public Frame grab() throws Exception {
-        return grabFrame(true, true, true, false);
+        return grabFrame(true, true, true, false, true);
     }
     public Frame grabImage() throws Exception {
-        return grabFrame(false, true, true, false);
+        return grabFrame(false, true, true, false, false);
     }
     public Frame grabSamples() throws Exception {
-        return grabFrame(true, false, true, false);
+        return grabFrame(true, false, true, false, false);
     }
     public Frame grabKeyFrame() throws Exception {
-        return grabFrame(false, true, true, true);
+        return grabFrame(false, true, true, true, false);
     }
     public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames) throws Exception {
+        return grabFrame(doAudio, doVideo, doProcessing, keyFrames, true);
+    }
+    public synchronized Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
+        try (PointerScope scope = new PointerScope()) {
+
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
         } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
             return null;
         }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+
         boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
         boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
         frameGrabbed = false;
@@ -1108,20 +1278,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.sampleRate = 0;
         frame.audioChannels = 0;
         frame.samples = null;
+        frame.data = null;
         frame.opaque = null;
         if (doVideo && videoFrameGrabbed) {
             if (doProcessing) {
                 processImage();
             }
             frame.keyFrame = picture.key_frame() != 0;
-            frame.opaque = picture;
             return frame;
         } else if (doAudio && audioFrameGrabbed) {
             if (doProcessing) {
                 processSamples();
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
-            frame.opaque = samples_frame;
             return frame;
         }
         boolean done = false;
@@ -1139,6 +1308,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     }
                 }
             }
+
+            frame.streamIndex = pkt.stream_index();
 
             // Is this a packet from the video stream?
             if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
@@ -1161,7 +1332,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     done = true;
                     frame.timestamp = timestamp;
                     frame.keyFrame = picture.key_frame() != 0;
-                    frame.opaque = picture;
                 } else if (pkt.data() == null && pkt.size() == 0) {
                     return null;
                 }
@@ -1192,9 +1362,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         frame.timestamp = timestamp;
                         frame.keyFrame = samples_frame.key_frame() != 0;
-                        frame.opaque = samples_frame;
                     }
                 }
+            } else if (doData) {
+                // Export the stream byte data for non audio / video frames
+                frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
+                done = true;
             }
 
             if (pkt2.size() <= 0) {
@@ -1203,11 +1376,16 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
         }
         return frame;
+
+        }
     }
 
-    public AVPacket grabPacket() throws Exception {
+    public synchronized AVPacket grabPacket() throws Exception {
         if (oc == null || oc.isNull()) {
-            throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
+            throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
+        }
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
         }
 
         // Return the next frame of a stream.

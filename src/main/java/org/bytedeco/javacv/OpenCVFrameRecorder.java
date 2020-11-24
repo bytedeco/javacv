@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 Samuel Audet
+ * Copyright (C) 2009-2019 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -23,10 +23,14 @@
 package org.bytedeco.javacv;
 
 import java.io.File;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.bytedeco.javacpp.Loader;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_videoio.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_videoio.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_videoio.*;
 
 /**
  *
@@ -42,7 +46,7 @@ public class OpenCVFrameRecorder extends FrameRecorder {
             throw loadingException;
         } else {
             try {
-                Loader.load(org.bytedeco.javacpp.opencv_highgui.class);
+                Loader.load(org.bytedeco.opencv.global.opencv_highgui.class);
             } catch (Throwable t) {
                 throw loadingException = new Exception("Failed to load " + OpenCVFrameRecorder.class, t);
             }
@@ -58,7 +62,8 @@ public class OpenCVFrameRecorder extends FrameRecorder {
         this.imageHeight = imageHeight;
 
         this.pixelFormat = 1;
-        this.videoCodec  = windows ? CV_FOURCC_PROMPT : CV_FOURCC_DEFAULT;
+//        this.videoCodec  = windows ? CV_FOURCC_PROMPT : CV_FOURCC_DEFAULT;
+        this.videoCodec  = windows ? -1 : VideoWriter.fourcc((byte)'I', (byte)'Y', (byte)'U', (byte)'V');
         this.frameRate   = 30;
     }
     public void release() throws Exception {
@@ -77,8 +82,31 @@ public class OpenCVFrameRecorder extends FrameRecorder {
     private VideoWriter writer = null;
     private OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
 
+    public double getOption(int propId) {
+        if (writer != null) {
+            return writer.get(propId);
+        }
+        return Double.parseDouble(options.get(Integer.toString(propId)));
+    }
+    
+    /**
+     *
+     * @param propId Property ID, look at opencv_videoio for possible values
+     * @param value
+     */
+    public void setOption(int propId, double value) {
+        options.put(Integer.toString(propId), Double.toString(value));
+        if (writer != null) {
+            writer.set(propId, value);
+        }
+    }
+
     public void start() throws Exception {
         writer = new VideoWriter(filename, fourCCCodec(), frameRate, new Size(imageWidth, imageHeight), isColour());
+
+        for (Entry<String, String> e : options.entrySet()) {
+            writer.set(Integer.parseInt(e.getKey()), Double.parseDouble(e.getValue()));
+        }
     }
 
     /**
@@ -93,6 +121,9 @@ public class OpenCVFrameRecorder extends FrameRecorder {
      */
     private int fourCCCodec() {
         return videoCodec;
+    }
+
+    public void flush() throws Exception {
     }
 
     public void stop() throws Exception {

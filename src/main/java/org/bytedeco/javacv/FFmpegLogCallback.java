@@ -25,7 +25,8 @@ package org.bytedeco.javacv;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.tools.Logger;
 
-import static org.bytedeco.javacpp.avutil.*;
+import org.bytedeco.ffmpeg.avutil.*;
+import static org.bytedeco.ffmpeg.global.avutil.*;
 
 /**
  * A utility class to redirect to Java log messages from FFmpeg.
@@ -38,7 +39,7 @@ public class FFmpegLogCallback extends LogCallback {
 
     private static final Logger logger = Logger.create(FFmpegLogCallback.class);
 
-    static final FFmpegLogCallback instance = new FFmpegLogCallback();
+    static final FFmpegLogCallback instance = new FFmpegLogCallback().retainReference();
 
     /** Returns an instance that can be used with {@link #setLogCallback(LogCallback)}. */
     public static FFmpegLogCallback getInstance() {
@@ -62,6 +63,7 @@ public class FFmpegLogCallback extends LogCallback {
                 break;
             case AV_LOG_INFO:
                 logger.info(msg.getString());
+                break;
             case AV_LOG_VERBOSE:
             case AV_LOG_DEBUG:
             case AV_LOG_TRACE:

@@ -1,10 +1,9 @@
-package org.bytedeco.javacv;
-
-import org.bytedeco.javacpp.avcodec;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.bytedeco.javacv.*;
+
+import org.bytedeco.ffmpeg.avcodec.AVPacket;
 
 public class PacketRecorderTest {
 
@@ -60,7 +59,7 @@ public class PacketRecorderTest {
         grabber.start();
         recorder.start(grabber.getFormatContext());
 
-        avcodec.AVPacket packet;
+        AVPacket packet;
         long t1 = System.currentTimeMillis();
         while ((packet = grabber.grabPacket()) != null) {
             recorder.recordPacket(packet);

@@ -3,9 +3,11 @@ import java.awt.event.KeyEvent;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
 
 /**
  * I was unable to find the OpenCV squares.c translated into JavaCV, so this

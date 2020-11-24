@@ -90,7 +90,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.bytedeco.javacpp.avutil;
+import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.FFmpegFrameFilter;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
@@ -111,7 +111,7 @@ public class RecordActivity extends Activity implements OnClickListener {
     private boolean isPreviewOn = false;
 
     /*Filter information, change boolean to true if adding a fitler*/
-    private boolean addFilter = false;
+    private boolean addFilter = true;
     private String filterString = "";
     FFmpegFrameFilter filter;
 
@@ -145,7 +145,7 @@ public class RecordActivity extends Activity implements OnClickListener {
     private Button btnRecorderControl;
 
     /* The number of seconds in the continuous record loop (or 0 to disable loop). */
-    final int RECORD_LENGTH = 10;
+    final int RECORD_LENGTH = 0;
     Frame[] images;
     long[] timestamps;
     ShortBuffer[] samples;
@@ -228,6 +228,21 @@ public class RecordActivity extends Activity implements OnClickListener {
 
         Log.w(LOG_TAG,"init recorder");
 
+        Log.i(LOG_TAG, "ffmpeg_url: " + ffmpeg_link);
+        recorder = new FFmpegFrameRecorder(ffmpeg_link, imageWidth, imageHeight, 1);
+        recorder.setFormat("flv");
+        recorder.setSampleRate(sampleAudioRateInHz);
+        // Set in the surface changed method
+        recorder.setFrameRate(frameRate);
+
+        // The filterString  is any ffmpeg filter.
+        // Here is the link for a list: https://ffmpeg.org/ffmpeg-filters.html
+        filterString = "transpose=2,crop=w=200:h=200:x=0:y=0";
+        filter = new FFmpegFrameFilter(filterString, imageWidth, imageHeight);
+
+        //default format on android
+        filter.setPixelFormat(avutil.AV_PIX_FMT_NV21);
+
         if (RECORD_LENGTH > 0) {
             imagesIndex = 0;
             images = new Frame[RECORD_LENGTH * frameRate];
@@ -240,21 +255,6 @@ public class RecordActivity extends Activity implements OnClickListener {
             yuvImage = new Frame(imageWidth, imageHeight, Frame.DEPTH_UBYTE, 2);
             Log.i(LOG_TAG, "create yuvImage");
         }
-
-        Log.i(LOG_TAG, "ffmpeg_url: " + ffmpeg_link);
-        recorder = new FFmpegFrameRecorder(ffmpeg_link, imageWidth, imageHeight, 1);
-        recorder.setFormat("flv");
-        recorder.setSampleRate(sampleAudioRateInHz);
-        // Set in the surface changed method
-        recorder.setFrameRate(frameRate);
-
-        // The filterString  is any ffmpeg filter.
-        // Here is the link for a list: https://ffmpeg.org/ffmpeg-filters.html
-        filterString = "transpose=0";
-        filter = new FFmpegFrameFilter(filterString, imageWidth, imageHeight);
-
-        //default format on android
-        filter.setPixelFormat(avutil.AV_PIX_FMT_NV21);
 
         Log.i(LOG_TAG, "recorder initialize success");
 
@@ -562,7 +562,7 @@ public class RecordActivity extends Activity implements OnClickListener {
                         filter.push(yuvImage);
                         Frame frame2;
                         while ((frame2 = filter.pull()) != null) {
-                            recorder.record(frame2);
+                            recorder.record(frame2, filter.getPixelFormat());
                         }
                     } else {
                         recorder.record(yuvImage);

@@ -22,10 +22,13 @@
 
 package org.bytedeco.javacv;
 
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
+import org.bytedeco.opencv.opencv_calib3d.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
 import static org.bytedeco.javacv.cvkernels.*;
+import static org.bytedeco.opencv.global.opencv_calib3d.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 /**
  *
@@ -489,7 +492,7 @@ public class ProjectiveTransformer implements ImageTransformer {
                         t2 = CvMat.create(3, 1);
                     }
                     t2.put(0, projectiveParameters, 0, 3);
-                    cvRodrigues2(t2, R2, null);
+                    Rodrigues(cvarrToMat(t2), cvarrToMat(R2), null);
                     t2.put(0, projectiveParameters, 3, 3);
 
                     // H = R-tn^T

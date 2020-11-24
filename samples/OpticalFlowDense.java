@@ -1,8 +1,12 @@
-
 import java.nio.FloatBuffer;
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
-import static org.bytedeco.javacpp.opencv_video.*;
+
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_optflow.*;
+import org.bytedeco.opencv.opencv_video.*;
+import static org.bytedeco.opencv.global.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.*;
+import static org.bytedeco.opencv.global.opencv_optflow.*;
+import static org.bytedeco.opencv.global.opencv_video.*;
 
 /**
  * This code will calculate the optical flow for every pixel using DenseOpticalFlow between two images (Frame-1 &
@@ -13,15 +17,14 @@ import static org.bytedeco.javacpp.opencv_video.*;
 public class OpticalFlowDense {
 
     public static void main(final String[] args) {
-        final Mat pFrame = imread("samples/image0.png",
-                CV_LOAD_IMAGE_GRAYSCALE),
-                cFrame = imread("samples/image1.png", CV_LOAD_IMAGE_GRAYSCALE),
+        final Mat pFrame = imread("samples/image0.png", IMREAD_GRAYSCALE),
+                cFrame = imread("samples/image1.png", IMREAD_GRAYSCALE),
                 pGray = new Mat(), cGray = new Mat(), Optical_Flow = new Mat();
 
         pFrame.convertTo(pGray, CV_32FC1);
         cFrame.convertTo(cGray, CV_32FC1);
 
-        final DenseOpticalFlow tvl1 = createOptFlow_DualTVL1();
+        final DenseOpticalFlow tvl1 = DualTVL1OpticalFlow.create();
         tvl1.calc(pGray, cGray, Optical_Flow);
 
         final Mat OF = new Mat(pGray.rows(), pGray.cols(), CV_32FC1);
