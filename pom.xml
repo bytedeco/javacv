@@ -70,7 +70,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas</artifactId>
-      <version>0.3.12-${javacpp.version}</version>
+      <version>0.3.13-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -110,7 +110,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>librealsense2</artifactId>
-      <version>2.38.1-${javacpp.version}</version>
+      <version>2.40.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
