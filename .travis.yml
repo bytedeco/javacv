@@ -52,7 +52,7 @@ jobs:
       install:
         - brew install gpg1
         - brew tap AdoptOpenJDK/openjdk
-        - brew cask install adoptopenjdk8
+        - brew install --cask adoptopenjdk8
         - export JAVA_HOME=$(/usr/libexec/java_home -v1.8)
       script:
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml
