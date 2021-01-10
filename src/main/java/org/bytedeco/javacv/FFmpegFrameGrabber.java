@@ -659,33 +659,43 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             super.setTimestamp(timestamp);
         } else {
             timestamp = timestamp * AV_TIME_BASE / 1000000L;
-            /*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
-            *  the desired but few frames after. In case we need a frame-precision seek we may
-            *  try to request an earlier timestamp.
-            */  
-            long early_ts = timestamp - ((frameTypesToSeek == null || frameTypesToSeek.isEmpty())?0L:500000L);
-            if (early_ts < 0L)early_ts = 0L; 
-            /* add the stream start time */
-            long tsp0 = 0, tsv0 = 0, tsa0 = 0;
             
-            if (oc.start_time() != AV_NOPTS_VALUE) tsp0 = oc.start_time();
-            if (video_st!=null && video_st.start_time() != AV_NOPTS_VALUE) {
-            	AVRational time_base = video_st.time_base();
-            	tsv0 = 1000000L * video_st.start_time() * time_base.num() / time_base.den(); 
+            /* the stream start time */
+            long ts0 = 0;
+            if (oc.start_time() != AV_NOPTS_VALUE) ts0 = oc.start_time();
+              
+            long early_ts = timestamp; 
+            if (frameTypesToSeek!=null) {
+            	/*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
+                 *  the desired but few frames after. In case we need a frame-precision seek we may
+                 *  try to request an earlier timestamp.
+                 */
+            	early_ts -= 500000L;
+	            if (early_ts < 0L)early_ts = 0L; 
+	            
+	            /*  If frameTypesToSeek is set explicitly to VIDEO or AUDIO
+	             *  we need to use start time of the corresponding stream
+	             *  instead of the common start time  
+                 */
+	            if (frameTypesToSeek.size()==1) {
+		            if (frameTypesToSeek.contains(Frame.Type.VIDEO)) {
+	            		if (video_st!=null && video_st.start_time() != AV_NOPTS_VALUE) {
+	            			AVRational time_base = video_st.time_base();
+	            			ts0 = 1000000L * video_st.start_time() * time_base.num() / time_base.den(); 
+	            		}
+		            }
+		            else if (frameTypesToSeek.contains(Frame.Type.AUDIO)) {
+		            	if (audio_st!=null && audio_st.start_time() != AV_NOPTS_VALUE) {
+			            	AVRational time_base = audio_st.time_base();
+			            	ts0 = 1000000L * audio_st.start_time() * time_base.num() / time_base.den();  
+			            }
+		            }
+	            }
             }
-            else tsv0 = tsp0;
-            if (audio_st!=null && audio_st.start_time() != AV_NOPTS_VALUE) {
-            	AVRational time_base = audio_st.time_base();
-            	tsa0 = 1000000L * audio_st.start_time() * time_base.num() / time_base.den();  
-            }
-            else tsa0 = tsp0;
-            double ts0 = tsp0;
-            if (frameTypesToSeek!=null && frameTypesToSeek.size()==1)
-            	if (frameTypesToSeek.contains(Frame.Type.VIDEO)) ts0 = tsv0;
-            	else if (frameTypesToSeek.contains(Frame.Type.AUDIO)) ts0 = tsa0;
-            	
-            timestamp += (long)ts0;
-            early_ts += (long)ts0;
+            
+            /* add the stream start time */
+            timestamp += ts0;
+            early_ts += ts0;
             
         
             if ((ret = avformat_seek_file(oc, -1, Long.MIN_VALUE, early_ts, Long.MAX_VALUE, AVSEEK_FLAG_BACKWARD)) < 0) {
