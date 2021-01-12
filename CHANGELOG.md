@@ -1,4 +1,9 @@
 
+ * Fix frame rate and aspect ratio on `FFmpegFrameRecorder.start(AVFormatContext)` ([pull #1535](https://github.com/bytedeco/javacv/pull/1535))
+ * Upgrade dependencies for OpenBLAS 0.3.13, OpenCV 4.5.1, librealsense2 2.40.0
+ * Update unit tests to use codecs available in FFmpeg under LGPL v3 ([pull bytedeco/javacpp-presets#950](https://github.com/bytedeco/javacpp-presets/pull/950))
+ * Add `RealSense2FrameGrabber.tryLoad()` method and missing entries for librealsense2 ([issue bytedeco/procamcalib#25](https://github.com/bytedeco/procamcalib/issues/25))
+
 ### September 9, 2020 version 1.5.4
  * Fix error message thrown from `FFmpegFrameRecorder.start()` not containing filename ([pull #1492](https://github.com/bytedeco/javacv/pull/1492))
  * Fix `FFmpegFrameFilter.pull()` not returning audio/video frames without audio/video filtergraph ([issue #1466](https://github.com/bytedeco/javacv/issues/1466))

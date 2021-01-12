@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Florian Bruggisser
+ * Copyright (C) 2019-2020 Florian Bruggisser, Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 package org.bytedeco.javacv;
 
 import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.librealsense2.*;
 import org.bytedeco.opencv.opencv_core.IplImage;
@@ -34,6 +35,23 @@ import static org.bytedeco.librealsense2.global.realsense2.*;
 import static org.bytedeco.opencv.global.opencv_core.*;
 
 public class RealSense2FrameGrabber extends FrameGrabber {
+
+    private static FrameGrabber.Exception loadingException = null;
+
+    public static void tryLoad() throws FrameGrabber.Exception {
+        if (loadingException != null) {
+            loadingException.printStackTrace();
+            throw loadingException;
+        } else {
+            try {
+                Loader.load(org.bytedeco.librealsense2.presets.realsense2.class);
+                System.out.println("RealSense2 devices found: " + getDeviceDescriptions().length);
+            } catch (Throwable t) {
+                throw loadingException = new FrameGrabber.Exception("Failed to load " + RealSense2FrameGrabber.class, t);
+            }
+        }
+    }
+
     private rs2_error error = new rs2_error();
     private rs2_context context;
     private rs2_device device;

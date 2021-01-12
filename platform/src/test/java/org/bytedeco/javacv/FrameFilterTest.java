@@ -49,7 +49,7 @@ public class FrameFilterTest {
             recorder.setFormat("mov");
             recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
             recorder.setFrameRate(30);
-            recorder.setVideoCodec(AV_CODEC_ID_H265);
+            recorder.setVideoCodec(AV_CODEC_ID_H264);
             recorder.setVideoQuality(10);
             recorder.setSampleFormat(AV_SAMPLE_FMT_FLTP);
             recorder.setSampleRate(48000);

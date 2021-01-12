@@ -85,6 +85,11 @@ import static org.bytedeco.ffmpeg.global.avutil.*;
  */
 public class FFmpegFrameFilter extends FrameFilter {
 
+    public static class Exception extends FrameFilter.Exception {
+        public Exception(String message) { super(message + " (For more details, make sure FFmpegLogCallback.set() has been called.)"); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
+    }
+
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {
         if (loadingException != null) {

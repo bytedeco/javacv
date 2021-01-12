@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.5.4</version>
+  <version>1.5.5-SNAPSHOT</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV, FFmpeg, and more</description>
@@ -70,12 +70,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas</artifactId>
-      <version>0.3.10-${javacpp.version}</version>
+      <version>0.3.13-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
-      <version>4.4.0-${javacpp.version}</version>
+      <version>4.5.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -110,7 +110,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>librealsense2</artifactId>
-      <version>2.29.0-${javacpp.version}</version>
+      <version>2.40.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -210,7 +210,7 @@
             </manifest>
             <manifestEntries>
               <!-- <addClasspath/> is broken: http://jira.codehaus.org/browse/MJAR-61 -->
-              <Class-Path>javacpp.jar openblas.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar libfreenect2.jar librealsense.jar videoinput.jar artoolkitplus.jar flandmark.jar leptonica.jar tesseract.jar</Class-Path>
+              <Class-Path>javacpp.jar openblas.jar opencv.jar ffmpeg.jar flycapture.jar libdc1394.jar libfreenect.jar libfreenect2.jar librealsense.jar librealsense2.jar videoinput.jar artoolkitplus.jar flandmark.jar leptonica.jar tesseract.jar</Class-Path>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Vendor>Bytedeco</Implementation-Vendor>
               <Implementation-Version>${project.version}</Implementation-Version>
@@ -288,6 +288,7 @@
                 <link>http://bytedeco.org/javacpp-presets/libfreenect/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/libfreenect2/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/librealsense/apidocs</link>
+                <link>http://bytedeco.org/javacpp-presets/librealsense2/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/videoinput/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/artoolkitplus/apidocs</link>
                 <link>http://bytedeco.org/javacpp-presets/flandmark/apidocs</link>
@@ -297,7 +298,7 @@
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/gluegen/javadoc</link>
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jocl/javadoc</link>
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jogl/javadoc</link>
-                <link>http://junit.org/junit4/javadoc/4.12</link>
+                <link>http://junit.org/junit4/javadoc/4.13.1</link>
               </links>
             </configuration>
           </execution>
@@ -318,6 +319,20 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>OpenJFX-8</id>
+      <activation>
+        <jdk>(,11)</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>net.java.openjfx.backport</groupId>
+          <artifactId>openjfx-78-backport</artifactId>
+          <version>1.8.0-ea-b96.1</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
     <profile>
       <id>OpenJFX-11</id>
       <activation>

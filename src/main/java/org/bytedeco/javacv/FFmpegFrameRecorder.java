@@ -92,6 +92,12 @@ import static org.bytedeco.ffmpeg.global.swscale.*;
  * @author Samuel Audet
  */
 public class FFmpegFrameRecorder extends FrameRecorder {
+
+    public static class Exception extends FrameRecorder.Exception {
+        public Exception(String message) { super(message + " (For more details, make sure FFmpegLogCallback.set() has been called.)"); }
+        public Exception(String message, Throwable cause) { super(message, cause); }
+    }
+
     public static FFmpegFrameRecorder createDefault(File f, int w, int h)   throws Exception { return new FFmpegFrameRecorder(f, w, h); }
     public static FFmpegFrameRecorder createDefault(String f, int w, int h) throws Exception { return new FFmpegFrameRecorder(f, w, h); }
 
@@ -473,7 +479,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     inpVideoStream = inputStream;
                     videoCodec = inpVideoStream.codec().codec_id();
                     if (inpVideoStream.r_frame_rate().num() != AV_NOPTS_VALUE && inpVideoStream.r_frame_rate().den() != 0) {
-                        frameRate = (inpVideoStream.r_frame_rate().num()) / (inpVideoStream.r_frame_rate().den());
+                        frameRate = (inpVideoStream.r_frame_rate().num())*1.0d / (inpVideoStream.r_frame_rate().den());
                     }
 
                 } else if (inputStream.codec().codec_type() == AVMEDIA_TYPE_AUDIO) {
@@ -530,7 +536,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
                 videoBitrate = (int) inpVideoStream.codec().bit_rate();
                 pixelFormat = inpVideoStream.codec().pix_fmt();
-                aspectRatio = inpVideoStream.codec().sample_aspect_ratio().den() / inpVideoStream.codec().sample_aspect_ratio().den() * 1.d;
+                aspectRatio = inpVideoStream.codec().sample_aspect_ratio().num()*1.0d/ inpVideoStream.codec().sample_aspect_ratio().den();
                 videoQuality = inpVideoStream.codec().global_quality();
                 video_c.codec_tag(0);
             }
