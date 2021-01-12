@@ -479,10 +479,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     /**Estimation of audio frames per second.
-     * 
-     * Care must be taken as this method may require unnecessary call of 
+     *
+     * Care must be taken as this method may require unnecessary call of
      * grabFrame(true, false, false, false, false) with frameGrabbed set to true.
-     * 
+     *
      * @return (double) getSampleRate()) / samples_frame.nb_samples()
      * if samples_frame.nb_samples() is not zero, otherwise return 0
      */
@@ -492,7 +492,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } else {
             if (samples_frame == null || samples_frame.nb_samples() == 0) {
                 try {
-                	grabFrame(true, false, false, false, false);
+                    grabFrame(true, false, false, false, false);
                     frameGrabbed = true;
                 } catch (Exception e) {
                     return 0.0;
@@ -640,7 +640,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     /** setTimestamp with resulting video frame type if there is a video stream.
      * This should provide precise seek to a video frame containing the requested timestamp
-     * in most cases.   
+     * in most cases.
      * */
     public void setVideoTimestamp(long timestamp) throws Exception {
         setTimestamp(timestamp, EnumSet.of(Frame.Type.VIDEO));
@@ -648,7 +648,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     /** setTimestamp with resulting audio frame type if there is an audio stream.
      * This should provide precise seek to an audio frame containing the requested timestamp
-     * in most cases.   
+     * in most cases.
      * */
     public void setAudioTimestamp(long timestamp) throws Exception {
         setTimestamp(timestamp, EnumSet.of(Frame.Type.AUDIO));
@@ -665,45 +665,44 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             super.timestamp = timestamp;
         } else {
             timestamp = timestamp * AV_TIME_BASE / 1000000L;
-            
+
             /* the stream start time */
             long ts0 = 0;
             if (oc.start_time() != AV_NOPTS_VALUE) ts0 = oc.start_time();
-              
-            long early_ts = timestamp; 
+
+            long early_ts = timestamp;
             if (frameTypesToSeek!=null) {
-            	/*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
+                /*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
                  *  the desired but few frames after. In case we need a frame-precision seek we may
                  *  try to request an earlier timestamp.
                  */
-            	early_ts -= 500000L;
-	            if (early_ts < 0L)early_ts = 0L; 
-	            
-	            /*  If frameTypesToSeek is set explicitly to VIDEO or AUDIO
-	             *  we need to use start time of the corresponding stream
-	             *  instead of the common start time  
+                early_ts -= 500000L;
+                if (early_ts < 0L)early_ts = 0L;
+
+                /*  If frameTypesToSeek is set explicitly to VIDEO or AUDIO
+                 *  we need to use start time of the corresponding stream
+                 *  instead of the common start time
                  */
-	            if (frameTypesToSeek.size()==1) {
-		            if (frameTypesToSeek.contains(Frame.Type.VIDEO)) {
-	            		if (video_st!=null && video_st.start_time() != AV_NOPTS_VALUE) {
-	            			AVRational time_base = video_st.time_base();
-	            			ts0 = 1000000L * video_st.start_time() * time_base.num() / time_base.den(); 
-	            		}
-		            }
-		            else if (frameTypesToSeek.contains(Frame.Type.AUDIO)) {
-		            	if (audio_st!=null && audio_st.start_time() != AV_NOPTS_VALUE) {
-			            	AVRational time_base = audio_st.time_base();
-			            	ts0 = 1000000L * audio_st.start_time() * time_base.num() / time_base.den();  
-			            }
-		            }
-	            }
+                if (frameTypesToSeek.size()==1) {
+                    if (frameTypesToSeek.contains(Frame.Type.VIDEO)) {
+                        if (video_st!=null && video_st.start_time() != AV_NOPTS_VALUE) {
+                            AVRational time_base = video_st.time_base();
+                            ts0 = 1000000L * video_st.start_time() * time_base.num() / time_base.den();
+                        }
+                    }
+                    else if (frameTypesToSeek.contains(Frame.Type.AUDIO)) {
+                        if (audio_st!=null && audio_st.start_time() != AV_NOPTS_VALUE) {
+                            AVRational time_base = audio_st.time_base();
+                            ts0 = 1000000L * audio_st.start_time() * time_base.num() / time_base.den();
+                        }
+                    }
+                }
             }
-            
+
             /* add the stream start time */
             timestamp += ts0;
             early_ts += ts0;
-            
-        
+
             if ((ret = avformat_seek_file(oc, -1, Long.MIN_VALUE, early_ts, Long.MAX_VALUE, AVSEEK_FLAG_BACKWARD)) < 0) {
                 throw new Exception("avformat_seek_file() error " + ret + ": Could not seek file to timestamp " + timestamp + ".");
             }
@@ -734,7 +733,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
              */
 
             if (frameTypesToSeek != null //new code providing check of frame content while seeking to the timestamp
-            		&& (frameTypesToSeek.contains(Frame.Type.VIDEO) || frameTypesToSeek.contains(Frame.Type.AUDIO))) { 
+                    && (frameTypesToSeek.contains(Frame.Type.VIDEO) || frameTypesToSeek.contains(Frame.Type.AUDIO))) {
                 boolean has_video = hasVideo();
                 boolean has_audio = hasAudio();
 
@@ -749,34 +748,34 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     Frame seekFrame = null;
                     seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
                     if (seekFrame == null) return;
-                    
+
                     initialSeekPosition = seekFrame.timestamp;
                     double frameDuration = 0.0;
-                    if (seekFrame.image != null && this.getFrameRate() > 0) 
-                    	frameDuration =  AV_TIME_BASE / (double)getFrameRate();
+                    if (seekFrame.image != null && this.getFrameRate() > 0)
+                        frameDuration =  AV_TIME_BASE / (double)getFrameRate();
                     else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0) {
-                    	frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
+                        frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
                     }
                     if(frameDuration>0.0) {
-                    	maxSeekSteps = (long)(10*(timestamp - initialSeekPosition - frameDuration)/frameDuration);
-                    	if (maxSeekSteps<0) maxSeekSteps = 0;
+                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition - frameDuration)/frameDuration);
+                        if (maxSeekSteps<0) maxSeekSteps = 0;
                     }
                     else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
-                    
-                    double delta = 0.0; //for the timestamp correction 
+
+                    double delta = 0.0; //for the timestamp correction
                     count = 0;
                     while(count < maxSeekSteps) {
                         seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
                         if (seekFrame == null) return; //is it better to throw NullPointerException?
-                        
+
                         count++;
                         double ts=this.timestamp;
                         frameDuration = 0.0;
-                        if (seekFrame.image != null && this.getFrameRate() > 0) 
-                        	frameDuration =  AV_TIME_BASE / (double)getFrameRate();
+                        if (seekFrame.image != null && this.getFrameRate() > 0)
+                            frameDuration =  AV_TIME_BASE / (double)getFrameRate();
                         else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0)
-                        	frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
-                        	 
+                            frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
+
                         delta = 0.0;
                         if (frameDuration>0.0) {
                             delta = (ts-ts0)/frameDuration - Math.round((ts-ts0)/frameDuration);
