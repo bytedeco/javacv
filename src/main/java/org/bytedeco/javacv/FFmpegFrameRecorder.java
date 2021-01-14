@@ -1047,7 +1047,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             video_pkt.data(video_outbuf);
             video_pkt.size(video_outbuf_size);
             picture.quality(video_c.global_quality());
-            if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null || image.length == 0 ? null : picture, got_video_packet)) < 0) {
+            if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null || image.length == 0 ? null : picture, got_video_packet)) < 0
+                    && image != null && image.length != 0) {
                 throw new Exception("avcodec_encode_video2() error " + ret + ": Could not encode video packet.");
             }
             picture.pts(picture.pts() + 1); // magic required by libx264
