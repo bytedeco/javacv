@@ -184,7 +184,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         // Free the RGB image
         if (image_ptr != null) {
             for (int i = 0; i < image_ptr.length; i++) {
-                av_free(image_ptr[i]);
+                if (imageMode != ImageMode.RAW) {
+                    av_free(image_ptr[i]);
+                }
             }
             image_ptr = null;
         }

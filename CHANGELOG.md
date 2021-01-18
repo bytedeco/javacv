@@ -1,4 +1,5 @@
 
+ * Fix crash on `FFmpegFrameRecorder.stop()` when in `ImageMode.RAW` ([issue #1568](https://github.com/bytedeco/javacv/issues/1568))
  * Let `FFmpegFrameRecorder.flush()` ignore errors from the encoder ([issue #1563](https://github.com/bytedeco/javacv/issues/1563))
  * Improve `FFmpegFrameGrabber.setTimestamp()` and fix `getAudioFrameRate()` ([pull #1559](https://github.com/bytedeco/javacv/pull/1559))
  * Fix frame rate and aspect ratio on `FFmpegFrameRecorder.start(AVFormatContext)` ([pull #1535](https://github.com/bytedeco/javacv/pull/1535))
