@@ -192,9 +192,9 @@ public class YOLONet {
      * @return List of objects
      */
     private List<ObjectDetectionResult> postprocess(Mat frame, MatVector outs) {
-        IntVector classIds = new IntVector();
-        FloatVector confidences = new FloatVector();
-        RectVector boxes = new RectVector();
+        final IntVector classIds = new IntVector();
+        final FloatVector confidences = new FloatVector();
+        final RectVector boxes = new RectVector();
 
         for (int i = 0; i < outs.size(); ++i) {
             // extract the bounding boxes that have a high enough score
@@ -243,10 +243,10 @@ public class YOLONet {
         // create result list
         List<ObjectDetectionResult> detections = new ArrayList<>();
         for (int i = 0; i < indices.limit(); ++i) {
-            int idx = indices.get(i);
-            Rect box = boxes.get(idx);
+            final int idx = indices.get(i);
+            final Rect box = boxes.get(idx);
 
-            int clsId = classIds.get(idx);
+            final int clsId = classIds.get(idx);
 
             detections.add(new ObjectDetectionResult() {{
                 classId = clsId;

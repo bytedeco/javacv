@@ -1,4 +1,5 @@
 
+ * Add new `YOLONet` sample for object detection ([pull #1595](https://github.com/bytedeco/javacv/pull/1595))
  * Fix crash on `FFmpegFrameGrabber.stop()` when in `ImageMode.RAW` ([issue #1568](https://github.com/bytedeco/javacv/issues/1568))
  * Let `FFmpegFrameRecorder.flush()` ignore errors from the encoder ([issue #1563](https://github.com/bytedeco/javacv/issues/1563))
  * Improve `FFmpegFrameGrabber.setTimestamp()` and fix `getAudioFrameRate()` ([pull #1559](https://github.com/bytedeco/javacv/pull/1559))
