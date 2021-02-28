@@ -4,7 +4,7 @@
  * Let `FFmpegFrameRecorder.flush()` ignore errors from the encoder ([issue #1563](https://github.com/bytedeco/javacv/issues/1563))
  * Improve `FFmpegFrameGrabber.setTimestamp()` and fix `getAudioFrameRate()` ([pull #1559](https://github.com/bytedeco/javacv/pull/1559))
  * Fix frame rate and aspect ratio on `FFmpegFrameRecorder.start(AVFormatContext)` ([pull #1535](https://github.com/bytedeco/javacv/pull/1535))
- * Upgrade dependencies for OpenBLAS 0.3.13, OpenCV 4.5.1, librealsense2 2.40.0
+ * Upgrade dependencies for OpenBLAS 0.3.13, OpenCV 4.5.1, FFmpeg 4.3.2, librealsense2 2.40.0
  * Update unit tests to use codecs available in FFmpeg under LGPL v3 ([pull bytedeco/javacpp-presets#950](https://github.com/bytedeco/javacpp-presets/pull/950))
  * Add `RealSense2FrameGrabber.tryLoad()` method and missing entries for librealsense2 ([issue bytedeco/procamcalib#25](https://github.com/bytedeco/procamcalib/issues/25))
 
