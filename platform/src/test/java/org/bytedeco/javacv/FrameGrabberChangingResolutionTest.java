@@ -72,6 +72,9 @@ public class FrameGrabberChangingResolutionTest {
         }
         recorder.stop();
         recorder.release();
+        for (int n = 0; n < frames.length; n++) {
+            frames[n].close();
+        }
     }
 
     final public void setupUDPSender(final int x, final int y, final int bandwidth, final int count) throws IOException {

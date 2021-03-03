@@ -1,4 +1,5 @@
 
+ * Have `Frame` and `FrameConverter` implement `AutoCloseable` to release memory explicitly ([issue #1574](https://github.com/bytedeco/javacv/issues/1574))
  * Add new `YOLONet` sample for object detection ([pull #1595](https://github.com/bytedeco/javacv/pull/1595))
  * Fix crash on `FFmpegFrameGrabber.stop()` when in `ImageMode.RAW` ([issue #1568](https://github.com/bytedeco/javacv/issues/1568))
  * Let `FFmpegFrameRecorder.flush()` ignore errors from the encoder ([issue #1563](https://github.com/bytedeco/javacv/issues/1563))

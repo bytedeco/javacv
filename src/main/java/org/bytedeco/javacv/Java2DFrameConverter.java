@@ -728,6 +728,9 @@ public class Java2DFrameConverter extends FrameConverter<BufferedImage> {
         }
         if (frame == null || frame.imageWidth != image.getWidth() || frame.imageHeight != image.getHeight()
                 || frame.imageDepth != depth || frame.imageChannels != numChannels) {
+            if (frame != null) {
+                frame.close();
+            }
             frame = new Frame(image.getWidth(), image.getHeight(), depth, numChannels);
         }
         copy(image, frame, gamma, flipChannels, null);

@@ -137,6 +137,9 @@ public class FrameConverterTest {
 
         colorFrameIdx.release();
         grayFrameIdx.release();
+        converter.close();
+        colorFrame.close();
+        grayFrame.close();
     }
 
     @Test public void testJava2DFrameConverter() {
@@ -179,6 +182,8 @@ public class FrameConverterTest {
 
                 frameIdx.release();
                 frame2Idx.release();
+                converter.close();
+                frame.close();
             }
         }
 
@@ -205,6 +210,7 @@ public class FrameConverterTest {
                       | ((array2[4 * j + 2] & 0xFF) << 8)  |  (array2[4 * j + 3] & 0xFF);
                 assertEquals(array[j], n);
             }
+            converter.close();
         }
     }
 
@@ -294,6 +300,10 @@ public class FrameConverterTest {
         frame1Idx.release();
         frame2Idx.release();
         frame3Idx.release();
+        converter1.close();
+        converter2.close();
+        converter3.close();
+        frame.close();
     }
 
     @Test public void testLeptonicaFrameConverter() {
@@ -358,5 +368,7 @@ public class FrameConverterTest {
 
         pix2.deallocate();
         pix.deallocate();
+        converter.close();
+        frame.close();
     }
 }

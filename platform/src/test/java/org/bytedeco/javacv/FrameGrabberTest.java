@@ -125,12 +125,16 @@ public class FrameGrabberTest {
                         m++;
                     }
                 }
+                clone2.close();
             }
             assertEquals(frames.length, n);
             assertEquals(null, grabber.grab());
             grabber.restart();
             grabber.stop();
             grabber.release();
+            for (n = 0; n < frames.length; n++) {
+                frames[n].close();
+            }
         } catch (Exception e) {
             fail("Exception should not have been thrown: " + e);
         } finally {
@@ -229,6 +233,9 @@ public class FrameGrabberTest {
                         grabber.restart();
                         grabber.stop();
                         grabber.release();
+                        for (n = 0; n < frames.length; n++) {
+                            frames[n].close();
+                        }
                     } catch (Error | Exception e) {
                         failed[0] = true;
                         fail("Exception should not have been thrown: " + e);
@@ -321,6 +328,7 @@ public class FrameGrabberTest {
                         recorder.record(audioFrame);
                     }
                 }
+                frame.close();
             } else {
                 Frame audioFrame = new Frame();
                 ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);

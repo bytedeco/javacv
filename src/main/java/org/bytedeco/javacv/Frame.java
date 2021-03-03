@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 Samuel Audet
+ * Copyright (C) 2015-2021 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ import org.bytedeco.javacpp.indexer.UShortIndexer;
  *
  * @author Samuel Audet
  */
-public class Frame implements Indexable {
+public class Frame implements AutoCloseable, Indexable {
     /** A flag set by a FrameGrabber or a FrameRecorder to indicate a key frame. */
     public boolean keyFrame;
 
@@ -142,7 +142,7 @@ public class Frame implements Indexable {
             case DEPTH_DOUBLE: image[0] = buffer.asDoubleBuffer(); break;
             default: throw new UnsupportedOperationException("Unsupported depth value: " + imageDepth);
         }
-        opaque = pointer;
+        opaque = new Pointer[] {pointer.retainReference()};
     }
 
     /** Returns {@code createIndexer(true, 0)}. */
@@ -339,6 +339,9 @@ public class Frame implements Indexable {
             }
         }
 
+        if (opaque != null) {
+            opaque.retainReference();
+        }
         return opaque;
     }
 
@@ -349,5 +352,17 @@ public class Frame implements Indexable {
         if (samples != null) type.add(Type.AUDIO);
         if (data != null) type.add(Type.DATA);
         return type;
+    }
+
+    @Override public void close() {
+        if (opaque instanceof Pointer[]) {
+            for (Pointer p : (Pointer[])opaque) {
+                if (p != null) {
+                    p.releaseReference();
+                    p = null;
+                }
+            }
+            opaque = null;
+        }
     }
 }
