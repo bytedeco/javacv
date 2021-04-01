@@ -927,9 +927,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else {
                 av_write_frame(oc, null);
             }
-
-            /* write the trailer, if any */
-            av_write_trailer(oc);
         }
     }
 
@@ -937,6 +934,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (oc != null) {
             try {
                 flush();
+
+                /* write the trailer, if any */
+                av_write_trailer(oc);
             } finally {
                 release();
             }
