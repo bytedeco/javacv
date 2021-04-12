@@ -24,6 +24,8 @@ import org.bytedeco.opencv.opencv_core.Size;
 /**
  * OpenCV similarity measurement examples:
  * https://docs.opencv.org/master/d5/dc4/tutorial_video_input_psnr_ssim.html
+ *
+ * @author n-kai-cj
  */
 public class Similarity {
     private static double getPSNR(Mat I1, Mat I2) {
