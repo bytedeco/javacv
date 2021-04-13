@@ -50,6 +50,7 @@ jobs:
       language: java
       env: PLATFORMS="macosx-x86_64"
       install:
+        - brew update
         - brew install gpg1
         - brew tap AdoptOpenJDK/openjdk
         - brew install --cask adoptopenjdk8
