@@ -109,6 +109,7 @@ public class FrameGrabberChangingResolutionTest {
                     fr.close();
                     b[0] = true;
                 } catch (Exception e) {
+                    e.printStackTrace();
                     fail("Exception should not have been thrown: " + e);
                     try {
                         fg.close();
@@ -186,6 +187,7 @@ public class FrameGrabberChangingResolutionTest {
                     assertTrue(n <= 480);
                     fr.close();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     fail("Exception should not have been thrown: " + e);
                     try {
                         fg.close();
@@ -238,6 +240,7 @@ public class FrameGrabberChangingResolutionTest {
         } catch (Exception e) {
             tempFile.delete();
             tempTargetFile.delete();
+            e.printStackTrace();
             fail("Exception should not have been thrown: " + e);
         }
 
@@ -264,6 +267,7 @@ public class FrameGrabberChangingResolutionTest {
             grabber.stop();
             grabber.release();
         } catch (Exception e) {
+            e.printStackTrace();
             fail("Exception should not have been thrown: " + e);
         } finally {
             tempFile.delete();

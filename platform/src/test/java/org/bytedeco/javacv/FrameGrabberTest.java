@@ -136,6 +136,7 @@ public class FrameGrabberTest {
                 frames[n].close();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             fail("Exception should not have been thrown: " + e);
         } finally {
             tempFile.delete();
@@ -238,6 +239,7 @@ public class FrameGrabberTest {
                         }
                     } catch (Error | Exception e) {
                         failed[0] = true;
+                        e.printStackTrace();
                         fail("Exception should not have been thrown: " + e);
                     } finally {
                         tempFile.delete();

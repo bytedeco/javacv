@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Samuel Audet
+ * Copyright (C) 2015-2021 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -49,6 +49,16 @@ public class FFmpegLogCallback extends LogCallback {
     /** Calls {@code avutil.setLogCallback(getInstance())}. */
     public static void set() {
         setLogCallback(getInstance());
+    }
+
+    /** Returns {@code av_log_get_level()}. **/
+    public static int getLevel() {
+        return av_log_get_level();
+    }
+
+    /** Calls {@code av_log_set_level(level)}. **/
+    public static void setLevel(int level) {
+        av_log_set_level(level);
     }
 
     @Override public void call(int level, BytePointer msg) {
