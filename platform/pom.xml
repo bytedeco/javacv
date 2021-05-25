@@ -28,7 +28,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas-platform</artifactId>
-      <version>0.3.14-${javacpp.version}</version>
+      <version>0.3.15-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -68,7 +68,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>librealsense2-platform</artifactId>
-      <version>2.40.0-${javacpp.version}</version>
+      <version>2.44.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
