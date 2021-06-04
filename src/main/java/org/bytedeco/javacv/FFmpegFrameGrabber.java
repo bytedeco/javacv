@@ -388,7 +388,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
-
+	private long            startTime;
     private volatile boolean started = false;
 
     public boolean isCloseInputStream() {
@@ -1291,165 +1291,187 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames) throws Exception {
         return grabFrame(doAudio, doVideo, doProcessing, keyFrames, true);
     }
-    public synchronized Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
-        try (PointerScope scope = new PointerScope()) {
-
-        if (oc == null || oc.isNull()) {
-            throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
-        } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
-            return null;
-        }
-        if (!started) {
-            throw new Exception("start() was not called successfully!");
-        }
-
-        boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
-        boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
-        frameGrabbed = false;
-        frame.keyFrame = false;
-        frame.imageWidth = 0;
-        frame.imageHeight = 0;
-        frame.imageDepth = 0;
-        frame.imageChannels = 0;
-        frame.imageStride = 0;
-        frame.image = null;
-        frame.sampleRate = 0;
-        frame.audioChannels = 0;
-        frame.samples = null;
-        frame.data = null;
-        frame.opaque = null;
-        if (doVideo && videoFrameGrabbed) {
-            if (doProcessing) {
-                processImage();
-            }
-            frame.keyFrame = picture.key_frame() != 0;
-            return frame;
-        } else if (doAudio && audioFrameGrabbed) {
-            if (doProcessing) {
-                processSamples();
-            }
-            frame.keyFrame = samples_frame.key_frame() != 0;
-            return frame;
-        }
-        boolean done = false;
-        boolean readPacket = pkt.stream_index() == -1;
-        while (!done) {
-            int ret = 0;
-            if (readPacket) {
-                if (pkt.stream_index() != -1) {
-                    // Free the packet that was allocated by av_read_frame
-                    av_packet_unref(pkt);
-                }
-                if ((ret = av_read_frame(oc, pkt)) < 0) {
-                    if (doVideo && video_st != null) {
-                        // The video codec may have buffered some frames
-                        pkt.stream_index(video_st.index());
-                        pkt.flags(AV_PKT_FLAG_KEY);
-                        pkt.data(null);
-                        pkt.size(0);
-                    } else {
-                        pkt.stream_index(-1);
-                        return null;
-                    }
-                }
-            }
-
-            frame.streamIndex = pkt.stream_index();
-
-            // Is this a packet from the video stream?
-            if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
-                    && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
-                // Decode video frame
-                if (readPacket) {
-                    ret = avcodec_send_packet(video_c, pkt);
-                    if (pkt.data() == null && pkt.size() == 0) {
-                        pkt.stream_index(-1);
-                        if (ret < 0) {
-                            return null;
-                        }
-                    }
-                    if (ret < 0) {
-                        throw new Exception("avcodec_send_packet() error " + ret + ": Error sending a video packet for decoding.");
-                    }
-                }
-
-                // Did we get a video frame?
-                got_frame[0] = 0;
-                while (ret >= 0 && !done) {
-                    ret = avcodec_receive_frame(video_c, picture);
-                    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
-                        readPacket = true;
-                        break;
-                    } else if (ret < 0) {
-                        throw new Exception("avcodec_receive_frame() error " + ret + ": Error during video decoding.");
-                    }
-                    got_frame[0] = 1;
-
-                    if (!keyFrames || picture.pict_type() == AV_PICTURE_TYPE_I) {
-                        long pts = picture.best_effort_timestamp();
-                        AVRational time_base = video_st.time_base();
-                        timestamp = 1000000L * pts * time_base.num() / time_base.den();
-                        // best guess, AVCodecContext.frame_number = number of decoded frames...
-                        frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
-                        frame.image = image_buf;
-                        if (doProcessing) {
-                            processImage();
-                        }
+    public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
+	    return _grabFrame(doAudio, doVideo, doProcessing, keyFrames, doData, false);
+    }
+	public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData,boolean atFrameRate) throws Exception {
+		return _grabFrame(doAudio, doVideo, doProcessing, keyFrames, doData, atFrameRate);
+	}
+	
+    private synchronized Frame _grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData ,boolean atFrameRate)throws Exception{
+	    try (PointerScope scope = new PointerScope()) {
+		
+		    if (oc == null || oc.isNull()) {
+			    throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
+		    } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
+			    return null;
+		    }
+		    if (!started) {
+			    throw new Exception("start() was not called successfully!");
+		    }
+		
+		    boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
+		    boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
+		    frameGrabbed = false;
+		    frame.keyFrame = false;
+		    frame.imageWidth = 0;
+		    frame.imageHeight = 0;
+		    frame.imageDepth = 0;
+		    frame.imageChannels = 0;
+		    frame.imageStride = 0;
+		    frame.image = null;
+		    frame.sampleRate = 0;
+		    frame.audioChannels = 0;
+		    frame.samples = null;
+		    frame.data = null;
+		    frame.opaque = null;
+		    if (doVideo && videoFrameGrabbed) {
+			    if (doProcessing) {
+				    processImage();
+			    }
+			    frame.keyFrame = picture.key_frame() != 0;
+			    return frame;
+		    } else if (doAudio && audioFrameGrabbed) {
+			    if (doProcessing) {
+				    processSamples();
+			    }
+			    frame.keyFrame = samples_frame.key_frame() != 0;
+			    return frame;
+		    }
+		    boolean done = false;
+		    boolean readPacket = pkt.stream_index() == -1;
+		    while (!done) {
+			    int ret = 0;
+			    if (readPacket) {
+				    if (pkt.stream_index() != -1) {
+					    // Free the packet that was allocated by av_read_frame
+					    av_packet_unref(pkt);
+				    }
+				    if ((ret = av_read_frame(oc, pkt)) < 0) {
+					    if (doVideo && video_st != null) {
+						    // The video codec may have buffered some frames
+						    pkt.stream_index(video_st.index());
+						    pkt.flags(AV_PKT_FLAG_KEY);
+						    pkt.data(null);
+						    pkt.size(0);
+					    } else {
+						    pkt.stream_index(-1);
+						    return null;
+					    }
+				    }
+			    }
+			
+			    frame.streamIndex = pkt.stream_index();
+			
+			    // Is this a packet from the video stream?
+			    if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
+				    && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
+				    // Decode video frame
+				    if (readPacket) {
+					    ret = avcodec_send_packet(video_c, pkt);
+					    if (pkt.data() == null && pkt.size() == 0) {
+						    pkt.stream_index(-1);
+						    if (ret < 0) {
+							    return null;
+						    }
+					    }
+					    if (ret < 0) {
+						    throw new Exception("avcodec_send_packet() error " + ret + ": Error sending a video packet for decoding.");
+					    }
+				    }
+				
+				    // Did we get a video frame?
+				    got_frame[0] = 0;
+				    while (ret >= 0 && !done) {
+					    ret = avcodec_receive_frame(video_c, picture);
+					    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+						    readPacket = true;
+						    break;
+					    } else if (ret < 0) {
+						    throw new Exception("avcodec_receive_frame() error " + ret + ": Error during video decoding.");
+					    }
+					    got_frame[0] = 1;
+					
+					    if (!keyFrames || picture.pict_type() == AV_PICTURE_TYPE_I) {
+						    long pts = picture.best_effort_timestamp();
+						    AVRational time_base = video_st.time_base();
+						    timestamp = 1000000L * pts * time_base.num() / time_base.den();
+						    // best guess, AVCodecContext.frame_number = number of decoded frames...
+						    frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
+						    frame.image = image_buf;
+						    if (doProcessing) {
+							    processImage();
+						    }
                         /* the picture is allocated by the decoder. no need to
                            free it */
-                        done = true;
-                        frame.timestamp = timestamp;
-                        frame.keyFrame = picture.key_frame() != 0;
-                    }
-                }
-            } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
-                // Decode audio frame
-                if (readPacket) {
-                    ret = avcodec_send_packet(audio_c, pkt);
-                    if (ret < 0) {
-                        throw new Exception("avcodec_send_packet() error " + ret + ": Error sending an audio packet for decoding.");
-                    }
-                }
-
-                // Did we get an audio frame?
-                got_frame[0] = 0;
-                while (ret >= 0 && !done) {
-                    ret = avcodec_receive_frame(audio_c, samples_frame);
-                    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
-                        readPacket = true;
-                        break;
-                    } else if (ret < 0) {
-                        throw new Exception("avcodec_receive_frame() error " + ret + ": Error during audio decoding.");
-                    }
-                    got_frame[0] = 1;
-
-                    long pts = samples_frame.best_effort_timestamp();
-                    AVRational time_base = audio_st.time_base();
-                    timestamp = 1000000L * pts * time_base.num() / time_base.den();
-                    frame.samples = samples_buf;
-                    /* if a frame has been decoded, output it */
-                    if (doProcessing) {
-                        processSamples();
-                    }
-                    done = true;
-                    frame.timestamp = timestamp;
-                    frame.keyFrame = samples_frame.key_frame() != 0;
-                }
-            } else if (doData) {
-                if (!readPacket) {
-                    readPacket = true;
-                    continue;
-                }
-                // Export the stream byte data for non audio / video frames
-                frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
-                done = true;
-            }
-        }
-        return frame;
-
-        }
+						    done = true;
+						    frame.timestamp = timestamp;
+						    frame.keyFrame = picture.key_frame() != 0;
+					    }
+				    }
+			    } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
+				    // Decode audio frame
+				    if (readPacket) {
+					    ret = avcodec_send_packet(audio_c, pkt);
+					    if (ret < 0) {
+						    throw new Exception("avcodec_send_packet() error " + ret + ": Error sending an audio packet for decoding.");
+					    }
+				    }
+				
+				    // Did we get an audio frame?
+				    got_frame[0] = 0;
+				    while (ret >= 0 && !done) {
+					    ret = avcodec_receive_frame(audio_c, samples_frame);
+					    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+						    readPacket = true;
+						    break;
+					    } else if (ret < 0) {
+						    throw new Exception("avcodec_receive_frame() error " + ret + ": Error during audio decoding.");
+					    }
+					    got_frame[0] = 1;
+					
+					    long pts = samples_frame.best_effort_timestamp();
+					    AVRational time_base = audio_st.time_base();
+					    timestamp = 1000000L * pts * time_base.num() / time_base.den();
+					    frame.samples = samples_buf;
+					    /* if a frame has been decoded, output it */
+					    if (doProcessing) {
+						    processSamples();
+					    }
+					    done = true;
+					    frame.timestamp = timestamp;
+					    frame.keyFrame = samples_frame.key_frame() != 0;
+				    }
+			    } else if (doData) {
+				    if (!readPacket) {
+					    readPacket = true;
+					    continue;
+				    }
+				    // Export the stream byte data for non audio / video frames
+				    frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
+				    done = true;
+			    }
+		    }
+		    
+		    //  Simulate the "-re" parameter in ffmpeg
+		    if (atFrameRate) {
+			    if (startTime == 0) {
+				    startTime = System.currentTimeMillis();
+			    } else {
+				    long delay = frame.timestamp / 1000 - (System.currentTimeMillis() - startTime);
+				    if (delay > 0) {
+					    Thread.sleep(delay);
+				    }
+			    }
+		    }
+		    return frame;
+		
+	    } catch (InterruptedException e) {
+		    throw new RuntimeException(e.getMessage());
+	    }
+	
     }
-
+    
     public synchronized AVPacket grabPacket() throws Exception {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
