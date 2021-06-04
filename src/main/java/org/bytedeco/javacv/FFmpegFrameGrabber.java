@@ -386,7 +386,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private boolean         frameGrabbed;
     private Frame           frame;
 	private long            startTime;
-	private boolean         globalAtFrameRate;
+	private boolean         atFrameRate=false;
     private volatile boolean started = false;
 
     public boolean isCloseInputStream() {
@@ -419,6 +419,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } else {
             return gamma;
         }
+    }
+
+    public boolean isAtFrameRate() {
+        return atFrameRate;
+    }
+
+    public void setAtFrameRate(boolean atFrameRate) {
+        this.atFrameRate = atFrameRate;
     }
 
     @Override public String getFormat() {
@@ -848,11 +856,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         startUnsafe(true);
     }
     public synchronized void startUnsafe(boolean findStreamInfo) throws Exception {
-	    String reValue = this.getOption("re");
-	    if (Objects.equals(reValue,"true")) {
-		    this.globalAtFrameRate = true;
-	    }
-    	
         try (PointerScope scope = new PointerScope()) {
 
         if (oc != null && !oc.isNull()) {
@@ -1295,13 +1298,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return grabFrame(doAudio, doVideo, doProcessing, keyFrames, true);
     }
     public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData) throws Exception {
-	    return _grabFrame(doAudio, doVideo, doProcessing, keyFrames, doData, false);
+	    return _grabFrame(doAudio, doVideo, doProcessing, keyFrames, doData);
     }
-	public Frame grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData,boolean atFrameRate) throws Exception {
-		return _grabFrame(doAudio, doVideo, doProcessing, keyFrames, doData, atFrameRate);
-	}
+
 	
-    private synchronized Frame _grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData ,boolean atFrameRate)throws Exception{
+    private synchronized Frame _grabFrame(boolean doAudio, boolean doVideo, boolean doProcessing, boolean keyFrames, boolean doData)throws Exception{
 	    try (PointerScope scope = new PointerScope()) {
 		
 		    if (oc == null || oc.isNull()) {
@@ -1457,7 +1458,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 		    }
 		    
 		    //  Simulate the "-re" parameter in ffmpeg
-		    if (atFrameRate||globalAtFrameRate) {
+		    if (atFrameRate) {
 			    if (startTime == 0) {
 				    startTime = System.currentTimeMillis();
 			    } else {
