@@ -56,10 +56,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
@@ -389,6 +386,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private boolean         frameGrabbed;
     private Frame           frame;
 	private long            startTime;
+	private boolean         globalAtFrameRate;
     private volatile boolean started = false;
 
     public boolean isCloseInputStream() {
@@ -850,6 +848,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         startUnsafe(true);
     }
     public synchronized void startUnsafe(boolean findStreamInfo) throws Exception {
+	    String reValue = this.getOption("re");
+	    if (Objects.equals(reValue,"true")) {
+		    this.globalAtFrameRate = true;
+	    }
+    	
         try (PointerScope scope = new PointerScope()) {
 
         if (oc != null && !oc.isNull()) {
@@ -1052,7 +1055,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             samples_buf = new Buffer[] { null };
         }
         started = true;
-
+        
         }
     }
 
@@ -1454,7 +1457,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 		    }
 		    
 		    //  Simulate the "-re" parameter in ffmpeg
-		    if (atFrameRate) {
+		    if (atFrameRate||globalAtFrameRate) {
 			    if (startTime == 0) {
 				    startTime = System.currentTimeMillis();
 			    } else {
