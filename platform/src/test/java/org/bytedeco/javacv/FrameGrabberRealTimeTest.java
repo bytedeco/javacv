@@ -10,6 +10,7 @@ public class FrameGrabberRealTimeTest {
 	public static final String url = "";
 	public static final String file = "";
 	
+	@Test
 	public void testWithMethodCall() throws FFmpegFrameGrabber.Exception, FFmpegFrameRecorder.Exception {
 		FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(file);
 		grabber.start();
@@ -32,6 +33,7 @@ public class FrameGrabberRealTimeTest {
 		}
 		
 	}
+	@Test
 	public void testWithGlobalConfig() throws FFmpegFrameGrabber.Exception, FFmpegFrameRecorder.Exception {
 		FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(file);
 		grabber.setOption("re","true");
@@ -44,7 +46,7 @@ public class FrameGrabberRealTimeTest {
 			recorder.setTimestamp(grabber.getTimestamp());
 			recorder.start();
 			Frame frame = null;
-			while ((frame = grabber.grabFrame(true,true,true,false,true,true)) != null) {
+			while ((frame = grabber.grab()) != null) {
 				recorder.record(frame);
 			}
 		} finally {
