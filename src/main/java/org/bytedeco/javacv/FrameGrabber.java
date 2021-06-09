@@ -22,8 +22,6 @@
 
 package org.bytedeco.javacv;
 
-import org.bytedeco.librealsense.frame;
-
 import java.beans.PropertyEditorSupport;
 import java.io.Closeable;
 import java.io.File;
