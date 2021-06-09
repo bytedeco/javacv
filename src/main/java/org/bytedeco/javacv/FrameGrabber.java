@@ -22,6 +22,8 @@
 
 package org.bytedeco.javacv;
 
+import org.bytedeco.librealsense.frame;
+
 import java.beans.PropertyEditorSupport;
 import java.io.Closeable;
 import java.io.File;
@@ -201,6 +203,7 @@ public abstract class FrameGrabber implements Closeable {
     protected int frameNumber = 0;
     protected long timestamp = 0;
     protected int maxDelay = -1;
+	protected long startTime = 0;
 
     public int getVideoStream() {
         return videoStream;
@@ -724,4 +727,17 @@ public abstract class FrameGrabber implements Closeable {
     public Array createArray(FrameGrabber[] frameGrabbers) {
         return new Array(frameGrabbers);
     }
+	
+	public Frame grabAtFrameRate() throws Exception, InterruptedException {
+		Frame frame = grab();
+		if (startTime == 0) {
+			startTime = System.currentTimeMillis();
+		} else {
+			long delay = frame.timestamp / 1000 - (System.currentTimeMillis() - startTime);
+			if (delay > 0) {
+				Thread.sleep(delay);
+			}
+		}
+		return frame;
+	}
 }
