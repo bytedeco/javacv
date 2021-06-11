@@ -93,7 +93,8 @@ public class FrameGrabberTest {
 
             int n = 0, m = 0;
             Frame frame2;
-            while ((frame2 = grabber.grab()) != null) {
+            long startTime = System.nanoTime();
+            while ((frame2 = grabber.grabAtFrameRate()) != null) {
                 Frame clone2 = frame2.clone();
                 if (frame2.image != null) {
                     Frame frame = frames[n++];
@@ -127,6 +128,8 @@ public class FrameGrabberTest {
                 }
                 clone2.close();
             }
+            long stopTime = System.nanoTime();
+            assertEquals(n, (stopTime - startTime) * grabber.getFrameRate() / 1_000_000_000, 10.0);
             assertEquals(frames.length, n);
             assertEquals(null, grabber.grab());
             grabber.restart();

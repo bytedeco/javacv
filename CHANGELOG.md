@@ -1,4 +1,5 @@
 
+ * Add `FrameGrabber.grabAtFrameRate()` to simulate a device or stream when reading from files ([pull #1659](https://github.com/bytedeco/javacv/pull/1659))
  * Update `FFmpegFrameGrabber` and `FFmpegFrameRecorder` with new `avcodec` API ([issue #1498](https://github.com/bytedeco/javacv/issues/1498))
  * Add new `Similarity` sample with PSNR and MSSIM ([pull #1622](https://github.com/bytedeco/javacv/pull/1622))
  * Avoid crash in `FFmpegFrameRecorder.stop()` by moving `av_write_trailer()` out of `flush()` ([issue #1616](https://github.com/bytedeco/javacv/issues/1616))
