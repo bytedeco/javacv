@@ -45,7 +45,7 @@ import java.util.concurrent.Future;
 public abstract class FrameGrabber implements Closeable {
 
     public static final List<String> list = new LinkedList<String>(Arrays.asList(new String[] {
-		"DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "OpenKinect2", "RealSense", "RealSense2", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera" }));
+        "DC1394", "FlyCapture", "FlyCapture2", "OpenKinect", "OpenKinect2", "RealSense", "RealSense2", "PS3Eye", "VideoInput", "OpenCV", "FFmpeg", "IPCamera" }));
     public static void init() {
         for (String name : list) {
             try {
@@ -201,7 +201,7 @@ public abstract class FrameGrabber implements Closeable {
     protected int frameNumber = 0;
     protected long timestamp = 0;
     protected int maxDelay = -1;
-	protected long startTime = 0;
+    protected long startTime = 0;
 
     public int getVideoStream() {
         return videoStream;
@@ -725,17 +725,27 @@ public abstract class FrameGrabber implements Closeable {
     public Array createArray(FrameGrabber[] frameGrabbers) {
         return new Array(frameGrabbers);
     }
-	
-	public Frame grabAtFrameRate() throws Exception, InterruptedException {
-		Frame frame = grab();
-		if (startTime == 0) {
-			startTime = System.currentTimeMillis();
-		} else {
-			long delay = frame.timestamp / 1000 - (System.currentTimeMillis() - startTime);
-			if (delay > 0) {
-				Thread.sleep(delay);
-			}
-		}
-		return frame;
-	}
+
+    /** Returns {@code frame = grab()} after {@code waitForTimestamp(frame)}. */
+    public Frame grabAtFrameRate() throws Exception, InterruptedException {
+        Frame frame = grab();
+        if (frame != null) {
+            waitForTimestamp(frame);
+        }
+        return frame;
+    }
+
+    /** Returns true if {@code Thread.sleep()} had to be called. */
+    public boolean waitForTimestamp(Frame frame) throws InterruptedException {
+        if (startTime == 0) {
+            startTime = System.nanoTime() / 1000 - frame.timestamp;
+        } else {
+            long delay = frame.timestamp - (System.nanoTime() / 1000 - startTime);
+            if (delay > 0) {
+                Thread.sleep(delay / 1000, (int)(delay % 1000) * 1000);
+                return true;
+            }
+        }
+        return false;
+    }
 }
