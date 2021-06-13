@@ -97,10 +97,6 @@ public class JavaFxPlayVideoAndAudio extends Application {
                             outBuffer.putShort(val);
                         }
 
-                        /*
-                         * We need this because soundLine.write ignores
-                         * interruptions during writing.
-                         */
                         executor.submit(new Runnable() { public void run() {
                             soundLine.write(outBuffer.array(), 0, outBuffer.capacity());
                             outBuffer.clear();
