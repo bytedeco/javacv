@@ -131,7 +131,7 @@ public class JavaFxPlayVideoAndAudio extends Application {
                                     try {
                                         Thread.sleep(delayMillis);
                                     } catch (InterruptedException e) {
-                                        e.printStackTrace();
+                                        Thread.currentThread().interrupt();
                                     }
                                 }
                                 Platform.runLater(new Runnable() {
