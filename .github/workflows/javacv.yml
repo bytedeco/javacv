@@ -10,14 +10,22 @@ env:
 jobs:
   linux-x86_64:
     runs-on: ubuntu-16.04
-    container: centos:7
+    container: ubuntu:xenial
     steps:
-      - uses: bytedeco/javacpp-presets/.github/actions/deploy-centos@actions
+      - uses: bytedeco/javacpp-presets/.github/actions/deploy-ubuntu@actions
+      - uses: mxschmitt/action-tmate@v3.5
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        with:
+          sudo: false
   macosx-x86_64:
     runs-on: macos-10.15
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-macosx@actions
+      - uses: mxschmitt/action-tmate@v3.5
+        if: ${{ github.event_name == 'workflow_dispatch' }}
   windows-x86_64:
     runs-on: windows-2019
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-windows@actions
+      - uses: mxschmitt/action-tmate@v3.5
+        if: ${{ github.event_name == 'workflow_dispatch' }}

@@ -4,7 +4,7 @@
  * Update `FFmpegFrameGrabber` and `FFmpegFrameRecorder` with new `avcodec` API ([issue #1498](https://github.com/bytedeco/javacv/issues/1498))
  * Add new `Similarity` sample with PSNR and MSSIM ([pull #1622](https://github.com/bytedeco/javacv/pull/1622))
  * Avoid crash in `FFmpegFrameRecorder.stop()` by moving `av_write_trailer()` out of `flush()` ([issue #1616](https://github.com/bytedeco/javacv/issues/1616))
- * Upgrade dependencies for OpenBLAS 0.3.15, OpenCV 4.5.2, FFmpeg 4.4, librealsense2 2.44.0, Leptonica 1.81.1
+ * Upgrade dependencies for OpenBLAS 0.3.17, OpenCV 4.5.3, FFmpeg 4.4, librealsense2 2.44.0, Leptonica 1.81.1
 
 ### March 8, 2021 version 1.5.5
  * Have `Frame` and `FrameConverter` implement `AutoCloseable` to release memory explicitly ([issue #1574](https://github.com/bytedeco/javacv/issues/1574))
