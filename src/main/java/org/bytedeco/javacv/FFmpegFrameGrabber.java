@@ -1364,22 +1364,26 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     ret = avcodec_send_packet(video_c, pkt);
                     if (pkt.data() == null && pkt.size() == 0) {
                         pkt.stream_index(-1);
-                        if (ret < 0) {
-                            return null;
-                        }
                     }
-                    if (ret < 0) {
-                        throw new Exception("avcodec_send_packet() error " + ret + ": Error sending a video packet for decoding.");
+                    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+                        // The video codec may have buffered some frames
+                    } else if (ret < 0) {
+                        // Ignore errors to emulate the behavior of the old API
+                        // throw new Exception("avcodec_send_packet() error " + ret + ": Error sending a video packet for decoding.");
                     }
                 }
 
                 // Did we get a video frame?
                 got_frame[0] = 0;
-                while (ret >= 0 && !done) {
+                while (!done) {
                     ret = avcodec_receive_frame(video_c, picture);
                     if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
-                        readPacket = true;
-                        break;
+                        if (pkt.data() == null && pkt.size() == 0) {
+                            return null;
+                        } else {
+                            readPacket = true;
+                            break;
+                        }
                     } else if (ret < 0) {
                         throw new Exception("avcodec_receive_frame() error " + ret + ": Error during video decoding.");
                     }
@@ -1413,7 +1417,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
                 // Did we get an audio frame?
                 got_frame[0] = 0;
-                while (ret >= 0 && !done) {
+                while (!done) {
                     ret = avcodec_receive_frame(audio_c, samples_frame);
                     if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
                         readPacket = true;
