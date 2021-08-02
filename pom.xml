@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.5.6-SNAPSHOT</version>
+  <version>1.5.6</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV, FFmpeg, and more</description>
@@ -412,6 +412,19 @@
           <value>true</value>
         </property>
       </activation>
+      <repositories>
+        <repository>
+          <id>sonatype-nexus-staging</id>
+          <name>Sonatype Nexus Staging</name>
+          <url>https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${stagingRepositoryId}/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
       <build>
         <plugins>
           <plugin>
