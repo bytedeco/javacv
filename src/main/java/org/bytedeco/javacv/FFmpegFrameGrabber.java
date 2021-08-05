@@ -1411,7 +1411,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 if (readPacket) {
                     ret = avcodec_send_packet(audio_c, pkt);
                     if (ret < 0) {
-                        throw new Exception("avcodec_send_packet() error " + ret + ": Error sending an audio packet for decoding.");
+                        // Ignore errors to emulate the behavior of the old API
+                        // throw new Exception("avcodec_send_packet() error " + ret + ": Error sending an audio packet for decoding.");
                     }
                 }
 
