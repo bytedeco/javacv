@@ -1,5 +1,5 @@
 
- * Ignore errors from `avcodec_send_packet()` to emulate old API in `FFmpegFrameGrabber` ([issue #1679](https://github.com/bytedeco/javacv/issues/1679))
+ * Ignore errors from `avcodec_send_packet()` and `avcodec_receive_frame()` to emulate old API in `FFmpegFrameGrabber` ([issue #1679](https://github.com/bytedeco/javacv/issues/1679))
 
 ### August 2, 2021 version 1.5.6
  * Enhance audio and video synchronization of `JavaFxPlayVideoAndAudio` sample ([pull #1662](https://github.com/bytedeco/javacv/pull/1662))
