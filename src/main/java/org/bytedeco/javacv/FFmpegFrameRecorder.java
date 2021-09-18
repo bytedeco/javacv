@@ -1047,7 +1047,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             picture.quality(video_c.global_quality());
             if ((ret = avcodec_send_frame(video_c, image == null || image.length == 0 ? null : picture)) < 0
                     && image != null && image.length != 0) {
-                throw new Exception("avcodec_send_frame() error " + ret + ": Error sending a video frame for encoding.");
+                // Ignore errors to emulate the behavior of the old API
+                // throw new Exception("avcodec_send_frame() error " + ret + ": Error sending a video frame for encoding.");
             }
             picture.pts(picture.pts() + 1); // magic required by libx264
 
