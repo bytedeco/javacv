@@ -948,16 +948,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         record(frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public synchronized void record(Frame frame, int pixelFormat) throws Exception {
-        if (frame == null || (frame.image == null && frame.samples == null)) {
-            recordImage(0, 0, 0, 0, 0, pixelFormat, (Buffer[])null);
+        if (frame.image != null) {
+            frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
+                    frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
+        } else if (frame.samples != null) {
+            frame.keyFrame = recordSamples(frame.sampleRate, frame.audioChannels, frame.samples);
         } else {
-            if (frame.image != null) {
-                frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
-                        frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
-            }
-            if (frame.samples != null) {
-                frame.keyFrame = recordSamples(frame.sampleRate, frame.audioChannels, frame.samples);
-            }
+            System.err.println("Warning: FFmpegFrameRecorder ignore non video and audio frame");
         }
     }
 
@@ -1047,8 +1044,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             picture.quality(video_c.global_quality());
             if ((ret = avcodec_send_frame(video_c, image == null || image.length == 0 ? null : picture)) < 0
                     && image != null && image.length != 0) {
-                // Ignore errors to emulate the behavior of the old API
-                // throw new Exception("avcodec_send_frame() error " + ret + ": Error sending a video frame for encoding.");
+                 throw new Exception("avcodec_send_frame() error " + ret + ": Error sending a video frame for encoding.");
             }
             picture.pts(picture.pts() + 1); // magic required by libx264
 
