@@ -17,8 +17,8 @@ import org.bytedeco.opencv.opencv_core.Mat;
  *
  * All created Frame, Mat, IplImages and BufferedImages are cloned internally
  * after creation so that their memory locations remain valid after the
- * converters which created them are garbage collected. This is safer for the
- * called, but may be slower.
+ * converters which created them are closed or garbage collected. This is safer
+ * for the caller, but may be slower.
  *
  * If performance is critical, use the *FrameConverter classes directly, after
  * reading about the image validity constraints (eg, images data is only valid

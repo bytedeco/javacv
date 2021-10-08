@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 Samuel Audet
+ * Copyright (C) 2009-2021 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
  *
  * Based on the output-example.c file included in FFmpeg 0.6.5
  * as well as on the decoding_encoding.c file included in FFmpeg 0.11.1,
+ * and on the encode_video.c file included in FFmpeg 4.4,
  * which are covered by the following copyright notice:
  *
  * Libavformat API example: Output a media file in any supported
@@ -927,9 +928,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else {
                 av_write_frame(oc, null);
             }
-
-            /* write the trailer, if any */
-            av_write_trailer(oc);
         }
     }
 
@@ -937,6 +935,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         if (oc != null) {
             try {
                 flush();
+
+                /* write the trailer, if any */
+                av_write_trailer(oc);
             } finally {
                 release();
             }
@@ -944,7 +945,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
 
     @Override public void record(Frame frame) throws Exception {
-        record(frame, frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
+        record(frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public synchronized void record(Frame frame, int pixelFormat) throws Exception {
         if (frame == null || (frame.image == null && frame.samples == null)) {
@@ -1043,17 +1044,25 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 //            video_pkt.size(Loader.sizeof(AVFrame.class));
 //        } else {
             /* encode the image */
-            av_init_packet(video_pkt);
-            video_pkt.data(video_outbuf);
-            video_pkt.size(video_outbuf_size);
             picture.quality(video_c.global_quality());
-            if ((ret = avcodec_encode_video2(video_c, video_pkt, image == null || image.length == 0 ? null : picture, got_video_packet)) < 0) {
-                throw new Exception("avcodec_encode_video2() error " + ret + ": Could not encode video packet.");
+            if ((ret = avcodec_send_frame(video_c, image == null || image.length == 0 ? null : picture)) < 0
+                    && image != null && image.length != 0) {
+                throw new Exception("avcodec_send_frame() error " + ret + ": Error sending a video frame for encoding.");
             }
             picture.pts(picture.pts() + 1); // magic required by libx264
 
             /* if zero size, it means the image was buffered */
-            if (got_video_packet[0] != 0) {
+            got_video_packet[0] = 0;
+            while (ret >= 0) {
+                av_new_packet(video_pkt, video_outbuf_size);
+                ret = avcodec_receive_packet(video_c, video_pkt);
+                if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+                    break;
+                } else if (ret < 0) {
+                    throw new Exception("avcodec_receive_packet() error " + ret + ": Error during video encoding.");
+                }
+                got_video_packet[0] = 1;
+
                 if (video_pkt.pts() != AV_NOPTS_VALUE) {
                     video_pkt.pts(av_rescale_q(video_pkt.pts(), video_c.time_base(), video_st.time_base()));
                 }
@@ -1061,12 +1070,11 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     video_pkt.dts(av_rescale_q(video_pkt.dts(), video_c.time_base(), video_st.time_base()));
                 }
                 video_pkt.stream_index(video_st.index());
-            } else {
-                return false;
+
+                /* write the compressed frame in the media file */
+                writePacket(AVMEDIA_TYPE_VIDEO, video_pkt);
             }
 //        }
-
-        writePacket(AVMEDIA_TYPE_VIDEO, video_pkt);
         return image != null ? (video_pkt.flags() & AV_PKT_FLAG_KEY) != 0 : got_video_packet[0] != 0;
 
         }
@@ -1248,6 +1256,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             frame.data(i, samples_out[i].position(0));
             frame.linesize(i, linesize);
         }
+        frame.channels(audio_c.channels());
+        frame.format(audio_c.sample_fmt());
         frame.quality(audio_c.global_quality());
         record(frame);
     }
@@ -1255,16 +1265,25 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private boolean record(AVFrame frame) throws Exception {
         int ret;
 
-        av_init_packet(audio_pkt);
-        audio_pkt.data(audio_outbuf);
-        audio_pkt.size(audio_outbuf_size);
-        if ((ret = avcodec_encode_audio2(audio_c, audio_pkt, frame, got_audio_packet)) < 0) {
-            throw new Exception("avcodec_encode_audio2() error " + ret + ": Could not encode audio packet.");
+        if ((ret = avcodec_send_frame(audio_c, frame)) < 0 && frame != null) {
+            throw new Exception("avcodec_send_frame() error " + ret + ": Error sending an audio frame for encoding.");
         }
         if (frame != null) {
             frame.pts(frame.pts() + frame.nb_samples()); // magic required by libvorbis and webm
         }
-        if (got_audio_packet[0] != 0) {
+
+        /* if zero size, it means the image was buffered */
+        got_audio_packet[0] = 0;
+        while (ret >= 0) {
+            av_new_packet(audio_pkt, audio_outbuf_size);
+            ret = avcodec_receive_packet(audio_c, audio_pkt);
+            if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+                break;
+            } else if (ret < 0) {
+                throw new Exception("avcodec_receive_packet() error " + ret + ": Error during audio encoding.");
+            }
+            got_audio_packet[0] = 1;
+
             if (audio_pkt.pts() != AV_NOPTS_VALUE) {
                 audio_pkt.pts(av_rescale_q(audio_pkt.pts(), audio_c.time_base(), audio_st.time_base()));
             }
@@ -1273,14 +1292,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             audio_pkt.flags(audio_pkt.flags() | AV_PKT_FLAG_KEY);
             audio_pkt.stream_index(audio_st.index());
-        } else {
-            return false;
+
+            /* write the compressed frame in the media file */
+            writePacket(AVMEDIA_TYPE_AUDIO, audio_pkt);
         }
 
-        /* write the compressed frame in the media file */
-        writePacket(AVMEDIA_TYPE_AUDIO, audio_pkt);
-
-        return true;
+        return got_audio_packet[0] != 0;
     }
 
     private void writePacket(int mediaType, AVPacket avPacket) throws Exception {

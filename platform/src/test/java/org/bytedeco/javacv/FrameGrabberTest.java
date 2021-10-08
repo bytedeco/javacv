@@ -93,7 +93,18 @@ public class FrameGrabberTest {
 
             int n = 0, m = 0;
             Frame frame2;
-            while ((frame2 = grabber.grab()) != null) {
+            long startTime = System.nanoTime();
+            while ((frame2 = grabber.grabAtFrameRate()) != null) {
+                long delay = frame2.timestamp * 1000 - (System.nanoTime() - startTime);
+                if (delay < -1_000_000_000 / grabber.getFrameRate()) {
+                    // skip to catch up with frame rate
+                    if (frame2.image != null) {
+                        n++;
+                    } else {
+                        m++;
+                    }
+                    continue;
+                }
                 Frame clone2 = frame2.clone();
                 if (frame2.image != null) {
                     Frame frame = frames[n++];
@@ -125,13 +136,20 @@ public class FrameGrabberTest {
                         m++;
                     }
                 }
+                clone2.close();
             }
+            long stopTime = System.nanoTime();
+            assertEquals(n, (stopTime - startTime) * grabber.getFrameRate() / 1_000_000_000, 2.0);
             assertEquals(frames.length, n);
             assertEquals(null, grabber.grab());
             grabber.restart();
             grabber.stop();
             grabber.release();
+            for (n = 0; n < frames.length; n++) {
+                frames[n].close();
+            }
         } catch (Exception e) {
+            e.printStackTrace();
             fail("Exception should not have been thrown: " + e);
         } finally {
             tempFile.delete();
@@ -229,8 +247,12 @@ public class FrameGrabberTest {
                         grabber.restart();
                         grabber.stop();
                         grabber.release();
+                        for (n = 0; n < frames.length; n++) {
+                            frames[n].close();
+                        }
                     } catch (Error | Exception e) {
                         failed[0] = true;
+                        e.printStackTrace();
                         fail("Exception should not have been thrown: " + e);
                     } finally {
                         tempFile.delete();
@@ -321,6 +343,7 @@ public class FrameGrabberTest {
                         recorder.record(audioFrame);
                     }
                 }
+                frame.close();
             } else {
                 Frame audioFrame = new Frame();
                 ShortBuffer audioBuffer = ShortBuffer.allocate(48000 * 2 * 10000 / 30);

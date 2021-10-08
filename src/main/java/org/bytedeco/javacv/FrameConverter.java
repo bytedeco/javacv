@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Samuel Audet
+ * Copyright (C) 2015-2021 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -30,13 +30,20 @@ package org.bytedeco.javacv;
  * of this, and for performance reasons, any object returned by this class is
  * guaranteed to remain valid only until the next call to {@code convert()},
  * anywhere in a chain of {@code FrameConverter} objects, and only as long as
- * the latter themselves are not garbage collected.
+ * the latter themselves are not closed or garbage collected.
  *
  * @author Samuel Audet
  */
-public abstract class FrameConverter<F> {
+public abstract class FrameConverter<F> implements AutoCloseable {
     protected Frame frame;
 
     public abstract Frame convert(F f);
     public abstract F convert(Frame frame);
+
+    @Override public void close() {
+        if (frame != null) {
+            frame.close();
+            frame = null;
+        }
+    }
 }

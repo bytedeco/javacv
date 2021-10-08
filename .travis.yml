@@ -20,7 +20,7 @@ jobs:
         - export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-arm64"
       script:
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml
-        - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml -f platform/pom.xml -Djavacpp.platform=linux-arm64
+        - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml -f platform/pom.xml -Djavacpp.platform=linux-arm64 '-Dtest=!FrameGrabberTest#testFFmpegFrameGrabber'
     - os: linux
       arch: ppc64le
       language: java
@@ -46,17 +46,18 @@ jobs:
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml -f platform/pom.xml -Djavacpp.platform=linux-x86_64
     - os: osx
-      osx_image: xcode10.1
+      osx_image: xcode12.2
       language: java
       env: PLATFORMS="macosx-x86_64"
       install:
+        - brew update
         - brew install gpg1
         - brew tap AdoptOpenJDK/openjdk
-        - brew cask install adoptopenjdk8
+        - brew install --cask adoptopenjdk8
         - export JAVA_HOME=$(/usr/libexec/java_home -v1.8)
       script:
         - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml
-        - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml -f platform/pom.xml -Djavacpp.platform=macosx-x86_64 '-Dtest=!FrameGrabberTest,!FrameGrabberChangingResolutionTest'
+        - mvn clean $MAVEN_PHASE -B -V -U -s $HOME/settings.xml -f platform/pom.xml -Djavacpp.platform=macosx-x86_64 '-Dtest=!FrameGrabberTest#testFFmpegFrameGrabber'
     - os: windows
       language: bash
       env: PLATFORMS="windows-x86_64"

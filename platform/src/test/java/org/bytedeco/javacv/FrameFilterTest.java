@@ -129,6 +129,7 @@ public class FrameFilterTest {
             grabber.restart();
             grabber.stop();
             grabber.release();
+            frame.close();
         } catch (Exception e) {
             e.printStackTrace();
             fail("Exception should not have been thrown: " + e);
@@ -215,6 +216,7 @@ public class FrameFilterTest {
             grabber.restart();
             grabber.stop();
             grabber.release();
+            frame.close();
         } catch (Exception e) {
             e.printStackTrace();
             fail("Exception should not have been thrown: " + e);

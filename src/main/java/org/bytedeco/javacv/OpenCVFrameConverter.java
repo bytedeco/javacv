@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Samuel Audet
+ * Copyright (C) 2015-2021 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -100,9 +100,12 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
             return (IplImage)frame.opaque;
         } else if (!isEqual(frame, img)) {
             int depth = getIplImageDepth(frame.imageDepth);
-            img = depth < 0 ? null : IplImage.create(frame.imageWidth, frame.imageHeight, depth, frame.imageChannels, new Pointer(frame.image[0].position(0)))
+            if (img != null) {
+                img.releaseReference();
+            }
+            img = depth < 0 ? null : (IplImage)IplImage.create(frame.imageWidth, frame.imageHeight, depth, frame.imageChannels, new Pointer(frame.image[0].position(0)))
                     .widthStep(frame.imageStride * Math.abs(frame.imageDepth) / 8)
-                    .imageSize(frame.image[0].capacity() * Math.abs(frame.imageDepth) / 8);
+                    .imageSize(frame.image[0].capacity() * Math.abs(frame.imageDepth) / 8).retainReference();
         }
         return img;
     }
@@ -148,8 +151,11 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
             return (Mat)frame.opaque;
         } else if (!isEqual(frame, mat)) {
             int depth = getMatDepth(frame.imageDepth);
-            mat = depth < 0 ? null : new Mat(frame.imageHeight, frame.imageWidth, CV_MAKETYPE(depth, frame.imageChannels),
-                    new Pointer(frame.image[0].position(0)), frame.imageStride * Math.abs(frame.imageDepth) / 8);
+            if (mat != null) {
+                mat.releaseReference();
+            }
+            mat = depth < 0 ? null : (Mat)new Mat(frame.imageHeight, frame.imageWidth, CV_MAKETYPE(depth, frame.imageChannels),
+                    new Pointer(frame.image[0].position(0)), frame.imageStride * Math.abs(frame.imageDepth) / 8).retainReference();
         }
         return mat;
     }
@@ -225,5 +231,21 @@ public abstract class OpenCVFrameConverter<F> extends FrameConverter<F> {
         }
         frame.opaque = mat;
         return frame;
+    }
+
+    @Override public void close() {
+        super.close();
+        if (img != null) {
+            img.releaseReference();
+            img = null;
+        }
+        if (mat != null) {
+            mat.releaseReference();
+            mat = null;
+        }
+        if (orgOpenCvCoreMat != null) {
+            orgOpenCvCoreMat.release();
+            orgOpenCvCoreMat = null;
+        }
     }
 }

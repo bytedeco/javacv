@@ -1,6 +1,22 @@
 
+ * Ignore errors from `avcodec_send_packet()` and `avcodec_receive_frame()` to emulate old API in `FFmpegFrameGrabber` ([issue #1679](https://github.com/bytedeco/javacv/issues/1679))
+
+### August 2, 2021 version 1.5.6
+ * Enhance audio and video synchronization of `JavaFxPlayVideoAndAudio` sample ([pull #1662](https://github.com/bytedeco/javacv/pull/1662))
+ * Add `FrameGrabber.grabAtFrameRate()` to simulate a device or stream when reading from files ([pull #1659](https://github.com/bytedeco/javacv/pull/1659))
+ * Update `FFmpegFrameGrabber` and `FFmpegFrameRecorder` with new `avcodec` API ([issue #1498](https://github.com/bytedeco/javacv/issues/1498))
+ * Add new `Similarity` sample with PSNR and MSSIM ([pull #1622](https://github.com/bytedeco/javacv/pull/1622))
+ * Avoid crash in `FFmpegFrameRecorder.stop()` by moving `av_write_trailer()` out of `flush()` ([issue #1616](https://github.com/bytedeco/javacv/issues/1616))
+ * Upgrade dependencies for OpenBLAS 0.3.17, OpenCV 4.5.3, FFmpeg 4.4, librealsense2 2.44.0, Leptonica 1.81.1
+
+### March 8, 2021 version 1.5.5
+ * Have `Frame` and `FrameConverter` implement `AutoCloseable` to release memory explicitly ([issue #1574](https://github.com/bytedeco/javacv/issues/1574))
+ * Add new `YOLONet` sample for object detection ([pull #1595](https://github.com/bytedeco/javacv/pull/1595))
+ * Fix crash on `FFmpegFrameGrabber.stop()` when in `ImageMode.RAW` ([issue #1568](https://github.com/bytedeco/javacv/issues/1568))
+ * Let `FFmpegFrameRecorder.flush()` ignore errors from the encoder ([issue #1563](https://github.com/bytedeco/javacv/issues/1563))
+ * Improve `FFmpegFrameGrabber.setTimestamp()` and fix `getAudioFrameRate()` ([pull #1559](https://github.com/bytedeco/javacv/pull/1559))
  * Fix frame rate and aspect ratio on `FFmpegFrameRecorder.start(AVFormatContext)` ([pull #1535](https://github.com/bytedeco/javacv/pull/1535))
- * Upgrade dependencies for OpenBLAS 0.3.12, OpenCV 4.5.0, librealsense2 2.38.1
+ * Upgrade dependencies for OpenBLAS 0.3.13, OpenCV 4.5.1, FFmpeg 4.3.2, librealsense2 2.40.0
  * Update unit tests to use codecs available in FFmpeg under LGPL v3 ([pull bytedeco/javacpp-presets#950](https://github.com/bytedeco/javacpp-presets/pull/950))
  * Add `RealSense2FrameGrabber.tryLoad()` method and missing entries for librealsense2 ([issue bytedeco/procamcalib#25](https://github.com/bytedeco/procamcalib/issues/25))
 

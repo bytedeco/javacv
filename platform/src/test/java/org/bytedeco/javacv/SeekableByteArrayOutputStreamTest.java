@@ -80,6 +80,7 @@ public class SeekableByteArrayOutputStreamTest {
                 }
             }
             recorder.record(frame);
+            frame.close();
         }
         recorder.close();
     }

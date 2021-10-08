@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2020 Samuel Audet
+ * Copyright (C) 2009-2021 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
  * http://web.me.com/dhoerl/Home/Tech_Blog/Entries/2009/1/22_Revised_avcodec_sample.c_files/avcodec_sample.0.5.0.c
  * by Martin Böhme, Stephen Dranger, and David Hoerl
  * as well as on the decoding_encoding.c file included in FFmpeg 0.11.1,
+ * and on the decode_video.c file included in FFmpeg 4.4,
  * which is covered by the following copyright notice:
  *
  * Copyright (c) 2001 Fabrice Bellard
@@ -172,19 +173,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             plane_ptr = plane_ptr2 = null;
         }
 
-        if (pkt != null && pkt2 != null) {
-            if (pkt2.size() > 0) {
+        if (pkt != null) {
+            if (pkt.stream_index() != -1) {
                 av_packet_unref(pkt);
             }
             pkt.releaseReference();
-            pkt2.releaseReference();
-            pkt = pkt2 = null;
+            pkt = null;
         }
 
         // Free the RGB image
         if (image_ptr != null) {
             for (int i = 0; i < image_ptr.length; i++) {
-                av_free(image_ptr[i]);
+                if (imageMode != ImageMode.RAW) {
+                    av_free(image_ptr[i]);
+                }
             }
             image_ptr = null;
         }
@@ -241,7 +243,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             samples_convert_ctx = null;
         }
 
-        got_frame     = null;
         frameGrabbed  = false;
         frame         = null;
         timestamp     = 0;
@@ -378,9 +379,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private BytePointer[]   samples_ptr_out;
     private Buffer[]        samples_buf_out;
     private PointerPointer  plane_ptr, plane_ptr2;
-    private AVPacket        pkt, pkt2;
-    private int             sizeof_pkt;
-    private int[]           got_frame;
+    private AVPacket        pkt;
     private SwsContext      img_convert_ctx;
     private SwrContext      samples_convert_ctx;
     private int             samples_channels, samples_format, samples_rate;
@@ -478,7 +477,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return getVideoFrameRate();
     }
 
-    /**Estimation of audio frames per second
+    /**Estimation of audio frames per second.
+     *
+     * Care must be taken as this method may require unnecessary call of
+     * grabFrame(true, false, false, false, false) with frameGrabbed set to true.
      *
      * @return (double) getSampleRate()) / samples_frame.nb_samples()
      * if samples_frame.nb_samples() is not zero, otherwise return 0
@@ -489,13 +491,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } else {
             if (samples_frame == null || samples_frame.nb_samples() == 0) {
                 try {
-                    grabFrame(true, false, false, false);
+                    grabFrame(true, false, false, false, false);
                     frameGrabbed = true;
                 } catch (Exception e) {
                     return 0.0;
                 }
             }
-            if (samples_frame != null || samples_frame.nb_samples() != 0)
+            if (samples_frame != null && samples_frame.nb_samples() != 0)
                 return ((double) getSampleRate()) / samples_frame.nb_samples();
             else return 0.0;
 
@@ -635,12 +637,18 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         setTimestamp(timestamp, checkFrame ? EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO) : null);
     }
 
-    /** setTimestamp with resulting video frame type if there is a video stream*/
+    /** setTimestamp with resulting video frame type if there is a video stream.
+     * This should provide precise seek to a video frame containing the requested timestamp
+     * in most cases.
+     * */
     public void setVideoTimestamp(long timestamp) throws Exception {
         setTimestamp(timestamp, EnumSet.of(Frame.Type.VIDEO));
     }
 
-    /** setTimestamp with resulting audio frame type if there is an audio stream*/
+    /** setTimestamp with resulting audio frame type if there is an audio stream.
+     * This should provide precise seek to an audio frame containing the requested timestamp
+     * in most cases.
+     * */
     public void setAudioTimestamp(long timestamp) throws Exception {
         setTimestamp(timestamp, EnumSet.of(Frame.Type.AUDIO));
     }
@@ -656,11 +664,45 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             super.timestamp = timestamp;
         } else {
             timestamp = timestamp * AV_TIME_BASE / 1000000L;
-            /* add the stream start time */
-            if (oc.start_time() != AV_NOPTS_VALUE) {
-                timestamp += oc.start_time();
+
+            /* the stream start time */
+            long ts0 = 0;
+            if (oc.start_time() != AV_NOPTS_VALUE) ts0 = oc.start_time();
+
+            long early_ts = timestamp;
+            if (frameTypesToSeek!=null) {
+                /*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
+                 *  the desired but few frames after. In case we need a frame-precision seek we may
+                 *  try to request an earlier timestamp.
+                 */
+                early_ts -= 500000L;
+                if (early_ts < 0L)early_ts = 0L;
+
+                /*  If frameTypesToSeek is set explicitly to VIDEO or AUDIO
+                 *  we need to use start time of the corresponding stream
+                 *  instead of the common start time
+                 */
+                if (frameTypesToSeek.size()==1) {
+                    if (frameTypesToSeek.contains(Frame.Type.VIDEO)) {
+                        if (video_st!=null && video_st.start_time() != AV_NOPTS_VALUE) {
+                            AVRational time_base = video_st.time_base();
+                            ts0 = 1000000L * video_st.start_time() * time_base.num() / time_base.den();
+                        }
+                    }
+                    else if (frameTypesToSeek.contains(Frame.Type.AUDIO)) {
+                        if (audio_st!=null && audio_st.start_time() != AV_NOPTS_VALUE) {
+                            AVRational time_base = audio_st.time_base();
+                            ts0 = 1000000L * audio_st.start_time() * time_base.num() / time_base.den();
+                        }
+                    }
+                }
             }
-            if ((ret = avformat_seek_file(oc, -1, Long.MIN_VALUE, timestamp, Long.MAX_VALUE, AVSEEK_FLAG_BACKWARD)) < 0) {
+
+            /* add the stream start time */
+            timestamp += ts0;
+            early_ts += ts0;
+
+            if ((ret = avformat_seek_file(oc, -1, Long.MIN_VALUE, early_ts, Long.MAX_VALUE, AVSEEK_FLAG_BACKWARD)) < 0) {
                 throw new Exception("avformat_seek_file() error " + ret + ": Could not seek file to timestamp " + timestamp + ".");
             }
             if (video_c != null) {
@@ -669,9 +711,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (audio_c != null) {
                 avcodec_flush_buffers(audio_c);
             }
-            if (pkt2.size() > 0) {
-                pkt2.size(0);
+            if (pkt.stream_index() != -1) {
                 av_packet_unref(pkt);
+                pkt.stream_index(-1);
             }
             /*     After the call of ffmpeg's avformat_seek_file(...) with the flag set to AVSEEK_FLAG_BACKWARD
              * the decoding position should be located before the requested timestamp in a closest position
@@ -687,17 +729,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
              * It can be chosen from three possible types: VIDEO, AUDIO or any of them.
              * The setting means only a preference in the type. That is, if VIDEO or AUDIO is
              * specified but the file does not have video or audio stream - any type will be used instead.
-             *
-             *
-             * TODO
-             *  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
-             *  the desired but few frames after.... What can be a the solution in this case if we really need
-             *  a frame-precision seek? Probably we may try to request even earlier timestamp and look if this
-             *  will bring us before the desired position.
-             *
-            */
+             */
 
-            if (frameTypesToSeek != null) { //new code providing check of frame content while seeking to the timestamp
+            if (frameTypesToSeek != null //new code providing check of frame content while seeking to the timestamp
+                    && (frameTypesToSeek.contains(Frame.Type.VIDEO) || frameTypesToSeek.contains(Frame.Type.AUDIO))) {
                 boolean has_video = hasVideo();
                 boolean has_audio = hasAudio();
 
@@ -710,42 +745,43 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     long maxSeekSteps = 0;
                     long count = 0;
                     Frame seekFrame = null;
+                    seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
+                    if (seekFrame == null) return;
 
-                    while(count++ < 1000) { //seek to a first frame containing video or audio after avformat_seek_file(...)
-                        seekFrame = grabFrame(true, true, false, false);
-                        if (seekFrame == null) return; //is it better to throw NullPointerException?
-                        EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
-                        frameTypes.retainAll(frameTypesToSeek);
-                        if (!frameTypes.isEmpty()) {
-                            initialSeekPosition = seekFrame.timestamp;
-                            //the position closest to the requested timestamp from which it can be reached by sequential grabFrame calls
-                            break;
-                        }
+                    initialSeekPosition = seekFrame.timestamp;
+                    double frameDuration = 0.0;
+                    if (seekFrame.image != null && this.getFrameRate() > 0)
+                        frameDuration =  AV_TIME_BASE / (double)getFrameRate();
+                    else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0) {
+                        frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
                     }
-                    if (has_video && this.getFrameRate() > 0) {
-                        //estimation of video frame duration
-                        double deltaTimeStamp = 1000000.0/this.getFrameRate();
-                        if (initialSeekPosition < timestamp - deltaTimeStamp/2)
-                            maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
-                    } else if (has_audio && this.getAudioFrameRate() > 0) {
-                        //estimation of audio frame duration
-                        double deltaTimeStamp = 1000000.0/this.getAudioFrameRate();
-                        if (initialSeekPosition < timestamp - deltaTimeStamp/2)
-                            maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/deltaTimeStamp);
-                    } else
-                        //zero frameRate
-                        if (initialSeekPosition < timestamp - 1L) maxSeekSteps = 1000;
+                    if(frameDuration>0.0) {
+                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition - frameDuration)/frameDuration);
+                        if (maxSeekSteps<0) maxSeekSteps = 0;
+                    }
+                    else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
 
+                    double delta = 0.0; //for the timestamp correction
                     count = 0;
                     while(count < maxSeekSteps) {
-                        seekFrame = grabFrame(true, true, false, false);
+                        seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
                         if (seekFrame == null) return; //is it better to throw NullPointerException?
-                        EnumSet<Frame.Type> frameTypes = seekFrame.getTypes();
-                        frameTypes.retainAll(frameTypesToSeek);
-                        if (!frameTypes.isEmpty()) {
-                            count++;
-                            if (this.timestamp >= timestamp - 1) break;
+
+                        count++;
+                        double ts=this.timestamp;
+                        frameDuration = 0.0;
+                        if (seekFrame.image != null && this.getFrameRate() > 0)
+                            frameDuration =  AV_TIME_BASE / (double)getFrameRate();
+                        else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0)
+                            frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
+
+                        delta = 0.0;
+                        if (frameDuration>0.0) {
+                            delta = (ts-ts0)/frameDuration - Math.round((ts-ts0)/frameDuration);
+                            if (Math.abs(delta)>0.2) delta=0.0;
                         }
+                        ts-=delta*frameDuration; // corrected timestamp
+                        if (ts + frameDuration > timestamp) break;
                     }
 
                     frameGrabbed = true;
@@ -825,15 +861,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         plane_ptr       = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
         plane_ptr2      = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
         pkt             = new AVPacket().retainReference();
-        pkt2            = new AVPacket().retainReference();
-        sizeof_pkt      = pkt.sizeof();
-        got_frame       = new int[1];
         frameGrabbed    = false;
         frame           = new Frame();
         timestamp       = 0;
         frameNumber     = 0;
 
-        pkt2.size(0);
+        pkt.stream_index(-1);
 
         // Open video file
         AVInputFormat f = null;
@@ -1077,9 +1110,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not trigger: No AVFormatContext. (Has start() been called?)");
         }
-        if (pkt2.size() > 0) {
-            pkt2.size(0);
+        if (pkt.stream_index() != -1) {
             av_packet_unref(pkt);
+            pkt.stream_index(-1);
         }
         for (int i = 0; i < numBuffers+1; i++) {
             if (av_read_frame(oc, pkt) < 0) {
@@ -1294,9 +1327,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return frame;
         }
         boolean done = false;
+        boolean readPacket = pkt.stream_index() == -1;
         while (!done) {
-            if (pkt2.size() <= 0) {
-                if (av_read_frame(oc, pkt) < 0) {
+            int ret = 0;
+            if (readPacket) {
+                if (pkt.stream_index() != -1) {
+                    // Free the packet that was allocated by av_read_frame
+                    av_packet_unref(pkt);
+                }
+                if ((ret = av_read_frame(oc, pkt)) < 0) {
                     if (doVideo && video_st != null) {
                         // The video codec may have buffered some frames
                         pkt.stream_index(video_st.index());
@@ -1304,6 +1343,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         pkt.data(null);
                         pkt.size(0);
                     } else {
+                        pkt.stream_index(-1);
                         return null;
                     }
                 }
@@ -1315,64 +1355,96 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
                     && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
                 // Decode video frame
-                int len = avcodec_decode_video2(video_c, picture, got_frame, pkt);
+                if (readPacket) {
+                    ret = avcodec_send_packet(video_c, pkt);
+                    if (pkt.data() == null && pkt.size() == 0) {
+                        pkt.stream_index(-1);
+                    }
+                    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+                        // The video codec may have buffered some frames
+                    } else if (ret < 0) {
+                        // Ignore errors to emulate the behavior of the old API
+                        // throw new Exception("avcodec_send_packet() error " + ret + ": Error sending a video packet for decoding.");
+                    }
+                }
 
                 // Did we get a video frame?
-                if (len >= 0 && got_frame[0] != 0
-                        && (!keyFrames || picture.pict_type() == AV_PICTURE_TYPE_I)) {
-                    long pts = av_frame_get_best_effort_timestamp(picture);
-                    AVRational time_base = video_st.time_base();
+                while (!done) {
+                    ret = avcodec_receive_frame(video_c, picture);
+                    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+                        if (pkt.data() == null && pkt.size() == 0) {
+                            return null;
+                        } else {
+                            readPacket = true;
+                            break;
+                        }
+                    } else if (ret < 0) {
+                        // Ignore errors to emulate the behavior of the old API
+                        // throw new Exception("avcodec_receive_frame() error " + ret + ": Error during video decoding.");
+                        readPacket = true;
+                        break;
+                    }
+
+                    if (!keyFrames || picture.pict_type() == AV_PICTURE_TYPE_I) {
+                        long pts = picture.best_effort_timestamp();
+                        AVRational time_base = video_st.time_base();
+                        timestamp = 1000000L * pts * time_base.num() / time_base.den();
+                        // best guess, AVCodecContext.frame_number = number of decoded frames...
+                        frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
+                        frame.image = image_buf;
+                        if (doProcessing) {
+                            processImage();
+                        }
+                        /* the picture is allocated by the decoder. no need to
+                           free it */
+                        done = true;
+                        frame.timestamp = timestamp;
+                        frame.keyFrame = picture.key_frame() != 0;
+                    }
+                }
+            } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
+                // Decode audio frame
+                if (readPacket) {
+                    ret = avcodec_send_packet(audio_c, pkt);
+                    if (ret < 0) {
+                        // Ignore errors to emulate the behavior of the old API
+                        // throw new Exception("avcodec_send_packet() error " + ret + ": Error sending an audio packet for decoding.");
+                    }
+                }
+
+                // Did we get an audio frame?
+                while (!done) {
+                    ret = avcodec_receive_frame(audio_c, samples_frame);
+                    if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
+                        readPacket = true;
+                        break;
+                    } else if (ret < 0) {
+                        // Ignore errors to emulate the behavior of the old API
+                        // throw new Exception("avcodec_receive_frame() error " + ret + ": Error during audio decoding.");
+                        readPacket = true;
+                        break;
+                    }
+
+                    long pts = samples_frame.best_effort_timestamp();
+                    AVRational time_base = audio_st.time_base();
                     timestamp = 1000000L * pts * time_base.num() / time_base.den();
-                    // best guess, AVCodecContext.frame_number = number of decoded frames...
-                    frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
-                    frame.image = image_buf;
+                    frame.samples = samples_buf;
+                    /* if a frame has been decoded, output it */
                     if (doProcessing) {
-                        processImage();
+                        processSamples();
                     }
                     done = true;
                     frame.timestamp = timestamp;
-                    frame.keyFrame = picture.key_frame() != 0;
-                } else if (pkt.data() == null && pkt.size() == 0) {
-                    return null;
-                }
-            } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
-                if (pkt2.size() <= 0) {
-                    // HashMap is unacceptably slow on Android
-                    // pkt2.put(pkt);
-                    BytePointer.memcpy(pkt2, pkt, sizeof_pkt);
-                }
-                av_frame_unref(samples_frame);
-                // Decode audio frame
-                int len = avcodec_decode_audio4(audio_c, samples_frame, got_frame, pkt2);
-                if (len <= 0) {
-                    // On error, trash the whole packet
-                    pkt2.size(0);
-                } else {
-                    pkt2.data(pkt2.data().position(len));
-                    pkt2.size(pkt2.size() - len);
-                    if (got_frame[0] != 0) {
-                        long pts = av_frame_get_best_effort_timestamp(samples_frame);
-                        AVRational time_base = audio_st.time_base();
-                        timestamp = 1000000L * pts * time_base.num() / time_base.den();
-                        frame.samples = samples_buf;
-                        /* if a frame has been decoded, output it */
-                        if (doProcessing) {
-                            processSamples();
-                        }
-                        done = true;
-                        frame.timestamp = timestamp;
-                        frame.keyFrame = samples_frame.key_frame() != 0;
-                    }
+                    frame.keyFrame = samples_frame.key_frame() != 0;
                 }
             } else if (doData) {
+                if (!readPacket) {
+                    readPacket = true;
+                    continue;
+                }
                 // Export the stream byte data for non audio / video frames
                 frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
                 done = true;
-            }
-
-            if (pkt2.size() <= 0) {
-                // Free the packet that was allocated by av_read_frame
-                av_packet_unref(pkt);
             }
         }
         return frame;

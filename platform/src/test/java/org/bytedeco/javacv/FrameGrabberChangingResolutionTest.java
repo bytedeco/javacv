@@ -72,6 +72,9 @@ public class FrameGrabberChangingResolutionTest {
         }
         recorder.stop();
         recorder.release();
+        for (int n = 0; n < frames.length; n++) {
+            frames[n].close();
+        }
     }
 
     final public void setupUDPSender(final int x, final int y, final int bandwidth, final int count) throws IOException {
@@ -106,6 +109,7 @@ public class FrameGrabberChangingResolutionTest {
                     fr.close();
                     b[0] = true;
                 } catch (Exception e) {
+                    e.printStackTrace();
                     fail("Exception should not have been thrown: " + e);
                     try {
                         fg.close();
@@ -183,6 +187,7 @@ public class FrameGrabberChangingResolutionTest {
                     assertTrue(n <= 480);
                     fr.close();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     fail("Exception should not have been thrown: " + e);
                     try {
                         fg.close();
@@ -235,6 +240,7 @@ public class FrameGrabberChangingResolutionTest {
         } catch (Exception e) {
             tempFile.delete();
             tempTargetFile.delete();
+            e.printStackTrace();
             fail("Exception should not have been thrown: " + e);
         }
 
@@ -261,6 +267,7 @@ public class FrameGrabberChangingResolutionTest {
             grabber.stop();
             grabber.release();
         } catch (Exception e) {
+            e.printStackTrace();
             fail("Exception should not have been thrown: " + e);
         } finally {
             tempFile.delete();
