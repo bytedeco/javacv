@@ -1,6 +1,7 @@
 
  * Call `Frame.close()` on temporary clones in `Java2DFrameUtils` to prevent premature deallocations ([issue #1716](https://github.com/bytedeco/javacv/issues/1716))
  * Ignore errors from `avcodec_send_packet()` and `avcodec_receive_frame()` to emulate old API in `FFmpegFrameGrabber` ([issue #1679](https://github.com/bytedeco/javacv/issues/1679))
+ * Upgrade dependencies for OpenBLAS 0.3.18, OpenCV 4.5.4, FFmpeg 4.4.1, librealsense2 2.44.0, Leptonica 1.82.0, Tesseract 5.0.0
 
 ### August 2, 2021 version 1.5.6
  * Enhance audio and video synchronization of `JavaFxPlayVideoAndAudio` sample ([pull #1662](https://github.com/bytedeco/javacv/pull/1662))

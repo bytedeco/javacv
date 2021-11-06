@@ -28,17 +28,17 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas-platform</artifactId>
-      <version>0.3.17-${javacpp.version}</version>
+      <version>0.3.18-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform</artifactId>
-      <version>4.5.3-${javacpp.version}</version>
+      <version>4.5.4-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>4.4-${javacpp.version}</version>
+      <version>4.4.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -88,12 +88,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>leptonica-platform</artifactId>
-      <version>1.81.1-${javacpp.version}</version>
+      <version>1.82.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract-platform</artifactId>
-      <version>4.1.1-${javacpp.version}</version>
+      <version>5.0.0-${javacpp.version}</version>
     </dependency>
 
     <dependency>
