@@ -1,4 +1,5 @@
 
+ * Call `Frame.close()` on temporary clones in `Java2DFrameUtils` to prevent premature deallocations ([issue #1716](https://github.com/bytedeco/javacv/issues/1716))
  * Ignore errors from `avcodec_send_packet()` and `avcodec_receive_frame()` to emulate old API in `FFmpegFrameGrabber` ([issue #1679](https://github.com/bytedeco/javacv/issues/1679))
 
 ### August 2, 2021 version 1.5.6
