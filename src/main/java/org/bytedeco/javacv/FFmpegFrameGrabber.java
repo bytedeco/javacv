@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -543,63 +544,88 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public Map<String, String> getMetadata() {
+        return this.getMetadata(Charset.defaultCharset());
+    }
+
+    public Map<String, String> getMetadata(Charset charset) {
         if (oc == null) {
             return super.getMetadata();
         }
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(oc.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
 
     @Override public Map<String, String> getVideoMetadata() {
+        return this.getVideoMetadata(Charset.defaultCharset());
+    }
+
+    public Map<String, String> getVideoMetadata(Charset charset) {
         if (video_st == null) {
             return super.getVideoMetadata();
         }
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(video_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
 
     @Override public Map<String, String> getAudioMetadata() {
+        return this.getAudioMetadata(Charset.defaultCharset());
+    }
+
+    public Map<String, String> getAudioMetadata(Charset charset) {
         if (audio_st == null) {
             return super.getAudioMetadata();
         }
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(audio_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
 
+
     @Override public String getMetadata(String key) {
+        return this.getMetadata(key, Charset.defaultCharset());
+    }
+
+    public String getMetadata(String key, Charset charset) {
         if (oc == null) {
             return super.getMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(oc.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     @Override public String getVideoMetadata(String key) {
+        return this.getVideoMetadata(key, Charset.defaultCharset());
+    }
+
+    public String getVideoMetadata(String key, Charset charset) {
         if (video_st == null) {
             return super.getVideoMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(video_st.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     @Override public String getAudioMetadata(String key) {
+        return this.getAudioMetadata(key, Charset.defaultCharset());
+    }
+
+    public String getAudioMetadata(String key, Charset charset) {
         if (audio_st == null) {
             return super.getAudioMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(audio_st.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     /** default override of super.setFrameNumber implies setting
