@@ -549,7 +549,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(oc.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
@@ -561,7 +561,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(video_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
@@ -573,7 +573,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(audio_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
@@ -583,7 +583,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(oc.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     @Override public String getVideoMetadata(String key) {
@@ -591,7 +591,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getVideoMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(video_st.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     @Override public String getAudioMetadata(String key) {
@@ -599,7 +599,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getAudioMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(audio_st.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     /** default override of super.setFrameNumber implies setting
