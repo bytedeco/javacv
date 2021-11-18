@@ -27,6 +27,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -202,6 +203,8 @@ public abstract class FrameGrabber implements Closeable {
     protected long timestamp = 0;
     protected int maxDelay = -1;
     protected long startTime = 0;
+
+    protected Charset charset = Charset.defaultCharset();
 
     public int getVideoStream() {
         return videoStream;
@@ -390,6 +393,13 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setDeinterlace(boolean deinterlace) {
         this.deinterlace = deinterlace;
+    }
+
+    public Charset getCharset() {
+        return charset;
+    }
+    public void setCharset(Charset charset) {
+        this.charset = charset;
     }
 
     public Map<String, String> getOptions() {

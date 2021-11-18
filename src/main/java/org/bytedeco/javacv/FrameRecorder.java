@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -122,6 +123,7 @@ public abstract class FrameRecorder implements Closeable {
     protected int maxBFrames = -1;
     protected int trellis = -1;
     protected int maxDelay = -1;
+    protected Charset charset = Charset.defaultCharset();
     
     public String getFormat() {
         return format;
