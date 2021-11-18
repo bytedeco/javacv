@@ -124,7 +124,14 @@ public abstract class FrameRecorder implements Closeable {
     protected int trellis = -1;
     protected int maxDelay = -1;
     protected Charset charset = Charset.defaultCharset();
-    
+
+    public Charset getCharset() {
+        return charset;
+    }
+    public void setCharset(Charset charset) {
+        this.charset = charset;
+    }
+
     public String getFormat() {
         return format;
     }
