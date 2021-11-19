@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -111,6 +112,7 @@ public abstract class FrameRecorder implements Closeable {
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
     protected double audioQuality = -1;
     protected boolean interleaved;
+    protected Charset charset = Charset.defaultCharset();
     protected Map<String, String> options = new HashMap<String, String>();
     protected Map<String, String> videoOptions = new HashMap<String, String>();
     protected Map<String, String> audioOptions = new HashMap<String, String>();
@@ -122,7 +124,7 @@ public abstract class FrameRecorder implements Closeable {
     protected int maxBFrames = -1;
     protected int trellis = -1;
     protected int maxDelay = -1;
-    
+
     public String getFormat() {
         return format;
     }
@@ -261,6 +263,13 @@ public abstract class FrameRecorder implements Closeable {
     }
     public void setInterleaved(boolean interleaved) {
         this.interleaved = interleaved;
+    }
+
+    public Charset getCharset() {
+        return charset;
+    }
+    public void setCharset(Charset charset) {
+        this.charset = charset;
     }
 
     public Map<String, String> getOptions() {
