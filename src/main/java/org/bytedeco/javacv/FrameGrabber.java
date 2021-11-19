@@ -193,6 +193,7 @@ public abstract class FrameGrabber implements Closeable {
     protected int numBuffers = 4;
     protected double gamma = 0.0;
     protected boolean deinterlace = false;
+    protected Charset charset = Charset.defaultCharset();
     protected Map<String, String> options = new HashMap<String, String>();
     protected Map<String, String> videoOptions = new HashMap<String, String>();
     protected Map<String, String> audioOptions = new HashMap<String, String>();
@@ -203,8 +204,6 @@ public abstract class FrameGrabber implements Closeable {
     protected long timestamp = 0;
     protected int maxDelay = -1;
     protected long startTime = 0;
-
-    protected Charset charset = Charset.defaultCharset();
 
     public int getVideoStream() {
         return videoStream;
