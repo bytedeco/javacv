@@ -1139,6 +1139,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     initPictureRGB();
                 }
 
+                // Copy "metadata" fields
+                av_frame_copy_props(picture_rgb, picture);
+
                 // Convert the image into BGR or GRAY format that OpenCV uses
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx,
                         video_c.width(), video_c.height(), video_c.pix_fmt(),
