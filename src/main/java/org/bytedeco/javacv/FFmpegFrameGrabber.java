@@ -1403,7 +1403,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         frame.timestamp = timestamp;
                         frame.keyFrame = picture.key_frame() != 0;
-                        frame.pictType=picture.pict_type();
+                        frame.pictType = picture.pict_type();
                     }
                 }
             } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
