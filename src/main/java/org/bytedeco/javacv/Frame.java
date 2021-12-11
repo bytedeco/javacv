@@ -49,6 +49,8 @@ import org.bytedeco.javacpp.indexer.ShortIndexer;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
 import org.bytedeco.javacpp.indexer.UShortIndexer;
 
+import static org.bytedeco.ffmpeg.global.avutil.AV_PICTURE_TYPE_NONE;
+
 /**
  * A class to manage the data of audio and video frames. It it used by
  * {@link CanvasFrame}, {@link FrameGrabber}, {@link FrameRecorder}, and their
@@ -60,6 +62,7 @@ import org.bytedeco.javacpp.indexer.UShortIndexer;
 public class Frame implements AutoCloseable, Indexable {
     /** A flag set by a FrameGrabber or a FrameRecorder to indicate a key frame. */
     public boolean keyFrame;
+    public int pictType;
 
     /** Constants to be used for {@link #imageDepth}. */
     public static final int
@@ -128,6 +131,7 @@ public class Frame implements AutoCloseable, Indexable {
         this.image = new Buffer[1];
         this.data = null;
         this.streamIndex = -1;
+        this.pictType = AV_PICTURE_TYPE_NONE;
 
         Pointer pointer = new BytePointer(imageHeight * imageStride * pixelSize(depth));
         ByteBuffer buffer = pointer.asByteBuffer();
@@ -217,6 +221,7 @@ public class Frame implements AutoCloseable, Indexable {
         newFrame.imageStride = imageStride;
         newFrame.keyFrame = keyFrame;
         newFrame.streamIndex = streamIndex;
+        newFrame.pictType = pictType;
         newFrame.opaque = new Pointer[3];
         if (image != null) {
             newFrame.image = new Buffer[image.length];
