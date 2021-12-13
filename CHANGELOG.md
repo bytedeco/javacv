@@ -1,4 +1,5 @@
 
+ * Add new `Frame.pictType` field set to `I`, `P`, `B`, etc by `FFmpegFrameGrabber` ([pull #1730](https://github.com/bytedeco/javacv/pull/1730))
  * Set metadata for `AVFrame.opaque` in `FFmpegFrameGrabber` with call to `av_frame_copy_props()` ([issue #1729](https://github.com/bytedeco/javacv/issues/1729))
  * Add `charset` property to `FrameGrabber` and `FrameRecorder` to use for metadata from FFmpeg ([pull #1720](https://github.com/bytedeco/javacv/pull/1720))
  * Call `Frame.close()` on temporary clones in `Java2DFrameUtils` to prevent premature deallocations ([issue #1716](https://github.com/bytedeco/javacv/issues/1716))
