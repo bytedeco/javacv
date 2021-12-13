@@ -1418,6 +1418,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         frame.timestamp = timestamp;
                         frame.keyFrame = picture.key_frame() != 0;
+                        frame.pictType = (char)av_get_picture_type_char(picture.pict_type());
                         frame.type =Type.VIDEO;
                     }
                 }
