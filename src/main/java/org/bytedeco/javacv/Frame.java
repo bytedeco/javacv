@@ -60,6 +60,8 @@ import org.bytedeco.javacpp.indexer.UShortIndexer;
 public class Frame implements AutoCloseable, Indexable {
     /** A flag set by a FrameGrabber or a FrameRecorder to indicate a key frame. */
     public boolean keyFrame;
+
+    /** The type of the image frame ('I', 'P', 'B', etc). */
     public char pictType;
 
     /** Constants to be used for {@link #imageDepth}. */
@@ -126,10 +128,10 @@ public class Frame implements AutoCloseable, Indexable {
         this.imageDepth = depth;
         this.imageChannels = channels;
         this.imageStride = imageStride;
+        this.pictType = '\0';
         this.image = new Buffer[1];
         this.data = null;
         this.streamIndex = -1;
-        this.pictType = '\0';
 
         Pointer pointer = new BytePointer(imageHeight * imageStride * pixelSize(depth));
         ByteBuffer buffer = pointer.asByteBuffer();
@@ -218,8 +220,8 @@ public class Frame implements AutoCloseable, Indexable {
         newFrame.imageChannels = imageChannels;
         newFrame.imageStride = imageStride;
         newFrame.keyFrame = keyFrame;
-        newFrame.streamIndex = streamIndex;
         newFrame.pictType = pictType;
+        newFrame.streamIndex = streamIndex;
         newFrame.opaque = new Pointer[3];
         if (image != null) {
             newFrame.image = new Buffer[image.length];
