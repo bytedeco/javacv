@@ -68,7 +68,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>librealsense2-platform</artifactId>
-      <version>2.44.0-${javacpp.version}</version>
+      <version>2.50.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
