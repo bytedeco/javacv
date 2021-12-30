@@ -67,6 +67,7 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerScope;
+import org.bytedeco.javacv.Frame.Type;
 import org.bytedeco.javacpp.PointerPointer;
 
 import org.bytedeco.ffmpeg.avcodec.*;
@@ -385,6 +386,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
+    private int[]           streams;
 
     private volatile boolean started = false;
 
@@ -605,7 +607,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     /** default override of super.setFrameNumber implies setting
      *  of a frame close to a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        if (hasVideo()) setTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        if (hasVideo()) setTimestamp((long)Math.floor(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -613,7 +615,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  otherwise sets super.frameNumber only because frameRate==0 if there is no video stream */
     public void setVideoFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasVideo()) setVideoTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        if (hasVideo()) setVideoTimestamp((long)Math.floor(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -621,7 +623,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  ignoring otherwise */
     public void setAudioFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasAudio()) setAudioTimestamp(Math.round(1000000L * frameNumber / getAudioFrameRate()));
+        if (hasAudio()) setAudioTimestamp((long)Math.floor(1000000L * frameNumber / getAudioFrameRate()));
 
     }
 
@@ -755,9 +757,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0) {
                         frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
                     }
+//                    if(frameDuration>0.0) {
+//                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition - frameDuration)/frameDuration);
+//                        if (maxSeekSteps<0) maxSeekSteps = 0;
+//                    }
                     if(frameDuration>0.0) {
-                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition - frameDuration)/frameDuration);
-                        if (maxSeekSteps<0) maxSeekSteps = 0;
+                        maxSeekSteps = 0; //no more grab if the distance to the requested timestamp is smaller than frameDuration
+                        if (timestamp - initialSeekPosition + 1 > frameDuration)  //allow for a rounding error
+                                  maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/frameDuration);
+                        
                     }
                     else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
 
@@ -768,7 +776,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         if (seekFrame == null) return; //is it better to throw NullPointerException?
 
                         count++;
-                        double ts=this.timestamp;
+                        double ts=seekFrame.timestamp;
                         frameDuration = 0.0;
                         if (seekFrame.image != null && this.getFrameRate() > 0)
                             frameDuration =  AV_TIME_BASE / (double)getFrameRate();
@@ -933,10 +941,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         video_st = audio_st = null;
         AVCodecParameters video_par = null, audio_par = null;
         int nb_streams = oc.nb_streams();
+        streams = new int[nb_streams];
         for (int i = 0; i < nb_streams; i++) {
             AVStream st = oc.streams(i);
             // Get a pointer to the codec context for the video or audio stream
             AVCodecParameters par = st.codecpar();
+            streams[i] = par.codec_type();
             if (video_st == null && par.codec_type() == AVMEDIA_TYPE_VIDEO && (videoStream < 0 || videoStream == i)) {
                 video_st = st;
                 video_par = par;
@@ -1291,7 +1301,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
-        } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
+        } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null) && !doData) {
             return null;
         }
         if (!started) {
@@ -1300,19 +1310,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
         boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
+        boolean dataFrameGrabbed = frameGrabbed && frame.data != null;
         frameGrabbed = false;
-        frame.keyFrame = false;
-        frame.imageWidth = 0;
-        frame.imageHeight = 0;
-        frame.imageDepth = 0;
-        frame.imageChannels = 0;
-        frame.imageStride = 0;
-        frame.image = null;
-        frame.sampleRate = 0;
-        frame.audioChannels = 0;
-        frame.samples = null;
-        frame.data = null;
-        frame.opaque = null;
         if (doVideo && videoFrameGrabbed) {
             if (doProcessing) {
                 processImage();
@@ -1325,7 +1324,22 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
             return frame;
-        }
+        } else if (doData && dataFrameGrabbed) return frame;
+        
+        frame.keyFrame = false;
+        frame.imageWidth = 0;
+        frame.imageHeight = 0;
+        frame.imageDepth = 0;
+        frame.imageChannels = 0;
+        frame.imageStride = 0;
+        frame.image = null;
+        frame.sampleRate = 0;
+        frame.audioChannels = 0;
+        frame.samples = null;
+        frame.data = null;
+        frame.opaque = null;
+        frame.type = Type.UNKNOWN;
+        
         boolean done = false;
         boolean readPacket = pkt.stream_index() == -1;
         while (!done) {
@@ -1348,11 +1362,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     }
                 }
             }
-
-            frame.streamIndex = pkt.stream_index();
-
+            
+            int pkt_stream_ind = pkt.stream_index(); 
+            frame.streamIndex = pkt_stream_ind;
+            
             // Is this a packet from the video stream?
-            if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
+            if (doVideo && video_st != null && pkt_stream_ind == video_st.index()
                     && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
                 // Decode video frame
                 if (readPacket) {
@@ -1390,7 +1405,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         AVRational time_base = video_st.time_base();
                         timestamp = 1000000L * pts * time_base.num() / time_base.den();
                         // best guess, AVCodecContext.frame_number = number of decoded frames...
-                        frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
+                        frameNumber = (int)Math.floor(timestamp * getFrameRate() / 1000000L);
                         frame.image = image_buf;
                         if (doProcessing) {
                             processImage();
@@ -1400,9 +1415,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         frame.timestamp = timestamp;
                         frame.keyFrame = picture.key_frame() != 0;
+                        frame.type =Type.VIDEO;
                     }
                 }
-            } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
+            } else if (doAudio && audio_st != null && pkt_stream_ind == audio_st.index()) {
                 // Decode audio frame
                 if (readPacket) {
                     ret = avcodec_send_packet(audio_c, pkt);
@@ -1436,16 +1452,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     done = true;
                     frame.timestamp = timestamp;
                     frame.keyFrame = samples_frame.key_frame() != 0;
+                    frame.type =Type.AUDIO;
                 }
-            } else if (doData) {
-                if (!readPacket) {
-                    readPacket = true;
-                    continue;
-                }
+            } else if (doData && pkt_stream_ind > -1 && streams.length > pkt_stream_ind && streams[pkt_stream_ind] != AVMEDIA_TYPE_VIDEO && streams[pkt_stream_ind] != AVMEDIA_TYPE_AUDIO) {
                 // Export the stream byte data for non audio / video frames
                 frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
+                frame.opaque = pkt;
                 done = true;
-            }
+                switch (streams[pkt_stream_ind]) {
+                	case AVMEDIA_TYPE_SUBTITLE: frame.type = Type.SUBTITLE; break;
+                	case AVMEDIA_TYPE_DATA: frame.type = Type.DATA; break;
+                	case AVMEDIA_TYPE_ATTACHMENT: frame.type = Type.ATTACHMENT; break;
+                	default: frame.type = Type.UNKNOWN;
+                }
+                pkt.stream_index(-1); //necessary to read next packet
+            } else readPacket = true; //current packet is not needed (different stream index required)
         }
         return frame;
 
@@ -1467,4 +1488,5 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         return pkt;
     }
+    
 }
