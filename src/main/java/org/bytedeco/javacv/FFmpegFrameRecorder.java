@@ -802,7 +802,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             AVDictionary metadata = new AVDictionary(null);
             for (Entry<String, String> e : videoMetadata.entrySet()) {
-                av_dict_set(metadata, e.getKey(), e.getValue(), 0);
+                av_dict_set(metadata, new BytePointer(e.getKey(), charset), new BytePointer(e.getValue(), charset), 0);
             }
             video_st.metadata(metadata);
         }
@@ -873,7 +873,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             AVDictionary metadata = new AVDictionary(null);
             for (Entry<String, String> e : audioMetadata.entrySet()) {
-                av_dict_set(metadata, e.getKey(), e.getValue(), 0);
+                av_dict_set(metadata, new BytePointer(e.getKey(), charset), new BytePointer(e.getValue(), charset), 0);
             }
             audio_st.metadata(metadata);
         }
@@ -897,7 +897,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
         AVDictionary metadata = new AVDictionary(null);
         for (Entry<String, String> e : this.metadata.entrySet()) {
-            av_dict_set(metadata, e.getKey(), e.getValue(), 0);
+            av_dict_set(metadata, new BytePointer(e.getKey(), charset), new BytePointer(e.getValue(), charset), 0);
         }
         /* write the stream header, if any */
         if ((ret = avformat_write_header(oc.metadata(metadata), options)) < 0) {

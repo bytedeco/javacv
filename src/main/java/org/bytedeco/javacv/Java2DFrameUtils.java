@@ -49,15 +49,21 @@ public class Java2DFrameUtils {
     }
 
     public synchronized static BufferedImage toBufferedImage(IplImage src) {
-        return deepCopy(biConv.getBufferedImage(iplConv.convert(src).clone()));
+        try (Frame f = iplConv.convert(src).clone()) {
+            return deepCopy(biConv.getBufferedImage(f));
+        }
     }
 
     public synchronized static BufferedImage toBufferedImage(Mat src) {
-        return deepCopy(biConv.getBufferedImage(matConv.convert(src).clone()));
+        try (Frame f = matConv.convert(src).clone()) {
+            return deepCopy(biConv.getBufferedImage(f));
+        }
     }
 
     public synchronized static BufferedImage toBufferedImage(Frame src) {
-        return deepCopy(biConv.getBufferedImage(src.clone()));
+        try (Frame f = src.clone()) {
+            return deepCopy(biConv.getBufferedImage(f));
+        }
     }
 
     public synchronized static IplImage toIplImage(Mat src){
