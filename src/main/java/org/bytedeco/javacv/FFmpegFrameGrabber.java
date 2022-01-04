@@ -1338,10 +1338,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.samples = null;
         frame.data = null;
         frame.opaque = null;
-        frame.type = Type.UNKNOWN;
+        frame.type = null;
         
         boolean done = false;
-        boolean readPacket = pkt.stream_index() == -1;
+        boolean readPacket = (pkt.stream_index() != video_st.index() && pkt.stream_index() != audio_st.index());
         while (!done) {
             int ret = 0;
             if (readPacket) {
@@ -1460,12 +1460,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 frame.opaque = pkt;
                 done = true;
                 switch (streams[pkt_stream_ind]) {
-                	case AVMEDIA_TYPE_SUBTITLE: frame.type = Type.SUBTITLE; break;
                 	case AVMEDIA_TYPE_DATA: frame.type = Type.DATA; break;
+                	case AVMEDIA_TYPE_SUBTITLE: frame.type = Type.SUBTITLE; break;
                 	case AVMEDIA_TYPE_ATTACHMENT: frame.type = Type.ATTACHMENT; break;
-                	default: frame.type = Type.UNKNOWN;
+                	default: frame.type = null;
                 }
-                pkt.stream_index(-1); //necessary to read next packet
             } else readPacket = true; //current packet is not needed (different stream index required)
         }
         return frame;

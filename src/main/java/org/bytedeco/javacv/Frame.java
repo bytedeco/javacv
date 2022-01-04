@@ -74,11 +74,10 @@ public class Frame implements AutoCloseable, Indexable {
 
     /** Constants defining data type in the frame*/
     public static enum Type {
-    	UNKNOWN,
-        VIDEO,
+    	VIDEO,
         AUDIO,
-        SUBTITLE,
         DATA,
+        SUBTITLE,
         ATTACHMENT
     }
     
@@ -133,7 +132,7 @@ public class Frame implements AutoCloseable, Indexable {
         this.image = new Buffer[1];
         this.data = null;
         this.streamIndex = -1;
-        this.type = Type.UNKNOWN;
+        this.type = null;
 
         Pointer pointer = new BytePointer(imageHeight * imageStride * pixelSize(depth));
         ByteBuffer buffer = pointer.asByteBuffer();
