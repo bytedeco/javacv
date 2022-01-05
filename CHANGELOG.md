@@ -1,4 +1,11 @@
 
+ * Add new `Frame.pictType` field set to `I`, `P`, `B`, etc by `FFmpegFrameGrabber` ([pull #1730](https://github.com/bytedeco/javacv/pull/1730))
+ * Set metadata for `AVFrame.opaque` in `FFmpegFrameGrabber` with call to `av_frame_copy_props()` ([issue #1729](https://github.com/bytedeco/javacv/issues/1729))
+ * Add `charset` property to `FrameGrabber` and `FrameRecorder` to use for metadata from FFmpeg ([pull #1720](https://github.com/bytedeco/javacv/pull/1720))
+ * Call `Frame.close()` on temporary clones in `Java2DFrameUtils` to prevent premature deallocations ([issue #1716](https://github.com/bytedeco/javacv/issues/1716))
+ * Ignore errors from `avcodec_send_packet()` and `avcodec_receive_frame()` to emulate old API in `FFmpegFrameGrabber` ([issue #1679](https://github.com/bytedeco/javacv/issues/1679))
+ * Upgrade dependencies for OpenBLAS 0.3.18, OpenCV 4.5.4, FFmpeg 4.4.1, librealsense2 2.50.0, Leptonica 1.82.0, Tesseract 5.0.0
+
 ### August 2, 2021 version 1.5.6
  * Enhance audio and video synchronization of `JavaFxPlayVideoAndAudio` sample ([pull #1662](https://github.com/bytedeco/javacv/pull/1662))
  * Add `FrameGrabber.grabAtFrameRate()` to simulate a device or stream when reading from files ([pull #1659](https://github.com/bytedeco/javacv/pull/1659))

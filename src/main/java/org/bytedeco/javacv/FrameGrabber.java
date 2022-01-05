@@ -27,6 +27,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -192,6 +193,7 @@ public abstract class FrameGrabber implements Closeable {
     protected int numBuffers = 4;
     protected double gamma = 0.0;
     protected boolean deinterlace = false;
+    protected Charset charset = Charset.defaultCharset();
     protected Map<String, String> options = new HashMap<String, String>();
     protected Map<String, String> videoOptions = new HashMap<String, String>();
     protected Map<String, String> audioOptions = new HashMap<String, String>();
@@ -390,6 +392,13 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setDeinterlace(boolean deinterlace) {
         this.deinterlace = deinterlace;
+    }
+
+    public Charset getCharset() {
+        return charset;
+    }
+    public void setCharset(Charset charset) {
+        this.charset = charset;
     }
 
     public Map<String, String> getOptions() {
