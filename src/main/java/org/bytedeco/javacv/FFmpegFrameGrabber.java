@@ -1344,7 +1344,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.type = null;
         
         boolean done = false;
-        boolean readPacket = (pkt.stream_index() != video_st.index() && pkt.stream_index() != audio_st.index());
+        boolean readPacket = pkt.stream_index() == -1;
         while (!done) {
             int ret = 0;
             if (readPacket) {
@@ -1458,7 +1458,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     frame.keyFrame = samples_frame.key_frame() != 0;
                     frame.type =Type.AUDIO;
                 }
-            } else if (doData && pkt_stream_ind > -1 && streams.length > pkt_stream_ind && streams[pkt_stream_ind] != AVMEDIA_TYPE_VIDEO && streams[pkt_stream_ind] != AVMEDIA_TYPE_AUDIO) {
+            } else if (readPacket && doData 
+            		&& pkt_stream_ind > -1 && streams.length > pkt_stream_ind 
+            		&& streams[pkt_stream_ind] != AVMEDIA_TYPE_VIDEO && streams[pkt_stream_ind] != AVMEDIA_TYPE_AUDIO) {
                 // Export the stream byte data for non audio / video frames
                 frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
                 frame.opaque = pkt;
