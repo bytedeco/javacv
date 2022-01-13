@@ -67,7 +67,6 @@ import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerScope;
-import org.bytedeco.javacv.Frame.Type;
 import org.bytedeco.javacpp.PointerPointer;
 
 import org.bytedeco.ffmpeg.avcodec.*;
@@ -765,7 +764,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         maxSeekSteps = 0; //no more grab if the distance to the requested timestamp is smaller than frameDuration
                         if (timestamp - initialSeekPosition + 1 > frameDuration)  //allow for a rounding error
                                   maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/frameDuration);
-                        
                     }
                     else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
 
@@ -1327,8 +1325,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
             return frame;
-        } else if (doData && dataFrameGrabbed) return frame;
-        
+        } else if (doData && dataFrameGrabbed) {
+            return frame;
+        }
+
         frame.keyFrame = false;
         frame.imageWidth = 0;
         frame.imageHeight = 0;
@@ -1342,7 +1342,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame.data = null;
         frame.opaque = null;
         frame.type = null;
-        
+
         boolean done = false;
         boolean readPacket = pkt.stream_index() == -1;
         while (!done) {
@@ -1365,12 +1365,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     }
                 }
             }
-            
-            int pkt_stream_ind = pkt.stream_index(); 
-            frame.streamIndex = pkt_stream_ind;
-            
+
+            frame.streamIndex = pkt.stream_index();
+
             // Is this a packet from the video stream?
-            if (doVideo && video_st != null && pkt_stream_ind == video_st.index()
+            if (doVideo && video_st != null && frame.streamIndex == video_st.index()
                     && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
                 // Decode video frame
                 if (readPacket) {
@@ -1419,10 +1418,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         frame.timestamp = timestamp;
                         frame.keyFrame = picture.key_frame() != 0;
                         frame.pictType = (char)av_get_picture_type_char(picture.pict_type());
-                        frame.type =Type.VIDEO;
+                        frame.type = Frame.Type.VIDEO;
                     }
                 }
-            } else if (doAudio && audio_st != null && pkt_stream_ind == audio_st.index()) {
+            } else if (doAudio && audio_st != null && frame.streamIndex == audio_st.index()) {
                 // Decode audio frame
                 if (readPacket) {
                     ret = avcodec_send_packet(audio_c, pkt);
@@ -1456,22 +1455,25 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     done = true;
                     frame.timestamp = timestamp;
                     frame.keyFrame = samples_frame.key_frame() != 0;
-                    frame.type =Type.AUDIO;
+                    frame.type = Frame.Type.AUDIO;
                 }
-            } else if (readPacket && doData 
-            		&& pkt_stream_ind > -1 && streams.length > pkt_stream_ind 
-            		&& streams[pkt_stream_ind] != AVMEDIA_TYPE_VIDEO && streams[pkt_stream_ind] != AVMEDIA_TYPE_AUDIO) {
+            } else if (readPacket && doData
+                    && frame.streamIndex > -1 && frame.streamIndex < streams.length
+                    && streams[frame.streamIndex] != AVMEDIA_TYPE_VIDEO && streams[frame.streamIndex] != AVMEDIA_TYPE_AUDIO) {
                 // Export the stream byte data for non audio / video frames
                 frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
                 frame.opaque = pkt;
                 done = true;
-                switch (streams[pkt_stream_ind]) {
-                	case AVMEDIA_TYPE_DATA: frame.type = Type.DATA; break;
-                	case AVMEDIA_TYPE_SUBTITLE: frame.type = Type.SUBTITLE; break;
-                	case AVMEDIA_TYPE_ATTACHMENT: frame.type = Type.ATTACHMENT; break;
-                	default: frame.type = null;
+                switch (streams[frame.streamIndex]) {
+                    case AVMEDIA_TYPE_DATA: frame.type = Frame.Type.DATA; break;
+                    case AVMEDIA_TYPE_SUBTITLE: frame.type = Frame.Type.SUBTITLE; break;
+                    case AVMEDIA_TYPE_ATTACHMENT: frame.type = Frame.Type.ATTACHMENT; break;
+                    default: frame.type = null;
                 }
-            } else readPacket = true; //current packet is not needed (different stream index required)
+            } else {
+                // Current packet is not needed (different stream index required)
+                readPacket = true;
+            }
         }
         return frame;
 
@@ -1493,5 +1495,4 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         return pkt;
     }
-    
 }
