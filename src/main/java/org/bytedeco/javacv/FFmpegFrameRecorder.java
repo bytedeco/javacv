@@ -1302,7 +1302,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
     private void writePacket(int mediaType, AVPacket avPacket) throws Exception {
 
-        AVStream avStream = (mediaType == AVMEDIA_TYPE_VIDEO) ? audio_st : (mediaType == AVMEDIA_TYPE_AUDIO) ? video_st : null;
+        AVStream avStream = (mediaType == AVMEDIA_TYPE_VIDEO) ? video_st : (mediaType == AVMEDIA_TYPE_AUDIO) ? audio_st : null;
         String mediaTypeStr = (mediaType == AVMEDIA_TYPE_VIDEO) ? "video" : (mediaType == AVMEDIA_TYPE_AUDIO) ? "audio" : "unsupported media stream type";
 
         synchronized (oc) {

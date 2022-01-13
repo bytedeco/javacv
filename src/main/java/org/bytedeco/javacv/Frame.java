@@ -75,11 +75,13 @@ public class Frame implements AutoCloseable, Indexable {
             DEPTH_FLOAT  =  32,
             DEPTH_DOUBLE =  64;
 
-    /** Constants defining data type in the frame*/
+    /** Constants defining data type in the frame. */
     public static enum Type {
         VIDEO,
         AUDIO,
-        DATA
+        DATA,
+        SUBTITLE,
+        ATTACHMENT
     }
 
     /** Information associated with the {@link #image} field. */
@@ -103,6 +105,9 @@ public class Frame implements AutoCloseable, Indexable {
 
     /** Stream number the audio|video|other data is associated with. */
     public int streamIndex;
+
+    /** The type of the stream. */
+    public Type type;
 
     /** The underlying data object, for example, Pointer, AVFrame, IplImage, or Mat. */
     public Object opaque;
@@ -132,6 +137,7 @@ public class Frame implements AutoCloseable, Indexable {
         this.image = new Buffer[1];
         this.data = null;
         this.streamIndex = -1;
+        this.type = null;
 
         Pointer pointer = new BytePointer(imageHeight * imageStride * pixelSize(depth));
         ByteBuffer buffer = pointer.asByteBuffer();
@@ -222,6 +228,7 @@ public class Frame implements AutoCloseable, Indexable {
         newFrame.keyFrame = keyFrame;
         newFrame.pictType = pictType;
         newFrame.streamIndex = streamIndex;
+        newFrame.type = type;
         newFrame.opaque = new Pointer[3];
         if (image != null) {
             newFrame.image = new Buffer[image.length];
