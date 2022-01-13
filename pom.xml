@@ -190,7 +190,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.8.1</version>
         <configuration>
           <source>1.7</source>
           <target>1.7</target>
@@ -201,7 +201,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
         <configuration>
           <archive>
             <manifest>
@@ -225,7 +225,7 @@
       <plugin>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-maven-plugin</artifactId>
-        <version>1.0.0.RC1</version>
+        <version>1.0.0.RC2</version>
         <configuration>
           <jvmVersion>9</jvmVersion>
           <overwriteExistingFiles>true</overwriteExistingFiles>
@@ -251,14 +251,14 @@
       </plugin>
       <plugin>
         <artifactId>maven-install-plugin</artifactId>
-        <version>2.5.2</version>
+        <version>3.0.0-M1</version>
         <configuration>
           <createChecksum>true</createChecksum>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <id>attach-source</id>
@@ -270,7 +270,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.3.1</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -298,7 +298,7 @@
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/gluegen/javadoc</link>
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jocl/javadoc</link>
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jogl/javadoc</link>
-                <link>http://junit.org/junit4/javadoc/4.13.1</link>
+                <link>http://junit.org/junit4/javadoc/4.13.2</link>
               </links>
             </configuration>
           </execution>
@@ -398,6 +398,7 @@
             <configuration>
               <doclint>none</doclint>
               <failOnError>false</failOnError>
+              <source>8</source>
             </configuration>
           </plugin>
         </plugins>
@@ -429,7 +430,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.0.1</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
