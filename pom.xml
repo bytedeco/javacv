@@ -70,12 +70,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas</artifactId>
-      <version>0.3.18-${javacpp.version}</version>
+      <version>0.3.19-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
-      <version>4.5.4-${javacpp.version}</version>
+      <version>4.5.5-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -135,7 +135,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract</artifactId>
-      <version>5.0.0-${javacpp.version}</version>
+      <version>5.0.1-${javacpp.version}</version>
     </dependency>
 
     <dependency>
