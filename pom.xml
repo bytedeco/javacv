@@ -80,7 +80,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>4.4.1-${javacpp.version}</version>
+      <version>5.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -195,6 +195,7 @@
           <source>1.7</source>
           <target>1.7</target>
           <excludes>
+            <exclude>org/bytedeco/javacv/FFmpegLockCallback.java</exclude>
             <exclude>org/bytedeco/javacv/FlyCaptureFrameGrabber.java</exclude>
           </excludes>
         </configuration>

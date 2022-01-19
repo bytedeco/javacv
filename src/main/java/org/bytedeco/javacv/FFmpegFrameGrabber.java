@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 Samuel Audet
+ * Copyright (C) 2009-2022 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -115,8 +115,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
                 // Register all formats and codecs
                 av_jni_set_java_vm(Loader.getJavaVM(), null);
-                avcodec_register_all();
-                av_register_all();
+//                avcodec_register_all();
+//                av_register_all();
                 avformat_network_init();
 
                 Loader.load(org.bytedeco.ffmpeg.global.avdevice.class);
@@ -131,12 +131,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-    static {
-        try {
-            tryLoad();
-            FFmpegLockCallback.init();
-        } catch (Exception ex) { }
-    }
+//    static {
+//        try {
+//            tryLoad();
+//            FFmpegLockCallback.init();
+//        } catch (Exception ex) { }
+//    }
 
     public FFmpegFrameGrabber(File file) {
         this(file.getAbsolutePath());
@@ -296,7 +296,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 InputStream is = inputStreams.get(opaque);
                 int size = is.read(b, 0, buf_size);
                 if (size < 0) {
-                    return 0;
+                    return AVERROR_EOF();
                 } else {
                     buf.put(b, 0, size);
                     return size;

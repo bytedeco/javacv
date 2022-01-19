@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Samuel Audet
+ * Copyright (C) 2015-2022 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -104,8 +104,8 @@ public class FFmpegFrameFilter extends FrameFilter {
                 Loader.load(org.bytedeco.ffmpeg.global.swscale.class);
                 Loader.load(org.bytedeco.ffmpeg.global.avfilter.class);
 
-                av_register_all();
-                avfilter_register_all();
+//                av_register_all();
+//                avfilter_register_all();
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
