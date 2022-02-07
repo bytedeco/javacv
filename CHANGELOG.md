@@ -1,4 +1,5 @@
 
+### February 11, 2022 version 1.5.7
  * Fix accuracy and latency issues with `FFmpegFrameGrabber.setVideoFrameNumber()` ([pull #1734](https://github.com/bytedeco/javacv/pull/1734))
  * Add new `Frame.pictType` field set to `I`, `P`, `B`, etc by `FFmpegFrameGrabber` ([pull #1730](https://github.com/bytedeco/javacv/pull/1730))
  * Set metadata for `AVFrame.opaque` in `FFmpegFrameGrabber` with call to `av_frame_copy_props()` ([issue #1729](https://github.com/bytedeco/javacv/issues/1729))
