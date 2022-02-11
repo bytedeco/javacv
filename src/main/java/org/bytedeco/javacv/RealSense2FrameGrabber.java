@@ -183,8 +183,16 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         this.config = createConfig();
 
         // check if streams is not empty
-        if (streams.isEmpty())
-            throw new Exception("No stream has been added to be enabled.");
+        if (streams.isEmpty()) {
+            // enable color stream by default
+            enableStream(new RealSenseStream(
+                    RS2_STREAM_COLOR,
+                    0,
+                    new Size(0, 0),
+                    0,
+                    RS2_FORMAT_BGR8
+            ));
+        }
 
         // enable streams
         for (RealSenseStream stream : streams) {
