@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Florian Bruggisser, Samuel Audet
+ * Copyright (C) 2019-2022 Florian Bruggisser, Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -184,14 +184,10 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // check if streams is not empty
         if (streams.isEmpty()) {
-            // enable color stream by default
-            enableStream(new RealSenseStream(
-                    RS2_STREAM_COLOR,
-                    0,
-                    new Size(0, 0),
-                    0,
-                    RS2_FORMAT_BGR8
-            ));
+            // enable color, depth and IR stream by default
+            enableColorStream(imageWidth, imageHeight, (int)frameRate);
+            enableDepthStream(imageWidth, imageHeight, (int)frameRate);
+            enableIRStream(imageWidth, imageHeight, (int)frameRate);
         }
 
         // enable streams
@@ -251,7 +247,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
     @Override
     public Frame grab() throws Exception {
-        RealSenseStream stream = streams.get(0);
+        int videoStreamId = Math.max(0, videoStream);
+        RealSenseStream stream = streams.get(videoStreamId);
 
         switch (stream.type) {
             case RS2_STREAM_DEPTH:
