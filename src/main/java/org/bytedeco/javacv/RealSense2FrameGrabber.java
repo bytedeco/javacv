@@ -29,6 +29,7 @@ import org.bytedeco.opencv.opencv_core.IplImage;
 import org.bytedeco.opencv.opencv_core.Size;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.bytedeco.librealsense2.global.realsense2.*;
@@ -37,6 +38,10 @@ import static org.bytedeco.opencv.global.opencv_core.*;
 public class RealSense2FrameGrabber extends FrameGrabber {
 
     private static FrameGrabber.Exception loadingException = null;
+
+    private static final int defaultFrameRate = 30;
+    private static final int defaultWidth = 640;
+    private static final int defaultHeight = 480;
 
     public static void tryLoad() throws FrameGrabber.Exception {
         if (loadingException != null) {
@@ -184,10 +189,8 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         // check if streams is not empty
         if (streams.isEmpty()) {
-            // enable color, depth and IR stream by default
-            enableColorStream(imageWidth, imageHeight, (int)frameRate);
-            enableDepthStream(imageWidth, imageHeight, (int)frameRate);
-            enableIRStream(imageWidth, imageHeight, (int)frameRate);
+            enableAllVideoStreams();
+            Collections.sort(streams);
         }
 
         // enable streams
@@ -203,7 +206,7 @@ public class RealSense2FrameGrabber extends FrameGrabber {
             checkError(error);
         }
 
-        // set image width & height to largest stream
+        // set image width & height to the largest stream
         RealSenseStream largestStream = getLargestStreamByArea();
         this.imageWidth = largestStream.size.width();
         this.imageHeight = largestStream.size.height();
@@ -386,14 +389,9 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     }
 
     public void setSensorOption(Rs2SensorType sensorType, int optionIndex, float value) throws Exception {
-        rs2_sensor_list sensorList = rs2_query_sensors(this.device, error);
-        checkError(error);
+        rs2_sensor[] sensors = getSensors(device);
 
-        int sensorCount = rs2_get_sensors_count(sensorList, error);
-        checkError(error);
-
-        for (int i = 0; i < sensorCount; i++) {
-            rs2_sensor sensor = rs2_create_sensor(sensorList, i, error);
+        for (rs2_sensor sensor : sensors) {
             checkError(error);
 
             // check if name matches
@@ -406,8 +404,6 @@ public class RealSense2FrameGrabber extends FrameGrabber {
             // cleanup
             rs2_delete_sensor(sensor);
         }
-
-        rs2_delete_sensor_list(sensorList);
     }
 
     private rs2_context createContext() throws Exception {
@@ -510,7 +506,18 @@ public class RealSense2FrameGrabber extends FrameGrabber {
     private StreamProfileData getStreamProfileData(rs2_stream_profile streamProfile) throws Exception {
         StreamProfileData profileData = new StreamProfileData();
 
-        // check if stream profile matches search type
+        if (isStreamProfile(streamProfile, RS2_EXTENSION_VIDEO_PROFILE)) {
+            VideoStreamProfileData videoStreamProfileData = new VideoStreamProfileData();
+
+            rs2_get_video_stream_resolution(streamProfile,
+                    videoStreamProfileData.width,
+                    videoStreamProfileData.height,
+                    error);
+            checkError(error);
+
+            profileData = videoStreamProfileData;
+        }
+
         rs2_get_stream_profile_data(streamProfile,
                 profileData.nativeStreamIndex,
                 profileData.nativeFormatIndex,
@@ -529,6 +536,27 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         return isExtandable;
     }
 
+    private boolean isStreamProfile(rs2_stream_profile profile, int type) throws Exception {
+        boolean isOfType = toBoolean(rs2_stream_profile_is(profile, type, error));
+        checkError(error);
+        return isOfType;
+    }
+
+    private boolean matchesVideoStreamProfile(rs2_stream_profile profile,
+                                              int streamType,
+                                              int streamFormat,
+                                              int frameRate,
+                                              int width,
+                                              int height) throws Exception {
+        VideoStreamProfileData data = (VideoStreamProfileData) getStreamProfileData(profile);
+
+        return streamType == data.nativeStreamIndex.get()
+                && streamFormat == data.nativeFormatIndex.get()
+                && frameRate == data.frameRate.get()
+                && width == data.width.get()
+                && height == data.height.get();
+    }
+
     private void setRs2Option(rs2_options options, int optionIndex, float value) throws Exception {
         boolean isSupported = toBoolean(rs2_supports_option(options, optionIndex, error));
         checkError(error);
@@ -539,6 +567,72 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         rs2_set_option(options, optionIndex, value, error);
         checkError(error);
+    }
+
+    private rs2_sensor[] getSensors(rs2_device device) throws Exception {
+        rs2_sensor_list sensorList = rs2_query_sensors(device, error);
+        checkError(error);
+
+        int sensorCount = rs2_get_sensors_count(sensorList, error);
+        checkError(error);
+
+        rs2_sensor[] sensors = new rs2_sensor[sensorCount];
+
+        for (int i = 0; i < sensorCount; i++) {
+            rs2_sensor sensor = rs2_create_sensor(sensorList, i, error);
+            checkError(error);
+
+            sensors[i] = sensor;
+        }
+
+        rs2_delete_sensor_list(sensorList);
+
+        return sensors;
+    }
+
+    private rs2_stream_profile[] getStreamProfiles(rs2_sensor sensor) throws Exception {
+        rs2_stream_profile_list streamList = rs2_get_stream_profiles(sensor, error);
+        checkError(error);
+
+        int streamProfileCount = rs2_get_stream_profiles_count(streamList, error);
+        checkError(error);
+
+        rs2_stream_profile[] profiles = new rs2_stream_profile[streamProfileCount];
+
+        for (int i = 0; i < streamProfileCount; i++) {
+            rs2_stream_profile profile = rs2_get_stream_profile(streamList, i, error);
+            checkError(error);
+
+            profiles[i] = profile;
+        }
+
+        rs2_delete_stream_profiles_list(streamList);
+        return profiles;
+    }
+
+    private void enableAllVideoStreams() throws Exception {
+        for (rs2_sensor sensor : getSensors(device)) {
+            if (!isSensorExtendableTo(sensor, RS2_EXTENSION_VIDEO)) {
+                rs2_delete_sensor(sensor);
+                continue;
+            }
+
+            for (rs2_stream_profile profile : getStreamProfiles(sensor)) {
+                int rsFrameRate = frameRate > 0 ? (int) frameRate : defaultFrameRate;
+                int rsWidth = imageWidth > 0 ? imageWidth : defaultWidth;
+                int rsHeight = imageWidth > 0 ? imageWidth : defaultHeight;
+
+                if (matchesVideoStreamProfile(profile, RS2_STREAM_DEPTH, RS2_FORMAT_Z16, rsFrameRate, rsWidth, rsHeight)) {
+                    enableDepthStream(imageWidth, imageHeight, rsFrameRate);
+                } else if (matchesVideoStreamProfile(profile, RS2_STREAM_COLOR, RS2_FORMAT_RGB8, rsFrameRate, rsWidth, rsHeight)) {
+                    enableColorStream(imageWidth, imageHeight, rsFrameRate);
+                } else if (matchesVideoStreamProfile(profile, RS2_STREAM_INFRARED, RS2_FORMAT_Y8, rsFrameRate, rsWidth, rsHeight)) {
+                    enableIRStream(imageWidth, imageHeight, rsFrameRate);
+                }
+            }
+
+            rs2_delete_sensor(sensor);
+        }
     }
 
     private static void checkError(rs2_error e) throws Exception {
@@ -569,7 +663,12 @@ public class RealSense2FrameGrabber extends FrameGrabber {
         IntPointer frameRate = new IntPointer(1);
     }
 
-    public static class RealSenseStream {
+    static class VideoStreamProfileData extends StreamProfileData {
+        IntPointer width = new IntPointer(1);
+        IntPointer height = new IntPointer(1);
+    }
+
+    public static class RealSenseStream implements Comparable<RealSenseStream> {
         private int type;
         private int index;
         private Size size;
@@ -602,6 +701,11 @@ public class RealSense2FrameGrabber extends FrameGrabber {
 
         public int getFormat() {
             return format;
+        }
+
+        @Override
+        public int compareTo(RealSenseStream o) {
+            return Integer.compare(getType(), o.getType());
         }
     }
 
