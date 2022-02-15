@@ -1,5 +1,5 @@
 
- * Enable as `videoStream` by default on `RealSense2FrameGrabber.start()` color, depth, and IR streams ([pull #1750](https://github.com/bytedeco/javacv/pull/1750))
+ * Enable by default on `RealSense2FrameGrabber.start()` all color, depth, and IR streams as `videoStream` ([pull #1750](https://github.com/bytedeco/javacv/pull/1750))
 
 ### February 11, 2022 version 1.5.7
  * Fix accuracy and latency issues with `FFmpegFrameGrabber.setVideoFrameNumber()` ([pull #1734](https://github.com/bytedeco/javacv/pull/1734))
