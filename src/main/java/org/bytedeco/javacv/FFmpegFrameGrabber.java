@@ -131,12 +131,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
     }
 
-//    static {
-//        try {
-//            tryLoad();
+    static {
+        try {
+            tryLoad();
 //            FFmpegLockCallback.init();
-//        } catch (Exception ex) { }
-//    }
+        } catch (Exception ex) { }
+    }
 
     public FFmpegFrameGrabber(File file) {
         this(file.getAbsolutePath());

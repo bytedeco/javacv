@@ -1,4 +1,5 @@
 
+ * Restore static calls to `FFmpegFrameGrabber.tryLoad()` and `FFmpegFrameRecorder.tryLoad()` ([issue #1756](https://github.com/bytedeco/javacv/issues/1756))
  * Enable by default on `RealSense2FrameGrabber.start()` all color, depth, and IR streams as `videoStream` ([pull #1750](https://github.com/bytedeco/javacv/pull/1750))
 
 ### February 11, 2022 version 1.5.7

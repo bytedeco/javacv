@@ -132,12 +132,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         }
     }
 
-//    static {
-//        try {
-//            tryLoad();
+    static {
+        try {
+            tryLoad();
 //            FFmpegLockCallback.init();
-//        } catch (Exception ex) { }
-//    }
+        } catch (Exception ex) { }
+    }
 
     public FFmpegFrameRecorder(File file, int audioChannels) {
         this(file, 0, 0, audioChannels);
