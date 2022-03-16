@@ -1,4 +1,5 @@
 
+ * Append `frame_rate=%d/%d` input parameter in `FFmpegFrameFilter` as required by `xfade` ([issue #1776](https://github.com/bytedeco/javacv/issues/1776))
  * Update `FFmpegStreamingTimeout` sample to use `timeout` instead of `stimeout` for RTSP ([pull #1758](https://github.com/bytedeco/javacv/pull/1758))
  * Restore static calls to `FFmpegFrameGrabber.tryLoad()` and `FFmpegFrameRecorder.tryLoad()` ([issue #1756](https://github.com/bytedeco/javacv/issues/1756))
  * Enable by default on `RealSense2FrameGrabber.start()` all color, depth, and IR streams as `videoStream` ([pull #1750](https://github.com/bytedeco/javacv/pull/1750))
