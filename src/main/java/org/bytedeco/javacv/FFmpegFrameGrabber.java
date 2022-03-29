@@ -1351,8 +1351,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 if (pkt.stream_index() != -1) {
                     // Free the packet that was allocated by av_read_frame
                     av_packet_unref(pkt);
+                    pkt.stream_index(-1);
                 }
                 if ((ret = av_read_frame(oc, pkt)) < 0) {
+                    if (ret == AVERROR_EAGAIN()) {
+                        try {
+                            Thread.sleep(10);
+                            continue;
+                        } catch (InterruptedException ex) {
+                            // reset interrupt to be nice
+                            Thread.currentThread().interrupt();
+                            return null;
+                        }
+                    }
                     if (doVideo && video_st != null) {
                         // The video codec may have buffered some frames
                         pkt.stream_index(video_st.index());
