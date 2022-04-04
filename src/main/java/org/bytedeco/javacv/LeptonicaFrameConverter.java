@@ -30,7 +30,7 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 
 import org.bytedeco.leptonica.*;
-import static org.bytedeco.leptonica.global.lept.*;
+import static org.bytedeco.leptonica.global.leptonica.*;
 
 /**
  * A utility class to map data between {@link Frame} and {@link PIX},
@@ -40,7 +40,7 @@ import static org.bytedeco.leptonica.global.lept.*;
  * @author Samuel Audet
  */
 public class LeptonicaFrameConverter extends FrameConverter<PIX> {
-    static { Loader.load(org.bytedeco.leptonica.global.lept.class); }
+    static { Loader.load(org.bytedeco.leptonica.global.leptonica.class); }
 
     PIX pix;
     BytePointer frameData, pixData;
