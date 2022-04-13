@@ -88,7 +88,7 @@ Eclipse (Java SE 7 or newer):
  
 Visual Studio Code (Java SE 7 or newer):
 
- 1. Navigate to Java Projects > Referenced Libraries, click `+`.
+ 1. Navigate to Java Projects > Referenced Libraries, and click `+`.
  2. Locate the JAR files, select them, and click OK.
 
 IntelliJ IDEA (Android 7.0 or newer):
