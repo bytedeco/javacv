@@ -1,4 +1,5 @@
 
+ * Fix incorrect call to `opencv_calib3d.stereoRectify()` in `ProjectiveDevice` ([issue #1802](https://github.com/bytedeco/javacv/issues/1802))
  * Retry after 10 ms when `av_read_frame()` returns `EAGAIN` in `FFmpegFrameGrabber.grabFrame()` ([issue #1784](https://github.com/bytedeco/javacv/issues/1784))
  * Append `frame_rate=%d/%d` input parameter in `FFmpegFrameFilter` as required by `xfade` ([issue #1776](https://github.com/bytedeco/javacv/issues/1776))
  * Update `FFmpegStreamingTimeout` sample to use `timeout` instead of `stimeout` for RTSP ([pull #1758](https://github.com/bytedeco/javacv/pull/1758))
