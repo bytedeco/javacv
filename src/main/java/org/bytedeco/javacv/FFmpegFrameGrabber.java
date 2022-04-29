@@ -54,6 +54,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -138,6 +139,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         } catch (Exception ex) { }
     }
 
+    public FFmpegFrameGrabber(URL url) {
+        this(url.toString());
+    }
     public FFmpegFrameGrabber(File file) {
         this(file.getAbsolutePath());
     }

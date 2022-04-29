@@ -54,6 +54,7 @@ package org.bytedeco.javacv;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -139,17 +140,26 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         } catch (Exception ex) { }
     }
 
+    public FFmpegFrameRecorder(URL url, int audioChannels) {
+        this(url.toString(), 0, 0, audioChannels);
+    }
     public FFmpegFrameRecorder(File file, int audioChannels) {
         this(file, 0, 0, audioChannels);
     }
     public FFmpegFrameRecorder(String filename, int audioChannels) {
         this(filename, 0, 0, audioChannels);
     }
+    public FFmpegFrameRecorder(URL url, int imageWidth, int imageHeight) {
+        this(url.toString(), imageWidth, imageHeight, 0);
+    }
     public FFmpegFrameRecorder(File file, int imageWidth, int imageHeight) {
         this(file, imageWidth, imageHeight, 0);
     }
     public FFmpegFrameRecorder(String filename, int imageWidth, int imageHeight) {
         this(filename, imageWidth, imageHeight, 0);
+    }
+    public FFmpegFrameRecorder(URL url, int imageWidth, int imageHeight, int audioChannels) {
+        this(url.toString(), imageWidth, imageHeight, audioChannels);
     }
     public FFmpegFrameRecorder(File file, int imageWidth, int imageHeight, int audioChannels) {
         this(file.getAbsolutePath(), imageWidth, imageHeight, audioChannels);
