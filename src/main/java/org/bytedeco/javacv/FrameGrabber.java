@@ -490,6 +490,7 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setFrameNumber(int frameNumber) throws Exception {
         this.frameNumber = frameNumber;
+        startTime = 0;
     }
 
     public long getTimestamp() {
@@ -497,6 +498,7 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setTimestamp(long timestamp) throws Exception {
         this.timestamp = timestamp;
+        startTime = 0;
     }
 
     public int getMaxDelay() {
