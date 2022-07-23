@@ -607,6 +607,48 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
+    @Override public Map<String, Buffer> getVideoSideData() {
+        if (video_st == null) {
+            return super.getVideoSideData();
+        }
+        videoSideData = new HashMap<String, Buffer>();
+        for (int i = 0; i < video_st.nb_side_data(); i++) {
+            AVPacketSideData sd = video_st.side_data().position(i);
+            String key = av_packet_side_data_name(sd.type()).getString();
+            Buffer value = sd.data().capacity(sd.size()).asBuffer();
+            videoSideData.put(key, value);
+        }
+        return videoSideData;
+    }
+
+    @Override public Buffer getVideoSideData(String key) {
+        return getVideoSideData().get(key);
+    }
+
+    /** Returns the rotation in degrees from the side data of the video stream, or 0 if unknown. */
+    public double getDisplayRotation() {
+        ByteBuffer b = (ByteBuffer)getVideoSideData("Display Matrix");
+        return b != null ? av_display_rotation_get(new IntPointer(new BytePointer(b))) : 0;
+    }
+
+    @Override public Map<String, Buffer> getAudioSideData() {
+        if (audio_st == null) {
+            return super.getAudioSideData();
+        }
+        audioSideData = new HashMap<String, Buffer>();
+        for (int i = 0; i < audio_st.nb_side_data(); i++) {
+            AVPacketSideData sd = audio_st.side_data().position(i);
+            String key = av_packet_side_data_name(sd.type()).getString();
+            Buffer value = sd.data().capacity(sd.size()).asBuffer();
+            audioSideData.put(key, value);
+        }
+        return audioSideData;
+    }
+
+    @Override public Buffer getAudioSideData(String key) {
+        return getAudioSideData().get(key);
+    }
+
     /** default override of super.setFrameNumber implies setting
      *  of a frame close to a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
