@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Samuel Audet
+ * Copyright (C) 2015-2022 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -104,8 +104,8 @@ public class FFmpegFrameFilter extends FrameFilter {
                 Loader.load(org.bytedeco.ffmpeg.global.swscale.class);
                 Loader.load(org.bytedeco.ffmpeg.global.avfilter.class);
 
-                av_register_all();
-                avfilter_register_all();
+//                av_register_all();
+//                avfilter_register_all();
             } catch (Throwable t) {
                 if (t instanceof Exception) {
                     throw loadingException = (Exception)t;
@@ -323,7 +323,8 @@ public class FFmpegFrameFilter extends FrameFilter {
         AVFilter setpts = avfilter_get_by_name("setpts");
         AVFilterInOut[] outputs = new AVFilterInOut[videoInputs];
         AVFilterInOut inputs  = avfilter_inout_alloc();
-        AVRational time_base = av_inv_q(av_d2q(frameRate, 1001000));
+        AVRational frame_rate = av_d2q(frameRate, 1001000);
+        AVRational time_base = av_inv_q(frame_rate);
         int pix_fmts[] = { pixelFormat, AV_PIX_FMT_NONE };
 
         try {
@@ -334,8 +335,8 @@ public class FFmpegFrameFilter extends FrameFilter {
 
             /* buffer video source: the decoded frames from the decoder will be inserted here. */
             AVRational r = av_d2q(aspectRatio > 0 ? aspectRatio : 1, 255);
-            String args = String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
-                    imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den());
+            String args = String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d",
+                    imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den(), frame_rate.num(), frame_rate.den());
             buffersrc_ctx = new AVFilterContext[videoInputs];
             setpts_ctx = new AVFilterContext[videoInputs];
             for (int i = 0; i < videoInputs; i++) {

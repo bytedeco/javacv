@@ -1,11 +1,22 @@
 
+ * Add `FrameGrabber.videoSideData/audioSideData` properties and `FFmpegFrameGrabber.getDisplayRotation()` for convenience ([issue #1361](https://github.com/bytedeco/javacv/issues/1361))
+ * Add to `FFmpegFrameGrabber` and `FFmpegFrameRecorder` constructors taking a `URL` for convenience and clarity
+ * Fix incorrect call to `opencv_calib3d.stereoRectify()` in `ProjectiveDevice` ([issue #1802](https://github.com/bytedeco/javacv/issues/1802))
+ * Retry after 10 ms when `av_read_frame()` returns `EAGAIN` in `FFmpegFrameGrabber.grabFrame()` ([issue #1784](https://github.com/bytedeco/javacv/issues/1784))
+ * Append `frame_rate=%d/%d` input parameter in `FFmpegFrameFilter` as required by `xfade` ([issue #1776](https://github.com/bytedeco/javacv/issues/1776))
+ * Update `FFmpegStreamingTimeout` sample to use `timeout` instead of `stimeout` for RTSP ([pull #1758](https://github.com/bytedeco/javacv/pull/1758))
+ * Restore static calls to `FFmpegFrameGrabber.tryLoad()` and `FFmpegFrameRecorder.tryLoad()` ([issue #1756](https://github.com/bytedeco/javacv/issues/1756))
+ * Enable by default on `RealSense2FrameGrabber.start()` all color, depth, and IR streams as `videoStream` ([pull #1750](https://github.com/bytedeco/javacv/pull/1750))
+ * Upgrade dependencies for OpenBLAS 0.3.20, OpenCV 4.6.0, FFmpeg 5.0.1, Leptonica 1.82.0 ([pull #1791](https://github.com/bytedeco/javacv/pull/1791)), Tesseract 5.2.0
+
+### February 11, 2022 version 1.5.7
  * Fix accuracy and latency issues with `FFmpegFrameGrabber.setVideoFrameNumber()` ([pull #1734](https://github.com/bytedeco/javacv/pull/1734))
  * Add new `Frame.pictType` field set to `I`, `P`, `B`, etc by `FFmpegFrameGrabber` ([pull #1730](https://github.com/bytedeco/javacv/pull/1730))
  * Set metadata for `AVFrame.opaque` in `FFmpegFrameGrabber` with call to `av_frame_copy_props()` ([issue #1729](https://github.com/bytedeco/javacv/issues/1729))
  * Add `charset` property to `FrameGrabber` and `FrameRecorder` to use for metadata from FFmpeg ([pull #1720](https://github.com/bytedeco/javacv/pull/1720))
  * Call `Frame.close()` on temporary clones in `Java2DFrameUtils` to prevent premature deallocations ([issue #1716](https://github.com/bytedeco/javacv/issues/1716))
  * Ignore errors from `avcodec_send_packet()` and `avcodec_receive_frame()` to emulate old API in `FFmpegFrameGrabber` ([issue #1679](https://github.com/bytedeco/javacv/issues/1679))
- * Upgrade dependencies for OpenBLAS 0.3.18, OpenCV 4.5.4, FFmpeg 4.4.1, librealsense2 2.50.0, Leptonica 1.82.0, Tesseract 5.0.0
+ * Upgrade dependencies for OpenBLAS 0.3.19, OpenCV 4.5.5, FFmpeg 5.0, librealsense2 2.50.0, Leptonica 1.82.0, Tesseract 5.0.1
 
 ### August 2, 2021 version 1.5.6
  * Enhance audio and video synchronization of `JavaFxPlayVideoAndAudio` sample ([pull #1662](https://github.com/bytedeco/javacv/pull/1662))

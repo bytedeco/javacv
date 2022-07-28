@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 Samuel Audet
+ * Copyright (C) 2009-2022 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -115,8 +116,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
                 // Register all formats and codecs
                 av_jni_set_java_vm(Loader.getJavaVM(), null);
-                avcodec_register_all();
-                av_register_all();
+//                avcodec_register_all();
+//                av_register_all();
                 avformat_network_init();
 
                 Loader.load(org.bytedeco.ffmpeg.global.avdevice.class);
@@ -134,10 +135,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     static {
         try {
             tryLoad();
-            FFmpegLockCallback.init();
+//            FFmpegLockCallback.init();
         } catch (Exception ex) { }
     }
 
+    public FFmpegFrameGrabber(URL url) {
+        this(url.toString());
+    }
     public FFmpegFrameGrabber(File file) {
         this(file.getAbsolutePath());
     }
@@ -296,7 +300,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 InputStream is = inputStreams.get(opaque);
                 int size = is.read(b, 0, buf_size);
                 if (size < 0) {
-                    return 0;
+                    return AVERROR_EOF();
                 } else {
                     buf.put(b, 0, size);
                     return size;
@@ -603,10 +607,52 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
+    @Override public Map<String, Buffer> getVideoSideData() {
+        if (video_st == null) {
+            return super.getVideoSideData();
+        }
+        videoSideData = new HashMap<String, Buffer>();
+        for (int i = 0; i < video_st.nb_side_data(); i++) {
+            AVPacketSideData sd = video_st.side_data().position(i);
+            String key = av_packet_side_data_name(sd.type()).getString();
+            Buffer value = sd.data().capacity(sd.size()).asBuffer();
+            videoSideData.put(key, value);
+        }
+        return videoSideData;
+    }
+
+    @Override public Buffer getVideoSideData(String key) {
+        return getVideoSideData().get(key);
+    }
+
+    /** Returns the rotation in degrees from the side data of the video stream, or 0 if unknown. */
+    public double getDisplayRotation() {
+        ByteBuffer b = (ByteBuffer)getVideoSideData("Display Matrix");
+        return b != null ? av_display_rotation_get(new IntPointer(new BytePointer(b))) : 0;
+    }
+
+    @Override public Map<String, Buffer> getAudioSideData() {
+        if (audio_st == null) {
+            return super.getAudioSideData();
+        }
+        audioSideData = new HashMap<String, Buffer>();
+        for (int i = 0; i < audio_st.nb_side_data(); i++) {
+            AVPacketSideData sd = audio_st.side_data().position(i);
+            String key = av_packet_side_data_name(sd.type()).getString();
+            Buffer value = sd.data().capacity(sd.size()).asBuffer();
+            audioSideData.put(key, value);
+        }
+        return audioSideData;
+    }
+
+    @Override public Buffer getAudioSideData(String key) {
+        return getAudioSideData().get(key);
+    }
+
     /** default override of super.setFrameNumber implies setting
      *  of a frame close to a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        if (hasVideo()) setTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getFrameRate()));
+        if (hasVideo()) setTimestamp((long)Math.floor(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -614,7 +660,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  otherwise sets super.frameNumber only because frameRate==0 if there is no video stream */
     public void setVideoFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasVideo()) setVideoTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getFrameRate()));
+        if (hasVideo()) setVideoTimestamp((long)Math.floor(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -622,8 +668,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  ignoring otherwise */
     public void setAudioFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasAudio()) setAudioTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getAudioFrameRate()));
-
+        if (hasAudio()) setAudioTimestamp((long)Math.floor(1000000L * frameNumber / getAudioFrameRate()));
     }
 
     /** setTimestamp without checking frame content (using old code used in JavaCV versions prior to 1.4.1) */
@@ -1351,8 +1396,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 if (pkt.stream_index() != -1) {
                     // Free the packet that was allocated by av_read_frame
                     av_packet_unref(pkt);
+                    pkt.stream_index(-1);
                 }
                 if ((ret = av_read_frame(oc, pkt)) < 0) {
+                    if (ret == AVERROR_EAGAIN()) {
+                        try {
+                            Thread.sleep(10);
+                            continue;
+                        } catch (InterruptedException ex) {
+                            // reset interrupt to be nice
+                            Thread.currentThread().interrupt();
+                            return null;
+                        }
+                    }
                     if (doVideo && video_st != null) {
                         // The video codec may have buffered some frames
                         pkt.stream_index(video_st.index());
@@ -1407,7 +1463,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         AVRational time_base = video_st.time_base();
                         timestamp = 1000000L * pts * time_base.num() / time_base.den();
                         // best guess, AVCodecContext.frame_number = number of decoded frames...
-                        frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
+                        frameNumber = (int)Math.floor(timestamp * getFrameRate() / 1000000L);
                         frame.image = image_buf;
                         if (doProcessing) {
                             processImage();

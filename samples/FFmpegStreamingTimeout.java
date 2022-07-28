@@ -20,9 +20,12 @@ public class FFmpegStreamingTimeout {
      */
     private static enum TimeoutOption {
         /**
-         * Depends on protocol (FTP, HTTP, RTMP, SMB, SSH, TCP, UDP, or UNIX).
-         *
+         * Depends on protocol (FTP, HTTP, RTMP, RTSP, SMB, SSH, TCP, UDP, or UNIX).
          * http://ffmpeg.org/ffmpeg-all.html
+         *
+         * Specific for RTSP:
+         * Set socket TCP I/O timeout in microseconds.
+         * http://ffmpeg.org/ffmpeg-all.html#rtsp
          */
         TIMEOUT,
         /**
@@ -33,15 +36,7 @@ public class FFmpegStreamingTimeout {
          *
          * http://ffmpeg.org/ffmpeg-all.html#Protocols
          */
-        RW_TIMEOUT,
-        /**
-         * Protocols -> RTSP
-         *
-         * Set socket TCP I/O timeout in microseconds.
-         *
-         * http://ffmpeg.org/ffmpeg-all.html#rtsp
-         */
-        STIMEOUT;
+        RW_TIMEOUT;
 
         public String getKey() {
             return toString().toLowerCase();
@@ -61,24 +56,21 @@ public class FFmpegStreamingTimeout {
         try {
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(SOURCE_RTSP);
             /**
-             * "timeout" - IS IGNORED when a network cable have been unplugged
-             * before a connection and sometimes when connection is lost.
-             *
              * "rw_timeout" - IS IGNORED when a network cable have been
              * unplugged before a connection but the option takes effect after a
              * connection was established.
              *
-             * "stimeout" - works fine.
+             * "timeout" - works fine.
              */
             grabber.setOption(
-                    TimeoutOption.STIMEOUT.getKey(),
+                    TimeoutOption.TIMEOUT.getKey(),
                     String.valueOf(TIMEOUT * 1000000)
             ); // In microseconds.
             grabber.start();
 
             Frame frame = null;
             /**
-             * When network is disabled (before brabber was started) grabber
+             * When network is disabled (before grabber was started) grabber
              * throws exception: "org.bytedeco.javacv.FrameGrabber$Exception:
              * avformat_open_input() error -138: Could not open input...".
              *

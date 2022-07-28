@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.5.7-SNAPSHOT</version>
+  <version>1.5.8-SNAPSHOT</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV, FFmpeg, and more</description>
@@ -70,17 +70,17 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas</artifactId>
-      <version>0.3.18-${javacpp.version}</version>
+      <version>0.3.20-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
-      <version>4.5.4-${javacpp.version}</version>
+      <version>4.6.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>4.4.1-${javacpp.version}</version>
+      <version>5.0.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -135,7 +135,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract</artifactId>
-      <version>5.0.0-${javacpp.version}</version>
+      <version>5.2.0-${javacpp.version}</version>
     </dependency>
 
     <dependency>
@@ -190,18 +190,19 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.8.1</version>
         <configuration>
           <source>1.7</source>
           <target>1.7</target>
           <excludes>
+            <exclude>org/bytedeco/javacv/FFmpegLockCallback.java</exclude>
             <exclude>org/bytedeco/javacv/FlyCaptureFrameGrabber.java</exclude>
           </excludes>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
         <configuration>
           <archive>
             <manifest>
@@ -225,7 +226,7 @@
       <plugin>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-maven-plugin</artifactId>
-        <version>1.0.0.RC1</version>
+        <version>1.0.0.RC2</version>
         <configuration>
           <jvmVersion>9</jvmVersion>
           <overwriteExistingFiles>true</overwriteExistingFiles>
@@ -251,14 +252,14 @@
       </plugin>
       <plugin>
         <artifactId>maven-install-plugin</artifactId>
-        <version>2.5.2</version>
+        <version>3.0.0-M1</version>
         <configuration>
           <createChecksum>true</createChecksum>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <id>attach-source</id>
@@ -270,7 +271,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.3.1</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -298,7 +299,7 @@
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/gluegen/javadoc</link>
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jocl/javadoc</link>
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jogl/javadoc</link>
-                <link>http://junit.org/junit4/javadoc/4.13.1</link>
+                <link>http://junit.org/junit4/javadoc/4.13.2</link>
               </links>
             </configuration>
           </execution>
@@ -398,6 +399,7 @@
             <configuration>
               <doclint>none</doclint>
               <failOnError>false</failOnError>
+              <source>8</source>
             </configuration>
           </plugin>
         </plugins>
@@ -429,7 +431,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.0.1</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
