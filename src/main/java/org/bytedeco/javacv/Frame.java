@@ -75,16 +75,14 @@ public class Frame implements AutoCloseable, Indexable {
             DEPTH_FLOAT  =  32,
             DEPTH_DOUBLE =  64;
 
-    /** Constants defining data type in the frame*/
+    /** Constants defining data type in the frame. */
     public static enum Type {
-    	VIDEO,
+        VIDEO,
         AUDIO,
         DATA,
         SUBTITLE,
         ATTACHMENT
     }
-    
-    public Type type;
 
     /** Information associated with the {@link #image} field. */
     public int imageWidth, imageHeight, imageDepth, imageChannels, imageStride;
@@ -107,6 +105,9 @@ public class Frame implements AutoCloseable, Indexable {
 
     /** Stream number the audio|video|other data is associated with. */
     public int streamIndex;
+
+    /** The type of the stream. */
+    public Type type;
 
     /** The underlying data object, for example, Pointer, AVFrame, IplImage, or Mat. */
     public Object opaque;
