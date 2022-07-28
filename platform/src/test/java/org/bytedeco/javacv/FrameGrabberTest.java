@@ -139,7 +139,7 @@ public class FrameGrabberTest {
                 clone2.close();
             }
             long stopTime = System.nanoTime();
-            assertEquals(n, (stopTime - startTime) * grabber.getFrameRate() / 1_000_000_000, 2.0);
+            assertEquals(n, (stopTime - startTime) * grabber.getFrameRate() / 1_000_000_000, 3.0);
             assertEquals(frames.length, n);
             assertEquals(null, grabber.grab());
             grabber.restart();

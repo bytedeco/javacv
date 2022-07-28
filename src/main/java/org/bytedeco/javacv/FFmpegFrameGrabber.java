@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2021 Samuel Audet
+ * Copyright (C) 2009-2022 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -115,8 +116,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
                 // Register all formats and codecs
                 av_jni_set_java_vm(Loader.getJavaVM(), null);
-                avcodec_register_all();
-                av_register_all();
+//                avcodec_register_all();
+//                av_register_all();
                 avformat_network_init();
 
                 Loader.load(org.bytedeco.ffmpeg.global.avdevice.class);
@@ -134,10 +135,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     static {
         try {
             tryLoad();
-            FFmpegLockCallback.init();
+//            FFmpegLockCallback.init();
         } catch (Exception ex) { }
     }
 
+    public FFmpegFrameGrabber(URL url) {
+        this(url.toString());
+    }
     public FFmpegFrameGrabber(File file) {
         this(file.getAbsolutePath());
     }
@@ -296,7 +300,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 InputStream is = inputStreams.get(opaque);
                 int size = is.read(b, 0, buf_size);
                 if (size < 0) {
-                    return 0;
+                    return AVERROR_EOF();
                 } else {
                     buf.put(b, 0, size);
                     return size;
@@ -385,6 +389,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private int             samples_channels, samples_format, samples_rate;
     private boolean         frameGrabbed;
     private Frame           frame;
+    private int[]           streams;
 
     private volatile boolean started = false;
 
@@ -549,7 +554,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(oc.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
@@ -561,7 +566,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(video_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
@@ -573,7 +578,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         AVDictionaryEntry entry = null;
         Map<String, String> metadata = new HashMap<String, String>();
         while ((entry = av_dict_get(audio_st.metadata(), "", entry, AV_DICT_IGNORE_SUFFIX)) != null) {
-            metadata.put(entry.key().getString(), entry.value().getString());
+            metadata.put(entry.key().getString(charset), entry.value().getString(charset));
         }
         return metadata;
     }
@@ -583,7 +588,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(oc.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     @Override public String getVideoMetadata(String key) {
@@ -591,7 +596,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getVideoMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(video_st.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
     }
 
     @Override public String getAudioMetadata(String key) {
@@ -599,13 +604,55 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getAudioMetadata(key);
         }
         AVDictionaryEntry entry = av_dict_get(audio_st.metadata(), key, null, 0);
-        return entry == null || entry.value() == null ? null : entry.value().getString();
+        return entry == null || entry.value() == null ? null : entry.value().getString(charset);
+    }
+
+    @Override public Map<String, Buffer> getVideoSideData() {
+        if (video_st == null) {
+            return super.getVideoSideData();
+        }
+        videoSideData = new HashMap<String, Buffer>();
+        for (int i = 0; i < video_st.nb_side_data(); i++) {
+            AVPacketSideData sd = video_st.side_data().position(i);
+            String key = av_packet_side_data_name(sd.type()).getString();
+            Buffer value = sd.data().capacity(sd.size()).asBuffer();
+            videoSideData.put(key, value);
+        }
+        return videoSideData;
+    }
+
+    @Override public Buffer getVideoSideData(String key) {
+        return getVideoSideData().get(key);
+    }
+
+    /** Returns the rotation in degrees from the side data of the video stream, or 0 if unknown. */
+    public double getDisplayRotation() {
+        ByteBuffer b = (ByteBuffer)getVideoSideData("Display Matrix");
+        return b != null ? av_display_rotation_get(new IntPointer(new BytePointer(b))) : 0;
+    }
+
+    @Override public Map<String, Buffer> getAudioSideData() {
+        if (audio_st == null) {
+            return super.getAudioSideData();
+        }
+        audioSideData = new HashMap<String, Buffer>();
+        for (int i = 0; i < audio_st.nb_side_data(); i++) {
+            AVPacketSideData sd = audio_st.side_data().position(i);
+            String key = av_packet_side_data_name(sd.type()).getString();
+            Buffer value = sd.data().capacity(sd.size()).asBuffer();
+            audioSideData.put(key, value);
+        }
+        return audioSideData;
+    }
+
+    @Override public Buffer getAudioSideData(String key) {
+        return getAudioSideData().get(key);
     }
 
     /** default override of super.setFrameNumber implies setting
      *  of a frame close to a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        if (hasVideo()) setTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        if (hasVideo()) setTimestamp((long)Math.floor(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -613,7 +660,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  otherwise sets super.frameNumber only because frameRate==0 if there is no video stream */
     public void setVideoFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasVideo()) setVideoTimestamp(Math.round(1000000L * frameNumber / getFrameRate()));
+        if (hasVideo()) setVideoTimestamp((long)Math.floor(1000000L * frameNumber / getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -621,7 +668,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  ignoring otherwise */
     public void setAudioFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasAudio()) setAudioTimestamp(Math.round(1000000L * frameNumber / getAudioFrameRate()));
+        if (hasAudio()) setAudioTimestamp((long)Math.floor(1000000L * frameNumber / getAudioFrameRate()));
 
     }
 
@@ -755,9 +802,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0) {
                         frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
                     }
+//                    if(frameDuration>0.0) {
+//                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition - frameDuration)/frameDuration);
+//                        if (maxSeekSteps<0) maxSeekSteps = 0;
+//                    }
                     if(frameDuration>0.0) {
-                        maxSeekSteps = (long)(10*(timestamp - initialSeekPosition - frameDuration)/frameDuration);
-                        if (maxSeekSteps<0) maxSeekSteps = 0;
+                        maxSeekSteps = 0; //no more grab if the distance to the requested timestamp is smaller than frameDuration
+                        if (timestamp - initialSeekPosition + 1 > frameDuration)  //allow for a rounding error
+                                  maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/frameDuration);
                     }
                     else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
 
@@ -768,7 +820,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         if (seekFrame == null) return; //is it better to throw NullPointerException?
 
                         count++;
-                        double ts=this.timestamp;
+                        double ts=seekFrame.timestamp;
                         frameDuration = 0.0;
                         if (seekFrame.image != null && this.getFrameRate() > 0)
                             frameDuration =  AV_TIME_BASE / (double)getFrameRate();
@@ -933,10 +985,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         video_st = audio_st = null;
         AVCodecParameters video_par = null, audio_par = null;
         int nb_streams = oc.nb_streams();
+        streams = new int[nb_streams];
         for (int i = 0; i < nb_streams; i++) {
             AVStream st = oc.streams(i);
             // Get a pointer to the codec context for the video or audio stream
             AVCodecParameters par = st.codecpar();
+            streams[i] = par.codec_type();
             if (video_st == null && par.codec_type() == AVMEDIA_TYPE_VIDEO && (videoStream < 0 || videoStream == i)) {
                 video_st = st;
                 video_par = par;
@@ -1139,6 +1193,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     initPictureRGB();
                 }
 
+                // Copy "metadata" fields
+                av_frame_copy_props(picture_rgb, picture);
+
                 // Convert the image into BGR or GRAY format that OpenCV uses
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx,
                         video_c.width(), video_c.height(), video_c.pix_fmt(),
@@ -1291,7 +1348,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (oc == null || oc.isNull()) {
             throw new Exception("Could not grab: No AVFormatContext. (Has start() been called?)");
-        } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null)) {
+        } else if ((!doVideo || video_st == null) && (!doAudio || audio_st == null) && !doData) {
             return null;
         }
         if (!started) {
@@ -1300,19 +1357,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         boolean videoFrameGrabbed = frameGrabbed && frame.image != null;
         boolean audioFrameGrabbed = frameGrabbed && frame.samples != null;
+        boolean dataFrameGrabbed = frameGrabbed && frame.data != null;
         frameGrabbed = false;
-        frame.keyFrame = false;
-        frame.imageWidth = 0;
-        frame.imageHeight = 0;
-        frame.imageDepth = 0;
-        frame.imageChannels = 0;
-        frame.imageStride = 0;
-        frame.image = null;
-        frame.sampleRate = 0;
-        frame.audioChannels = 0;
-        frame.samples = null;
-        frame.data = null;
-        frame.opaque = null;
         if (doVideo && videoFrameGrabbed) {
             if (doProcessing) {
                 processImage();
@@ -1325,7 +1371,24 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
             frame.keyFrame = samples_frame.key_frame() != 0;
             return frame;
+        } else if (doData && dataFrameGrabbed) {
+            return frame;
         }
+
+        frame.keyFrame = false;
+        frame.imageWidth = 0;
+        frame.imageHeight = 0;
+        frame.imageDepth = 0;
+        frame.imageChannels = 0;
+        frame.imageStride = 0;
+        frame.image = null;
+        frame.sampleRate = 0;
+        frame.audioChannels = 0;
+        frame.samples = null;
+        frame.data = null;
+        frame.opaque = null;
+        frame.type = null;
+
         boolean done = false;
         boolean readPacket = pkt.stream_index() == -1;
         while (!done) {
@@ -1334,8 +1397,19 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 if (pkt.stream_index() != -1) {
                     // Free the packet that was allocated by av_read_frame
                     av_packet_unref(pkt);
+                    pkt.stream_index(-1);
                 }
                 if ((ret = av_read_frame(oc, pkt)) < 0) {
+                    if (ret == AVERROR_EAGAIN()) {
+                        try {
+                            Thread.sleep(10);
+                            continue;
+                        } catch (InterruptedException ex) {
+                            // reset interrupt to be nice
+                            Thread.currentThread().interrupt();
+                            return null;
+                        }
+                    }
                     if (doVideo && video_st != null) {
                         // The video codec may have buffered some frames
                         pkt.stream_index(video_st.index());
@@ -1352,7 +1426,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             frame.streamIndex = pkt.stream_index();
 
             // Is this a packet from the video stream?
-            if (doVideo && video_st != null && pkt.stream_index() == video_st.index()
+            if (doVideo && video_st != null && frame.streamIndex == video_st.index()
                     && (!keyFrames || pkt.flags() == AV_PKT_FLAG_KEY)) {
                 // Decode video frame
                 if (readPacket) {
@@ -1390,7 +1464,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         AVRational time_base = video_st.time_base();
                         timestamp = 1000000L * pts * time_base.num() / time_base.den();
                         // best guess, AVCodecContext.frame_number = number of decoded frames...
-                        frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);
+                        frameNumber = (int)Math.floor(timestamp * getFrameRate() / 1000000L);
                         frame.image = image_buf;
                         if (doProcessing) {
                             processImage();
@@ -1400,9 +1474,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         done = true;
                         frame.timestamp = timestamp;
                         frame.keyFrame = picture.key_frame() != 0;
+                        frame.pictType = (char)av_get_picture_type_char(picture.pict_type());
+                        frame.type = Frame.Type.VIDEO;
                     }
                 }
-            } else if (doAudio && audio_st != null && pkt.stream_index() == audio_st.index()) {
+            } else if (doAudio && audio_st != null && frame.streamIndex == audio_st.index()) {
                 // Decode audio frame
                 if (readPacket) {
                     ret = avcodec_send_packet(audio_c, pkt);
@@ -1436,15 +1512,24 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     done = true;
                     frame.timestamp = timestamp;
                     frame.keyFrame = samples_frame.key_frame() != 0;
+                    frame.type = Frame.Type.AUDIO;
                 }
-            } else if (doData) {
-                if (!readPacket) {
-                    readPacket = true;
-                    continue;
-                }
+            } else if (readPacket && doData
+                    && frame.streamIndex > -1 && frame.streamIndex < streams.length
+                    && streams[frame.streamIndex] != AVMEDIA_TYPE_VIDEO && streams[frame.streamIndex] != AVMEDIA_TYPE_AUDIO) {
                 // Export the stream byte data for non audio / video frames
                 frame.data = pkt.data().position(0).capacity(pkt.size()).asByteBuffer();
+                frame.opaque = pkt;
                 done = true;
+                switch (streams[frame.streamIndex]) {
+                    case AVMEDIA_TYPE_DATA: frame.type = Frame.Type.DATA; break;
+                    case AVMEDIA_TYPE_SUBTITLE: frame.type = Frame.Type.SUBTITLE; break;
+                    case AVMEDIA_TYPE_ATTACHMENT: frame.type = Frame.Type.ATTACHMENT; break;
+                    default: frame.type = null;
+                }
+            } else {
+                // Current packet is not needed (different stream index required)
+                readPacket = true;
             }
         }
         return frame;

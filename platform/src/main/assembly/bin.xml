@@ -33,6 +33,7 @@
         <exclude>*-javadoc.jar</exclude>
         <exclude>*-sources.jar</exclude>
       </excludes>
+      <fileMode>0644</fileMode>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/site</directory>

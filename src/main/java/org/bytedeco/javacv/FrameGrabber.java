@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 Samuel Audet
+ * Copyright (C) 2009-2022 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.Buffer;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -192,12 +194,15 @@ public abstract class FrameGrabber implements Closeable {
     protected int numBuffers = 4;
     protected double gamma = 0.0;
     protected boolean deinterlace = false;
+    protected Charset charset = Charset.defaultCharset();
     protected Map<String, String> options = new HashMap<String, String>();
     protected Map<String, String> videoOptions = new HashMap<String, String>();
     protected Map<String, String> audioOptions = new HashMap<String, String>();
     protected Map<String, String> metadata = new HashMap<String, String>();
     protected Map<String, String> videoMetadata = new HashMap<String, String>();
     protected Map<String, String> audioMetadata = new HashMap<String, String>();
+    protected Map<String, Buffer> videoSideData = new HashMap<String, Buffer>();
+    protected Map<String, Buffer> audioSideData = new HashMap<String, Buffer>();
     protected int frameNumber = 0;
     protected long timestamp = 0;
     protected int maxDelay = -1;
@@ -392,6 +397,13 @@ public abstract class FrameGrabber implements Closeable {
         this.deinterlace = deinterlace;
     }
 
+    public Charset getCharset() {
+        return charset;
+    }
+    public void setCharset(Charset charset) {
+        this.charset = charset;
+    }
+
     public Map<String, String> getOptions() {
         return options;
     }
@@ -474,6 +486,34 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setAudioMetadata(String key, String value) {
         audioMetadata.put(key, value);
+    }
+
+    public Map<String, Buffer> getVideoSideData() {
+        return videoSideData;
+    }
+    public void setVideoSideData(Map<String, Buffer> videoSideData) {
+        this.videoSideData = videoSideData;
+    }
+
+    public Buffer getVideoSideData(String key) {
+        return videoSideData.get(key);
+    }
+    public void setVideoSideData(String key, Buffer value) {
+        videoSideData.put(key, value);
+    }
+
+    public Map<String, Buffer> getAudioSideData() {
+        return audioSideData;
+    }
+    public void setAudioSideData(Map<String, Buffer> audioSideData) {
+        this.audioSideData = audioSideData;
+    }
+
+    public Buffer getAudioSideData(String key) {
+        return audioSideData.get(key);
+    }
+    public void setAudioSideData(String key, Buffer value) {
+        audioSideData.put(key, value);
     }
 
     public int getFrameNumber() {

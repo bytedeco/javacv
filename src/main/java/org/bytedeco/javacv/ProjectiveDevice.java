@@ -737,8 +737,8 @@ public class ProjectiveDevice {
         CvMat R2 = R23x3.get(); CvMat P2 = P23x4.get();
         Size imageSize = new Size((peer.imageWidth  + imageWidth )/2,
                                   (peer.imageHeight + imageHeight)/2); // ?
-        stereoRectify(cvarrToMat(peer.cameraMatrix),     cvarrToMat(cameraMatrix),
-                      cvarrToMat(peer.distortionCoeffs), cvarrToMat(distortionCoeffs),
+        stereoRectify(cvarrToMat(peer.cameraMatrix), cvarrToMat(peer.distortionCoeffs),
+                      cvarrToMat(     cameraMatrix), cvarrToMat(     distortionCoeffs),
                       imageSize, cvarrToMat(relativeR), cvarrToMat(relativeT),
                       cvarrToMat(R1), cvarrToMat(R2), cvarrToMat(P1), cvarrToMat(P2),
                       new Mat(), 0, -1, new Size(), null, null);
