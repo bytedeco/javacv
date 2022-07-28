@@ -606,7 +606,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     /** default override of super.setFrameNumber implies setting
      *  of a frame close to a video frame having that number */
     @Override public void setFrameNumber(int frameNumber) throws Exception {
-        if (hasVideo()) setTimestamp((long)Math.floor((1000000L * frameNumber + 500000L)/ getFrameRate()));
+        if (hasVideo()) setTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -614,7 +614,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  otherwise sets super.frameNumber only because frameRate==0 if there is no video stream */
     public void setVideoFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasVideo()) setVideoTimestamp((long)Math.floor((1000000L * frameNumber + 500000L)/ getFrameRate()));
+        if (hasVideo()) setVideoTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getFrameRate()));
         else super.frameNumber = frameNumber;
     }
 
@@ -622,7 +622,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  ignoring otherwise */
     public void setAudioFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasAudio()) setAudioTimestamp((long)Math.floor((1000000L * frameNumber + 500000L)/ getAudioFrameRate()));
+        if (hasAudio()) setAudioTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getAudioFrameRate()));
 
     }
 
@@ -1407,7 +1407,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         AVRational time_base = video_st.time_base();
                         timestamp = 1000000L * pts * time_base.num() / time_base.den();
                         // best guess, AVCodecContext.frame_number = number of decoded frames...
-                        frameNumber = (int)Math.floor(0.5 + timestamp * getFrameRate() / 1000000L);
+                        frameNumber = (int)Math.round(timestamp * getFrameRate() / 1000000L);//(int)Math.floor(0.5 + timestamp * getFrameRate() / 1000000L);
                         frame.image = image_buf;
                         if (doProcessing) {
                             processImage();
