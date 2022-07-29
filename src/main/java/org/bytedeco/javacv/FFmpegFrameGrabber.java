@@ -668,7 +668,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
      *  ignoring otherwise */
     public void setAudioFrameNumber(int frameNumber) throws Exception {
         // best guess, AVSEEK_FLAG_FRAME has not been implemented in FFmpeg...
-        if (hasAudio()) setAudioTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getFrameRate()));
+        if (hasAudio()) setAudioTimestamp(Math.round((1000000L * frameNumber + 500000L)/ getAudioFrameRate()));
     }
 
     /** setTimestamp without checking frame content (using old code used in JavaCV versions prior to 1.4.1) */
