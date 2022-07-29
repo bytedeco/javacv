@@ -431,6 +431,16 @@ public class FrameGrabberTest {
                 System.out.println("delta from " + mindelta + " to " + maxdelta);
                 System.out.println();
             }
+            if (seektestnum==0) {
+            	System.out.println();
+                System.out.println("======== Check sequential setVideoFrameNumber (issue #1697) ========");
+            	for (int i = 0; i < 10; i++) {
+            		grabber.setVideoFrameNumber(i);
+            		long timestamp = grabber.grabImage().timestamp;
+            		System.out.println("frame number:" + i + " timestamp:" + timestamp);
+            		assertTrue(i == Math.round(timestamp * grabber.getFrameRate() / 1000000L));
+            	}
+            }
             if (seektestnum==2) {
 
                 long count1 = 0;
