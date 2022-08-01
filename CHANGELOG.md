@@ -1,4 +1,6 @@
 
+ * Add `FrameGrabber.resetStartTime()` to allow `grabAtFrameRate()` after operations such as seeking ([pull #1846](https://github.com/bytedeco/javacv/pull/1846))
+ * Add `FrameGrabber.videoSideData/audioSideData` properties and `FFmpegFrameGrabber.getDisplayRotation()` for convenience ([issue #1361](https://github.com/bytedeco/javacv/issues/1361))
  * Add to `FFmpegFrameGrabber` and `FFmpegFrameRecorder` constructors taking a `URL` for convenience and clarity
  * Fix incorrect call to `opencv_calib3d.stereoRectify()` in `ProjectiveDevice` ([issue #1802](https://github.com/bytedeco/javacv/issues/1802))
  * Retry after 10 ms when `av_read_frame()` returns `EAGAIN` in `FFmpegFrameGrabber.grabFrame()` ([issue #1784](https://github.com/bytedeco/javacv/issues/1784))
