@@ -788,4 +788,8 @@ public abstract class FrameGrabber implements Closeable {
         }
         return false;
     }
+
+    public void resetStartTime() {
+        startTime = 0;
+    }
 }
