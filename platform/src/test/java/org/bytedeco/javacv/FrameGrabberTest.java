@@ -409,6 +409,7 @@ public class FrameGrabberTest {
                     assertTrue(frame.image != null ^ frame.samples != null);
                     System.out.println(timestamp2 + " - " + timestamp + " = " + delta + " type: " + frame.getTypes());
                     assertTrue(Math.abs(delta) < tolerance);
+                    /*
                     if (seektestnum==0) {
                         boolean wasVideo = frame.image != null;
                         boolean wasAudio = frame.samples != null;
@@ -423,11 +424,22 @@ public class FrameGrabberTest {
                         System.out.println(timestamp3 + " - " + timestamp + " = " + (timestamp3 - timestamp));
                         assertTrue(timestamp3 >= timestamp - tolerance && timestamp3 < timestamp + tolerance);
                     }
+                    */
                 }
                 System.out.println();
                 System.out.println("------------------------------------");
                 System.out.println("delta from " + mindelta + " to " + maxdelta);
                 System.out.println();
+            }
+            if (seektestnum==0) {
+                System.out.println();
+                System.out.println("======== Check sequential setVideoFrameNumber (issue #1697) ========");
+                for (int i = 0; i < 10; i++) {
+                    grabber.setVideoFrameNumber(i);
+                    long timestamp = grabber.grabImage().timestamp;
+                    System.out.println("frame number:" + i + " timestamp:" + timestamp);
+                    assertTrue(i == Math.round(timestamp * grabber.getFrameRate() / 1000000L));
+                }
             }
             if (seektestnum==2) {
 

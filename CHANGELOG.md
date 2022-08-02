@@ -1,4 +1,5 @@
 
+ * Improve accuracy of `FFmpegFrameGrabber.setFrameNumber()` ([pull #1851](https://github.com/bytedeco/javacv/pull/1851))
  * Add `FrameGrabber.resetStartTime()` to allow `grabAtFrameRate()` after operations such as seeking ([pull #1846](https://github.com/bytedeco/javacv/pull/1846))
  * Add `FrameGrabber.videoSideData/audioSideData` properties and `FFmpegFrameGrabber.getDisplayRotation()` for convenience ([issue #1361](https://github.com/bytedeco/javacv/issues/1361))
  * Add to `FFmpegFrameGrabber` and `FFmpegFrameRecorder` constructors taking a `URL` for convenience and clarity
