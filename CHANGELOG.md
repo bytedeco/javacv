@@ -9,7 +9,7 @@
  * Update `FFmpegStreamingTimeout` sample to use `timeout` instead of `stimeout` for RTSP ([pull #1758](https://github.com/bytedeco/javacv/pull/1758))
  * Restore static calls to `FFmpegFrameGrabber.tryLoad()` and `FFmpegFrameRecorder.tryLoad()` ([issue #1756](https://github.com/bytedeco/javacv/issues/1756))
  * Enable by default on `RealSense2FrameGrabber.start()` all color, depth, and IR streams as `videoStream` ([pull #1750](https://github.com/bytedeco/javacv/pull/1750))
- * Upgrade dependencies for OpenBLAS 0.3.20, OpenCV 4.6.0, FFmpeg 5.0.1, Leptonica 1.82.0 ([pull #1791](https://github.com/bytedeco/javacv/pull/1791)), Tesseract 5.2.0
+ * Upgrade dependencies for OpenBLAS 0.3.20, OpenCV 4.6.0, FFmpeg 5.1, Leptonica 1.82.0 ([pull #1791](https://github.com/bytedeco/javacv/pull/1791)), Tesseract 5.2.0
 
 ### February 11, 2022 version 1.5.7
  * Fix accuracy and latency issues with `FFmpegFrameGrabber.setVideoFrameNumber()` ([pull #1734](https://github.com/bytedeco/javacv/pull/1734))
