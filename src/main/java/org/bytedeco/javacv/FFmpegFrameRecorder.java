@@ -964,7 +964,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         record(frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
     }
     public synchronized void record(Frame frame, int pixelFormat) throws Exception {
-        if (frame == null || (frame.image == null && frame.samples == null)) {
+        if (frame == null || (frame.image == null && frame.samples == null && frame.data == null)) {
             recordImage(0, 0, 0, 0, 0, pixelFormat, (Buffer[])null);
         } else {
             if (frame.image != null) {
