@@ -50,10 +50,8 @@
 
 package org.bytedeco.javacv;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -75,6 +73,9 @@ import org.bytedeco.ffmpeg.avformat.*;
 import org.bytedeco.ffmpeg.avutil.*;
 import org.bytedeco.ffmpeg.swresample.*;
 import org.bytedeco.ffmpeg.swscale.*;
+
+import javax.imageio.ImageIO;
+
 import static org.bytedeco.ffmpeg.global.avcodec.*;
 import static org.bytedeco.ffmpeg.global.avdevice.*;
 import static org.bytedeco.ffmpeg.global.avformat.*;
@@ -372,7 +373,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVIOContext     avio;
     private String          filename;
     private AVFormatContext oc;
-    private AVStream        video_st, audio_st;
+    private AVStream        video_st, audio_st, attached_pic_st;
     private AVCodecContext  video_c, audio_c;
     private AVFrame         picture, picture_rgb;
     private BytePointer[]   image_ptr;
@@ -981,7 +982,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         // Find the first video and audio stream, unless the user specified otherwise
-        video_st = audio_st = null;
+        video_st = audio_st = attached_pic_st = null;
         AVCodecParameters video_par = null, audio_par = null;
         int nb_streams = oc.nb_streams();
         streams = new int[nb_streams];
@@ -998,6 +999,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 audio_st = st;
                 audio_par = par;
                 audioStream = i;
+            }
+
+            if(st.disposition() == AV_DISPOSITION_ATTACHED_PIC){
+                // stream containing the attached picture
+                attached_pic_st = st;
+
             }
         }
         if (video_st == null && audio_st == null) {
@@ -1550,5 +1557,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         return pkt;
+    }
+
+
+    public synchronized BufferedImage getAttachedPicture() throws IOException {
+        if(attached_pic_st == null) return null;
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(attached_pic_st.attached_pic().asByteBuffer().array());
+        return ImageIO.read(bis);
+
     }
 }
