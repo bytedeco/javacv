@@ -150,9 +150,13 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
         super.finalize();
         release();
     }
-
+    
     @Override
     public void start() throws FrameGrabber.Exception {
+        startDevice(null);
+    }
+
+    public void startDevice(PacketPipeline pipeline) throws FrameGrabber.Exception {
         if (freenect2Context == null) {
             try {
                 OpenKinect2FrameGrabber.tryLoad();
@@ -168,14 +172,13 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
             throw new Exception("FATAL error: OpenKinect2: no device connected!");
         }
         device = null;
-        PacketPipeline pipeline = null;
-
-        pipeline = new CpuPacketPipeline();
+        
+//        pipeline = new CpuPacketPipeline();
 //        pipeline = new libfreenect2::OpenGLPacketPipeline();
 //        pipeline = new libfreenect2::OpenCLPacketPipeline(deviceId);
 //        pipeline = new libfreenect2::CudaPacketPipeline(deviceId);
         serial = freenect2Context.getDeviceSerialNumber(deviceNumber).getString();
-        device = freenect2Context.openDevice(serial, pipeline);
+        device = (pipeline != null) ? freenect2Context.openDevice(serial, pipeline) : freenect2Context.openDevice(serial);
 
         frameListener = new SyncMultiFrameListener(frameTypes);
 
