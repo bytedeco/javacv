@@ -99,7 +99,7 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
                 }
                 Loader.load(org.bytedeco.libfreenect2.global.freenect2.class);
 
-                // Context is shared accross cameras. 
+                // Context is shared accross cameras.
                 freenect2Context = new Freenect2();
             } catch (Throwable t) {
                 throw loadingException = new FrameGrabber.Exception("Failed to load " + OpenKinect2FrameGrabber.class, t);
@@ -153,6 +153,10 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
 
     @Override
     public void start() throws FrameGrabber.Exception {
+        startDevice(null);
+    }
+
+    public void startDevice(PacketPipeline pipeline) throws FrameGrabber.Exception {
         if (freenect2Context == null) {
             try {
                 OpenKinect2FrameGrabber.tryLoad();
@@ -168,14 +172,13 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
             throw new Exception("FATAL error: OpenKinect2: no device connected!");
         }
         device = null;
-        PacketPipeline pipeline = null;
 
-        pipeline = new CpuPacketPipeline();
+//        pipeline = new CpuPacketPipeline();
 //        pipeline = new libfreenect2::OpenGLPacketPipeline();
 //        pipeline = new libfreenect2::OpenCLPacketPipeline(deviceId);
 //        pipeline = new libfreenect2::CudaPacketPipeline(deviceId);
         serial = freenect2Context.getDeviceSerialNumber(deviceNumber).getString();
-        device = freenect2Context.openDevice(serial, pipeline);
+        device = (pipeline != null) ? freenect2Context.openDevice(serial, pipeline) : freenect2Context.openDevice(serial);
 
         frameListener = new SyncMultiFrameListener(frameTypes);
 
