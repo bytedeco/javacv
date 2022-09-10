@@ -99,7 +99,7 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
                 }
                 Loader.load(org.bytedeco.libfreenect2.global.freenect2.class);
 
-                // Context is shared accross cameras. 
+                // Context is shared accross cameras.
                 freenect2Context = new Freenect2();
             } catch (Throwable t) {
                 throw loadingException = new FrameGrabber.Exception("Failed to load " + OpenKinect2FrameGrabber.class, t);
@@ -150,7 +150,7 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
         super.finalize();
         release();
     }
-    
+
     @Override
     public void start() throws FrameGrabber.Exception {
         startDevice(null);
@@ -172,7 +172,7 @@ public class OpenKinect2FrameGrabber extends FrameGrabber {
             throw new Exception("FATAL error: OpenKinect2: no device connected!");
         }
         device = null;
-        
+
 //        pipeline = new CpuPacketPipeline();
 //        pipeline = new libfreenect2::OpenGLPacketPipeline();
 //        pipeline = new libfreenect2::OpenCLPacketPipeline(deviceId);
