@@ -375,6 +375,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVFormatContext oc;
     private AVStream        video_st, audio_st;
     private AVCodecContext  video_c, audio_c;
+    private int             disposition;
     private AVFrame         picture, picture_rgb;
     private BytePointer[]   image_ptr;
     private Buffer[]        image_buf;
@@ -967,6 +968,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 throw new Exception("avformat_open_input() error " + ret + ": Could not open input \"" + filename + "\". (Has setFormat() been called?)");
             }
         }
+
+
         av_dict_free(options);
 
         oc.max_delay(maxDelay);
@@ -1555,16 +1558,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
 
-    public void setVideoDisposition(){
+    public void setVideoDisposition(int value){
         if(oc != null){
             for(int i = 0; i < oc.nb_streams(); i++){
                 AVStream stream = oc.streams(i);
-                if(stream.disposition() == AV_DISPOSITION_ATTACHED_PIC){
+                if(stream.disposition() == value){
                     this.setVideoStream(i);
+                    disposition = value;
                     break;
                 }
             }
         }
+    }
+
+    public int getVideoDisposition(){
+        return disposition;
     }
 
 }
