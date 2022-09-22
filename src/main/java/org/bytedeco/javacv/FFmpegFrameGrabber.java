@@ -984,6 +984,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_dump_format(oc, 0, filename, 0);
         }
 
+        // Find the first stream with the user-specified disposition property
+        for(int i = 0; i < oc.nb_streams(); i++) {
+            AVStream stream = oc.streams(i);
+            if (stream.disposition() == disposition) {
+                this.setVideoStream(i);
+                break;
+            }
+        }
+
         // Find the first video and audio stream, unless the user specified otherwise
         video_st = audio_st = null;
         AVCodecParameters video_par = null, audio_par = null;
@@ -1559,16 +1568,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
 
     public void setVideoDisposition(int value){
-        if(oc != null){
-            for(int i = 0; i < oc.nb_streams(); i++){
-                AVStream stream = oc.streams(i);
-                if(stream.disposition() == value){
-                    this.setVideoStream(i);
-                    disposition = value;
-                    break;
-                }
-            }
-        }
+        disposition = value;
     }
 
     public int getVideoDisposition(){
