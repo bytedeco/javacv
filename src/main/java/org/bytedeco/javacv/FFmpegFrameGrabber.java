@@ -375,7 +375,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private AVFormatContext oc;
     private AVStream        video_st, audio_st;
     private AVCodecContext  video_c, audio_c;
-    private int             disposition;
     private AVFrame         picture, picture_rgb;
     private BytePointer[]   image_ptr;
     private Buffer[]        image_buf;
@@ -1564,15 +1563,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         return pkt;
-    }
-
-
-    public void setVideoDisposition(int value){
-        disposition = value;
-    }
-
-    public int getVideoDisposition(){
-        return disposition;
     }
 
 }

@@ -207,6 +207,7 @@ public abstract class FrameGrabber implements Closeable {
     protected long timestamp = 0;
     protected int maxDelay = -1;
     protected long startTime = 0;
+    protected int disposition;
 
     public int getVideoStream() {
         return videoStream;
@@ -542,6 +543,15 @@ public abstract class FrameGrabber implements Closeable {
     }
     public long getLengthInTime() {
         return 0;
+    }
+
+
+    public void setVideoDisposition(int value){
+        this.disposition = value;
+    }
+
+    public int getVideoDisposition(){
+        return disposition;
     }
 
     public static class Exception extends IOException {
