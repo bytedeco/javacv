@@ -50,8 +50,10 @@
 
 package org.bytedeco.javacv;
 
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -73,9 +75,6 @@ import org.bytedeco.ffmpeg.avformat.*;
 import org.bytedeco.ffmpeg.avutil.*;
 import org.bytedeco.ffmpeg.swresample.*;
 import org.bytedeco.ffmpeg.swscale.*;
-
-import javax.imageio.ImageIO;
-
 import static org.bytedeco.ffmpeg.global.avcodec.*;
 import static org.bytedeco.ffmpeg.global.avdevice.*;
 import static org.bytedeco.ffmpeg.global.avformat.*;
@@ -967,8 +966,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 throw new Exception("avformat_open_input() error " + ret + ": Could not open input \"" + filename + "\". (Has setFormat() been called?)");
             }
         }
-
-
         av_dict_free(options);
 
         oc.max_delay(maxDelay);
@@ -984,10 +981,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         // Find the first stream with the user-specified disposition property
-        for(int i = 0; i < oc.nb_streams(); i++) {
+        int nb_streams = oc.nb_streams();
+        for (int i = 0; i < nb_streams; i++) {
             AVStream stream = oc.streams(i);
-            if (stream.disposition() == disposition) {
-                this.setVideoStream(i);
+            if (videoStream < 0 && stream.disposition() == videoDisposition) {
+                videoStream = i;
                 break;
             }
         }
@@ -995,7 +993,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         // Find the first video and audio stream, unless the user specified otherwise
         video_st = audio_st = null;
         AVCodecParameters video_par = null, audio_par = null;
-        int nb_streams = oc.nb_streams();
         streams = new int[nb_streams];
         for (int i = 0; i < nb_streams; i++) {
             AVStream st = oc.streams(i);
@@ -1011,7 +1008,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 audio_par = par;
                 audioStream = i;
             }
-
         }
         if (video_st == null && audio_st == null) {
             throw new Exception("Did not find a video or audio stream inside \"" + filename
@@ -1564,5 +1560,4 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         return pkt;
     }
-
 }

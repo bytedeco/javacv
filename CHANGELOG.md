@@ -1,4 +1,5 @@
 
+ * Add `FrameGrabber.videoDisposition` property to select video stream by disposition ([pull #1879](https://github.com/bytedeco/javacv/pull/1879))
  * Fix `FFmpegFrameRecorder.record()` incorrectly flushing the video codec on data frames ([issue #1858](https://github.com/bytedeco/javacv/issues/1858))
  * Improve accuracy of `FFmpegFrameGrabber.setFrameNumber()` ([pull #1851](https://github.com/bytedeco/javacv/pull/1851))
  * Add `FrameGrabber.resetStartTime()` to allow `grabAtFrameRate()` after operations such as seeking ([pull #1846](https://github.com/bytedeco/javacv/pull/1846))

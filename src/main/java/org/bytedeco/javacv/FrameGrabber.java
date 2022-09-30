@@ -180,6 +180,7 @@ public abstract class FrameGrabber implements Closeable {
             SENSOR_PATTERN_BGGR = (1L << 32) | 1;
 
     protected int videoStream = -1, audioStream = -1;
+    protected int videoDisposition = 0;
     protected String format = null, videoCodecName = null, audioCodecName = null;
     protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
@@ -207,7 +208,6 @@ public abstract class FrameGrabber implements Closeable {
     protected long timestamp = 0;
     protected int maxDelay = -1;
     protected long startTime = 0;
-    protected int disposition;
 
     public int getVideoStream() {
         return videoStream;
@@ -221,6 +221,13 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setAudioStream(int audioStream) {
         this.audioStream = audioStream;
+    }
+
+    public void setVideoDisposition(int videoDisposition) {
+        this.videoDisposition = videoDisposition;
+    }
+    public int getVideoDisposition() {
+        return videoDisposition;
     }
 
     public String getFormat() {
@@ -543,15 +550,6 @@ public abstract class FrameGrabber implements Closeable {
     }
     public long getLengthInTime() {
         return 0;
-    }
-
-
-    public void setVideoDisposition(int value){
-        this.disposition = value;
-    }
-
-    public int getVideoDisposition(){
-        return disposition;
     }
 
     public static class Exception extends IOException {
