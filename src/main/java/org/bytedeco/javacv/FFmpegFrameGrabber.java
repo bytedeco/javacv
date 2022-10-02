@@ -980,10 +980,21 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             av_dump_format(oc, 0, filename, 0);
         }
 
+        // Find the first stream with the user-specified disposition property
+        int nb_streams = oc.nb_streams();
+        for (int i = 0; i < nb_streams; i++) {
+            AVStream st = oc.streams(i);
+            AVCodecParameters par = st.codecpar();
+            if (videoStream < 0 && par.codec_type() == AVMEDIA_TYPE_VIDEO && st.disposition() == videoDisposition) {
+                videoStream = i;
+            } else if (audioStream < 0 && par.codec_type() == AVMEDIA_TYPE_AUDIO && st.disposition() == audioDisposition) {
+                audioStream = i;
+            }
+        }
+
         // Find the first video and audio stream, unless the user specified otherwise
         video_st = audio_st = null;
         AVCodecParameters video_par = null, audio_par = null;
-        int nb_streams = oc.nb_streams();
         streams = new int[nb_streams];
         for (int i = 0; i < nb_streams; i++) {
             AVStream st = oc.streams(i);

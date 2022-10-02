@@ -180,6 +180,7 @@ public abstract class FrameGrabber implements Closeable {
             SENSOR_PATTERN_BGGR = (1L << 32) | 1;
 
     protected int videoStream = -1, audioStream = -1;
+    protected int videoDisposition = 0, audioDisposition = 0;
     protected String format = null, videoCodecName = null, audioCodecName = null;
     protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
@@ -220,6 +221,20 @@ public abstract class FrameGrabber implements Closeable {
     }
     public void setAudioStream(int audioStream) {
         this.audioStream = audioStream;
+    }
+
+    public void setVideoDisposition(int videoDisposition) {
+        this.videoDisposition = videoDisposition;
+    }
+    public int getVideoDisposition() {
+        return videoDisposition;
+    }
+
+    public void setAudioDisposition(int audioDisposition) {
+        this.audioDisposition = audioDisposition;
+    }
+    public int getAudioDisposition() {
+        return audioDisposition;
     }
 
     public String getFormat() {
