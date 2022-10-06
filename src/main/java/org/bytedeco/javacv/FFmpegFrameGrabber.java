@@ -462,6 +462,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     @Override public int getVideoCodec() {
         return video_c == null ? super.getVideoCodec() : video_c.codec_id();
     }
+    @Override
+    public String getVideoCodecName(){
+        return  video_c == null ? super.getVideoCodecName() : video_c.codec().name().getString();
+    }
 
     @Override public int getVideoBitrate() {
         return video_c == null ? super.getVideoBitrate() : (int)video_c.bit_rate();
