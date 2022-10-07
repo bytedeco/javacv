@@ -462,6 +462,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     @Override public int getVideoCodec() {
         return video_c == null ? super.getVideoCodec() : video_c.codec_id();
     }
+
     @Override
     public String getVideoCodecName(){
         return  video_c == null ? super.getVideoCodecName() : video_c.codec().name().getString();
@@ -527,6 +528,10 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
     @Override public int getAudioCodec() {
         return audio_c == null ? super.getAudioCodec() : audio_c.codec_id();
+    }
+
+    @Override public String getAudioCodecName() {
+        return audio_c == null ? super.getAudioCodecName() : audio_c.codec().name().getString();
     }
 
     @Override public int getAudioBitrate() {
