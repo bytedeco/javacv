@@ -9,7 +9,7 @@ env:
   STAGING_REPOSITORY: ${{ secrets.STAGING_REPOSITORY }}
 jobs:
   linux-x86_64:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     container: ubuntu:bionic
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-ubuntu@actions
@@ -18,7 +18,7 @@ jobs:
         with:
           sudo: false
   macosx-x86_64:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-macosx@actions
       - uses: mxschmitt/action-tmate@v3.5
