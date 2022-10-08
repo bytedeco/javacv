@@ -1,4 +1,5 @@
 
+ * Override `FFmpegFrameGrabber.getVideoCodecName()/getAudioCodecName()` to return names of opened codecs ([pull #1901](https://github.com/bytedeco/javacv/pull/1901))
  * Add `FrameGrabber.videoDisposition/audioDisposition` properties to select streams by disposition ([pull #1879](https://github.com/bytedeco/javacv/pull/1879))
  * Work around `OpenKinect2FrameGrabber` failing when provided with a pipeline on some system ([pull #1886](https://github.com/bytedeco/javacv/pull/1886))
  * Fix `FFmpegFrameRecorder.record()` incorrectly flushing the video codec on data frames ([issue #1858](https://github.com/bytedeco/javacv/issues/1858))
