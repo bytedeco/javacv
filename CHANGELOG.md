@@ -1,4 +1,5 @@
 
+### November 2, 2022 version 1.5.8
  * Override `FFmpegFrameGrabber.getVideoCodecName()/getAudioCodecName()` to return names of opened codecs ([pull #1901](https://github.com/bytedeco/javacv/pull/1901))
  * Add `FrameGrabber.videoDisposition/audioDisposition` properties to select streams by disposition ([pull #1879](https://github.com/bytedeco/javacv/pull/1879))
  * Work around `OpenKinect2FrameGrabber` failing when provided with a pipeline on some system ([pull #1886](https://github.com/bytedeco/javacv/pull/1886))
