@@ -990,16 +990,24 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         }
 
         // Find the first stream with the user-specified disposition property
+        boolean videoStreamFound = false;
+        boolean audioStreamFound = false;
         int nb_streams = oc.nb_streams();
         for (int i = 0; i < nb_streams; i++) {
             AVStream st = oc.streams(i);
             AVCodecParameters par = st.codecpar();
             if (videoStream < 0 && par.codec_type() == AVMEDIA_TYPE_VIDEO && st.disposition() == videoDisposition) {
                 videoStream = i;
+                videoStreamFound = true;
             } else if (audioStream < 0 && par.codec_type() == AVMEDIA_TYPE_AUDIO && st.disposition() == audioDisposition) {
                 audioStream = i;
+                audioStreamFound = true;
             }
         }
+
+        // resets the disposition value if a stream with the specified disposition value isnt found, so the user would know
+        if(!videoStreamFound) setVideoDisposition(AV_DISPOSITION_DEFAULT);
+        if(!audioStreamFound) setAudioDisposition(AV_DISPOSITION_DEFAULT);
 
         // Find the first video and audio stream, unless the user specified otherwise
         video_st = audio_st = null;

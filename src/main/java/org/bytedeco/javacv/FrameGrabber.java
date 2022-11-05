@@ -40,6 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static org.bytedeco.ffmpeg.global.avformat.AV_DISPOSITION_DEFAULT;
+
 /**
  *
  * @author Samuel Audet
@@ -180,7 +182,7 @@ public abstract class FrameGrabber implements Closeable {
             SENSOR_PATTERN_BGGR = (1L << 32) | 1;
 
     protected int videoStream = -1, audioStream = -1;
-    protected int videoDisposition = 0, audioDisposition = 0;
+    protected int videoDisposition = AV_DISPOSITION_DEFAULT, audioDisposition = AV_DISPOSITION_DEFAULT;
     protected String format = null, videoCodecName = null, audioCodecName = null;
     protected int imageWidth = 0, imageHeight = 0, audioChannels = 0;
     protected ImageMode imageMode = ImageMode.COLOR;
