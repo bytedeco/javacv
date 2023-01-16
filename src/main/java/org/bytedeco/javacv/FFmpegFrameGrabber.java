@@ -1429,9 +1429,9 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                             return null;
                         }
                     }
-                    if (doVideo && video_st != null) {
-                        // The video codec may have buffered some frames
-                        pkt.stream_index(video_st.index());
+                    if ((doVideo && video_st != null) || (doAudio && audio_st != null)) {
+                        // The video or audio codec may have buffered some frames
+                        pkt.stream_index(doVideo && video_st != null ? video_st.index() : audio_st.index());
                         pkt.flags(AV_PKT_FLAG_KEY);
                         pkt.data(null);
                         pkt.size(0);
@@ -1466,6 +1466,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     ret = avcodec_receive_frame(video_c, picture);
                     if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
                         if (pkt.data() == null && pkt.size() == 0) {
+                            pkt.stream_index(-1);
+                            doVideo = false;
+                            if (doAudio) {
+                                readPacket = false;
+                                break;
+                            }
                             return null;
                         } else {
                             readPacket = true;
@@ -1511,8 +1517,14 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 while (!done) {
                     ret = avcodec_receive_frame(audio_c, samples_frame);
                     if (ret == AVERROR_EAGAIN() || ret == AVERROR_EOF()) {
-                        readPacket = true;
-                        break;
+                        if (pkt.data() == null && pkt.size() == 0) {
+                            pkt.stream_index(-1);
+                            doAudio = false;
+                            return null;
+                        } else {
+                            readPacket = true;
+                            break;
+                        }
                     } else if (ret < 0) {
                         // Ignore errors to emulate the behavior of the old API
                         // throw new Exception("avcodec_receive_frame() error " + ret + ": Error during audio decoding.");

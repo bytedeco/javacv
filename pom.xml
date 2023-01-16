@@ -75,7 +75,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
-      <version>4.6.0-${javacpp.version}</version>
+      <version>4.7.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -110,7 +110,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>librealsense2</artifactId>
-      <version>2.50.0-${javacpp.version}</version>
+      <version>2.53.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -130,12 +130,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>leptonica</artifactId>
-      <version>1.82.0-${javacpp.version}</version>
+      <version>1.83.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract</artifactId>
-      <version>5.2.0-${javacpp.version}</version>
+      <version>5.3.0-${javacpp.version}</version>
     </dependency>
 
     <dependency>

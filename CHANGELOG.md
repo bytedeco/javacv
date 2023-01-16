@@ -1,4 +1,7 @@
 
+ * Fix `FFmpegFrameGrabber.grab()` not returning audio frames buffered by the codec ([issue #1971](https://github.com/bytedeco/javacv/issues/1971))
+ * Upgrade dependencies for OpenCV 4.7.0, librealsense2 2.53.1, Leptonica 1.83.0, Tesseract 5.3.0
+
 ### November 2, 2022 version 1.5.8
  * Override `FFmpegFrameGrabber.getVideoCodecName()/getAudioCodecName()` to return names of opened codecs ([pull #1901](https://github.com/bytedeco/javacv/pull/1901))
  * Add `FrameGrabber.videoDisposition/audioDisposition` properties to select streams by disposition ([pull #1879](https://github.com/bytedeco/javacv/pull/1879))
