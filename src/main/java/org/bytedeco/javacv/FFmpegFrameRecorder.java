@@ -637,7 +637,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             if ((video_codec.capabilities() & AV_CODEC_CAP_EXPERIMENTAL) != 0) {
-                video_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
+                video_c.strict_std_compliance(FF_COMPLIANCE_EXPERIMENTAL);
             }
 
             if (maxBFrames >= 0) {
@@ -752,7 +752,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
 
             if ((audio_codec.capabilities() & AV_CODEC_CAP_EXPERIMENTAL) != 0) {
-                audio_c.strict_std_compliance(AVCodecContext.FF_COMPLIANCE_EXPERIMENTAL);
+                audio_c.strict_std_compliance(FF_COMPLIANCE_EXPERIMENTAL);
             }
         }
 
