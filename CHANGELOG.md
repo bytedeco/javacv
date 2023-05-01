@@ -1,6 +1,6 @@
 
  * Fix `FFmpegFrameGrabber.grab()` not returning audio frames buffered by the codec ([issue #1971](https://github.com/bytedeco/javacv/issues/1971))
- * Upgrade dependencies for OpenCV 4.7.0, FFmpeg 6.0 ([issue #1693](https://github.com/bytedeco/javacv/issues/1693)), librealsense2 2.53.1, Leptonica 1.83.0, Tesseract 5.3.0
+ * Upgrade dependencies for OpenBLAS 0.3.23, OpenCV 4.7.0, FFmpeg 6.0 ([issue #1693](https://github.com/bytedeco/javacv/issues/1693)), librealsense2 2.53.1, Leptonica 1.83.0, Tesseract 5.3.1
 
 ### November 2, 2022 version 1.5.8
  * Override `FFmpegFrameGrabber.getVideoCodecName()/getAudioCodecName()` to return names of opened codecs ([pull #1901](https://github.com/bytedeco/javacv/pull/1901))

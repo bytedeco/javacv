@@ -28,7 +28,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas-platform</artifactId>
-      <version>0.3.21-${javacpp.version}</version>
+      <version>0.3.23-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -80,11 +80,11 @@
       <artifactId>artoolkitplus-platform</artifactId>
       <version>2.3.1-${javacpp.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.bytedeco</groupId>
-      <artifactId>flandmark-platform</artifactId>
-      <version>1.07-${javacpp.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.bytedeco</groupId>-->
+<!--      <artifactId>flandmark-platform</artifactId>-->
+<!--      <version>1.07-${javacpp.version}</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>leptonica-platform</artifactId>
@@ -93,7 +93,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract-platform</artifactId>
-      <version>5.3.0-${javacpp.version}</version>
+      <version>5.3.1-${javacpp.version}</version>
     </dependency>
 
     <dependency>
