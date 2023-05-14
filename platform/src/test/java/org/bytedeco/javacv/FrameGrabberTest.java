@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Samuel Audet
+ * Copyright (C) 2016-2023 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -318,6 +318,7 @@ public class FrameGrabberTest {
             recorder.setSampleFormat(AV_SAMPLE_FMT_FLTP);
             recorder.setAudioCodec(AV_CODEC_ID_AAC);
             recorder.setAudioQuality(0);
+            recorder.setDisplayRotation((seektestnum - 2) * 90.0);
             recorder.start();
             if (seektestnum!=2) {
                 Frame frame = new Frame(640, 480, Frame.DEPTH_UBYTE, 3);
@@ -361,6 +362,7 @@ public class FrameGrabberTest {
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile);
             grabber.setVideoOption("threads", "1"); // more precise without threads
             grabber.start();
+            assertEquals((seektestnum - 2) * 90.0, grabber.getDisplayRotation(), 0);
             int length = (int) ( grabber.getLengthInTime() - 1000000L);
 
 

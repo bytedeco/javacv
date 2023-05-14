@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 Samuel Audet
+ * Copyright (C) 2009-2023 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -206,6 +206,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     public synchronized void releaseUnsafe() throws Exception {
         started = false;
 
+        if (display_matrix != null) {
+            display_matrix.releaseReference();
+        }
+
         if (plane_ptr != null && plane_ptr2 != null) {
             plane_ptr.releaseReference();
             plane_ptr2.releaseReference();
@@ -388,6 +392,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVPacket video_pkt, audio_pkt;
     private int[] got_video_packet, got_audio_packet;
     private AVFormatContext ifmt_ctx;
+    private IntPointer display_matrix;
 
     private volatile boolean started = false;
 
@@ -396,6 +401,15 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     }
     public void setCloseOutputStream(boolean closeOutputStream) {
         this.closeOutputStream = closeOutputStream;
+    }
+
+    /** Sets the rotation in degrees to the side data of the video stream. */
+    public void setDisplayRotation(double angle) {
+        if (display_matrix == null) {
+            display_matrix = new IntPointer(9).retainReference();
+        }
+        av_display_rotation_set(display_matrix, -angle);
+        setVideoSideData("Display Matrix", display_matrix.asByteBuffer());
     }
 
     @Override public int getFrameNumber() {
@@ -821,6 +835,22 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 av_dict_set(metadata, new BytePointer(e.getKey(), charset), new BytePointer(e.getValue(), charset), 0);
             }
             video_st.metadata(metadata);
+
+            for (Entry<String, Buffer> e : videoSideData.entrySet()) {
+                int type = -1;
+                for (int i = 0; i < AV_PKT_DATA_NB; i++) {
+                    BytePointer s = av_packet_side_data_name(i);
+                    if (s != null && !s.isNull() && e.getKey().equals(s.getString())) {
+                        type = i;
+                        break;
+                    }
+                }
+                Pointer p = new Pointer(e.getValue());
+                BytePointer b = av_stream_new_side_data(video_st, type, p.capacity());
+                if (b != null && !b.isNull()) {
+                    b.capacity(p.capacity()).put(p);
+                }
+            }
         }
 
         if (audio_st != null && inpAudioStream == null) {
@@ -892,6 +922,22 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 av_dict_set(metadata, new BytePointer(e.getKey(), charset), new BytePointer(e.getValue(), charset), 0);
             }
             audio_st.metadata(metadata);
+
+            for (Entry<String, Buffer> e : audioSideData.entrySet()) {
+                int type = -1;
+                for (int i = 0; i < AV_PKT_DATA_NB; i++) {
+                    BytePointer s = av_packet_side_data_name(i);
+                    if (s != null && !s.isNull() && e.getKey().equals(s.getString())) {
+                        type = i;
+                        break;
+                    }
+                }
+                Pointer p = new Pointer(e.getValue());
+                BytePointer b = av_stream_new_side_data(audio_st, type, p.capacity());
+                if (b != null && !b.isNull()) {
+                    b.capacity(p.capacity()).put(p);
+                }
+            }
         }
 
         AVDictionary options = new AVDictionary(null);
