@@ -1,4 +1,5 @@
 
+### June 6, 2023 version 1.5.9
  * Add `FrameRecorder.videoSideData/audioSideData` properties and `FFmpegFrameRecorder.setDisplayRotation()` for convenience ([issue #1976](https://github.com/bytedeco/javacv/issues/1976))
  * Fix `FFmpegFrameGrabber.grab()` not returning audio frames buffered by the codec ([issue #1971](https://github.com/bytedeco/javacv/issues/1971))
  * Upgrade dependencies for OpenBLAS 0.3.23, OpenCV 4.7.0, FFmpeg 6.0 ([issue #1693](https://github.com/bytedeco/javacv/issues/1693)), librealsense2 2.53.1, Leptonica 1.83.0, Tesseract 5.3.1
