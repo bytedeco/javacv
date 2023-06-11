@@ -10,7 +10,6 @@ env:
 jobs:
   linux-x86_64:
     runs-on: ubuntu-20.04
-    container: ubuntu:bionic
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-ubuntu@actions
       - uses: mxschmitt/action-tmate@v3.5
