@@ -1,6 +1,4 @@
-import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.*;
-import org.junit.Test;
 
 import java.nio.Buffer;
 import java.nio.ShortBuffer;
@@ -20,23 +18,27 @@ import java.nio.ShortBuffer;
  * ///////////////////////////////////////////////////////////////////////////
  * JavaCV is an excellent open-source streaming processing framework in the Java field
  * <p>
- * But I see many people, especially in China, using its usage as resources to make profits for themselves,
+ * But I see many people, especially in China, making profits for themselves by introducing its usage,
  * which is not in line with the concept of open source projects.
- * I hope that If this code helped you, you can share your experience and knowledge to help everyone progress together,
- * rather than being complacent.
+ * I hope that If this code helped you, you can share your experience and knowledge with others in the world, rather
+ * than for personal gain.
+ * <p>
+ * Spread the spirit of open source.
  * ///////////////////////////////////////////////////////////////////////////
  * <p>
- * Acknowledge: Thanks for my hot girl friend.
+ * Acknowledge: Thank you for my hot girlfriend.
  *
  * @author steeveen
  * @date 2023/7/1 14:32
  */
-@Slf4j
 public class AduioSplitMergeHelper {
 
 
     /**
      * split a 2-channel stereo audio into 2 single-channel mono audios
+     * <p>
+     * If you want to split this 2-channel stereo to 2 single-channel stereo, you should create 2 2-channel stereos
+     * and fill one channel with 0 data. It is similar in principle, so the code won't go into too much here.
      *
      * @param input       the file path which is to be splited
      * @param outputLeft  the file path which store the left channel audio file
