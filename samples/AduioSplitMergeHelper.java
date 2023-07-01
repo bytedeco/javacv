@@ -21,12 +21,10 @@ import java.nio.ShortBuffer;
  * But I see many people, especially in China, making profits for themselves by introducing its usage,
  * which is not in line with the concept of open source projects.
  * I hope that If this code helped you, you can share your experience and knowledge with others in the world, rather
- * than for personal gain.
- * <p>
- * Spread the spirit of open source.
+ * than for personal gain. Spread the spirit of open source.
  * ///////////////////////////////////////////////////////////////////////////
  * <p>
- * Acknowledge: Thank you for my hot girlfriend.
+ * Acknowledge: Thanks for my hot girlfriend.
  *
  * @author steeveen
  * @date 2023/7/1 14:32
@@ -60,7 +58,7 @@ public class AduioSplitMergeHelper {
 
         Frame frame = null;
         while ((frame = grabber.grabSamples()) != null) {
-            // use s16le for example. So select ShortBuffer to receive the sample
+            // use s16le for example. so select ShortBuffer to receive the sample
             ShortBuffer sb = (ShortBuffer) frame.samples[0];
             short[] shorts = new short[sb.limit()];
             sb.get(shorts);
@@ -110,7 +108,7 @@ public class AduioSplitMergeHelper {
         FFmpegFrameGrabber rightGrabber = new FFmpegFrameGrabber(inputRight);
         rightGrabber.start();
         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(output, 2);
-        //you should better confirm the two input have the same samplerate. otherwise, you should fix it by yourself
+        //you'd better confirm the two input have the same samplerate. otherwise, you should control it manually by yourself
         recorder.setSampleRate(leftGrabber.getSampleRate());
         recorder.start();
 
