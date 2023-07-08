@@ -29,7 +29,7 @@ import java.nio.ShortBuffer;
  * @author steeveen
  * @date 2023/7/1 14:32
  */
-public class AduioSplitMergeHelper {
+public class AudioSplitMergeHelper {
 
 
     /**

@@ -1,4 +1,6 @@
 
+ * Add new `AudioSplitMergeHelper` sample for processing raw audio frames ([pull #2052](https://github.com/bytedeco/javacv/pull/2052))
+
 ### June 6, 2023 version 1.5.9
  * Add `FrameRecorder.videoSideData/audioSideData` properties and `FFmpegFrameRecorder.setDisplayRotation()` for convenience ([issue #1976](https://github.com/bytedeco/javacv/issues/1976))
  * Fix `FFmpegFrameGrabber.grab()` not returning audio frames buffered by the codec ([issue #1971](https://github.com/bytedeco/javacv/issues/1971))
