@@ -106,22 +106,22 @@ public class VideoInputFrameGrabber extends FrameGrabber {
     public void start(int connection) throws Exception {
         myVideoInput = new videoInput();
 	if (format != null && format.length() > 0) {
-		String formats[] = {"PAL_B", "PAL_D", "PAL_G", "PAL_H", "PAL_I", "PAL_M", "PAL_N", "PAL_NC",
-			"SECAM_B", "SECAM_D", "SECAM_G", "SECAM_H", "SECAM_K", "SECAM_K1", "SECAM_L",
-			"NTSC_M", "NTSC_M_J", "NTSC_433", };
-		String subTypes[] = {"RGB24", "RGB32", "RGB555", "RGB565", "YUY2", "YVYU", "YUYV", "IYUV", "UYVY",
-                                "YV12", "YVU9", "Y411", "Y41P", "Y211", "AYUV", "Y800", "Y8", "GREY", "MJPG"};
-      	        boolean settingFormat = Arrays.asList(formats).contains(format);
-            	boolean settingSubType = Arrays.asList(subTypes).contains(format);
-            	if (settingFormat) {
-                	int f = format.equals("NTSC_M")   ? VI_NTSC_M   :
-                        	format.equals("PAL_B")    ? VI_PAL_B    :
-                        	format.equals("PAL_D")    ? VI_PAL_D    :
-                        	format.equals("PAL_G")    ? VI_PAL_G    :
-                        	format.equals("PAL_H")    ? VI_PAL_H    :
-                        	format.equals("PAL_I")    ? VI_PAL_I    :
-                        	format.equals("PAL_M")    ? VI_PAL_M    :
-                        	format.equals("PAL_N")    ? VI_PAL_N    :
+	    String formats[] = {"PAL_B", "PAL_D", "PAL_G", "PAL_H", "PAL_I", "PAL_M", "PAL_N", "PAL_NC",
+				"SECAM_B", "SECAM_D", "SECAM_G", "SECAM_H", "SECAM_K", "SECAM_K1", "SECAM_L",
+				"NTSC_M", "NTSC_M_J", "NTSC_433", };
+	    String subTypes[] = {"RGB24", "RGB32", "RGB555", "RGB565", "YUY2", "YVYU", "YUYV", "IYUV", "UYVY",
+                                 "YV12", "YVU9", "Y411", "Y41P", "Y211", "AYUV", "Y800", "Y8", "GREY", "MJPG"};
+      	    boolean settingFormat = Arrays.asList(formats).contains(format);
+            boolean settingSubType = Arrays.asList(subTypes).contains(format);
+            if (settingFormat) {
+                int f = format.equals("NTSC_M")   ? VI_NTSC_M   :
+                        format.equals("PAL_B")    ? VI_PAL_B    :
+                        format.equals("PAL_D")    ? VI_PAL_D    :
+                	format.equals("PAL_G")    ? VI_PAL_G    :
+                	format.equals("PAL_H")    ? VI_PAL_H    :
+                	format.equals("PAL_I")    ? VI_PAL_I    :
+                        format.equals("PAL_M")    ? VI_PAL_M    :
+                        format.equals("PAL_N")    ? VI_PAL_N    :
                         format.equals("PAL_NC")   ? VI_PAL_NC   :
                         format.equals("SECAM_B")  ? VI_SECAM_B  :
                         format.equals("SECAM_D")  ? VI_SECAM_D  :
@@ -133,8 +133,8 @@ public class VideoInputFrameGrabber extends FrameGrabber {
                         format.equals("NTSC_M_J") ? VI_NTSC_M_J :
                         format.equals("NTSC_433") ? VI_NTSC_433 : -1;
                 myVideoInput.setFormat(deviceNumber, f);
-                if (f >= 0 && !myVideoInput.setFormat(deviceNumber, f)) {
-                    throw new Exception("videoInput.setFormat() Error: Could not set format " + format + ".");
+	        if (f >= 0 && !myVideoInput.setFormat(deviceNumber, f)) {
+	            throw new Exception("videoInput.setFormat() Error: Could not set format " + format + ".");
                 }
             } else if (settingSubType) {
                 int s = format.equals("RGB24")  ? VI_MEDIASUBTYPE_RGB24  :
@@ -157,6 +157,7 @@ public class VideoInputFrameGrabber extends FrameGrabber {
                         format.equals("MJPG")   ? VI_MEDIASUBTYPE_MJPG   : -1;
                 myVideoInput.setRequestedMediaSubType(s);
             }
+	}
         if (frameRate > 0) {
             myVideoInput.setIdealFramerate(deviceNumber, (int)frameRate);
         }
