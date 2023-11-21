@@ -21,29 +21,29 @@
   <dependencies>
     <dependency>
       <groupId>org.bytedeco</groupId>
-      <artifactId>javacpp</artifactId>
-      <version>${javacpp.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco</groupId>
       <artifactId>javacv</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.bytedeco</groupId>
+      <artifactId>javacpp-platform</artifactId>
+      <version>${javacpp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
       <artifactId>openblas-platform</artifactId>
-      <version>0.3.23-${javacpp.version}</version>
+      <version>0.3.24-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform</artifactId>
-      <version>4.8.0-${javacpp.version}</version>
+      <version>4.8.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>6.0-${javacpp.version}</version>
+      <version>6.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -93,12 +93,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>leptonica-platform</artifactId>
-      <version>1.83.0-${javacpp.version}</version>
+      <version>1.83.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract-platform</artifactId>
-      <version>5.3.1-${javacpp.version}</version>
+      <version>5.3.3-${javacpp.version}</version>
     </dependency>
 
     <dependency>
@@ -110,13 +110,13 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform-gpu</artifactId>
-      <version>4.8.0-${javacpp.version}</version>
+      <version>4.8.1-${javacpp.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform-gpl</artifactId>
-      <version>6.0-${javacpp.version}</version>
+      <version>6.1-${javacpp.version}</version>
       <scope>test</scope>
     </dependency>
 
