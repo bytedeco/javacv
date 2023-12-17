@@ -728,117 +728,117 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     && (frameTypesToSeek.contains(Frame.Type.VIDEO) || frameTypesToSeek.contains(Frame.Type.AUDIO))
                     && (hasVideo() || hasAudio())) {
 
-            	/*     After the call of ffmpeg's avformat_seek_file(...) with the flag set to AVSEEK_FLAG_BACKWARD
-				 * the decoding position should be located before the requested timestamp in a closest position
-				 * from which all the active streams can be decoded successfully.
-				 * The following seeking consists of two stages:
-				 * 1. Grab frames till the frame corresponding to that "closest" position
-				 * (the first frame containing decoded data).
-				 *
-				 * 2. Grab frames till the desired timestamp is reached. The number of steps is restricted
-				 * by doubled estimation of frames between that "closest" position and the desired position.
-				 *
-				 * frameTypesToSeek parameter sets the preferred type of frames to seek.
-				 * It can be chosen from three possible types: VIDEO, AUDIO or any of them.
-				 * The setting means only a preference in the type. That is, if VIDEO or AUDIO is
-				 * specified but the file does not have video or audio stream - any type will be used instead.
-				 */
-				
-				/* Check if file contains requested streams */
-				if ((frameTypesToSeek.contains(Frame.Type.VIDEO) && !hasVideo() ) ||
-				        (frameTypesToSeek.contains(Frame.Type.AUDIO) && !hasAudio() ))
-				    frameTypesToSeek = EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO);
-				
-				/*  If frameTypesToSeek is set explicitly to VIDEO or AUDIO
-				 *  we need to use start time of the corresponding stream
-				 *  instead of the common start time
-				 */
-				if (frameTypesToSeek.size()==1) {
-				    if (frameTypesToSeek.contains(Frame.Type.VIDEO)) {
-				        if (video_st!=null && video_st.start_time() != AV_NOPTS_VALUE) {
-				            AVRational time_base = video_st.time_base();
-				            ts0 = 1000000L * video_st.start_time() * time_base.num() / time_base.den();
-				        }
-				    }
-				    else if (frameTypesToSeek.contains(Frame.Type.AUDIO)) {
-				        if (audio_st!=null && audio_st.start_time() != AV_NOPTS_VALUE) {
-				            AVRational time_base = audio_st.time_base();
-				            ts0 = 1000000L * audio_st.start_time() * time_base.num() / time_base.den();
-				        }
-				    }
-				}
-				
-				/*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
-				 *  the desired but few frames after. In case we need a frame-precision seek we may
-				 *  try to request an earlier timestamp.
-				 */
-				long early_ts = timestamp;
-				
-				/* add the stream start time */
-				timestamp += ts0;
-				early_ts += ts0;
-				
-				long initialSeekPosition = Long.MIN_VALUE;
-				long maxSeekSteps = 0;
-				long count = 0;
-				Frame seekFrame = null;
-				do {
-					if ((ret = avformat_seek_file(oc, -1, 0L, early_ts, early_ts, AVSEEK_FLAG_BACKWARD)) < 0)
-				        throw new Exception("avformat_seek_file() error " + ret + ": Could not seek file to timestamp " + timestamp + ".");
-				    if (video_c != null) {
-				        avcodec_flush_buffers(video_c);
-				    }
-				    if (audio_c != null) {
-				        avcodec_flush_buffers(audio_c);
-				    }
-				    if (pkt.stream_index() != -1) {
-				        av_packet_unref(pkt);
-				        pkt.stream_index(-1);
-				    }
-				    seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
-				    if (seekFrame == null) return;
-				    initialSeekPosition = seekFrame.timestamp;
-				    if(early_ts==0L) break;
-				    early_ts-=500000L;
-					if(early_ts<0) early_ts=0L;
-				} while (initialSeekPosition>timestamp);
-				double frameDuration = 0.0;
-				if (seekFrame.image != null && this.getFrameRate() > 0)
-				    frameDuration =  AV_TIME_BASE / (double)getFrameRate();
-				else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0) {
-				    frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
-				}
-				
-				if(frameDuration>0.0) {
-				    maxSeekSteps = 0; //no more grab if the distance to the requested timestamp is smaller than frameDuration
-				    if (timestamp - initialSeekPosition + 1 > frameDuration)  //allow for a rounding error
-				              maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/frameDuration);
-				}
-				else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
-				
-				double delta = 0.0; //for the timestamp correction
-				count = 0;
-				while(count < maxSeekSteps) {
-				    seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
-				    if (seekFrame == null) return; //is it better to throw NullPointerException?
-				
-				    count++;
-				    double ts=seekFrame.timestamp;
-				    frameDuration = 0.0;
-				    if (seekFrame.image != null && this.getFrameRate() > 0)
-				        frameDuration =  AV_TIME_BASE / (double)getFrameRate();
-				    else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0)
-				        frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
-				
-				    delta = 0.0;
-				    if (frameDuration>0.0) {
-				        delta = (ts-ts0)/frameDuration - Math.round((ts-ts0)/frameDuration);
-				        if (Math.abs(delta)>0.2) delta=0.0;
-				    }
-				    ts-=delta*frameDuration; // corrected timestamp
-				    if (ts + frameDuration > timestamp) break;
-				}
-				frameGrabbed = true;
+                /*     After the call of ffmpeg's avformat_seek_file(...) with the flag set to AVSEEK_FLAG_BACKWARD
+                 * the decoding position should be located before the requested timestamp in a closest position
+                 * from which all the active streams can be decoded successfully.
+                 * The following seeking consists of two stages:
+                 * 1. Grab frames till the frame corresponding to that "closest" position
+                 * (the first frame containing decoded data).
+                 *
+                 * 2. Grab frames till the desired timestamp is reached. The number of steps is restricted
+                 * by doubled estimation of frames between that "closest" position and the desired position.
+                 *
+                 * frameTypesToSeek parameter sets the preferred type of frames to seek.
+                 * It can be chosen from three possible types: VIDEO, AUDIO or any of them.
+                 * The setting means only a preference in the type. That is, if VIDEO or AUDIO is
+                 * specified but the file does not have video or audio stream - any type will be used instead.
+                 */
+                
+                /* Check if file contains requested streams */
+                if ((frameTypesToSeek.contains(Frame.Type.VIDEO) && !hasVideo() ) ||
+                        (frameTypesToSeek.contains(Frame.Type.AUDIO) && !hasAudio() ))
+                    frameTypesToSeek = EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO);
+                
+                /*  If frameTypesToSeek is set explicitly to VIDEO or AUDIO
+                 *  we need to use start time of the corresponding stream
+                 *  instead of the common start time
+                 */
+                if (frameTypesToSeek.size()==1) {
+                    if (frameTypesToSeek.contains(Frame.Type.VIDEO)) {
+                        if (video_st!=null && video_st.start_time() != AV_NOPTS_VALUE) {
+                            AVRational time_base = video_st.time_base();
+                            ts0 = 1000000L * video_st.start_time() * time_base.num() / time_base.den();
+                        }
+                    }
+                    else if (frameTypesToSeek.contains(Frame.Type.AUDIO)) {
+                        if (audio_st!=null && audio_st.start_time() != AV_NOPTS_VALUE) {
+                            AVRational time_base = audio_st.time_base();
+                            ts0 = 1000000L * audio_st.start_time() * time_base.num() / time_base.den();
+                        }
+                    }
+                }
+                
+                /*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
+                 *  the desired but few frames after. In case we need a frame-precision seek we may
+                 *  try to request an earlier timestamp.
+                 */
+                long early_ts = timestamp;
+                
+                /* add the stream start time */
+                timestamp += ts0;
+                early_ts += ts0;
+                
+                long initialSeekPosition = Long.MIN_VALUE;
+                long maxSeekSteps = 0;
+                long count = 0;
+                Frame seekFrame = null;
+                do {
+                    if ((ret = avformat_seek_file(oc, -1, 0L, early_ts, early_ts, AVSEEK_FLAG_BACKWARD)) < 0)
+                        throw new Exception("avformat_seek_file() error " + ret + ": Could not seek file to timestamp " + timestamp + ".");
+                    if (video_c != null) {
+                        avcodec_flush_buffers(video_c);
+                    }
+                    if (audio_c != null) {
+                        avcodec_flush_buffers(audio_c);
+                    }
+                    if (pkt.stream_index() != -1) {
+                        av_packet_unref(pkt);
+                        pkt.stream_index(-1);
+                    }
+                    seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
+                    if (seekFrame == null) return;
+                    initialSeekPosition = seekFrame.timestamp;
+                    if(early_ts==0L) break;
+                    early_ts-=500000L;
+                    if(early_ts<0) early_ts=0L;
+                } while (initialSeekPosition>timestamp);
+                double frameDuration = 0.0;
+                if (seekFrame.image != null && this.getFrameRate() > 0)
+                    frameDuration =  AV_TIME_BASE / (double)getFrameRate();
+                else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0) {
+                    frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
+                }
+                
+                if(frameDuration>0.0) {
+                    maxSeekSteps = 0; //no more grab if the distance to the requested timestamp is smaller than frameDuration
+                    if (timestamp - initialSeekPosition + 1 > frameDuration)  //allow for a rounding error
+                              maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/frameDuration);
+                }
+                else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
+                
+                double delta = 0.0; //for the timestamp correction
+                count = 0;
+                while(count < maxSeekSteps) {
+                    seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
+                    if (seekFrame == null) return; //is it better to throw NullPointerException?
+                
+                    count++;
+                    double ts=seekFrame.timestamp;
+                    frameDuration = 0.0;
+                    if (seekFrame.image != null && this.getFrameRate() > 0)
+                        frameDuration =  AV_TIME_BASE / (double)getFrameRate();
+                    else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0)
+                        frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
+                
+                    delta = 0.0;
+                    if (frameDuration>0.0) {
+                        delta = (ts-ts0)/frameDuration - Math.round((ts-ts0)/frameDuration);
+                        if (Math.abs(delta)>0.2) delta=0.0;
+                    }
+                    ts-=delta*frameDuration; // corrected timestamp
+                    if (ts + frameDuration > timestamp) break;
+                }
+                frameGrabbed = true;
                 
             } else { //old quick seeking code used in JavaCV versions prior to 1.4.1
                 /* comparing to timestamp +/- 1 avoids rouding issues for framerates
@@ -847,7 +847,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 to ...666 and the given timestamp has been rounded to ...667
                 (or vice versa)
                  */
-            	/* add the stream start time */
+                /* add the stream start time */
                 timestamp += ts0;
                 if ((ret = av_seek_frame(oc, -1, timestamp, AVSEEK_FLAG_BACKWARD)) < 0) {
                     throw new Exception("avformat_seek_file() error " + ret + ": Could not seek file to timestamp " + timestamp + ".");
