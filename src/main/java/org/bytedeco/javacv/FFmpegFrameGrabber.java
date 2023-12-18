@@ -849,7 +849,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                  */
                 /* add the stream start time */
                 timestamp += ts0;
-                if ((ret = av_seek_frame(oc, -1, timestamp, AVSEEK_FLAG_BACKWARD)) < 0) {
+                if ((ret = avformat_seek_file(oc, -1, Long.MIN_VALUE, timestamp, Long.MAX_VALUE, AVSEEK_FLAG_BACKWARD)) < 0) {
                     throw new Exception("avformat_seek_file() error " + ret + ": Could not seek file to timestamp " + timestamp + ".");
                 }
                 if (video_c != null) {
