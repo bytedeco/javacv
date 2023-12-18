@@ -841,12 +841,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 frameGrabbed = true;
                 
             } else { //old quick seeking code used in JavaCV versions prior to 1.4.1
-                /* comparing to timestamp +/- 1 avoids rouding issues for framerates
-                which are no proper divisors of 1000000, e.g. where
-                av_frame_get_best_effort_timestamp in grabFrame sets this.timestamp
-                to ...666 and the given timestamp has been rounded to ...667
-                (or vice versa)
-                 */
                 /* add the stream start time */
                 timestamp += ts0;
                 if ((ret = avformat_seek_file(oc, -1, Long.MIN_VALUE, timestamp, Long.MAX_VALUE, AVSEEK_FLAG_BACKWARD)) < 0) {
@@ -862,6 +856,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     av_packet_unref(pkt);
                     pkt.stream_index(-1);
                 }
+                /* comparing to timestamp +/- 1 avoids rouding issues for framerates
+                which are no proper divisors of 1000000, e.g. where
+                av_frame_get_best_effort_timestamp in grabFrame sets this.timestamp
+                to ...666 and the given timestamp has been rounded to ...667
+                (or vice versa)
+                 */
                 int count = 0; // prevent infinite loops with corrupted files
                 while (this.timestamp > timestamp + 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
                     // flush frames if seeking backwards
