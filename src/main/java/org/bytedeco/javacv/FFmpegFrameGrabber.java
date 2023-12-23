@@ -721,9 +721,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             timestamp = timestamp * AV_TIME_BASE / 1000000L;
 
             /* the stream start time */
-            long ts0 = 0;
-            if (oc.start_time() != AV_NOPTS_VALUE) ts0 = oc.start_time();
-            
+            long ts0 = oc.start_time() != AV_NOPTS_VALUE ? oc.start_time() : 0;
+
             if (frameTypesToSeek != null //new code providing check of frame content while seeking to the timestamp
                     && (frameTypesToSeek.contains(Frame.Type.VIDEO) || frameTypesToSeek.contains(Frame.Type.AUDIO))
                     && (hasVideo() || hasAudio())) {
@@ -743,12 +742,12 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                  * The setting means only a preference in the type. That is, if VIDEO or AUDIO is
                  * specified but the file does not have video or audio stream - any type will be used instead.
                  */
-                
+
                 /* Check if file contains requested streams */
                 if ((frameTypesToSeek.contains(Frame.Type.VIDEO) && !hasVideo() ) ||
                         (frameTypesToSeek.contains(Frame.Type.AUDIO) && !hasAudio() ))
                     frameTypesToSeek = EnumSet.of(Frame.Type.VIDEO, Frame.Type.AUDIO);
-                
+
                 /*  If frameTypesToSeek is set explicitly to VIDEO or AUDIO
                  *  we need to use start time of the corresponding stream
                  *  instead of the common start time
@@ -767,17 +766,17 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         }
                     }
                 }
-                
+
                 /*  Sometimes the ffmpeg's avformat_seek_file(...) function brings us not to a position before
                  *  the desired but few frames after. In case we need a frame-precision seek we may
                  *  try to request an earlier timestamp.
                  */
                 long early_ts = timestamp;
-                
+
                 /* add the stream start time */
                 timestamp += ts0;
                 early_ts += ts0;
-                
+
                 long initialSeekPosition = Long.MIN_VALUE;
                 long maxSeekSteps = 0;
                 long count = 0;
@@ -808,20 +807,20 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0) {
                     frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
                 }
-                
+
                 if(frameDuration>0.0) {
                     maxSeekSteps = 0; //no more grab if the distance to the requested timestamp is smaller than frameDuration
                     if (timestamp - initialSeekPosition + 1 > frameDuration)  //allow for a rounding error
                               maxSeekSteps = (long)(10*(timestamp - initialSeekPosition)/frameDuration);
                 }
                 else if (initialSeekPosition < timestamp) maxSeekSteps = 1000;
-                
+
                 double delta = 0.0; //for the timestamp correction
                 count = 0;
                 while(count < maxSeekSteps) {
                     seekFrame = grabFrame(frameTypesToSeek.contains(Frame.Type.AUDIO), frameTypesToSeek.contains(Frame.Type.VIDEO), false, false, false);
                     if (seekFrame == null) return; //is it better to throw NullPointerException?
-                
+
                     count++;
                     double ts=seekFrame.timestamp;
                     frameDuration = 0.0;
@@ -829,7 +828,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         frameDuration =  AV_TIME_BASE / (double)getFrameRate();
                     else if (seekFrame.samples != null && samples_frame != null && getSampleRate() > 0)
                         frameDuration =  AV_TIME_BASE * samples_frame.nb_samples() / (double)getSampleRate();
-                
+
                     delta = 0.0;
                     if (frameDuration>0.0) {
                         delta = (ts-ts0)/frameDuration - Math.round((ts-ts0)/frameDuration);
@@ -838,8 +837,6 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     ts-=delta*frameDuration; // corrected timestamp
                     if (ts + frameDuration > timestamp) break;
                 }
-                frameGrabbed = true;
-                
             } else { //old quick seeking code used in JavaCV versions prior to 1.4.1
                 /* add the stream start time */
                 timestamp += ts0;
@@ -870,8 +867,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 while (this.timestamp < timestamp - 1 && grabFrame(true, true, false, false) != null && count++ < 1000) {
                     // decode up to the desired frame
                 }
-                frameGrabbed = true;
             }
+            frameGrabbed = true;
         }
     }
 
@@ -1497,8 +1494,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                         long pts = picture.best_effort_timestamp();
                         AVRational time_base = video_st.time_base();
                         timestamp = 1000000L * pts * time_base.num() / time_base.den();
-                        long ts0 = 0;
-                        if (oc.start_time() != AV_NOPTS_VALUE) ts0 = oc.start_time();
+                        long ts0 = oc.start_time() != AV_NOPTS_VALUE ? oc.start_time() : 0;
                         // best guess, AVCodecContext.frame_number = number of decoded frames...
                         frameNumber = (int)Math.round((timestamp - ts0) * getFrameRate() / 1000000L);
                         frame.image = image_buf;
