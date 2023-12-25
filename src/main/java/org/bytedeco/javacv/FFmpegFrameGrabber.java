@@ -1148,7 +1148,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 int fmt = getPixelFormat();
 
                 // work around bug in swscale: https://trac.ffmpeg.org/ticket/1031
-                int align = 32;
+                int align = 64;
                 int stride = width;
                 for (int i = 1; i <= align; i += i) {
                      stride = (width + (i - 1)) & ~(i - 1);
