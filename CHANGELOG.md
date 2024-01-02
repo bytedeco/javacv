@@ -3,7 +3,7 @@
  * Improve `FFmpegFrameGrabber.setTimestamp()` further for MPEG-TS streams ([pull #2144](https://github.com/bytedeco/javacv/pull/2144))
  * Fix `module-info.java` broken since last release ([issue bytedeco/javacpp-presets#1414](https://github.com/bytedeco/javacpp-presets/issues/1414))
  * Add new `AudioSplitMergeHelper` sample for processing raw audio frames ([pull #2052](https://github.com/bytedeco/javacv/pull/2052))
- * Upgrade dependencies for OpenBLAS 0.3.25, OpenCV 4.8.1, FFmpeg 6.1, Leptonica 1.83.1, Tesseract 5.3.3
+ * Upgrade dependencies for OpenBLAS 0.3.25, OpenCV 4.9.0, FFmpeg 6.1, Leptonica 1.84.0, Tesseract 5.3.3
 
 ### June 6, 2023 version 1.5.9
  * Add `FrameRecorder.videoSideData/audioSideData` properties and `FFmpegFrameRecorder.setDisplayRotation()` for convenience ([issue #1976](https://github.com/bytedeco/javacv/issues/1976))
