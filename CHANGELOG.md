@@ -1,4 +1,5 @@
 
+### January 29, 2024 version 1.5.10
  * Work around `swscale` bug in `FFmpegFrameGrabber` for images with unaligned width ([issue #1960](https://github.com/bytedeco/javacv/issues/1960))
  * Improve `FFmpegFrameGrabber.setTimestamp()` further for MPEG-TS streams ([pull #2144](https://github.com/bytedeco/javacv/pull/2144))
  * Fix `module-info.java` broken since last release ([issue bytedeco/javacpp-presets#1414](https://github.com/bytedeco/javacpp-presets/issues/1414))
