@@ -213,7 +213,7 @@ public class Frame implements AutoCloseable, Indexable {
      * @return A deep copy of this frame.
      * @see {@link #cloneBufferArray}
      *
-     * @author Extension proposed by Dragos Dutu
+     * Extension proposed by Dragos Dutu
      * */
     @Override
     public Frame clone() {

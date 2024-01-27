@@ -41,7 +41,7 @@ public class FFmpegLogCallback extends LogCallback {
 
     static final FFmpegLogCallback instance = new FFmpegLogCallback().retainReference();
 
-    /** Returns an instance that can be used with {@link #setLogCallback(LogCallback)}. */
+    /** Returns an instance that can be used with {@link org.bytedeco.ffmpeg.global.avutil#setLogCallback(LogCallback)}. */
     public static FFmpegLogCallback getInstance() {
         return instance;
     }
