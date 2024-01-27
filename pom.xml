@@ -301,6 +301,10 @@
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jogl/javadoc</link>
                 <link>http://junit.org/junit4/javadoc/4.13.2</link>
               </links>
+              <sourceFileExcludes>
+                <exclude>org/bytedeco/javacv/FlyCaptureFrameGrabber.java</exclude>
+                <exclude>org/bytedeco/javacv/FFmpegLockCallback.java</exclude>
+              </sourceFileExcludes>
             </configuration>
           </execution>
         </executions>
