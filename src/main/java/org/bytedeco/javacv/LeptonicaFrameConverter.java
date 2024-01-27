@@ -22,14 +22,16 @@
 
 package org.bytedeco.javacv;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.leptonica.PIX;
 
-import org.bytedeco.leptonica.*;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
+
 import static org.bytedeco.leptonica.global.leptonica.*;
 
 /**
@@ -40,7 +42,9 @@ import static org.bytedeco.leptonica.global.leptonica.*;
  * @author Samuel Audet
  */
 public class LeptonicaFrameConverter extends FrameConverter<PIX> {
-    static { Loader.load(org.bytedeco.leptonica.global.leptonica.class); }
+    static {
+        Loader.load(org.bytedeco.leptonica.global.leptonica.class);
+    }
 
     PIX pix;
     BytePointer frameData, pixData;
@@ -51,7 +55,7 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
                 && frame.imageWidth == pix.w() && frame.imageHeight == pix.h()
                 && frame.imageChannels == pix.d() / 8 && frame.imageDepth == Frame.DEPTH_UBYTE
                 && (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)
-                    || new Pointer(frame.image[0]).address() == pix.data().address())
+                || new Pointer(frame.image[0]).address() == pix.data().address())
                 && frame.imageStride * Math.abs(frame.imageDepth) / 8 == pix.wpl() * 4;
     }
 
@@ -59,32 +63,91 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
         if (frame == null || frame.image == null) {
             return null;
         } else if (frame.opaque instanceof PIX) {
-            return (PIX)frame.opaque;
+            return (PIX) frame.opaque;
         } else if (!isEqual(frame, pix)) {
-            Pointer data;
-            if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-                if (pixData == null || pixData.capacity() < frame.imageHeight * frame.imageStride) {
-                    if (pixData != null) {
-                        pixData.releaseReference();
+            //I simply lack a machine to test this.
+            if (ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN)) {
+                System.err.println("This converter does not support running on big-endian machines");
+                return null;
+            }
+            //PIX data should be packed as tightly as possible, see https://github.com/DanBloomberg/leptonica/blob/0d4477653691a8cb4f63fa751d43574c757ccc9f/src/pix.h#L133
+            //For anything not greyscale or RGB @ 8 bit per pixel, this involves more bit-shift logic than I'm willing to write (and I lack test cases)
+            if (frame.imageChannels != 3 && frame.imageChannels != 1) {
+                System.out.println(String.format("Image has %d channels, converter only supports 3 (RGB) or 1 (grayscale) for input", frame.imageChannels));
+                return null;
+            }
+            if (frame.imageDepth != 8 || !(frame.image[0] instanceof ByteBuffer)) {
+                System.out.println(String.format("Image has bit depth %d, converter only supports 8 (1 byte/px) for input", frame.imageDepth));
+                return null;
+            }
+            // Leptonica frame scan lines must be padded to 32 bit / 4 bytes of stride (line) length, otherwise one gets nasty scan effects
+            // See http://www.leptonica.org/library-notes.html#PIX
+            int srcChannelDepthBytes = frame.imageDepth / 8;
+            int srcBytesPerPixel = srcChannelDepthBytes * frame.imageChannels;
+
+            // Leptonica counts RGB images as 24 bits per pixel, while the data actually is 32 bit per pixel
+            int destBytesPerPixel = srcBytesPerPixel;
+            if (frame.imageChannels == 3) {
+                // RGB pixels are stored as RGBA, so they take up 4 bytes!
+                // See https://github.com/DanBloomberg/leptonica/blob/master/src/pix.h#L157
+                destBytesPerPixel = 4;
+            }
+            int currentStrideLength = frame.imageWidth * destBytesPerPixel;
+            int targetStridePad = 4 - (currentStrideLength % 4);
+            if (targetStridePad == 4)
+                targetStridePad = 0;
+            int targetStrideLength = (currentStrideLength) + targetStridePad;
+            ByteBuffer src = ((ByteBuffer) frame.image[0]).order(ByteOrder.LITTLE_ENDIAN);
+            int newSize = targetStrideLength * frame.imageHeight;
+            ByteBuffer dst = ByteBuffer.allocate(newSize).order(ByteOrder.LITTLE_ENDIAN);
+            /*
+            System.out.println(String.format(
+                    "src: %d bytes total, %d channels @ %d bytes per pixel, stride length %d",
+                    frame.image[0].capacity(),
+                    frame.imageChannels,
+                    srcBytesPerPixel,
+                    currentStrideLength
+            ));
+            System.out.println(String.format(
+                    "dst: %d bytes total, stride length %d, stride pad %d",
+                    newSize,
+                    targetStrideLength,
+                    targetStridePad
+            ));
+             */
+            //The source bytes will be RGB, which means it will have to be copied byte-by-byte to match Leptonica RGBA
+            //todo: use qword copy ops?
+            byte[] rowData = new byte[targetStrideLength];
+            for (int row = 0; row < frame.imageHeight; row++) {
+                for (int col = 0; col < frame.imageWidth; col++) {
+                    int srcIndex = (frame.imageStride * row) + (col * frame.imageChannels);
+                    if (frame.imageChannels == 1) {
+                        byte v = src.get(srcIndex);
+                        rowData[col] = v;
+                        //System.out.println(String.format("row %03d col %03d idx src %03d val %02x", row, col, srcIndex,v));
+                    } else if (frame.imageChannels == 3) {
+                        int dstIndex = col * destBytesPerPixel;
+                        byte[] pixelData = new byte[3];
+                        src.position(srcIndex);
+                        src.get(pixelData, 0, pixelData.length);
+                        // Convert BGR (OpenCV's standard ordering) to RGB (Leptonica)
+                        // See https://learnopencv.com/why-does-opencv-use-bgr-color-format/ and https://github.com/DanBloomberg/leptonica/blob/master/src/pix.h#L157
+                        rowData[dstIndex] = pixelData[2]; //dst: r
+                        rowData[dstIndex + 1] = pixelData[1]; //dst: g
+                        rowData[dstIndex + 2] = pixelData[0]; // dst: b
+                        rowData[dstIndex + 3] = 0;
+                        //System.out.println(String.format("row %03d col %03d idx src %03d dst %03d val r %02x g %02x b %02x", row, col, srcIndex,dstIndex, pixelData[2], pixelData[1], pixelData[1]));
                     }
-                    pixData = new BytePointer(frame.imageHeight * frame.imageStride).retainReference();
                 }
-                data = pixData;
-                pixBuffer = data.asByteBuffer().order(ByteOrder.BIG_ENDIAN);
-            } else {
-                data = new Pointer(frame.image[0].position(0));
+                //And since pixel data in source is little-endian, but Leptonica is big-endian on 32-bit level, now invert accordingly...
+                ByteBuffer rowBuffer = ByteBuffer.wrap(rowData);
+                IntBuffer inverted = rowBuffer.order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+                //System.out.println(Arrays.toString(rowBuffer.array()));
+                dst.position(row * targetStrideLength).asIntBuffer().put(inverted);
             }
-            if (pix != null) {
-                pix.releaseReference();
-            }
-            pix = PIX.create(frame.imageWidth, frame.imageHeight, frame.imageChannels * 8, data)
-                     .wpl(frame.imageStride / 4 * Math.abs(frame.imageDepth) / 8).retainReference();
+            pix = PIX.create(frame.imageWidth, frame.imageHeight, destBytesPerPixel * 8, new BytePointer(dst.position(0)));
         }
 
-        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-            ((ByteBuffer)pixBuffer.position(0)).asIntBuffer()
-                    .put(((ByteBuffer)frame.image[0].position(0)).order(ByteOrder.LITTLE_ENDIAN).asIntBuffer());
-        }
         return pix;
     }
 
@@ -99,10 +162,10 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
         } else if (pix.d() < 8) {
             switch (pix.d()) {
                 case 1:
-                    tempPix = pix = pixConvert1To8(null, pix, (byte)0, (byte)255);
+                    tempPix = pix = pixConvert1To8(null, pix, (byte) 0, (byte) 255);
                     break;
                 case 2:
-                    tempPix = pix = pixConvert2To8(pix, (byte)0, (byte)85, (byte)170, (byte)255, 0);
+                    tempPix = pix = pixConvert2To8(pix, (byte) 0, (byte) 85, (byte) 170, (byte) 255, 0);
                     break;
                 case 4:
                     tempPix = pix = pixConvert4To8(pix, 0);
@@ -128,7 +191,7 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
                 }
                 frameBuffer = frameData.asByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
                 frame.opaque = frameData;
-                frame.image = new Buffer[] { frameBuffer };
+                frame.image = new Buffer[]{frameBuffer};
             } else {
                 if (tempPix != null) {
                     if (this.pix != null) {
@@ -137,12 +200,12 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
                     this.pix = pix = pix.clone();
                 }
                 frame.opaque = pix;
-                frame.image = new Buffer[] { pix.createBuffer() };
+                frame.image = new Buffer[]{pix.createBuffer()};
             }
         }
 
         if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-            ((ByteBuffer)frameBuffer.position(0)).asIntBuffer()
+            ((ByteBuffer) frameBuffer.position(0)).asIntBuffer()
                     .put(pix.createBuffer().order(ByteOrder.BIG_ENDIAN).asIntBuffer());
         }
 
@@ -152,7 +215,8 @@ public class LeptonicaFrameConverter extends FrameConverter<PIX> {
         return frame;
     }
 
-    @Override public void close() {
+    @Override
+    public void close() {
         super.close();
         if (pix != null) {
             pix.releaseReference();
