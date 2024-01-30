@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.5.10-SNAPSHOT</version>
+  <version>1.5.11-SNAPSHOT</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV, FFmpeg, and more</description>
@@ -70,17 +70,17 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas</artifactId>
-      <version>0.3.25-${javacpp.version}</version>
+      <version>0.3.26-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
-      <version>4.8.1-${javacpp.version}</version>
+      <version>4.9.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>6.1-${javacpp.version}</version>
+      <version>6.1.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -130,12 +130,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>leptonica</artifactId>
-      <version>1.83.1-${javacpp.version}</version>
+      <version>1.84.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract</artifactId>
-      <version>5.3.3-${javacpp.version}</version>
+      <version>5.3.4-${javacpp.version}</version>
     </dependency>
 
     <dependency>
@@ -301,6 +301,10 @@
                 <link>https://jogamp.org/deployment/v2.3.2/javadoc/jogl/javadoc</link>
                 <link>http://junit.org/junit4/javadoc/4.13.2</link>
               </links>
+              <sourceFileExcludes>
+                <exclude>org/bytedeco/javacv/FlyCaptureFrameGrabber.java</exclude>
+                <exclude>org/bytedeco/javacv/FFmpegLockCallback.java</exclude>
+              </sourceFileExcludes>
             </configuration>
           </execution>
         </executions>
