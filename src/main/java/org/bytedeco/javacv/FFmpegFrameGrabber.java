@@ -383,6 +383,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private BytePointer[]   samples_ptr_out;
     private Buffer[]        samples_buf_out;
     private PointerPointer  plane_ptr, plane_ptr2;
+    private FFmpegFrameFilter im_filter;
     private AVPacket        pkt;
     private SwsContext      img_convert_ctx;
     private SwrContext      samples_convert_ctx;
@@ -1212,31 +1213,61 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 if (deinterlace) {
                     throw new Exception("Cannot deinterlace: Functionality moved to FFmpegFrameFilter.");
                 }
+                try {
+                    if(im_filter == null) {
+                        String intiFilterStr = new String();
+                        if (video_c.pix_fmt() != getPixelFormat()) {
+                            intiFilterStr = "format=" + av_get_pix_fmt_name(getPixelFormat()).getString();
+                        }
+                        // Has the size changed?
+                        if (frame.imageWidth != picture_rgb.width() || frame.imageHeight != picture_rgb.height()) {
+                            initPictureRGB();
+                            if (!intiFilterStr.isEmpty()) {
+                                intiFilterStr = intiFilterStr + ",";
+                            }
+                            intiFilterStr = intiFilterStr + "scale=" + picture_rgb.width() + "x" + picture_rgb.height();
+                        }
 
-                // Has the size changed?
-                if (frame.imageWidth != picture_rgb.width() || frame.imageHeight != picture_rgb.height()) {
-                    initPictureRGB();
+
+                        if(!intiFilterStr.isEmpty()) {
+                            im_filter = new FFmpegFrameFilter(intiFilterStr, video_c.width(), video_c.height());
+                            im_filter.setPixelFormat( video_c.pix_fmt());
+                            im_filter.start();
+                        }
+                    }
+
+                    // Copy "metadata" fields
+                    if(im_filter != null) {
+                        av_frame_copy_props(picture_rgb, picture);
+                        im_filter.push(0, picture);
+                        frame = im_filter.pull();
+                    } else {
+                        frame.imageStride = picture.linesize(0);
+                        frame.opaque = picture;
+                    }
+                } catch (FFmpegFrameFilter.Exception e) {
+                    throw new Exception("Filter error: " + e.getMessage());
                 }
 
-                // Copy "metadata" fields
-                av_frame_copy_props(picture_rgb, picture);
-
                 // Convert the image into BGR or GRAY format that OpenCV uses
-                img_convert_ctx = sws_getCachedContext(img_convert_ctx,
+                /*img_convert_ctx = sws_getCachedContext(img_convert_ctx,
                         video_c.width(), video_c.height(), video_c.pix_fmt(),
                         frame.imageWidth, frame.imageHeight, getPixelFormat(),
                         imageScalingFlags != 0 ? imageScalingFlags : SWS_BILINEAR,
                         null, null, (DoublePointer)null);
                 if (img_convert_ctx == null) {
                     throw new Exception("sws_getCachedContext() error: Cannot initialize the conversion context.");
-                }
+                }*/
 
                 // Convert the image from its native format to RGB or GRAY
-                sws_scale(img_convert_ctx, new PointerPointer(picture), picture.linesize(), 0,
+
+
+
+                /*sws_scale(img_convert_ctx, new PointerPointer(picture), picture.linesize(), 0,
                         video_c.height(), new PointerPointer(picture_rgb), picture_rgb.linesize());
                 frame.imageStride = picture_rgb.linesize(0);
                 frame.image = image_buf;
-                frame.opaque = picture_rgb;
+                frame.opaque = picture_rgb;*/
                 break;
 
             case RAW:

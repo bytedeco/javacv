@@ -62,9 +62,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
@@ -169,17 +167,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         this.imageWidth    = imageWidth;
         this.imageHeight   = imageHeight;
         this.audioChannels = audioChannels;
-
         this.pixelFormat   = AV_PIX_FMT_NONE;
         this.videoCodec    = AV_CODEC_ID_NONE;
         this.videoBitrate  = 400000;
         this.frameRate     = 30;
-
         this.sampleFormat  = AV_SAMPLE_FMT_NONE;
         this.audioCodec    = AV_CODEC_ID_NONE;
         this.audioBitrate  = 64000;
         this.sampleRate    = 44100;
-
         this.interleaved = true;
     }
 
@@ -239,10 +234,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_frame_free(picture);
             picture = null;
         }
-        if (tmp_picture != null) {
-            av_frame_free(tmp_picture);
-            tmp_picture = null;
-        }
         if (video_outbuf != null) {
             av_free(video_outbuf);
             video_outbuf = null;
@@ -293,10 +284,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             oc = null;
         }
 
-        if (img_convert_ctx != null) {
-            sws_freeContext(img_convert_ctx);
-            img_convert_ctx = null;
-        }
+
 
         if (samples_convert_ctx != null) {
             swr_free(samples_convert_ctx);
@@ -308,6 +296,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 if (closeOutputStream) {
                     outputStream.close();
                 }
+                if (im_filters.isEmpty()) {
+                    for (FFmpegFrameFilter itVar : im_filters) {
+                        itVar.stop();
+                    }
+                }
+                im_filters.clear();
             } catch (IOException ex) {
                 throw new Exception("Error on OutputStream.close(): ", ex);
             } finally {
@@ -370,7 +364,10 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private boolean closeOutputStream;
     private AVIOContext avio;
     private String filename;
-    private AVFrame picture, tmp_picture;
+    private AVFrame picture;
+    private long   ptsCounter;
+    private Frame inPicture;
+    private Frame filteredFrame;
     private BytePointer picture_buf;
     private BytePointer video_outbuf;
     private int video_outbuf_size;
@@ -385,7 +382,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private AVCodec video_codec, audio_codec;
     private AVCodecContext video_c, audio_c;
     private AVStream video_st, audio_st;
-    private SwsContext img_convert_ctx;
+    private List<FFmpegFrameFilter> im_filters;
     private SwrContext samples_convert_ctx;
     private int samples_channels, samples_format, samples_rate;
     private PointerPointer plane_ptr, plane_ptr2;
@@ -447,13 +444,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
         int ret;
         picture = null;
-        tmp_picture = null;
         picture_buf = null;
         frame = null;
         video_outbuf = null;
         audio_outbuf = null;
         oc = new AVFormatContext(null);
         video_c = null;
+        ptsCounter = 0;
         audio_c = null;
         video_st = null;
         audio_st = null;
@@ -461,6 +458,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         plane_ptr2 = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
         video_pkt = new AVPacket().retainReference();
         audio_pkt = new AVPacket().retainReference();
+        im_filters = new ArrayList<>();
         got_video_packet = new int[1];
         got_audio_packet = new int[1];
 
@@ -817,12 +815,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 throw new Exception("av_malloc() error: Could not allocate picture buffer.");
             }
 
-            /* if the output format is not equal to the image format, then a temporary
-               picture is needed too. It is then converted to the required output format */
-            if ((tmp_picture = av_frame_alloc()) == null) {
-                releaseUnsafe();
-                throw new Exception("av_frame_alloc() error: Could not allocate temporary picture.");
-            }
 
             /* copy the stream parameters to the muxer */
             if ((ret = avcodec_parameters_from_context(video_st.codecpar(), video_c)) < 0) {
@@ -1014,6 +1006,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             recordImage(0, 0, 0, 0, 0, pixelFormat, (Buffer[])null);
         } else {
             if (frame.image != null) {
+                inPicture = frame;
                 frame.keyFrame = recordImage(frame.imageWidth, frame.imageHeight, frame.imageDepth,
                         frame.imageChannels, frame.imageStride, pixelFormat, frame.image);
             }
@@ -1067,6 +1060,45 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             if (video_c.pix_fmt() != pixelFormat || video_c.width() != width || video_c.height() != height) {
                 /* convert to the codec pixel format if needed */
+                String intiFilterStr = new String();
+                if(video_c.pix_fmt() != pixelFormat) {
+                    intiFilterStr = "format=" + av_get_pix_fmt_name(video_c.pix_fmt()).getString();
+                }
+                // Has the size changed?
+                if (width != video_c.width() || height != video_c.height()) {
+                    if(!intiFilterStr.isEmpty()) {
+                        intiFilterStr = intiFilterStr + ",";
+                    }
+                    intiFilterStr = intiFilterStr + "scale=" + video_c.width() + "x" + video_c.height();
+                }
+                //try {
+                FFmpegFrameFilter curFilter = null;
+                for(FFmpegFrameFilter filter: im_filters) {
+                    int w = filter.getSourceImageWidth();
+                    int h = filter.getSourceImageHeight();
+                    int format = filter.getSourcePixelFormat();
+                    if(h == height
+                            && w == width
+                            && format == pixelFormat) {
+                        curFilter = filter;
+                        break;
+                    }
+                }
+
+                if(!intiFilterStr.isEmpty() && curFilter == null)    {
+                    curFilter = new FFmpegFrameFilter(intiFilterStr, width, height);
+                    curFilter.setPixelFormat(pixelFormat);
+                    curFilter.start();
+                    im_filters.add(curFilter);
+                }
+
+                curFilter.push(0, ((AVFrame)inPicture.opaque));
+                filteredFrame = curFilter.pull();
+                picture = (AVFrame)filteredFrame.opaque;
+                picture.pts(ptsCounter);
+
+
+                /*
                 img_convert_ctx = sws_getCachedContext(img_convert_ctx, width, height, pixelFormat,
                         video_c.width(), video_c.height(), video_c.pix_fmt(),
                         imageScalingFlags != 0 ? imageScalingFlags : SWS_BILINEAR,
@@ -1084,7 +1116,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 picture.width(video_c.width());
                 picture.height(video_c.height());
                 sws_scale(img_convert_ctx, new PointerPointer(tmp_picture), tmp_picture.linesize(),
-                          0, height, new PointerPointer(picture), picture.linesize());
+                          0, height, new PointerPointer(picture), picture.linesize());*/
+
             } else {
                 av_image_fill_arrays(new PointerPointer(picture), picture.linesize(), data, pixelFormat, width, height, 1);
                 picture.linesize(0, step);
@@ -1111,7 +1144,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     && image != null && image.length != 0) {
                 throw new Exception("avcodec_send_frame() error " + ret + ": Error sending a video frame for encoding.");
             }
-            picture.pts(picture.pts() + 1); // magic required by libx264
+            ptsCounter = ptsCounter + 1; // magic required by libx264
 
             /* if zero size, it means the image was buffered */
             got_video_packet[0] = 0;
@@ -1141,6 +1174,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 //        }
         return image != null ? (video_pkt.flags() & AV_PKT_FLAG_KEY) != 0 : got_video_packet[0] != 0;
 
+        } catch (FFmpegFrameFilter.Exception e) {
+            throw new Exception("Filter error: " + e.getMessage());
         }
     }
 

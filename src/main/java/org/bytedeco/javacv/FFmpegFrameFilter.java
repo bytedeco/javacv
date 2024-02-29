@@ -242,6 +242,17 @@ public class FFmpegFrameFilter extends FrameFilter {
     @Override public int getPixelFormat() {
         return buffersink_ctx != null ? av_buffersink_get_format(buffersink_ctx) : super.getPixelFormat();
     }
+    public int getSourceImageWidth() {
+        return super.getImageWidth();
+    }
+
+    public int getSourceImageHeight() {
+        return super.getImageHeight();
+    }
+
+    public int getSourcePixelFormat() {
+        return super.getPixelFormat();
+    }
 
     @Override public double getFrameRate() {
         if (buffersink_ctx != null) {
@@ -388,10 +399,11 @@ public class FFmpegFrameFilter extends FrameFilter {
             if (ret < 0) {
                 throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create video buffer sink.");
             }
-//            ret = av_opt_set_bin(buffersink_ctx, "pix_fmts", new BytePointer(new IntPointer(pix_fmts)), 4, AV_OPT_SEARCH_CHILDREN);
-//            if (ret < 0) {
-//                throw new Exception("av_opt_set_bin() error " + ret + ": Cannot set output pixel format.");
-//            }
+
+            /*ret = av_opt_set_bin(buffersink_ctx, "pix_fmts", new BytePointer(new IntPointer(pix_fmts)), 4, AV_OPT_SEARCH_CHILDREN);
+            if (ret < 0) {
+                throw new Exception("av_opt_set_bin() error " + ret + ": Cannot set output pixel format.");
+            }*/
 
             /*
              * The buffer sink input must be connected to the output pad of
@@ -521,6 +533,17 @@ public class FFmpegFrameFilter extends FrameFilter {
 
     @Override public void push(Frame frame) throws Exception {
         push(frame, frame != null && frame.opaque instanceof AVFrame ? ((AVFrame)frame.opaque).format() : AV_PIX_FMT_NONE);
+    }
+    public void push(int n, AVFrame avframe) throws Exception {
+        if (!started) {
+            throw new Exception("start() was not called successfully!");
+        }
+        if (buffersrc_ctx != null && n < buffersrc_ctx.length) {
+            int ret = 0;
+            if ((ret = av_buffersrc_add_frame_flags(buffersrc_ctx[n], avframe, AV_BUFFERSRC_FLAG_KEEP_REF | AV_BUFFERSRC_FLAG_PUSH)) < 0) {
+                throw new Exception("av_buffersrc_add_frame_flags() error " + ret + ": Error while feeding the filtergraph.");
+            }
+        }
     }
     public void push(Frame frame, int pixelFormat) throws Exception {
         push(0, frame, pixelFormat);
@@ -743,7 +766,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             if (ret < 0) {
                 throw new Exception("av_image_copy_to_buffer() error " + ret + ": Cannot pull image.");
             }
-            frame.opaque = image_ptr2[0];
+            frame.opaque = filt_frame;
         }
         frame.timestamp = 1000000L * filt_frame.pts() * time_base.num() / time_base.den();
         return frame;

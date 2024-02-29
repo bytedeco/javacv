@@ -18,7 +18,6 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.JavaFXFrameConverter;
 
 /**
  * @author Dmitriy Gerashenko <d.a.gerashenko@gmail.com>
