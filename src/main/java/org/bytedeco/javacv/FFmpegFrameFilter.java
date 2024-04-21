@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2022 Samuel Audet
+ * Copyright (C) 2015-2024 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -154,6 +154,11 @@ public class FFmpegFrameFilter extends FrameFilter {
     public synchronized void releaseUnsafe() throws Exception {
         started = false;
 
+        if (default_layout != null) {
+            default_layout.releaseReference();
+            default_layout = null;
+        }
+
         if (image_ptr2 != null) {
             for (int i = 0; i < image_ptr2.length; i++) {
                 av_free(image_ptr2[i]);
@@ -228,6 +233,7 @@ public class FFmpegFrameFilter extends FrameFilter {
     Buffer[] image_buf, image_buf2;
     Buffer[] samples_buf;
     Frame frame, inframe;
+    AVChannelLayout default_layout;
 
     private volatile boolean started = false;
 
@@ -300,6 +306,7 @@ public class FFmpegFrameFilter extends FrameFilter {
         samples_ptr = new BytePointer[] { null };
         samples_buf = new Buffer[] { null };
         frame = new Frame();
+        default_layout = new AVChannelLayout().retainReference();
 
         if (image_frame == null || samples_frame == null || filt_frame == null) {
             throw new Exception("Could not allocate frames");
@@ -439,8 +446,9 @@ public class FFmpegFrameFilter extends FrameFilter {
                 aoutputs[i] = avfilter_inout_alloc();
 
                 /* buffer audio source: the decoded frames from the decoder will be inserted here. */
+                av_channel_layout_default(default_layout, audioChannels);
                 String aargs = String.format(Locale.ROOT, "channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
-                        audioChannels, sampleFormat, sampleRate, av_get_default_channel_layout(audioChannels));
+                        audioChannels, sampleFormat, sampleRate, default_layout.u_mask());
                 ret = avfilter_graph_create_filter(abuffersrc_ctx[i] = new AVFilterContext().retainReference(), abuffersrc, name,
                                                    aargs, null, afilter_graph);
                 if (ret < 0) {
@@ -647,8 +655,8 @@ public class FFmpegFrameFilter extends FrameFilter {
         for (int i = 0; i < samples.length; i++) {
             samples_frame.data(i, new BytePointer(data[i]));
         }
-        samples_frame.channels(audioChannels);
-        samples_frame.channel_layout(av_get_default_channel_layout(audioChannels));
+        av_channel_layout_default(default_layout, audioChannels);
+        samples_frame.ch_layout(default_layout);
         samples_frame.nb_samples(sampleSize);
         samples_frame.format(sampleFormat);
         samples_frame.sample_rate(sampleRate);
@@ -769,14 +777,14 @@ public class FFmpegFrameFilter extends FrameFilter {
                     + av_make_error_string(new BytePointer(256), 256, ret).getString());
         }
         int sample_format = filt_frame.format();
-        int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)filt_frame.channels() : 1;
-        int data_size = av_samples_get_buffer_size((IntPointer)null, filt_frame.channels(),
+        int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)filt_frame.ch_layout().nb_channels() : 1;
+        int data_size = av_samples_get_buffer_size((IntPointer)null, filt_frame.ch_layout().nb_channels(),
                 filt_frame.nb_samples(), filt_frame.format(), 1) / planes;
         if (samples_buf == null || samples_buf.length != planes) {
             samples_ptr = new BytePointer[planes];
             samples_buf = new Buffer[planes];
         }
-        frame.audioChannels = filt_frame.channels();
+        frame.audioChannels = filt_frame.ch_layout().nb_channels();
         frame.sampleRate = filt_frame.sample_rate();
         frame.samples = samples_buf;
         frame.opaque = filt_frame;
