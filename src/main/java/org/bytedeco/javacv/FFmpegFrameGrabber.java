@@ -286,7 +286,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     avio = null;
                 }
                 if (oc != null) {
-                    avformat_free_context(oc);
+                    avformat_close_input(oc);
                     oc = null;
                 }
             }
