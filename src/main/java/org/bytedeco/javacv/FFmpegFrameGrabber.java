@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2022 Samuel Audet
+ * Copyright (C) 2009-2024 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -185,6 +185,11 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             pkt = null;
         }
 
+        if (default_layout != null) {
+            default_layout.releaseReference();
+            default_layout = null;
+        }
+
         // Free the RGB image
         if (image_ptr != null) {
             for (int i = 0; i < image_ptr.length; i++) {
@@ -244,6 +249,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
 
         if (samples_convert_ctx != null) {
             swr_free(samples_convert_ctx);
+            samples_convert_ctx.releaseReference();
             samples_convert_ctx = null;
         }
 
@@ -390,6 +396,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     private boolean         frameGrabbed;
     private Frame           frame;
     private int[]           streams;
+    private AVChannelLayout default_layout;
 
     private volatile boolean started = false;
 
@@ -442,7 +449,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
     }
 
     @Override public int getAudioChannels() {
-        return audioChannels > 0 || audio_c == null ? super.getAudioChannels() : audio_c.channels();
+        return audioChannels > 0 || audio_c == null ? super.getAudioChannels() : audio_c.ch_layout().nb_channels();
     }
 
     @Override public int getPixelFormat() {
@@ -931,6 +938,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         frame           = new Frame();
         timestamp       = 0;
         frameNumber     = 0;
+        default_layout  = new AVChannelLayout().retainReference();
 
         pkt.stream_index(-1);
 
@@ -1261,15 +1269,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
         int ret;
 
         int sample_format = samples_frame.format();
-        int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)samples_frame.channels() : 1;
-        int data_size = av_samples_get_buffer_size((IntPointer)null, audio_c.channels(),
+        int planes = av_sample_fmt_is_planar(sample_format) != 0 ? (int)samples_frame.ch_layout().nb_channels() : 1;
+        int data_size = av_samples_get_buffer_size((IntPointer)null, audio_c.ch_layout().nb_channels(),
                 samples_frame.nb_samples(), audio_c.sample_fmt(), 1) / planes;
         if (samples_buf == null || samples_buf.length != planes) {
             samples_ptr = new BytePointer[planes];
             samples_buf = new Buffer[planes];
         }
         frame.sampleRate = audio_c.sample_rate();
-        frame.audioChannels = audio_c.channels();
+        frame.audioChannels = audio_c.ch_layout().nb_channels();
         frame.samples = samples_buf;
         frame.opaque = samples_frame;
         int sample_size = data_size / av_get_bytes_per_sample(sample_format);
@@ -1295,12 +1303,15 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             samples_buf[i].position(0).limit(sample_size);
         }
 
-        if (audio_c.channels() != getAudioChannels() || audio_c.sample_fmt() != getSampleFormat() || audio_c.sample_rate() != getSampleRate()) {
+        if (audio_c.ch_layout().nb_channels() != getAudioChannels() || audio_c.sample_fmt() != getSampleFormat() || audio_c.sample_rate() != getSampleRate()) {
             if (samples_convert_ctx == null || samples_channels != getAudioChannels() || samples_format != getSampleFormat() || samples_rate != getSampleRate()) {
-                samples_convert_ctx = swr_alloc_set_opts(samples_convert_ctx, av_get_default_channel_layout(getAudioChannels()), getSampleFormat(), getSampleRate(),
-                        av_get_default_channel_layout(audio_c.channels()), audio_c.sample_fmt(), audio_c.sample_rate(), 0, null);
                 if (samples_convert_ctx == null) {
-                    throw new Exception("swr_alloc_set_opts() error: Cannot allocate the conversion context.");
+                    samples_convert_ctx = new SwrContext().retainReference();
+                }
+                av_channel_layout_default(default_layout, getAudioChannels());
+                if ((ret = swr_alloc_set_opts2(samples_convert_ctx, default_layout, getSampleFormat(), getSampleRate(),
+                        audio_c.ch_layout(), audio_c.sample_fmt(), audio_c.sample_rate(), 0, null)) < 0) {
+                    throw new Exception("swr_alloc_set_opts2() error " + ret + ": Cannot allocate the conversion context.");
                 } else if ((ret = swr_init(samples_convert_ctx)) < 0) {
                     throw new Exception("swr_init() error " + ret + ": Cannot initialize the conversion context.");
                 }
@@ -1310,7 +1321,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             }
 
             int sample_size_in = samples_frame.nb_samples();
-            int planes_out = av_sample_fmt_is_planar(samples_format) != 0 ? (int)samples_frame.channels() : 1;
+            int planes_out = av_sample_fmt_is_planar(samples_format) != 0 ? (int)samples_frame.ch_layout().nb_channels() : 1;
             int sample_size_out = swr_get_out_samples(samples_convert_ctx, sample_size_in);
             int sample_bytes_out = av_get_bytes_per_sample(samples_format);
             int buffer_size_out = sample_size_out * sample_bytes_out * (planes_out > 1 ? 1 : samples_channels);
