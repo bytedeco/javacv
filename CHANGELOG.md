@@ -1,4 +1,5 @@
 
+ * Fix memory leak in `FFmpegFrameGrabber` when decoding from `InputStream` ([pull #2214](https://github.com/bytedeco/javacv/pull/2214))
  * Upgrade dependencies for FFmpeg 7.0
 
 ### January 29, 2024 version 1.5.10
