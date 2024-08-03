@@ -97,6 +97,7 @@ IntelliJ IDEA (Android 7.0 or newer):
  2. Copy all the JAR files into the `app/libs` subdirectory.
  3. Navigate to File > Project Structure > app > Dependencies, click `+`, and select "2 File dependency".
  4. Select all the JAR files from the `libs` subdirectory.
+ 5. In the AndroidManifest.xml add `android:extractNativeLibs="true"`
 
 After that, the wrapper classes for OpenCV and FFmpeg, for example, can automatically access all of their C/C++ APIs:
 
