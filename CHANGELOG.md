@@ -1,6 +1,6 @@
 
  * Fix memory leak in `FFmpegFrameGrabber` when decoding from `InputStream` ([pull #2214](https://github.com/bytedeco/javacv/pull/2214))
- * Upgrade dependencies for OpenBLAS 0.3.28, OpenCV 4.10.0, FFmpeg 7.0.2, Tesseract 5.4.1
+ * Upgrade dependencies for OpenBLAS 0.3.28, OpenCV 4.10.0, FFmpeg 7.1, Leptonica 1.85.0, Tesseract 5.4.1
 
 ### January 29, 2024 version 1.5.10
  * Work around `swscale` bug in `FFmpegFrameGrabber` for images with unaligned width ([issue #1960](https://github.com/bytedeco/javacv/issues/1960))
