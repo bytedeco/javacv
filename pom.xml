@@ -135,7 +135,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract</artifactId>
-      <version>5.4.1-${javacpp.version}</version>
+      <version>5.5.0-${javacpp.version}</version>
     </dependency>
 
     <dependency>
