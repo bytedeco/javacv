@@ -1,4 +1,5 @@
 
+### November 16, 2024 version 1.5.11
  * Fix memory leak in `FFmpegFrameGrabber` when decoding from `InputStream` ([pull #2214](https://github.com/bytedeco/javacv/pull/2214))
  * Upgrade dependencies for OpenBLAS 0.3.28, OpenCV 4.10.0, FFmpeg 7.1, Leptonica 1.85.0, Tesseract 5.5.0
 

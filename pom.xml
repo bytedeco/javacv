@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bytedeco</groupId>
   <artifactId>javacv</artifactId>
-  <version>1.5.11-SNAPSHOT</version>
+  <version>1.5.11</version>
 
   <name>JavaCV</name>
   <description>Java interface to OpenCV, FFmpeg, and more</description>
@@ -261,6 +261,10 @@
         <artifactId>maven-source-plugin</artifactId>
         <version>3.3.0</version>
         <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>leave-disabled-to-not-generate-sources-twice-on-release</phase>
+          </execution>
           <execution>
             <id>attach-source</id>
             <goals>
