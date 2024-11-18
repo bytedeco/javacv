@@ -9,15 +9,21 @@ env:
   STAGING_REPOSITORY: ${{ secrets.STAGING_REPOSITORY }}
 jobs:
   linux-x86_64:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-ubuntu@actions
       - uses: mxschmitt/action-tmate@v3.5
         if: ${{ github.event_name == 'workflow_dispatch' }}
         with:
           sudo: false
+  macosx-arm64:
+    runs-on: macos-14
+    steps:
+      - uses: bytedeco/javacpp-presets/.github/actions/deploy-macosx@actions
+      - uses: mxschmitt/action-tmate@v3.5
+        if: ${{ github.event_name == 'workflow_dispatch' }}
   macosx-x86_64:
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-macosx@actions
       - uses: mxschmitt/action-tmate@v3.5
