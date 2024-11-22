@@ -798,6 +798,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 av_dict_free(options);
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open video codec.");
             }
+            FFmpegLogCallback.logRejectedOptions(options, "avcodec_open2");
             av_dict_free(options);
 
             video_outbuf = null;
@@ -879,6 +880,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 av_dict_free(options);
                 throw new Exception("avcodec_open2() error " + ret + ": Could not open audio codec.");
             }
+            FFmpegLogCallback.logRejectedOptions(options, "avcodec_open2");
             av_dict_free(options);
 
             audio_outbuf_size = 256 * 1024;
@@ -962,6 +964,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 av_dict_free(options);
                 throw new Exception(errorMsg);
             }
+            FFmpegLogCallback.logRejectedOptions(options, "avio_open2");
             oc.pb(pb);
         }
 
@@ -976,6 +979,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             av_dict_free(options);
             throw new Exception(errorMsg);
         }
+        FFmpegLogCallback.logRejectedOptions(options, "avformat_write_header");
         av_dict_free(options);
 
         if (av_log_get_level() >= AV_LOG_INFO) {
