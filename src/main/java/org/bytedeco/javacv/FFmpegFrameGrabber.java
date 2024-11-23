@@ -1025,11 +1025,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             // Get a pointer to the codec context for the video or audio stream
             AVCodecParameters par = st.codecpar();
             streams[i] = par.codec_type();
-            if (video_st == null && par.codec_type() == AVMEDIA_TYPE_VIDEO && (videoStream < 0 || videoStream == i)) {
+            if (video_st == null && par.codec_type() == AVMEDIA_TYPE_VIDEO
+                    && par.codec_id() != AV_CODEC_ID_NONE && (videoStream < 0 || videoStream == i)) {
                 video_st = st;
                 video_par = par;
                 videoStream = i;
-            } else if (audio_st == null && par.codec_type() == AVMEDIA_TYPE_AUDIO && (audioStream < 0 || audioStream == i)) {
+            } else if (audio_st == null && par.codec_type() == AVMEDIA_TYPE_AUDIO
+                    && par.codec_id() != AV_CODEC_ID_NONE && (audioStream < 0 || audioStream == i)) {
                 audio_st = st;
                 audio_par = par;
                 audioStream = i;

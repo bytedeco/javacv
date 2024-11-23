@@ -1,4 +1,5 @@
 
+ * Ensure `FFmpegFrameGrabber.start()` skips over streams with no codecs ([issue #2299](https://github.com/bytedeco/javacv/issues/2299))
  * Add `FFmpegLogCallback.logRejectedOptions()` for debugging purposes ([pull #2301](https://github.com/bytedeco/javacv/pull/2301))
 
 ### November 16, 2024 version 1.5.11
