@@ -54,9 +54,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Arrays;
 import java.util.Locale;
-
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
@@ -91,13 +89,6 @@ public class FFmpegFrameFilter extends FrameFilter {
         public Exception(String message) { super(message + " (For more details, make sure FFmpegLogCallback.set() has been called.)"); }
         public Exception(String message, Throwable cause) { super(message, cause); }
     }
-
-    public static interface InputArgsGenerate {
-        public String generateArgs(int i,Object[] argCopy,String template);
-    }
-
-    private InputArgsGenerate videoInputArgsGenerate;
-    private InputArgsGenerate audioInputArgsGenerate;
 
     private static Exception loadingException = null;
     public static void tryLoad() throws Exception {
@@ -317,6 +308,12 @@ public class FFmpegFrameFilter extends FrameFilter {
         frame = new Frame();
         default_layout = new AVChannelLayout().retainReference();
 
+        if (videoFilterArgs!=null && videoInputs!=videoFilterArgs.length){
+            throw new Exception("The length of videoFilterArgs is different from videoInputs");
+        }
+        if (audioFilterArgs!=null && audioInputs!=audioFilterArgs.length){
+            throw new Exception("The length of audioFilterArgs is different from audioInputs");
+        }
         if (image_frame == null || samples_frame == null || filt_frame == null) {
             throw new Exception("Could not allocate frames");
         }
@@ -351,22 +348,17 @@ public class FFmpegFrameFilter extends FrameFilter {
 
             /* buffer video source: the decoded frames from the decoder will be inserted here. */
             AVRational r = av_d2q(aspectRatio > 0 ? aspectRatio : 1, 255);
-            Object[] argList=new Object[]{imageWidth,imageHeight,pixelFormat,time_base.num(),time_base.den(),r.num(), r.den(), frame_rate.num(), frame_rate.den()};
-            String argsTemplate="video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d";
-            String args = String.format(Locale.ROOT, argsTemplate, argList);
-
+            String argsBase = String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d",
+                    imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den(), frame_rate.num(), frame_rate.den());
             buffersrc_ctx = new AVFilterContext[videoInputs];
             setpts_ctx = new AVFilterContext[videoInputs];
             for (int i = 0; i < videoInputs; i++) {
                 String name = videoInputs > 1 ? i + ":v" : "in";
                 outputs[i] = avfilter_inout_alloc();
-                String realArgs=args;
-                if (this.videoInputArgsGenerate!=null){
-                    realArgs=this.videoInputArgsGenerate.generateArgs(i, Arrays.copyOf(argList,argList.length),argsTemplate);
-                }
 
+                String args=videoFilterArgs!=null && videoFilterArgs[i]!=null ? videoFilterArgs[i]:argsBase;
                 ret = avfilter_graph_create_filter(buffersrc_ctx[i] = new AVFilterContext().retainReference(), buffersrc, name,
-                        realArgs, null, filter_graph);
+                        args, null, filter_graph);
                 if (ret < 0) {
                     throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create video buffer source.");
                 }
@@ -456,20 +448,14 @@ public class FFmpegFrameFilter extends FrameFilter {
 
             abuffersrc_ctx = new AVFilterContext[audioInputs];
             asetpts_ctx = new AVFilterContext[audioInputs];
-            String argsTemplate="channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d";
             for (int i = 0; i < audioInputs; i++) {
                 String name = audioInputs > 1 ? i + ":a" : "in";
                 aoutputs[i] = avfilter_inout_alloc();
 
                 /* buffer audio source: the decoded frames from the decoder will be inserted here. */
                 av_channel_layout_default(default_layout, audioChannels);
-                Object[] argList=new Object[]{audioChannels, sampleFormat, sampleRate, default_layout.u_mask()};
-                String aargs = String.format(Locale.ROOT,argsTemplate,argList);
-
-                if (this.audioInputArgsGenerate!=null){
-                    aargs=this.audioInputArgsGenerate.generateArgs(i,Arrays.copyOf(argList,argList.length),argsTemplate);
-                }
-
+                String aargs = audioFilterArgs!=null && audioFilterArgs[i]!=null ?audioFilterArgs[i]:String.format(Locale.ROOT, "channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
+                        audioChannels, sampleFormat, sampleRate, default_layout.u_mask());
                 ret = avfilter_graph_create_filter(abuffersrc_ctx[i] = new AVFilterContext().retainReference(), abuffersrc, name,
                                                    aargs, null, afilter_graph);
                 if (ret < 0) {
@@ -835,13 +821,5 @@ public class FFmpegFrameFilter extends FrameFilter {
         return frame;
 
         }
-    }
-
-    public void setVideoInputArgsGenerate(InputArgsGenerate videoInputArgsGenerate) {
-        this.videoInputArgsGenerate = videoInputArgsGenerate;
-    }
-
-    public void setAudioInputArgsGenerate(InputArgsGenerate audioInputArgsGenerate) {
-        this.audioInputArgsGenerate = audioInputArgsGenerate;
     }
 }
