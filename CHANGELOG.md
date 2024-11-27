@@ -1,4 +1,5 @@
 
+ * Add `FrameFilter.videoFilterArgs/audioFilterArgs` properties to support multiple different inputs ([pull #2304](https://github.com/bytedeco/javacv/pull/2304))
  * Ensure `FFmpegFrameGrabber.start()` skips over streams with no codecs ([issue #2299](https://github.com/bytedeco/javacv/issues/2299))
  * Add `FFmpegLogCallback.logRejectedOptions()` for debugging purposes ([pull #2301](https://github.com/bytedeco/javacv/pull/2301))
 

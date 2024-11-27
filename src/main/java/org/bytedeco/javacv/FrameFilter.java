@@ -43,12 +43,14 @@ public abstract class FrameFilter implements Closeable {
     protected double frameRate;
     protected double aspectRatio;
     protected int videoInputs;
+    protected String[] videoFilterArgs;
 
     protected String afilters;
     protected int audioChannels;
     protected int sampleFormat;
     protected int sampleRate;
     protected int audioInputs;
+    protected String[] audioFilterArgs;
 
     public String getFilters() {
         return filters;
@@ -99,6 +101,14 @@ public abstract class FrameFilter implements Closeable {
         this.videoInputs = videoInputs;
     }
 
+    public String[] getVideoFilterArgs() {
+        return videoFilterArgs;
+    }
+
+    public void setVideoFilterArgs(String[] videoFilterArgs) {
+        this.videoFilterArgs = videoFilterArgs;
+    }
+
     public int getAudioChannels() {
         return audioChannels;
     }
@@ -125,6 +135,14 @@ public abstract class FrameFilter implements Closeable {
     }
     public void setAudioInputs(int audioInputs) {
         this.audioInputs = audioInputs;
+    }
+
+    public String[] getAudioFilterArgs() {
+        return audioFilterArgs;
+    }
+
+    public void setAudioFilterArgs(String[] audioFilterArgs) {
+        this.audioFilterArgs = audioFilterArgs;
     }
 
     public static class Exception extends IOException {

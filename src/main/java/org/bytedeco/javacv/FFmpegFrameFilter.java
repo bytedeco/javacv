@@ -308,6 +308,12 @@ public class FFmpegFrameFilter extends FrameFilter {
         frame = new Frame();
         default_layout = new AVChannelLayout().retainReference();
 
+        if (videoFilterArgs != null && videoInputs != videoFilterArgs.length) {
+            throw new Exception("The length of videoFilterArgs is different from videoInputs");
+        }
+        if (audioFilterArgs != null && audioInputs != audioFilterArgs.length) {
+            throw new Exception("The length of audioFilterArgs is different from audioInputs");
+        }
         if (image_frame == null || samples_frame == null || filt_frame == null) {
             throw new Exception("Could not allocate frames");
         }
@@ -342,14 +348,15 @@ public class FFmpegFrameFilter extends FrameFilter {
 
             /* buffer video source: the decoded frames from the decoder will be inserted here. */
             AVRational r = av_d2q(aspectRatio > 0 ? aspectRatio : 1, 255);
-            String args = String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d",
-                    imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den(), frame_rate.num(), frame_rate.den());
             buffersrc_ctx = new AVFilterContext[videoInputs];
             setpts_ctx = new AVFilterContext[videoInputs];
             for (int i = 0; i < videoInputs; i++) {
                 String name = videoInputs > 1 ? i + ":v" : "in";
                 outputs[i] = avfilter_inout_alloc();
 
+                String args = videoFilterArgs != null && videoFilterArgs[i] != null ? videoFilterArgs[i]
+                        : String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d",
+                               imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den(), frame_rate.num(), frame_rate.den());
                 ret = avfilter_graph_create_filter(buffersrc_ctx[i] = new AVFilterContext().retainReference(), buffersrc, name,
                                                    args, null, filter_graph);
                 if (ret < 0) {
@@ -447,8 +454,9 @@ public class FFmpegFrameFilter extends FrameFilter {
 
                 /* buffer audio source: the decoded frames from the decoder will be inserted here. */
                 av_channel_layout_default(default_layout, audioChannels);
-                String aargs = String.format(Locale.ROOT, "channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
-                        audioChannels, sampleFormat, sampleRate, default_layout.u_mask());
+                String aargs = audioFilterArgs != null && audioFilterArgs[i] != null ? audioFilterArgs[i]
+                        : String.format(Locale.ROOT, "channels=%d:sample_fmt=%d:sample_rate=%d:channel_layout=%d",
+                                audioChannels, sampleFormat, sampleRate, default_layout.u_mask());
                 ret = avfilter_graph_create_filter(abuffersrc_ctx[i] = new AVFilterContext().retainReference(), abuffersrc, name,
                                                    aargs, null, afilter_graph);
                 if (ret < 0) {
