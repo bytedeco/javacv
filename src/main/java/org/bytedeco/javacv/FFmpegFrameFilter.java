@@ -358,7 +358,7 @@ public class FFmpegFrameFilter extends FrameFilter {
                         : String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d",
                                imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den(), frame_rate.num(), frame_rate.den());
                 ret = avfilter_graph_create_filter(buffersrc_ctx[i] = new AVFilterContext().retainReference(), buffersrc, name,
-                        args, null, filter_graph);
+                                                   args, null, filter_graph);
                 if (ret < 0) {
                     throw new Exception("avfilter_graph_create_filter() error " + ret + ": Cannot create video buffer source.");
                 }
