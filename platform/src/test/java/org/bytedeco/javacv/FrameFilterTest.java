@@ -197,7 +197,7 @@ public class FrameFilterTest {
                     }
                     if (frame3.samples != null) {
                         d++;
-                        assertEquals(2, frame3.audioChannels);
+                        assertEquals(4, frame3.audioChannels);
                         assertEquals(1, frame3.samples.length);
                         assertTrue(frame3.samples[0] instanceof ByteBuffer);
                         assertEquals(frame2.samples.length, frame3.samples.length);
