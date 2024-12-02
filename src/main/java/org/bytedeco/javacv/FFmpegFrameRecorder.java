@@ -1350,6 +1350,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             frame.pts(frame.pts() + frame.nb_samples()); // magic required by libvorbis and webm
         }
 
+        int retries = 0;
+        int maxRetries = 1000;
         /* if zero size, it means the image was buffered */
         got_audio_packet[0] = 0;
         while (ret >= 0) {
@@ -1376,7 +1378,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* write the compressed frame in the media file */
             writePacket(AVMEDIA_TYPE_AUDIO, audio_pkt);
 
-            if (frame == null) {
+            if (frame == null && retries++ > maxRetries) {
                 // avoid infinite loop with buggy codecs on flush
                 break;
             }
