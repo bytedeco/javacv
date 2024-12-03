@@ -1284,7 +1284,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     limit((samples_in[i].position() + inputSize) * inputDepth);
         }
         while (true) {
-            // TODO: We're dropping any samples that don't fit into the sample size. We might want to pad instead.
             int inputCount = (int)Math.min(samples != null ? (samples_in[0].limit() - samples_in[0].position()) / (inputChannels * inputDepth) : 0, Integer.MAX_VALUE);
             int outputCount = (int)Math.min((samples_out[0].limit() - samples_out[0].position()) / (outputChannels * outputDepth), Integer.MAX_VALUE);
             inputCount = Math.min(inputCount, (outputCount * sampleRate + audio_c.sample_rate() - 1) / audio_c.sample_rate());
