@@ -77,7 +77,6 @@ import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
 
 import org.bytedeco.ffmpeg.avcodec.*;
-import org.bytedeco.ffmpeg.avdevice.*;
 import org.bytedeco.ffmpeg.avformat.*;
 import org.bytedeco.ffmpeg.avutil.*;
 import org.bytedeco.ffmpeg.swresample.*;
@@ -1285,6 +1284,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     limit((samples_in[i].position() + inputSize) * inputDepth);
         }
         while (true) {
+            // TODO: We're dropping any samples that don't fit into the sample size. We might want to pad instead.
             int inputCount = (int)Math.min(samples != null ? (samples_in[0].limit() - samples_in[0].position()) / (inputChannels * inputDepth) : 0, Integer.MAX_VALUE);
             int outputCount = (int)Math.min((samples_out[0].limit() - samples_out[0].position()) / (outputChannels * outputDepth), Integer.MAX_VALUE);
             inputCount = Math.min(inputCount, (outputCount * sampleRate + audio_c.sample_rate() - 1) / audio_c.sample_rate());
@@ -1296,7 +1296,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             }
             if ((ret = swr_convert(samples_convert_ctx, plane_ptr2, outputCount, plane_ptr, inputCount)) < 0) {
                 throw new Exception("swr_convert() error " + ret + ": Cannot convert audio samples.");
-            } else if (ret == 0) {
+            } else if (ret == 0 && inputCount == 0) {
                 break;
             }
             for (int i = 0; samples != null && i < samples.length; i++) {
@@ -1350,8 +1350,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             frame.pts(frame.pts() + frame.nb_samples()); // magic required by libvorbis and webm
         }
 
-        int retries = 0;
-        int maxRetries = 1000;
         /* if zero size, it means the image was buffered */
         got_audio_packet[0] = 0;
         while (ret >= 0) {
@@ -1377,11 +1375,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
 
             /* write the compressed frame in the media file */
             writePacket(AVMEDIA_TYPE_AUDIO, audio_pkt);
-
-            if (frame == null && retries++ > maxRetries) {
-                // avoid infinite loop with buggy codecs on flush
-                break;
-            }
         }
 
         return got_audio_packet[0] != 0;
