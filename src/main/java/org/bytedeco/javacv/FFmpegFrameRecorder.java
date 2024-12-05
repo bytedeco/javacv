@@ -1170,13 +1170,6 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("start() was not called successfully!");
         }
 
-        if (samples == null && samples_out[0].position() > 0) {
-            // Typically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
-            double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
-            writeSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));
-            return writeFrame((AVFrame)null);
-        }
-
         if (samples == null && samples_convert_ctx == null) {
             // We haven't tried to record any samples yet so we don't need to flush.
             return false;
@@ -1322,6 +1315,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 writeSamples(audio_input_frame_size);
             }
         }
+
+        if (samples == null && samples_out[0].position() > 0) {
+            // Typically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
+            double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
+            writeSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));
+            return writeFrame((AVFrame)null);
+        }
+
         return samples != null ? frame.key_frame() != 0 : writeFrame((AVFrame)null);
 
         }
