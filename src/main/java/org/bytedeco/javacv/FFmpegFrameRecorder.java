@@ -77,7 +77,6 @@ import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.javacpp.ShortPointer;
 
 import org.bytedeco.ffmpeg.avcodec.*;
-import org.bytedeco.ffmpeg.avdevice.*;
 import org.bytedeco.ffmpeg.avformat.*;
 import org.bytedeco.ffmpeg.avutil.*;
 import org.bytedeco.ffmpeg.swresample.*;
@@ -397,6 +396,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
     private PointerPointer plane_ptr, plane_ptr2;
     private AVPacket video_pkt, audio_pkt;
     private int[] got_video_packet, got_audio_packet;
+    private boolean wrote_samples = false;
     private AVFormatContext ifmt_ctx;
     private IntPointer display_matrix;
     private AVChannelLayout default_layout;
@@ -468,6 +468,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         plane_ptr2 = new PointerPointer(AVFrame.AV_NUM_DATA_POINTERS).retainReference();
         video_pkt = new AVPacket().retainReference();
         audio_pkt = new AVPacket().retainReference();
+        wrote_samples = false;
         got_video_packet = new int[1];
         got_audio_packet = new int[1];
         default_layout = new AVChannelLayout().retainReference();
@@ -1169,11 +1170,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("start() was not called successfully!");
         }
 
-        if (samples == null && samples_out[0].position() > 0) {
-            // Typically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
-            double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
-            writeSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));
-            return writeFrame((AVFrame)null);
+        if (samples == null && samples_convert_ctx == null) {
+            // We haven't tried to record any samples yet so we don't need to flush.
+            return false;
         }
 
         int ret;
@@ -1265,7 +1264,8 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             throw new Exception("Audio samples Buffer has unsupported type: " + samples);
         }
 
-        if (samples_convert_ctx == null || samples_channels != audioChannels || samples_format != inputFormat || samples_rate != sampleRate) {
+        boolean formatChanged = samples_channels != audioChannels || samples_format != inputFormat || samples_rate != sampleRate;
+        if (samples != null && (samples_convert_ctx == null || formatChanged)) {
             if (samples_convert_ctx == null) {
                 samples_convert_ctx = new SwrContext().retainReference();
             }
@@ -1294,9 +1294,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             for (int i = 0; i < samples_out.length; i++) {
                 plane_ptr2.put(i, samples_out[i]);
             }
+            if (samples == null && inputCount == 0 && plane_ptr != null) {
+                plane_ptr.releaseReference();
+                // needs to be null to flush swr context.
+                plane_ptr = null;
+            }
             if ((ret = swr_convert(samples_convert_ctx, plane_ptr2, outputCount, plane_ptr, inputCount)) < 0) {
                 throw new Exception("swr_convert() error " + ret + ": Cannot convert audio samples.");
-            } else if (ret == 0) {
+            } else if (ret == 0 && inputCount == 0) {
                 break;
             }
             for (int i = 0; samples != null && i < samples.length; i++) {
@@ -1310,6 +1315,14 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 writeSamples(audio_input_frame_size);
             }
         }
+
+        if (samples == null && samples_out[0].position() > 0) {
+            // Typically samples_out[0].limit() is double the audio_input_frame_size --> sampleDivisor = 2
+            double sampleDivisor = Math.floor((int)Math.min(samples_out[0].limit(), Integer.MAX_VALUE) / audio_input_frame_size);
+            writeSamples((int)Math.floor((int)samples_out[0].position() / sampleDivisor));
+            return writeFrame((AVFrame)null);
+        }
+
         return samples != null ? frame.key_frame() != 0 : writeFrame((AVFrame)null);
 
         }
@@ -1338,6 +1351,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
         frame.format(audio_c.sample_fmt());
         frame.quality(audio_c.global_quality());
         writeFrame(frame);
+        wrote_samples = true;
     }
 
     private boolean writeFrame(AVFrame frame) throws Exception {
@@ -1376,8 +1390,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* write the compressed frame in the media file */
             writePacket(AVMEDIA_TYPE_AUDIO, audio_pkt);
 
-            if (frame == null) {
-                // avoid infinite loop with buggy codecs on flush
+            if (frame == null && !wrote_samples) {
                 break;
             }
         }
