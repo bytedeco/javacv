@@ -197,11 +197,11 @@ public class FrameFilterTest {
                     }
                     if (frame3.samples != null) {
                         d++;
-                        assertEquals(2, frame3.audioChannels);
+                        assertEquals(4, frame3.audioChannels);
                         assertEquals(1, frame3.samples.length);
-                        assertTrue(frame3.samples[0] instanceof ByteBuffer);
+                        assertTrue(frame3.samples[0] instanceof ShortBuffer);
                         assertEquals(frame2.samples.length, frame3.samples.length);
-                        assertEquals(frame2.samples[0].limit(), frame3.samples[0].limit());
+                        assertEquals(2 * frame2.samples[0].limit(), frame3.samples[0].limit());
                     }
                 }
             }
