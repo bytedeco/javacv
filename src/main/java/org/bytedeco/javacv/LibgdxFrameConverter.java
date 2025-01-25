@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
  *
  * @author shan-luan
  */
-public class LibGDXFrameConverter extends FrameConverter<Pixmap> {
+public class LibgdxFrameConverter extends FrameConverter<Pixmap> {
     /**
      * Converts a {@link Pixmap} to a {@link Frame}.
      *
