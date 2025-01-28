@@ -1,4 +1,5 @@
 
+ * Add `LibgdxFrameConverter` to convert `Frame` to Libgdx `Pixmap` ([pull #2315](https://github.com/bytedeco/javacv/pull/2315))
  * Fix `FFmpegFrameRecorder` dropped frame issues with audio samples ([pull #2307](https://github.com/bytedeco/javacv/pull/2307))
  * Add `FrameFilter.videoFilterArgs/audioFilterArgs` properties to support multiple different inputs ([pull #2304](https://github.com/bytedeco/javacv/pull/2304))
  * Ensure `FFmpegFrameGrabber.start()` skips over streams with no codecs ([issue #2299](https://github.com/bytedeco/javacv/issues/2299))

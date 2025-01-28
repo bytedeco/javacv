@@ -169,6 +169,13 @@
       <version>2.3.2</version>
       <optional>true</optional>
     </dependency>
+
+    <dependency>
+      <groupId>com.badlogicgames.gdx</groupId>
+      <artifactId>gdx</artifactId>
+      <version>1.13.1</version>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <repositories>
