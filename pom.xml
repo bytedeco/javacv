@@ -75,7 +75,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv</artifactId>
-      <version>4.10.0-${javacpp.version}</version>
+      <version>4.11.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -372,6 +372,19 @@
           <groupId>org.openjfx</groupId>
           <artifactId>javafx-graphics</artifactId>
           <version>17</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>OpenJFX-21</id>
+      <activation>
+        <jdk>21</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-graphics</artifactId>
+          <version>21</version>
         </dependency>
       </dependencies>
     </profile>
