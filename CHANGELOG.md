@@ -4,7 +4,7 @@
  * Add `FrameFilter.videoFilterArgs/audioFilterArgs` properties to support multiple different inputs ([pull #2304](https://github.com/bytedeco/javacv/pull/2304))
  * Ensure `FFmpegFrameGrabber.start()` skips over streams with no codecs ([issue #2299](https://github.com/bytedeco/javacv/issues/2299))
  * Add `FFmpegLogCallback.logRejectedOptions()` for debugging purposes ([pull #2301](https://github.com/bytedeco/javacv/pull/2301))
- * Upgrade dependencies for OpenCV 4.11.0
+ * Upgrade dependencies for OpenBLAS 0.3.29, OpenCV 4.11.0, FFmpeg 7.1.1
 
 ### November 16, 2024 version 1.5.11
  * Fix memory leak in `FFmpegFrameGrabber` when decoding from `InputStream` ([pull #2214](https://github.com/bytedeco/javacv/pull/2214))
