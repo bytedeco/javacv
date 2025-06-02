@@ -29,7 +29,7 @@ jobs:
       - uses: mxschmitt/action-tmate@v3.5
         if: ${{ github.event_name == 'workflow_dispatch' }}
   windows-x86_64:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-windows@actions
       - uses: mxschmitt/action-tmate@v3.5
