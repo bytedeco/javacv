@@ -248,9 +248,9 @@
       </activation>
       <repositories>
         <repository>
-          <id>sonatype-nexus-staging</id>
-          <name>Sonatype Nexus Staging</name>
-          <url>https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${stagingRepositoryId}/</url>
+          <id>central-portal-staging</id>
+          <name>Central Portal Staging</name>
+          <url>https://central.sonatype.com/api/v1/publisher/deployments/download/</url>
           <releases>
             <enabled>true</enabled>
           </releases>
