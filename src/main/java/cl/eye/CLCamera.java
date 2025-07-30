@@ -68,92 +68,76 @@ public class CLCamera
     private static String dllpathx64 = "C://Program Files (x86)//Code Laboratories//CL-Eye Platform SDK//Bin//CLEyeMulticam.dll";
 
     // static methods
-    static
-    {
-        try
-        {
-            System.load(dllpathx32);
-            libraryLoaded = true;
-            System.out.println("CLEyeMulticam.dll loaded");
-        }
-        catch(UnsatisfiedLinkError e1)
-        {
-            System.out.println("(1) Could not find the CLEyeMulticam.dll");
-            try
-            {
-                System.load(dllpathx64);
+    static {
+        String[] dllPaths = { dllpathx32, dllpathx64 };
+    
+        for (int i = 0; i < dllPaths.length; i++) {
+            try {
+                System.load(dllPaths[i]);
                 libraryLoaded = true;
-                System.out.println("CLEyeMulticam.dll loaded");
-            }
-            catch(UnsatisfiedLinkError e2)
-            {
-                System.out.println("(2) Could not find the CLEyeMulticam.dll");
+                System.out.println("CLEyeMulticam.dll loaded from: " + dllPaths[i]);
+                break;
+            } catch (UnsatisfiedLinkError e) {
+                System.out.println("(" + (i + 1) + ") Could not find the CLEyeMulticam.dll at: " + dllPaths[i]);
             }
         }
     }
-    public static boolean IsLibraryLoaded()
-    {
+    
+    public static boolean IsLibraryLoaded() {
         return libraryLoaded;
     }
-    public static void loadLibrary(String libraryPath)
-    {
+    
+    public static void loadLibrary(String libraryPath) {
         if(libraryLoaded)   return;
-        try
-        {
+        
+        try {
             System.load(libraryPath);
             System.out.println("CLEyeMulticam.dll loaded");
-        }
-        catch(UnsatisfiedLinkError e1)
-        {
+        } 
+        catch(UnsatisfiedLinkError e1) {
             System.out.println("(3) Could not find the CLEyeMulticam.dll (Custom Path)");
         }
     }
-    public static int cameraCount()
-    {
+    
+    public static int cameraCount() {
         return CLEyeGetCameraCount();
     }
-    public static String cameraUUID(int index)
-    {
+    
+    public static String cameraUUID(int index) {
         return CLEyeGetCameraUUID(index);
     }
-    // public methods
-//    public CLCamera(PApplet parent)
-//    {
-//        this.parent = parent;
-//        parent.registerDispose(this);
-//    }
-    public void dispose()
-    {
+
+    public void dispose() {
         stopCamera();
         destroyCamera();
     }
-    public boolean createCamera(int cameraIndex, int mode, int resolution, int framerate)
-    {
+    
+    public boolean createCamera(int cameraIndex, int mode, int resolution, int framerate) {
         cameraInstance = CLEyeCreateCamera(cameraIndex, mode, resolution, framerate);
         return cameraInstance != 0;
     }
-    public boolean destroyCamera()
-    {
+    
+    public boolean destroyCamera() {
         return CLEyeDestroyCamera(cameraInstance);
     }
-    public boolean startCamera()
-    {
+    
+    public boolean startCamera() {
         return CLEyeCameraStart(cameraInstance);
     }
-    public boolean stopCamera()
-    {
+    
+    public boolean stopCamera() {
         return CLEyeCameraStop(cameraInstance);
     }
-    public boolean getCameraFrame(int[] imgData, int waitTimeout)
-    {
+    
+    public boolean getCameraFrame(int[] imgData, int waitTimeout) {
         return CLEyeCameraGetFrame(cameraInstance, imgData, waitTimeout);
     }
-    public boolean setCameraParam(int param, int val)
-    {
+    
+    public boolean setCameraParam(int param, int val) {
         return CLEyeSetCameraParameter(cameraInstance, param, val);
     }
-    public int getCameraParam(int param)
-    {
+    
+    public int getCameraParam(int param) {
         return CLEyeGetCameraParameter(cameraInstance, param);
     }
 }
