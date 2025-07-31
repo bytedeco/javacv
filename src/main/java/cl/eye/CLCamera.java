@@ -70,7 +70,7 @@ public class CLCamera
     // static methods
     static {
         String[] dllPaths = { dllpathx32, dllpathx64 };
-    
+
         for (int i = 0; i < dllPaths.length; i++) {
             try {
                 System.load(dllPaths[i]);
@@ -82,61 +82,66 @@ public class CLCamera
             }
         }
     }
-    
+
     public static boolean IsLibraryLoaded() {
         return libraryLoaded;
     }
-    
+
     public static void loadLibrary(String libraryPath) {
         if(libraryLoaded)   return;
-        
+
         try {
             System.load(libraryPath);
             System.out.println("CLEyeMulticam.dll loaded");
-        } 
-        catch(UnsatisfiedLinkError e1) {
+        } catch(UnsatisfiedLinkError e1) {
             System.out.println("(3) Could not find the CLEyeMulticam.dll (Custom Path)");
         }
     }
-    
+
     public static int cameraCount() {
         return CLEyeGetCameraCount();
     }
-    
+
     public static String cameraUUID(int index) {
         return CLEyeGetCameraUUID(index);
     }
 
+    // public methods
+//    public CLCamera(PApplet parent)
+//    {
+//        this.parent = parent;
+//        parent.registerDispose(this);
+//    }
     public void dispose() {
         stopCamera();
         destroyCamera();
     }
-    
+
     public boolean createCamera(int cameraIndex, int mode, int resolution, int framerate) {
         cameraInstance = CLEyeCreateCamera(cameraIndex, mode, resolution, framerate);
         return cameraInstance != 0;
     }
-    
+
     public boolean destroyCamera() {
         return CLEyeDestroyCamera(cameraInstance);
     }
-    
+
     public boolean startCamera() {
         return CLEyeCameraStart(cameraInstance);
     }
-    
+
     public boolean stopCamera() {
         return CLEyeCameraStop(cameraInstance);
     }
-    
+
     public boolean getCameraFrame(int[] imgData, int waitTimeout) {
         return CLEyeCameraGetFrame(cameraInstance, imgData, waitTimeout);
     }
-    
+
     public boolean setCameraParam(int param, int val) {
         return CLEyeSetCameraParameter(cameraInstance, param, val);
     }
-    
+
     public int getCameraParam(int param) {
         return CLEyeGetCameraParameter(cameraInstance, param);
     }
