@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 Samuel Audet
+ * Copyright (C) 2009-2025 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -651,7 +651,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else if (video_c.codec_id() == AV_CODEC_ID_H264) {
                 // default to constrained baseline to produce content that plays back on anything,
                 // without any significant tradeoffs for most use cases
-                video_c.profile(AVCodecContext.FF_PROFILE_H264_CONSTRAINED_BASELINE);
+                video_c.profile(AV_PROFILE_H264_CONSTRAINED_BASELINE);
             }
 
             // some formats want stream headers to be separate
@@ -856,9 +856,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     }
                 }
                 Pointer p = new Pointer(e.getValue());
-                BytePointer b = av_stream_new_side_data(video_st, type, p.capacity());
-                if (b != null && !b.isNull()) {
-                    b.capacity(p.capacity()).put(p);
+                AVPacketSideData coded_side_data = video_st.codecpar().coded_side_data();
+                int[] nb_coded_side_data = {video_st.codecpar().nb_coded_side_data()};
+                AVPacketSideData b = av_packet_side_data_new(coded_side_data, nb_coded_side_data, type, p.capacity(), 0);
+                video_st.codecpar().coded_side_data(coded_side_data);
+                video_st.codecpar().nb_coded_side_data(nb_coded_side_data[0]);
+                if (b != null && !b.isNull() && b.data() != null && !b.data().isNull()) {
+                    b.data().capacity(p.capacity()).put(p);
                 }
             }
         }
@@ -890,7 +894,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             /* ugly hack for PCM codecs (will be removed ASAP with new PCM
                support to compute the input frame size in samples */
             if (audio_c.frame_size() <= 1) {
-                audio_outbuf_size = AV_INPUT_BUFFER_MIN_SIZE;
+                audio_outbuf_size = 16 * 1024; // AV_INPUT_BUFFER_MIN_SIZE;
                 audio_input_frame_size = audio_outbuf_size / audio_c.ch_layout().nb_channels();
                 switch (audio_c.codec_id()) {
                     case AV_CODEC_ID_PCM_S16LE:
@@ -944,9 +948,13 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                     }
                 }
                 Pointer p = new Pointer(e.getValue());
-                BytePointer b = av_stream_new_side_data(audio_st, type, p.capacity());
-                if (b != null && !b.isNull()) {
-                    b.capacity(p.capacity()).put(p);
+                AVPacketSideData coded_side_data = audio_st.codecpar().coded_side_data();
+                int[] nb_coded_side_data = {audio_st.codecpar().nb_coded_side_data()};
+                AVPacketSideData b = av_packet_side_data_new(coded_side_data, nb_coded_side_data, type, p.capacity(), 0);
+                audio_st.codecpar().coded_side_data(coded_side_data);
+                audio_st.codecpar().nb_coded_side_data(nb_coded_side_data[0]);
+                if (b != null && !b.isNull() && b.data() != null && !b.data().isNull()) {
+                    b.data().capacity(p.capacity()).put(p);
                 }
             }
         }
@@ -1323,7 +1331,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             return writeFrame((AVFrame)null);
         }
 
-        return samples != null ? frame.key_frame() != 0 : writeFrame((AVFrame)null);
+        return samples != null ? (frame.flags() & AVFrame.AV_FRAME_FLAG_KEY) != 0 : writeFrame((AVFrame)null);
 
         }
     }

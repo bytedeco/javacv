@@ -99,7 +99,7 @@ public class FFmpegFrameFilter extends FrameFilter {
                 Loader.load(org.bytedeco.ffmpeg.global.avutil.class);
                 Loader.load(org.bytedeco.ffmpeg.global.avcodec.class);
                 Loader.load(org.bytedeco.ffmpeg.global.avformat.class);
-                Loader.load(org.bytedeco.ffmpeg.global.postproc.class);
+//                Loader.load(org.bytedeco.ffmpeg.global.postproc.class);
                 Loader.load(org.bytedeco.ffmpeg.global.swresample.class);
                 Loader.load(org.bytedeco.ffmpeg.global.swscale.class);
                 Loader.load(org.bytedeco.ffmpeg.global.avfilter.class);

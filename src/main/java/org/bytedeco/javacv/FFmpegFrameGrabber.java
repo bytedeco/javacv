@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2024 Samuel Audet
+ * Copyright (C) 2009-2025 Samuel Audet
  *
  * Licensed either under the Apache License, Version 2.0, or (at your option)
  * under the terms of the GNU General Public License as published by
@@ -628,8 +628,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getVideoSideData();
         }
         videoSideData = new HashMap<String, Buffer>();
-        for (int i = 0; i < video_st.nb_side_data(); i++) {
-            AVPacketSideData sd = video_st.side_data().position(i);
+        for (int i = 0; i < video_st.codecpar().nb_coded_side_data(); i++) {
+            AVPacketSideData sd = video_st.codecpar().coded_side_data().position(i);
             String key = av_packet_side_data_name(sd.type()).getString();
             Buffer value = sd.data().capacity(sd.size()).asBuffer();
             videoSideData.put(key, value);
@@ -652,8 +652,8 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             return super.getAudioSideData();
         }
         audioSideData = new HashMap<String, Buffer>();
-        for (int i = 0; i < audio_st.nb_side_data(); i++) {
-            AVPacketSideData sd = audio_st.side_data().position(i);
+        for (int i = 0; i < audio_st.codecpar().nb_coded_side_data(); i++) {
+            AVPacketSideData sd = audio_st.codecpar().coded_side_data().position(i);
             String key = av_packet_side_data_name(sd.type()).getString();
             Buffer value = sd.data().capacity(sd.size()).asBuffer();
             audioSideData.put(key, value);
@@ -1404,13 +1404,13 @@ public class FFmpegFrameGrabber extends FrameGrabber {
             if (doProcessing) {
                 processImage();
             }
-            frame.keyFrame = picture.key_frame() != 0;
+            frame.keyFrame = (picture.flags() & AVFrame.AV_FRAME_FLAG_KEY) != 0;
             return frame;
         } else if (doAudio && audioFrameGrabbed) {
             if (doProcessing) {
                 processSamples();
             }
-            frame.keyFrame = samples_frame.key_frame() != 0;
+            frame.keyFrame = (samples_frame.flags() & AVFrame.AV_FRAME_FLAG_KEY) != 0;
             return frame;
         } else if (doData && dataFrameGrabbed) {
             return frame;
@@ -1521,7 +1521,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                            free it */
                         done = true;
                         frame.timestamp = timestamp;
-                        frame.keyFrame = picture.key_frame() != 0;
+                        frame.keyFrame = (picture.flags() & AVFrame.AV_FRAME_FLAG_KEY) != 0;
                         frame.pictType = (char)av_get_picture_type_char(picture.pict_type());
                         frame.type = Frame.Type.VIDEO;
                     }
@@ -1565,7 +1565,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                     }
                     done = true;
                     frame.timestamp = timestamp;
-                    frame.keyFrame = samples_frame.key_frame() != 0;
+                    frame.keyFrame = (samples_frame.flags() & AVFrame.AV_FRAME_FLAG_KEY) != 0;
                     frame.type = Frame.Type.AUDIO;
                 }
             } else if (readPacket && doData
