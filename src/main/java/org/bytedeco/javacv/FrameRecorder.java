@@ -108,7 +108,7 @@ public abstract class FrameRecorder implements Closeable {
 
     protected String format, videoCodecName, audioCodecName;
     protected int imageWidth, imageHeight, audioChannels;
-    protected int pixelFormat, videoCodec, videoBitrate, imageScalingFlags, gopSize = -1;
+    protected int pixelFormat, videoCodec, videoBitrate, imageScalingFlags, gopSize = -1, videoProfile = -1;
     protected double aspectRatio, frameRate, videoQuality = -1;
     protected int sampleFormat, audioCodec, audioBitrate, sampleRate;
     protected double audioQuality = -1;
@@ -224,6 +224,13 @@ public abstract class FrameRecorder implements Closeable {
     }
     public void setVideoQuality(double videoQuality) {
         this.videoQuality = videoQuality;
+    }
+
+    public int getVideoProfile() {
+        return videoProfile;
+    }
+    public void setVideoProfile(int videoProfile) {
+        this.videoProfile = videoProfile;
     }
 
     public int getSampleFormat() {

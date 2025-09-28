@@ -613,6 +613,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 video_c.flags(video_c.flags() | AV_CODEC_FLAG_QSCALE);
                 video_c.global_quality((int)Math.round(FF_QP2LAMBDA * videoQuality));
             }
+            if (videoProfile >= 0) {
+                video_c.profile(videoProfile);
+            }
 
             if (pixelFormat != AV_PIX_FMT_NONE) {
                 video_c.pix_fmt(pixelFormat);
@@ -651,7 +654,9 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else if (video_c.codec_id() == AV_CODEC_ID_H264) {
                 // default to constrained baseline to produce content that plays back on anything,
                 // without any significant tradeoffs for most use cases
-                video_c.profile(AV_PROFILE_H264_CONSTRAINED_BASELINE);
+                if (video_c.profile()==0 && videoProfile==-1) {
+                    video_c.profile(AV_PROFILE_H264_CONSTRAINED_BASELINE);
+                }
             }
 
             // some formats want stream headers to be separate
