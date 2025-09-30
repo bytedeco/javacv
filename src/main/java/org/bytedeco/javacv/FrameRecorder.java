@@ -205,6 +205,13 @@ public abstract class FrameRecorder implements Closeable {
         this.gopSize = gopSize;
     }
 
+    public int getVideoProfile() {
+        return videoProfile;
+    }
+    public void setVideoProfile(int videoProfile) {
+        this.videoProfile = videoProfile;
+    }
+
     public double getAspectRatio() {
         return aspectRatio;
     }
@@ -224,13 +231,6 @@ public abstract class FrameRecorder implements Closeable {
     }
     public void setVideoQuality(double videoQuality) {
         this.videoQuality = videoQuality;
-    }
-
-    public int getVideoProfile() {
-        return videoProfile;
-    }
-    public void setVideoProfile(int videoProfile) {
-        this.videoProfile = videoProfile;
     }
 
     public int getSampleFormat() {

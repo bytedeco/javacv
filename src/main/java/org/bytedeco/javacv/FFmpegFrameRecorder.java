@@ -609,12 +609,12 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             if (gopSize >= 0) {
                 video_c.gop_size(gopSize); /* emit one intra frame every gopSize frames at most */
             }
+            if (videoProfile >= 0) {
+                video_c.profile(videoProfile);
+            }
             if (videoQuality >= 0) {
                 video_c.flags(video_c.flags() | AV_CODEC_FLAG_QSCALE);
                 video_c.global_quality((int)Math.round(FF_QP2LAMBDA * videoQuality));
-            }
-            if (videoProfile >= 0) {
-                video_c.profile(videoProfile);
             }
 
             if (pixelFormat != AV_PIX_FMT_NONE) {
@@ -654,7 +654,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
             } else if (video_c.codec_id() == AV_CODEC_ID_H264) {
                 // default to constrained baseline to produce content that plays back on anything,
                 // without any significant tradeoffs for most use cases
-                if (video_c.profile()==0 && videoProfile==-1) {
+                if (videoProfile < 0) {
                     video_c.profile(AV_PROFILE_H264_CONSTRAINED_BASELINE);
                 }
             }
