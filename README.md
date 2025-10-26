@@ -2,10 +2,10 @@ JavaCV
 ======
 
 [![Gitter](https://badges.gitter.im/bytedeco/javacv.svg)](https://gitter.im/bytedeco/javacv)
-![Maven Central Version](https://img.shields.io/maven-central/v/org.bytedeco/javacv?label=maven-central%20%28jacacv%29)
-![Maven Central Version (Snapshots)](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Forg%2Fbytedeco%2Fjavacv%2Fmaven-metadata.xml&label=maven-central-snapshot%20%28jacacv%29)
-![Maven Central Version](https://img.shields.io/maven-central/v/org.bytedeco/javacv-platform?label=maven-central%20%28jacacv-platform%29)
-![Maven Central Version (Snapshots)](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Forg%2Fbytedeco%2Fjavacv-platform%2Fmaven-metadata.xml&label=maven-central-snapshot%20%28jacacv-platform%29)
+![Maven Central Version](https://img.shields.io/maven-central/v/org.bytedeco/javacv?label=maven-central%20%28javacv%29)
+![Maven Central Version (Snapshots)](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Forg%2Fbytedeco%2Fjavacv%2Fmaven-metadata.xml&label=maven-central-snapshot%20%28javacv%29)
+![Maven Central Version](https://img.shields.io/maven-central/v/org.bytedeco/javacv-platform?label=maven-central%20%28javacv-platform%29)
+![Maven Central Version (Snapshots)](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Forg%2Fbytedeco%2Fjavacv-platform%2Fmaven-metadata.xml&label=maven-central-snapshot%20%28javacv-platform%29)
 
 Introduction
 ------------
