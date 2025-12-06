@@ -67,7 +67,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg</artifactId>
-      <version>8.0-${javacpp.version}</version>
+      <version>8.0.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -117,7 +117,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>leptonica</artifactId>
-      <version>1.85.0-${javacpp.version}</version>
+      <version>1.86.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>

@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>8.0-${javacpp.version}</version>
+      <version>8.0.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -93,7 +93,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>leptonica-platform</artifactId>
-      <version>1.85.0-${javacpp.version}</version>
+      <version>1.86.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -116,7 +116,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform-gpl</artifactId>
-      <version>8.0-${javacpp.version}</version>
+      <version>8.0.1-${javacpp.version}</version>
       <scope>test</scope>
     </dependency>
 
