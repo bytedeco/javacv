@@ -14,8 +14,6 @@ jobs:
       - uses: bytedeco/javacpp-presets/.github/actions/deploy-ubuntu@actions
       - uses: mxschmitt/action-tmate@v3
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        with:
-          sudo: false
   macosx-arm64:
     runs-on: macos-15
     steps:
