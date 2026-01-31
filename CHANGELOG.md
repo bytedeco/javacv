@@ -1,6 +1,6 @@
 
  * Add `FrameRecorder.videoProfile` property ([pull #2361](https://github.com/bytedeco/javacv/pull/2361))
- * Upgrade dependencies for OpenCV 4.12.0, FFmpeg 8.0.1, Leptonica 1.87.0, Tesseract 5.5.2
+ * Upgrade dependencies for OpenBLAS 0.3.31, OpenCV 4.13.0, FFmpeg 8.0.1, Leptonica 1.87.0, Tesseract 5.5.2
 
 ### June 30, 2025 version 1.5.12
  * Add `LibgdxFrameConverter` to convert `Frame` to Libgdx `Pixmap` ([pull #2315](https://github.com/bytedeco/javacv/pull/2315))
