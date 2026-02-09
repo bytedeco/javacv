@@ -328,6 +328,7 @@ public class FFmpegFrameRecorder extends FrameRecorder {
                 }
             }
         }
+        Pointer.trimMemory();
     }
     @Override protected void finalize() throws Throwable {
         super.finalize();

@@ -291,6 +291,7 @@ public class FFmpegFrameGrabber extends FrameGrabber {
                 }
             }
         }
+        Pointer.trimMemory();
     }
     @Override protected void finalize() throws Throwable {
         super.finalize();

@@ -1,4 +1,5 @@
 
+ * Call `Pointer.trimMemory()` on `FFmpegFrameGrabber/Filter/Recorder` close to reclaim system memory on Linux ([issue #2334](https://github.com/bytedeco/javacv/issues/2334))
  * Add `FrameRecorder.videoProfile` property ([pull #2361](https://github.com/bytedeco/javacv/pull/2361))
  * Upgrade dependencies for OpenBLAS 0.3.31, OpenCV 4.13.0, FFmpeg 8.0.1, Leptonica 1.87.0, Tesseract 5.5.2
 

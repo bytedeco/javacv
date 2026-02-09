@@ -206,6 +206,7 @@ public class FFmpegFrameFilter extends FrameFilter {
             filt_frame = null;
         }
         frame = null;
+        Pointer.trimMemory();
     }
     @Override protected void finalize() throws Throwable {
         super.finalize();
