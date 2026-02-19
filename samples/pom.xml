@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>1.5.12</version>
+    <version>1.5.13</version>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -11,21 +11,21 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.5.12</version>
+            <version>1.5.13</version>
         </dependency>
 
         <!-- Additional dependencies required to use CUDA and cuDNN -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>opencv-platform-gpu</artifactId>
-            <version>4.11.0-1.5.12</version>
+            <version>4.13.0-1.5.13</version>
         </dependency>
 
         <!-- Optional GPL builds with (almost) everything enabled -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>ffmpeg-platform-gpl</artifactId>
-            <version>7.1.1-1.5.12</version>
+            <version>8.0.1-1.5.13</version>
         </dependency>
     </dependencies>
     <build>

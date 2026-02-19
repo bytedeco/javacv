@@ -28,27 +28,27 @@ We can also have everything downloaded and installed automatically with:
   <dependency>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacv-platform</artifactId>
-    <version>1.5.12</version>
+    <version>1.5.13</version>
   </dependency>
 ```
 
  * Gradle (inside the `build.gradle.kts` or `build.gradle` file)
 ```groovy
   dependencies {
-    implementation("org.bytedeco:javacv-platform:1.5.12")
+    implementation("org.bytedeco:javacv-platform:1.5.13")
   }
 ```
 
  * Leiningen (inside the `project.clj` file)
 ```clojure
   :dependencies [
-    [org.bytedeco/javacv-platform "1.5.12"]
+    [org.bytedeco/javacv-platform "1.5.13"]
   ]
 ```
 
  * sbt (inside the `build.sbt` file)
 ```scala
-  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.5.12"
+  libraryDependencies += "org.bytedeco" % "javacv-platform" % "1.5.13"
 ```
 
 This downloads binaries for all platforms, but to get binaries for only one platform we can set the `javacpp.platform` system property (via the `-D` command line option) to something like `android-arm`, `linux-x86_64`, `macosx-x86_64`, `windows-x86_64`, etc. Please refer to the [README.md file of the JavaCPP Presets](https://github.com/bytedeco/javacpp-presets#downloads) for details. Another option available to Gradle users is [Gradle JavaCPP](https://github.com/bytedeco/gradle-javacpp), and similarly for Scala users there is [SBT-JavaCV](https://github.com/bytedeco/sbt-javacv).
@@ -58,15 +58,16 @@ Required Software
 -----------------
 To use JavaCV, you will first need to download and install the following software:
 
- * An implementation of Java SE 7 or newer:
+ * An implementation of Java SE 8 or newer:
    * OpenJDK  http://openjdk.java.net/install/  or
    * Oracle JDK  http://www.oracle.com/technetwork/java/javase/downloads/  or
-   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/
+   * IBM JDK  http://www.ibm.com/developerworks/java/jdk/  or
+   * Microsoft JDK  https://www.microsoft.com/openjdk  etc
 
 Further, although not always required, some functionality of JavaCV also relies on:
 
  * CL Eye Platform SDK (Windows only)  http://codelaboratories.com/downloads/
- * Android SDK API 21 or newer  http://developer.android.com/sdk/
+ * Android SDK API 24 or newer  http://developer.android.com/sdk/
  * JOCL and JOGL from JogAmp  http://jogamp.org/
 
 Finally, please make sure everything has the same bitness: **32-bit and 64-bit modules do not mix under any circumstances**.
@@ -76,17 +77,17 @@ Manual Installation
 -------------------
 Simply put all the desired JAR files (`opencv*.jar`, `ffmpeg*.jar`, etc.), in addition to `javacpp.jar` and `javacv.jar`, somewhere in your class path. Here are some more specific instructions for common cases:
 
-NetBeans (Java SE 7 or newer):
+NetBeans (Java SE 8 or newer):
 
  1. In the Projects window, right-click the Libraries node of your project, and select "Add JAR/Folder...".
  2. Locate the JAR files, select them, and click OK.
 
-Eclipse (Java SE 7 or newer):
+Eclipse (Java SE 8 or newer):
 
  1. Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs...".
  2. Locate the JAR files, select them, and click OK.
  
-Visual Studio Code (Java SE 7 or newer):
+Visual Studio Code (Java SE 8 or newer):
 
  1. Navigate to Java Projects > Referenced Libraries, and click `+`.
  2. Locate the JAR files, select them, and click OK.
@@ -270,30 +271,30 @@ Furthermore, after creating a `pom.xml` file with the following content:
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bytedeco.javacv</groupId>
     <artifactId>demo</artifactId>
-    <version>1.5.12</version>
+    <version>1.5.13</version>
     <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.5.12</version>
+            <version>1.5.13</version>
         </dependency>
 
         <!-- Additional dependencies required to use CUDA and cuDNN -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>opencv-platform-gpu</artifactId>
-            <version>4.11.0-1.5.12</version>
+            <version>4.13.0-1.5.13</version>
         </dependency>
 
         <!-- Optional GPL builds with (almost) everything enabled -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>ffmpeg-platform-gpl</artifactId>
-            <version>7.1.1-1.5.12</version>
+            <version>8.0.1-1.5.13</version>
         </dependency>
     </dependencies>
     <build>
@@ -315,8 +316,8 @@ Build Instructions
 If the binary files available above are not enough for your needs, you might need to rebuild them from the source code. To this end, the project files were created for:
 
  * Maven 3.x  http://maven.apache.org/download.html
- * JavaCPP 1.5.12  https://github.com/bytedeco/javacpp
- * JavaCPP Presets 1.5.12  https://github.com/bytedeco/javacpp-presets
+ * JavaCPP 1.5.13  https://github.com/bytedeco/javacpp
+ * JavaCPP Presets 1.5.13  https://github.com/bytedeco/javacpp-presets
 
 Once installed, simply call the usual `mvn install` command for JavaCPP, its Presets, and JavaCV. By default, no other dependencies than a C++ compiler for JavaCPP are required. Please refer to the comments inside the `pom.xml` files for further details.
 
