@@ -8,6 +8,12 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   STAGING_REPOSITORY: ${{ secrets.STAGING_REPOSITORY }}
 jobs:
+  linux-arm64:
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: bytedeco/javacpp-presets/.github/actions/deploy-ubuntu@actions
+      - uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' }}
   linux-x86_64:
     runs-on: ubuntu-22.04
     steps:
