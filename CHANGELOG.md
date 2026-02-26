@@ -1,4 +1,6 @@
 
+ * Compile classes with `parameters` bumping minimum requirements to Java SE 8 and Android 7.0 ([issue bytedeco/javacpp-presets#1739](https://github.com/bytedeco/javacpp-presets/issues/1739))
+
 ### February 22, 2026 version 1.5.13
  * Call `Pointer.trimMemory()` on `FFmpegFrameGrabber/Filter/Recorder` close to reclaim system memory on Linux ([issue #2334](https://github.com/bytedeco/javacv/issues/2334))
  * Add `FrameRecorder.videoProfile` property ([pull #2361](https://github.com/bytedeco/javacv/pull/2361))

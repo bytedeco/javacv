@@ -188,6 +188,7 @@
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <parameters>true</parameters>
           <excludes>
             <exclude>org/bytedeco/javacv/FFmpegLockCallback.java</exclude>
             <exclude>org/bytedeco/javacv/FlyCaptureFrameGrabber.java</exclude>
