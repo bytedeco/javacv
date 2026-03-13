@@ -355,9 +355,26 @@ public class FFmpegFrameFilter extends FrameFilter {
                 String name = videoInputs > 1 ? i + ":v" : "in";
                 outputs[i] = avfilter_inout_alloc();
 
+                // Determine the pixel format to configure on the software buffer source.
+                // Setting a hardware pixel format (e.g. AV_PIX_FMT_CUDA) on the "buffer" source
+                // requires hw_frames_ctx, which this class does not currently attach.
+                // To prevent initialization failure, auto-fallback to a safe software format.
+                int configuredPixFmt = pixelFormat;
+                if (isHardwarePixelFormat(configuredPixFmt)) {
+                    // Prefer NV12 as a common software input when users plan to use hwupload_cuda + scale_cuda.
+                    // Users can override completely via setVideoFilterArgs().
+                    configuredPixFmt = AV_PIX_FMT_NV12;
+                    av_log(null, AV_LOG_WARNING, new BytePointer(
+                            String.format(Locale.ROOT,
+                                    "FFmpegFrameFilter: hardware pixel format %d requested for buffersrc, " +
+                                    "falling back to software pix_fmt=%d to avoid missing hw_frames_ctx. " +
+                                    "Use hwupload_cuda in your filters for GPU processing, or override via setVideoFilterArgs().\n",
+                                    pixelFormat, configuredPixFmt)));
+                }
+
                 String args = videoFilterArgs != null && videoFilterArgs[i] != null ? videoFilterArgs[i]
                         : String.format(Locale.ROOT, "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d",
-                               imageWidth, imageHeight, pixelFormat, time_base.num(), time_base.den(), r.num(), r.den(), frame_rate.num(), frame_rate.den());
+                               imageWidth, imageHeight, configuredPixFmt, time_base.num(), time_base.den(), r.num(), r.den(), frame_rate.num(), frame_rate.den());
                 ret = avfilter_graph_create_filter(buffersrc_ctx[i] = new AVFilterContext().retainReference(), buffersrc, name,
                                                    args, null, filter_graph);
                 if (ret < 0) {
@@ -430,6 +447,14 @@ public class FFmpegFrameFilter extends FrameFilter {
             avfilter_inout_free(inputs);
             avfilter_inout_free(outputs[0]);
         }
+    }
+    /** Return true if pix_fmt indicates a hardware-accelerated format (e.g., CUDA), false otherwise. */
+    private static boolean isHardwarePixelFormat(int pixFmt) {
+        if (pixFmt < 0) {
+            return false;
+        }
+        AVPixFmtDescriptor d = av_pix_fmt_desc_get(pixFmt);
+        return d != null && (d.flags() & AV_PIX_FMT_FLAG_HWACCEL) != 0;
     }
 
     private void startAudioUnsafe() throws Exception {
