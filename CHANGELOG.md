@@ -456,7 +456,7 @@
 
 ### February 18, 2012
  * Added `GLCanvasFrame` to show OpenGL renderbuffers on screen, plus a new factory method `JavaCVCL.createCLGLImageFrom()` to create compatible ones from `IplImage` objects, as well as more user-friendly `getGLContext()`, `getGL()` and `getGL2()` methods
- * Fixed various things of the original `CanvasFrame`, and `JavaCV.createCLImage()` and `createIplImage()`, also appending `From` to their names 
+ * Fixed various things of the original `CanvasFrame`, and `JavaCV.createCLImage()` and `createIplImage()`, also appending `From` to their names
  * New `createPinnedBuffer()` and `createPinnedIplImage()` factory methods in `JavaCVCL` to allocate page-locked memory for faster CPU<->GPU transfers, but it does not seem to work for OpenCL image objects, only linear buffer objects :(
  * Fixed and enhanced `GNImageAlignerCL` and `ProjectorDevice` (its `useOpenGL` property) to support fully OpenCL and OpenGL acceleration
  * Refactored `Parallel` a bit so that we may set the number of threads it uses via its static `numThreads` property or the "com.googlecode.javacv.numthreads" system property, which defaults to `Parallel.getNumCores() = Runtime.getRuntime().availableProcessors()`
@@ -664,7 +664,7 @@
  * Added more convenient constructors and factory methods for `CvPoint*`, `CvSize*`, `CvRect`, `CvTermCriteria`, `CvSlice`, and `CvAttrList`
  * Added _R2_ correlation coefficient field to `ProjectiveDevice`
  * Enhanced and fixed color conversion spaghetti code in `FlyCaptureFrameGrabber`
- * Fixed the `CvHaarFeature` Structure 
+ * Fixed the `CvHaarFeature` Structure
  * Renamed `CvIntScalar` factory methods to match with `CvScalar`
  * Enhanced and fixed some problems with gamma correction in `IplImage`
  * Added a `highgui.CV_FOURCC()` method that takes chars as parameter

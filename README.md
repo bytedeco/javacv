@@ -86,7 +86,7 @@ Eclipse (Java SE 8 or newer):
 
  1. Navigate to Project > Properties > Java Build Path > Libraries and click "Add External JARs...".
  2. Locate the JAR files, select them, and click OK.
- 
+
 Visual Studio Code (Java SE 8 or newer):
 
  1. Navigate to Java Projects > Referenced Libraries, and click `+`.
@@ -327,6 +327,6 @@ Instead of building the native libraries manually, we can run `mvn install` for 
 
 
 ----
-Project lead: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet&nbsp;at&nbsp;gmail.com)  
-Developer site: https://github.com/bytedeco/javacv  
+Project lead: Samuel Audet [samuel.audet `at` gmail.com](mailto:samuel.audet&nbsp;at&nbsp;gmail.com)
+Developer site: https://github.com/bytedeco/javacv
 Discussion group: http://groups.google.com/group/javacv
