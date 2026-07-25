@@ -1,4 +1,5 @@
 
+ * Upgrade dependencies for OpenBLAS 0.3.33, FFmpeg 8.1.1
  * Compile classes with `parameters` bumping minimum requirements to Java SE 8 and Android 7.0 ([issue bytedeco/javacpp-presets#1739](https://github.com/bytedeco/javacpp-presets/issues/1739))
 
 ### February 22, 2026 version 1.5.13

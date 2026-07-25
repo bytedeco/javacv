@@ -33,7 +33,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas-platform</artifactId>
-      <version>0.3.31-${javacpp.version}</version>
+      <version>0.3.33-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>8.0.1-${javacpp.version}</version>
+      <version>8.1.1-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -116,7 +116,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform-gpl</artifactId>
-      <version>8.0.1-${javacpp.version}</version>
+      <version>8.1.1-${javacpp.version}</version>
       <scope>test</scope>
     </dependency>
 
