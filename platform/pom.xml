@@ -33,17 +33,17 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas-platform</artifactId>
-      <version>0.3.33-${javacpp.version}</version>
+      <version>0.3.34-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform</artifactId>
-      <version>4.13.0-${javacpp.version}</version>
+      <version>4.14.0-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform</artifactId>
-      <version>8.1.1-${javacpp.version}</version>
+      <version>8.1.2-${javacpp.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
@@ -98,7 +98,7 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>tesseract-platform</artifactId>
-      <version>5.5.2-${javacpp.version}</version>
+      <version>5.5.3-${javacpp.version}</version>
     </dependency>
 
     <dependency>
@@ -110,13 +110,13 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>opencv-platform-gpu</artifactId>
-      <version>4.13.0-${javacpp.version}</version>
+      <version>4.14.0-${javacpp.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>ffmpeg-platform-gpl</artifactId>
-      <version>8.1.1-${javacpp.version}</version>
+      <version>8.1.2-${javacpp.version}</version>
       <scope>test</scope>
     </dependency>
 
