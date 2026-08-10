@@ -1,4 +1,5 @@
 
+### August 10, 2026 version 1.5.14
  * Upgrade dependencies for OpenBLAS 0.3.34, OpenCV 4.14.0, FFmpeg 8.1.2, Tesseract 5.5.3
  * Compile classes with `parameters` bumping minimum requirements to Java SE 8 and Android 7.0 ([issue bytedeco/javacpp-presets#1739](https://github.com/bytedeco/javacpp-presets/issues/1739))
 

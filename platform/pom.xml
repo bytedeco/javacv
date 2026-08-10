@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.bytedeco</groupId>
     <artifactId>javacpp-presets</artifactId>
-    <version>1.5.14-SNAPSHOT</version>
+    <version>1.5.14</version>
     <relativePath></relativePath>
   </parent>
 
@@ -261,6 +261,10 @@
         </property>
       </activation>
       <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
         <repository>
           <id>central-portal-staging</id>
           <name>Central Portal Staging</name>
