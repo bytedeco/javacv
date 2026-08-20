@@ -1,0 +1,26 @@
+ <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:id="@+id/record_layout"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent" >
+ 
+     <TextView
+         android:id="@+id/textView1"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_centerHorizontal="true"
+         android:layout_centerVertical="true"
+         android:padding="8dp"
+         android:text="@string/app_name"
+         tools:context=".RecordActivity" />
+
+     <Button
+         android:id="@+id/recorder_control"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_above="@+id/textView1"
+         android:layout_alignRight="@+id/textView1"
+         android:layout_marginRight="70dp"
+         android:text="Button" />
+
+ </LinearLayout>
